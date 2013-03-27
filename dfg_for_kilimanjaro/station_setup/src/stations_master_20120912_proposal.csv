@@ -1,0 +1,88 @@
+PlotID;Categories;ECOSYID;FocalPlot;Easting;Northing;Lon;Lat;Installed;Phase01;Phase02;Final;Keyword;LINK
+mai2;maize;31;N;327227;9626720;37.44570623;-3.378630853;T-H;none;none;T-H;Basic;NA
+mai3;maize;31;N;333718;9625594;37.50410128;-3.388903249;T-H;none;none;T-H;Basic;NA
+mai4;maize;31;N;345797;9628644;37.61284344;-3.361477304;T-H;none;none;T-H;Basic;NA
+mai5;maize;31;N;352672;9632790;37.67476896;-3.324067604;T-H;none;none;T-H;Basic;NA
+cof1;coffee plantation;32;N;305573;9641686;37.25108459;-3.242961766;T-H;none;none;T-H;Basic;NA
+cof2;coffee plantation;32;N;307590;9642774;37.2692454;-3.233157989;T-H;none;none;T-H;Basic;NA
+cof4;coffee plantation;32;N;313502;9637495;37.32236411;-3.280982945;T-H;none;none;T-H;Basic;NA
+cof5;coffee plantation;32;N;329946;9638172;37.47032803;-3.275100875;T-H;none;none;T-H;Basic;NA
+fer1;forest Erica;61;N;312061;9658202;37.30969988;-3.09370809;T-H;none;none;T-H;Basic;NA
+fer2;forest Erica;61;N;313026;9656689;37.31835685;-3.107398929;T-H;none;none;T-H;Basic;NA
+fer3;forest Erica;61;N;313445;9657261;37.3221335;-3.102232595;T-H;none;none;T-H;Basic;NA
+fer4;forest Erica;61;N;313015;9656239;37.3182565;-3.111470221;T-H;none;none;T-H;Basic;NA
+fer5;forest Erica;61;N;319145;9654406;37.37337149;-3.128131143;T-H;none;none;T-H;Basic;NA
+fer6;forest Erica;61;N;310129;9659640;NA;NA;T-H;none;none;T-H;Basic;NA
+flm2;forest lower montane;33;N;315813;9645141;37.3432687;-3.211876699;T-H;none;none;T-H;Basic;NA
+flm3;forest lower montane;33;N;324104;9639797;37.41801168;-3.26038475;T-H;none;none;T-H;Basic;NA
+flm4;forest lower montane;33;N;324373;9640085;37.42020749;-3.257719292;T-H;none;none;T-H;Basic;NA
+flm5;forest lower montane;33;N;335340;9643614;37.5189384;-3.22595096;T-H;none;none;T-H;Basic;NA
+flm6;forest lower montane;33;N;335431;9643345;37.51975506;-3.228386735;T-H;none;none;T-H;Basic;NA
+foc2;forest Ocotea;42;N;304925;9653419;37.24543879;-3.136851541;T-H;none;none;T-H;Basic;NA
+foc3;forest Ocotea;42;N;311334;9653087;37.30308457;-3.139955749;T-H;none;none;T-H;Basic;NA
+foc4;forest Ocotea;42;N;311584;9653244;37.30534084;-3.138534532;T-H;none;none;T-H;Basic;NA
+foc5;forest Ocotea;42;N;317474;9649526;37.35827275;-3.172244156;T-H;none;none;T-H;Basic;NA
+foc6;forest Ocotea;42;N;304836.5;9653001;NA;NA;T-H;none;none;T-H;Basic;NA
+fod1;forest Ocotea disturbed;43;N;309869;9651843;37.289887;-3.151178436;T-H;none;none;T-H;Basic;NA
+fod3;forest Ocotea disturbed;43;N;328179;9644048;37.45451444;-3.221935738;T-H;none;none;T-H;Basic;NA
+fod4;forest Ocotea disturbed;43;N;334790;9647183;37.51403702;-3.193669156;T-H;none;none;T-H;Basic;NA
+fod5;forest Ocotea disturbed;43;N;335002;9646277;37.51592989;-3.201863048;T-H;none;none;T-H;Basic;NA
+fpd1;forest Podocarpus disturbed;45;N;312290;9654677;37.31170784;-3.125587933;T-H;none;none;T-H;Basic;NA
+fpd2;forest Podocarpus disturbed;45;Y;318503;9650441;37.3675465;-3.163980928;T-H;none;none;T-H;Basic;NA
+fpd3;forest Podocarpus disturbed;45;N;326454;9647593;37.4390391;-3.189846506;T-H;none;none;T-H;Basic;NA
+fpd4;forest Podocarpus disturbed;45;N;326593;9647972;37.44029546;-3.186424099;T-H;none;none;T-H;Basic;NA
+fpd5;forest Podocarpus disturbed;45;N;335354;9649154;37.51913912;-3.175853396;T-H;none;none;T-H;Basic;NA
+fpo1;forest Podocarpus;44;Y;306581;9657102;37.26038652;-3.103577247;T-H;none;none;T-H;Basic;NA
+fpo2;forest Podocarpus;44;N;317952;9650233;37.36258568;-3.16585932;T-H;none;none;T-H;Basic;NA
+fpo3;forest Podocarpus;44;N;318015;9650704;37.36315732;-3.161600521;T-H;none;none;T-H;Basic;NA
+fpo4;forest Podocarpus;44;N;326795;9647180;37.44210038;-3.193589041;T-H;none;none;T-H;Basic;NA
+fpo5;forest Podocarpus;44;N;334628;9648821;37.51259698;-3.178855852;T-H;none;none;T-H;Basic;NA
+fpo6;forest Podocarpus;44;N;307889;9659354;NA;NA;T-H;none;none;T-H;Basic;NA
+gra2;grassland;34;N;328302;9637250;37.45552533;-3.283418496;T-H;none;none;T-H;Basic;NA
+gra3;grassland;34;N;333385;9634964;37.50123537;-3.304160602;T-H;none;none;T-H;Basic;NA
+gra4;grassland;34;N;333742;9631852;37.50440286;-3.33230911;T-H;none;none;T-H;Basic;NA
+gra5;grassland;34;N;346169;9635517;37.616276;-3.299323773;T-H;none;none;T-H;Basic;NA
+hel2;Helichrysum;62;N;313698;9658430;37.32442772;-3.091669871;T-H;none;none;T-H;Basic;NA
+hel3;Helichrysum;62;N;319484;9655772;37.37644019;-3.115782234;T-H;none;none;T-H;Basic;NA
+hel4;Helichrysum;62;N;326722;9657135;37.44158138;-3.103559992;T-H;none;none;T-H;Basic;NA
+hel5;Helichrysum;62;N;327537;9657889;37.44892061;-3.0967532;T-H;none;none;T-H;Basic;NA
+hom2;homegarden;35;N;311900;9638859;37.30796752;-3.268625787;T-H;none;none;T-H;Basic;NA
+hom3;homegarden;35;N;324329;9638776;37.41979923;-3.269556241;T-H;none;none;T-H;Basic;NA
+hom5;homegarden;35;N;344850;9638399;37.60444526;-3.273239826;T-H;none;none;T-H;Basic;NA
+sav1;savanna;36;N;328246;9627145;37.45488224;-3.374798389;T-H;none;none;T-H;Basic;NA
+sav2;savanna;36;N;332860;9626495;37.4965256;-3.380924975;T-H;none;none;T-H;Basic;NA
+sav3;savanna;36;N;349154;9632093;37.64309873;-3.330329109;T-H;none;none;T-H;Basic;NA
+sav5;savanna;36;N;353697;9634606;37.68401527;-3.307654271;T-H;none;none;T-H;Basic;NA
+sun1;sun coffee plantation;41;N;299310;9637754;37.19467539;-3.278414563;T-H;none;ET;T-H;Basic;NA
+sun2;sun coffee plantation;41;N;307833;9642535;37.27142744;-3.235324365;T-H;none;none;T-H;Basic;NA
+sun3;sun coffee plantation;41;N;314221;9641044;37.32888583;-3.248900188;T-H;none;none;T-H;Basic;NA
+sun4;sun coffee plantation;41;N;313655;9638120;37.32375035;-3.275337376;T-H;none;none;T-H;Basic;NA
+mai1;maize;31;Y;304837;9634244;37.24434272;-3.310248887;T-H;none;none;T-H;Basic;NA
+fod2;forest Ocotea disturbed;43;Y;317486;9648257;37.35836237;-3.183720573;T-H;P-SDR;ET;T-H-P-SDR;Enhanced;NA
+hom4;homegarden;35;Y;332478;9631277;37.49302363;-3.337486933;T-H-P-PAR;SDR;ET;T-H-P-SDR-PAR;Enhanced;NA
+mai0;maize;31;N;304720;9634360;37.24329597;-3.309196107;T-H-SDR-SUR-LDR-LUR-P-WD-WS;none;ET;T-H-SDR-SUR-LDR-LUR-P-WD-WS;AWS;NA
+cof3;coffee plantation;32;Y;313265;9641155;37.32028297;-3.247886238;T-H-SDR-SUR-LDR-LUR-P-WD-WS-PAR;none;ET;T-H-SDR-SUR-LDR-LUR-P-WD-WS-PAR;AWS;NA
+gra1;grassland;34;Y;305222;9648624;37.24803575;-3.180214603;T-H-P;T-H-SDR-SUR-LDR-LUR-P-WD-WS;ET;T-H-SDR-SUR-LDR-LUR-P-WD-WS;AWS;NA
+hel1;Helichrysum;62;Y;308189;9662706;37.2749363;-3.052922381;T-H-SDR-SUR-LDR-LUR-P-WD-WS;F;ET;T-H-SDR-SUR-LDR-LUR-P-WD-WS-F;AWS;NA
+sav0;savanna;36;N;353790;9633700;37.68483864;-3.315851993;T-H-SDR-SUR-LDR-LUR-P-WD-WS;none;ET;T-H-SDR-SUR-LDR-LUR-P-WD-WS;AWS;NA
+fer0;forest Erica;61;Y;310160;9659639;37.29262254;-3.080687047;T-H;P-WD-P-F-TF-SDR;ET;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+flm1;forest lower montane;33;Y;303911;9650024;37.23626359;-3.167537766;T-H;P-WD-P-F-TF-SDR;ET;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+foc0;forest Ocotea;42;N;305517;9655143;NA;NA;T-H-P-WD-P-F-TF;SDR;none;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+foc1;forest Ocotea;42;Y;304666;9652535;37.24309581;-3.144845947;T-H;P-WD-P-F-TF-SDR;ET;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+fpd0;forest Podocarpus disturbed;45;N;318507;9650446;NA;NA;T-H-P-WD-P-F-TF;SDR;ET;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+fpo0;forest Podocarpus;44;N;306560;9657127;NA;NA;T-H-P-WD-P-F-TF;SDR;ET;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+hom1;homegarden;35;N;305998;9647976;37.25500505;-3.186086095;T-H;P-WD-P-F-TF-SDR;none;T-H-P-WD-P-F-TF-SDR;Throughfall;NA
+sav4;savanna;36;Y;353572;9633371;37.68287222;-3.318823282;T-H;P-SDR;WD-TF;T-H-P-SDR-WD-TF;Throughfall;NA
+nkw1;Nkweseko garden;64;N;304436;9648105;37.24081165;-3.184944217;FULL-F;none;CBT;CBT;CBT;NA
+kmtc1;NA;NA;N;303902;9632817;NA;NA;DSLR;none;none;DSLR;DSLR;<a href='http://www.staff.uni-marburg.de/~appelhat/20120615_tlc_example.jpg' target='_blank'>Example image</a>
+kmtc2;NA;NA;N;303102;9632817;NA;NA;DSLR;none;none;DSLR;DSLR;<a href='http://www.staff.uni-marburg.de/~appelhat/20120615_tlc_example.jpg' target='_blank'>Example image</a>
+jul1;forest Podocarpus disturbed;45;N;307050;9657771;37.26461637;-3.097530965;none;none;none;none;none;NA
+jul2;Helichrysum;62;N;309388;9659891;37.28567905;-3.078394236;none;none;none;none;none;NA
+jul3;Helichrysum;62;N;310338;9663426;37.29427543;-3.046440926;none;none;none;none;none;NA
+eph1;forest lower montane;33;N;335294;9641977;NA;NA;none;P;none;P;none;NA
+gra0;grassland;34;N;304636;9648393;37.24275674;-3.182299505;none;none;none;none;none;NA
+kid1;scientific garden;63;N;323752;9635334;37.41426647;-3.301725946;none;none;none;none;none;NA
+kid2;scientific garden;63;N;320185;9631524;37.38235902;-3.335116842;none;none;none;none;none;NA
+kid3;scientific garden;63;N;319624;9631909;37.377362;-3.331591;none;none;none;none;none;NA
+kil1;NA;NA;N;328819;9641755;NA;NA;none;P;none;P;none;NA
+man1;NA;NA;N;334735;9648514;NA;NA;none;P;none;P;none;NA

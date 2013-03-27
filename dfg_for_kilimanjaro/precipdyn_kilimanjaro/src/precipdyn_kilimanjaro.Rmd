@@ -1,0 +1,318 @@
+################################################################################
+##  
+##  This program converts TRMM NetCDF data to Idrisi RST format and evaluates
+##  the TRMM time series against an in-situ record at Moshi, Tansania.
+##  
+################################################################################
+##
+##  Copyright (C) 2013 Thomas Nauss, Tim Appelhans
+##
+##  This program is free software: you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation, either version 3 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+##  Please send any comments, suggestions, criticism, or (for our sake) bug
+##  reports to admin@environmentalinformatics-marburg.de
+##
+################################################################################
+
+Evaluation of rainfall dynamics at Mt. Kilimanjaro
+================================================================================
+
+Plot and correct station meassurements.
+--------------------------------------------------------------------------------
+```{r, message=FALSE, warning=FALSE, eval=TRUE, fig.width = 10, fig.height = 10}
+# Load libraries
+library(lattice)
+library(mgcv)
+library(gamair)
+# Script from http://www.student.unibe.ch/user/phaenggi/rscripts.html
+source("M:/lcd_kilimanjaro/R/ecosysdyn/src/precipitation/snht.R")
+
+# Check operation system for subsequent path definition.
+actsys <- Sys.info()['sysname']
+if (actsys == "Windows") {
+  wd <- "M:/lcd_kilimanjaro/rainfall/ghcn"
+  setwd(wd)
+} else {
+  wd <- "/media/mobile/lcd_kilimanjaro/rainfall/ghcn"
+  setwd(wd)
+}
+
+# Read monthly GHCN data
+mghcn <- read.csv("noaa-ncdc_64603_monthly_summaries_GHCN-Daily_east_africa.csv", 
+                  header=TRUE, sep = ";")
+mghcn$DATE <- as.Date(strptime(mghcn$DATE , "%Y%m%d"))
+mghcn <- mghcn[order(mghcn$LATITUDE, decreasing = TRUE), ]
+
+stations <- unique(mghcn$STATION)
+# stations <- subset(stations, grepl('GHCND:ET000063453', stations) == FALSE &
+#                    grepl('GHCND:ET000063451', stations) == FALSE &
+#                    grepl('GHCND:ET000063403', stations) == FALSE &
+#                    grepl('GHCND:MV000043555', stations) == FALSE &
+#                    grepl('GHCND:MI000067588', stations) == FALSE &
+#                    grepl('GHCND:MA000067019', stations) == FALSE)
+
+# Stations near Kilimanjaro region
+stations <- c("GHCND:TZ000063790", "GHCND:KE000063740", "GHCND:KE000063820", 
+              "GHCND:TZ000063733", "GHCND:TZ000063756", "GHCND:TZ000063789", 
+              "GHCND:TZ000063790", "GHCND:TZ000063791", "GHCND:TZ000063816", 
+              "GHCND:TZ000063832", "GHCND:TZ000063894")
+
+par(mfrow=c(4,1))
+for (i in stations) {
+  act.station <- subset(mghcn, mghcn$STATION == i)
+  act.station_name <- unique(act.station$STATION_NAME)
+  act.station_country <- unique(act.station$COUNTRY)
+  act.station_id <- unique(act.station$STATION)
+  act.station_lat <- unique(act.station$LATITUDE)
+  act.station_lon <- unique(act.station$LONGITUDE)
+  act.station_elv <- unique(act.station$ELEVATION)
+  act.station <- subset(act.station, 
+                      act.station$DATE == unique(act.station$DATE) &
+                      act.station$TPCP < 9000.0)
+  act_quantile <- quantile(act.station$TPCP, 0.95)
+  act.station <- subset(act.station, act.station$TPCP < act_quantile)
+  lat_target = act.station_lat
+  lon_target = act.station_lon
+  
+  if (length(act.station$TPCP) > 0) {
+    # Correlation
+    act.station.sm <- cor.test(act.station$TPCP, time(act.station$DATE), 
+                               method="spearman", alternative = "two.sided")
+    act.station.mk <- cor.test(act.station$TPCP, time(act.station$DATE), 
+                               method="kendall", alternative = "two.sided")
+    # Linear model
+    act.station.lm <- lm(act.station$TPCP ~ act.station$DATE)
+    
+    # STL
+    act.station.ts <- ts(act.station$TPCP, 
+                         start=as.numeric(format(head(act.station$DATE, 1), format = "%Y")), freq=12)
+    act.station.stl <- stl((act.station.ts),s.window="periodic")
+    act.station.ts.lm <- lm(act.station.ts ~ time(act.station.ts))
+    
+    # GAM
+    length(act.station$DATE)
+    act.station$MONTH <- as.numeric(format(act.station$DATE, format = "%m"))
+    act.station$DATEN <- time(time(act.station.ts))
+    act.station.mod <- gamm(TPCP ~ s(MONTH, bs="cc") + s(DATEN, bs="cr"),
+                            data = act.station)
+    act.station.mod.pred <- predict(act.station.mod$gam, 
+                                    newdata = act.station, type = "terms")
+    act.station.mod.pred.rains <- attr(act.station.mod.pred, "constant") + 
+                                  act.station.mod.pred[,1]
+    act.station.mod.pred.raina <- attr(act.station.mod.pred, "constant") + 
+                                  act.station.mod.pred[,2]
+    # info <- tail(act.station.mod.pred[,2], 1) - 
+    #   head(act.station.mod.pred[,2], 1)
+
+    # Plot STL results
+    plot(act.station.stl, main = paste(act.station_name, act.station_country,
+                                       "MK", 
+                                       round(act.station.mk$estimate, 
+                                             digits = 3), sep=", "))
+    par(new=FALSE)
+    plot(act.station.ts, 
+         main = paste(act.station_name, act.station_country, 
+                      "MK", 
+                      round(act.station.mk$estimate, digits = 3), sep=", "), 
+         xlab = "Time", ylab = "Rainfall",
+         ylim = range(act.station.ts),
+         type = 'l', col = 'blue')
+    abline(act.station.ts.lm, col = "darkgreen")
+    par(new=TRUE)
+    plot(act.station.stl$time.series[,'trend'], 
+         xlab = "", ylab = "",
+         ylim = range(act.station.ts),
+         type = 'l', col = 'red')
+    par(new=TRUE)
+    plot(act.station.stl$time.series[,'seasonal'], 
+         xlab = "", ylab = "",
+         ylim = range(act.station.ts),
+         type = 'l', col = 'green')
+    par(new=TRUE)
+    plot(act.station.mod.pred.raina,
+         ylim = range(act.station.ts),
+         xlab = "", ylab = "", xaxt = "n",
+         type = 'l', col = "red")
+    legend('top', c("Station records","Trend", "Seasonal", "Linear"), 
+           cex=0.5, col=c("blue", "red","green", "darkgreen"), lty = 1)
+    
+    # Plot GAM results    
+    plot(TPCP ~ DATE, data = act.station, 
+         main = paste(act.station_name, act.station_country,
+                                       "MK", 
+                                       round(act.station.mk$estimate, 
+                                             digits = 3), sep=", "),
+         xlab = "Time", ylab = "Rainfall",
+         col = "blue", type = "l")
+    lines(act.station.mod.pred.raina ~ DATE, data = act.station, 
+          col = "red", lwd = 2)
+    lines(act.station.mod.pred.rains ~ DATE, data = act.station, 
+          col = "green", lwd = 1, lty = 2)
+    abline(act.station.lm, col = "darkgreen", lwd = 2)
+    legend('top', c("Station records","Trend", "Seasonal", "Linear"), 
+           cex=0.5, col=c("blue", "red","green", "darkgreen"), lty = 1)
+
+    plot(act.station.mod$gam, pages = 1)
+    
+    # Plot simple statistics
+    plot(act.station$TPCP ~ act.station$DATE,
+         type = 'h', col = 'blue', 
+         main = paste(act.station_name, act.station_country, 
+                      "MK", round(act.station.mk$estimate, digits = 3), sep=", "), 
+         sub = paste(act.station_id, act.station_lat, act.station_lon, act.station_elv, sep=", "),
+         ylab = 'Monthly rainfall [mm]', xlab = 'Date')
+    abline(act.station.lm, col = 'red')
+  }
+}
+```
+
+Test statistics
+--------------------------------------------------------------------------------
+
+In order to identify inhomogeneities in the GHCN rainfall time series, the standard normal homogeneity test from Alexandersson (1986) has been used. A  library readily implemented by Haenggi (2010, see http://www.student.unibe.ch/user/phaenggi/rscripts.html) has been used for the detection which uses  tabulated critical levels from Khaliq and Ouarda (2007). 
+
+The test time periods vary with station data availability. If a station fits into different time series, the station has been testes in all series. The time series range from
+ * 1950 to 1989 for Moshi, Musoma and Mwanza
+ * 1962 to 1989 for Moshi, Musoma, Mwanza, Same and Tabora Airport
+ * 1972 to 1988 for Moshi, Kilimanjaro Airport, Arusha, Same, Jomo Kenyatta International, Musoma, Mwanza, Mombasa and Tabora Airport
+ * 1960 to 2011 for Jomo Kenyatta International, Mombasa and Dar es Salaam Airport
+
+According to the standard normal homogeneity test, the following stations are homogeneous on the 90% significance level:
+ * Moshi (1950 to 1989, 1962 to 1989)
+ * Mwanza (1950 to 1989)
+ * ...
+
+```{r, message=FALSE, warning=FALSE, eval=TRUE, fig.width = 10, fig.height = 10, echo=FALSE}
+
+# Test statistics for rainfall series
+stations.all <- c(list(TIMEPERIOD = c(19500101, 19890101),
+                   DATASETS = c("GHCND:TZ000063790", "GHCND:TZ000063733",
+                                "GHCND:TZ000063756")),
+              list(TIMEPERIOD = c(19620101, 19890101),
+                   DATASETS = c("GHCND:TZ000063790", "GHCND:TZ000063733",
+                                "GHCND:TZ000063756", "GHCND:TZ000063816",
+                                "GHCND:TZ000063832")),
+              list(TIMEPERIOD = c(19720101, 19880101),
+                   DATASETS = c('GHCND:TZ000063790', 'GHCND:TZ000063791', 
+                                'GHCND:TZ000063789', 'GHCND:TZ000063816', 
+                                'GHCND:KE000063740', 'GHCND:TZ000063733',
+                                'GHCND:TZ000063756', 'GHCND:KE000063820',
+                                'GHCND:TZ000063832')),
+              list(TIMEPERIOD = c(19600101, 20110101),
+                   DATASETS = c("GHCND:KE000063740", "GHCND:KE000063820", 
+                                "GHCND:TZ000063894")))
+
+par(mfrow=c(1,1))
+for (i in seq(1, length(stations.all), by = 2)) {
+  date.start <- as.Date(strptime(stations.all[[i]][1], "%Y%m%d"))
+  date.end <- as.Date(strptime(stations.all[[i]][2] , "%Y%m%d"))
+  
+  stations.data <- lapply(seq(length(stations.all[[i+1]])), function(j) {
+    sub <- subset(mghcn, mghcn$STATION == stations.all[[i+1]][j] &
+                  mghcn$DATE >= date.start &
+                  mghcn$DATE <= date.end)
+    return (sub)
+  })
+
+  for (k in seq(1,length(stations.data))) {
+    print(paste(stations.data[[k]]$STATION[1],
+                min(stations.data[[k]]$DATE), 
+                max(stations.data[[k]]$DATE),
+                length(stations.data[[k]]$TPCP), 
+                stations.data[[k]]$STATION_NAME[1],
+                sep = ", "))
+  }
+
+  for (l in seq(1, length(stations.all[[i+1]]))) {
+    station.cand.id <- l
+    station.ref.ids <- 
+      seq(1,length(stations.all[[i+1]]))[which(seq(1,length(stations.all[[i+1]])) != l)]
+    station.cand <- as.matrix(
+      aggregate(stations.data[[station.cand.id]]$TPCP,
+                by=list(strftime(stations.data[[station.cand.id]]$DATE, "%Y")),
+                FUN=sum, na.rm=TRUE))
+    station.cand <-cbind(as.numeric(station.cand[,1]),
+                         as.numeric(station.cand[,2]))
+    colnames(station.cand) <- c("Date", "Rainfall")
+
+    station.ref.temp <- lapply (station.ref.ids, function(m) {
+      ref <-as.matrix(aggregate(stations.data[[m]]$TPCP, 
+                              by=list(strftime(stations.data[[m]]$DATE, "%Y")), 
+                              FUN=sum, na.rm=TRUE))
+    }) 
+  
+    station.ref <- cbind(as.numeric(station.ref.temp[[1]][,1]), 
+                         as.numeric(station.ref.temp[[1]][,2]))
+
+    for (m in seq(2, length(station.ref.ids))) {
+      station.ref <- cbind(station.ref, as.numeric(station.ref.temp[[m]][,2]))
+    }
+
+    colnames(station.ref) <- c("Date", 
+                               paste("Rainfall",
+                                     seq(1,length(station.ref.ids)),sep=""))
+
+    # Building test series Q
+    station.q <- snht.Q(station.cand, station.ref,
+                        method="ratio", min.cor=0.15,
+                        ref.period=c(min(station.cand[,1]),
+                                     max(station.cand[,1])))
+    station.q <- snht.Q(station.cand, station.ref,
+                        method="difference", min.cor=0.15,
+                        ref.period=c(min(station.cand[,1]),
+                                     max(station.cand[,1])))
+    station.res <- snht(station.q$Q, 90)
+
+    # Plot
+#     par(mfrow=c(3,1))
+#     plot(station.cand, type="l",
+#          main = paste(stations.data[[station.cand.id]]$STATION[1], 
+#                       stations.data[[station.cand.id]]$STATION_NAME[1], 
+#                       stations.data[[station.cand.id]]$COUNTRY[1],
+#                       sep = ", "))
+#     plot(station.q$Q, type="l",
+#          main = paste(stations.data[[station.cand.id]]$STATION[1], 
+#                       stations.data[[station.cand.id]]$STATION_NAME[1], 
+#                       stations.data[[station.cand.id]]$COUNTRY[1],
+#                       sep = ", "))
+#     abline(h=station.res$mean.1)
+#     abline(h=station.res$mean.2)
+    plot(station.res$Tv,
+         type="l", 
+         ylim = range(min(station.res$Tv, station.res$Tc),
+                      max(station.res$Tv, station.res$Tc)),
+         main = paste(stations.data[[station.cand.id]]$STATION[1], 
+                      stations.data[[station.cand.id]]$STATION_NAME[1], 
+                      stations.data[[station.cand.id]]$COUNTRY[1],
+                      sep = ", "))
+    abline(v=station.res$T0x, col="Red")
+    abline(h=station.res$Tc, lty="dashed", col="red")
+
+#     par(mfrow=c(4,1))
+#     plot(station.cand, type="l", 
+#          main = paste(stations.data[[station.cand.id]]$STATION[1], 
+#                       stations.data[[station.cand.id]]$STATION_NAME[1], 
+#                       stations.data[[station.cand.id]]$COUNTRY[1],
+#                       sep = ", "))
+#     plot(station.ref, type="l", main="homogeneous reference")
+#     plot(station.q$Q, type="l", main="test series")
+#     plot(station.res$Tv, type="l", main="test statistic",
+#          ylim = range(min(station.res$Tv, station.res$Tc),
+#                       max(station.res$Tv, station.res$Tc)))
+#     abline(v=station.res$T0x, col="red")
+#     abline(h=station.res$Tc, lty="dashed", col="red")
+  }
+}
+```
+

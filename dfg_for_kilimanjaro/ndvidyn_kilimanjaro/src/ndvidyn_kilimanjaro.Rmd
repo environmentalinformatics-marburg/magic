@@ -1,0 +1,536 @@
+################################################################################
+##  
+##  This program analyses NDVI dynamics based on the GIMMS and MODIS datasets.
+##  
+################################################################################
+##
+##  Copyright (C) 2013 Thomas Nauss, Tim Appelhans
+##
+##  This program is free software: you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation, either version 3 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+##  Please send any comments, suggestions, criticism, or (for our sake) bug
+##  reports to admin@environmentalinformatics-marburg.de
+##
+################################################################################
+
+Evaluation of NDVI Dynamics at Mt. Kilimanjaro
+================================================================================
+
+```{r, message=FALSE, warning=FALSE, eval=TRUE, fig.width = 15, fig.height = 15, echo=FALSE}
+### Staging area ###############################################################
+# Load libraries (echo=FALSE,)
+library(lattice)
+library(Kendall)
+library(mgcv)
+library(gamair)
+library(stats)
+library(bfast)
+library (ggplot2)
+library (mapproj)
+library (maps)
+library (maptools)
+
+# Script from http://www.student.unibe.ch/user/phaenggi/rscripts.html
+source("D:/temp/kilimanjaro_ndvi_dynamics/scripts/ndvidyn/src/snht.R")
+
+# Check operation system and set paths.
+actsys <- Sys.info()['sysname']
+path.gis.win <- "D:/temp/kilimanjaro_ndvi_dynamics/gis"
+path.gis.lin <- "/media/mobile/kilimanjaro_ndvi_dynamics/gis"
+path.ghcn.win <- "D:/temp/lcd_kilimanjaro/rainfall/ghcn" 
+path.ghcn.lin <- "/media/mobile/lcd_kilimanjaro/rainfall/ghcn"
+```
+
+
+NDVI dynamics between 1982 and 2006
+--------------------------------------------------------------------------------
+To analyise the vegetation dynamics between 1982 and 2006, the AVHRR-based GIMMS dataset is used. The original GIMMS values have been extracted for 99 pixels centered arround Mt. Kilimanjaro using SAGA GIS.
+The NOAA-AVHRR systems used within this study are
+NOAA 7 for 01/1982 to 02/1985
+NOAA 9 for 03/1985 to 10/1988
+NOAA 11 for 11/1988 to 08/1994
+NOAA 9 for 09/1994 to 01/1995
+NOAA 14 for 02/1995 to 10/2000
+NOAA 16 for 11/2000 to 12/2003
+NOAA 17 for 01/2004 to 12/2006
+```{r, message=FALSE, warning=FALSE, eval=TRUE,echo=FALSE}
+# Read original gimms values for 1982 to 2006 for 99 pixels arround Kilimanjaro,
+# set headers using PIDs and convert date infomration to date object.
+if (actsys == "Windows") {
+  wd <- path.gis.win
+  setwd(wd)
+} else {
+  wd <- path.gis.lin
+  setwd(wd)
+}
+gndvi.org <- read.csv("kilimanjaro_pixels_gimms_srtm_gimms.csv",
+                      header=TRUE, sep = ",")
+colnames(gndvi.org) <- c(colnames(gndvi.org[1]), colnames(gndvi.org[2]),  
+                              paste("PID", 
+                                    apply(gndvi.org[4,3:length(gndvi.org)], 2,
+                                          toString),
+                                    sep="")[1:(length(gndvi.org)-2)])
+gndvi.org$DATE <- as.Date(strptime(paste(gndvi.org$DATE), "%Y-%m-%d"))
+
+# Compute time series analysis and plot information for each of the 99 datasets. 
+i <- 3            # for testing only
+gndvi.org.sdat <- subset(gndvi.org, gndvi.org$DATE > 1900)
+pdf("gndvi_org.pdf")
+gndvi.org.sdat.mk11 <- list()
+gndvi.org.sdat.bfast <- list()
+for (j in 1:(length(gndvi.org)-2)) {
+  i <- j+2
+  print(j)
+  print(gndvi.org[4,i])
+  gndvi.org.sdat.ts <- ts(gndvi.org.sdat[, i], 
+                         start=as.numeric(format(head(gndvi.org.sdat$DATE, 1), 
+                                                 format = "%Y")), freq=12)
+
+  # STL
+  gndvi.org.sdat.ts.stl <- stl((gndvi.org.sdat.ts),
+                               s.window="periodic", t.window=12)
+  
+  gndvi.org.sdat.ts.stl300 <- stl((gndvi.org.sdat.ts),
+                               s.window="periodic", t.window=300)
+  
+  # 11-year running Mann-Kendall trend
+  gndvi.org.sdat.mk11[[j]] <- sapply(seq(15), function(k) {
+    date.start <- 1981 + k
+    date.end <- date.start + 11
+    gndvi.org.sdat.ts.stl.trend <- gndvi.org.sdat.ts.stl$time.series[,'trend']
+    gndvi.org.sdat.ts.stl.trend.sub <- gndvi.org.sdat.ts.stl.trend[
+      time(gndvi.org.sdat.ts.stl.trend)>= date.start &
+      time(gndvi.org.sdat.ts.stl.trend)< date.end]
+    temp.mk <- cor.test(gndvi.org.sdat.ts.stl.trend.sub,
+                        time(seq(from=date.start, to=date.end-1/12, by=1/12)),
+                        method="kendall", alternative = "two.sided")
+    return.mk <- list(PID = j,
+                      DATEMEAN = date.start + (date.end-date.start-1)/2,
+                      tau = temp.mk$estimate,
+                      p = temp.mk$p.value)
+    return(return.mk)
+  })
+  
+  # Correlation
+  gndvi.org.sdat.sm <- cor.test(gndvi.org.sdat.ts.stl300$time.series[,'trend'],
+                                time(gndvi.org.sdat$DATE),
+                                method="spearman", alternative = "two.sided")
+  gndvi.org.sdat.mk <- cor.test(gndvi.org.sdat.ts.stl300$time.series[,'trend'],
+                                time(gndvi.org.sdat$DATE),
+                                method="kendall", alternative = "two.sided")
+
+  # BFAST
+  rdist <- 10/length(gndvi.org.sdat.ts)
+  gndvi.org.sdat.ts.bfit <- bfast(gndvi.org.sdat.ts, h=rdist,
+                                  season="harmonic", max.iter=1, breaks=5)
+  gndvi.org.sdat.ts.bfit.niter <- length(gndvi.org.sdat.ts.bfit$output)
+  gndvi.org.sdat.ts.bfit.final <- gndvi.org.sdat.ts.bfit$output[[
+    gndvi.org.sdat.ts.bfit.niter]]
+  gndvi.org.sdat.ts.bfit.final.breakpoints <- round(as.numeric(
+    format(head(gndvi.org.sdat$DATE, 1),format = "%Y")) + 
+    gndvi.org.sdat.ts.bfit.final$bp.Vt$breakpoints/12, digits=0)
+
+  plot(gndvi.org.sdat.ts.stl,
+         main = paste("PID: ", gndvi.org[4,i],
+                      ", MK: ", round(gndvi.org.sdat.mk$estimate, digits = 3),
+                      ", SC:", round(gndvi.org.sdat.sm$estimate, digits = 3),
+                      ", Years: ", toString(gndvi.org.sdat.ts.bfit.final.breakpoints),
+                      sep=""))
+  
+  gndvi.org.sdat.bfast[[j]] <- c(PID = gndvi.org[4,i],
+                            MK = round(gndvi.org.sdat.mk$estimate, digits = 3),
+                            SM = round(gndvi.org.sdat.sm$estimate, digits = 3),
+                            NIter = gndvi.org.sdat.ts.bfit.niter,
+                            BP = gndvi.org.sdat.ts.bfit.final.breakpoints)
+}
+dev.off()
+gndvi.org.sdat.mk11 <- data.frame(sapply(
+  data.frame(t(do.call("cbind", gndvi.org.sdat.mk11))), unlist))
+gndvi.org.sdat.bfast <- data.frame(t(do.call("cbind", gndvi.org.sdat.bfast)))
+write.table(gndvi.org.sdat.mk11, file="test-mk.csv", sep = ";", dec = ",")
+write.table(gndvi.org.sdat.bfast, file="test-bf.csv", sep = ";", dec = ",")
+
+pdf("test.pdf")
+graphics.off()
+par(mfrow=c(10,11)) 
+par(mar=c(1,1,1,4)*0.5) 
+par(oma=c(1,1,1,1)*1.5) 
+dummy <- sapply(seq(length(gndvi.org.sdat)-2), function(i){
+  gndvi.org.sdat.mk11.subset <- subset(gndvi.org.sdat.mk11,
+                                       gndvi.org.sdat.mk11$PID == i)
+  gndvi.org.sdat.bfast.subset <- subset(gndvi.org.sdat.bfast,
+                                        gndvi.org.sdat.bfast$PID == i)
+#   plot(gndvi.org.sdat.mk11.subset$tau ~ gndvi.org.sdat.mk11.subset$DATE,
+#        col = 'red', type = 'o',
+#        ylim = range(-0.5, 0.5), xlab = "Date", ylab = "Mann-Kendall's tau",
+#        main = paste("Mann-Kendalls's tau, ",
+#                     "PID ", i, sep=""))
+  plot(gndvi.org.sdat.mk11.subset$tau ~ gndvi.org.sdat.mk11.subset$DATE,
+       col = 'red', type = 'o', xlab="", ylab="", main="", labels = FALSE,
+       ylim = range(-0.5, 0.5))
+  abline(h = 0, col = 'grey')
+  abline(v = c(gndvi.org.sdat.bfast.subset
+               [5:length(gndvi.org.sdat.bfast.subset)]),
+         col = 'blue', lty = "dotted")
+})
+  
+hist(gndvi.org.stat$BYEAR)
+hist(gndvi.org.stat$PID, breaks=2)
+
+subset(gndvi.org.stat, gndvi.org.stat$BYEAR > 1900)
+gndvi.org.stat[with(gndvi.org.stat, order(BYEAR)), ]
+plot(gndvi.org.stat$PID ~ gndvi.org.stat$BYEAR, labels=TRUE)
+plot(gndvi.org.stat$PID ~ gndvi.org.stat$MK, labels=TRUE)
+x <- 1:11
+y <- 1:9
+t <- data.frame(aggregate(gndvi.org.stat$MK ~ gndvi.org.stat$PID,FUN="mean")[,2])
+t$PID <- seq(1:99)
+t$lat <- gndvi.org[3,101]
+t$lon <- gndvi.org[2,101]
+t1 <- matrix(t, 11,9)
+filled.contour(x,y,t1, axes=TRUE, )
+
+
+
+
+# for (i in 3:length(gndvi.org)) {
+#   print(gndvi.org[4,i])
+#   gndvi.org.sdat.ts <- ts(gndvi.org.sdat[, i], 
+#                          start=as.numeric(format(head(gndvi.org.sdat$DATE, 1), 
+#                                                  format = "%Y")), freq=12)
+# 
+#   # Correlation
+#   gndvi.org.sdat.sm <- cor.test(gndvi.org.sdat[, i], time(gndvi.org.sdat$DATE),
+#                            method="spearman", alternative = "two.sided")
+#   gndvi.org.sdat.mk <- cor.test(gndvi.org.sdat[, i], time(gndvi.org.sdat$DATE),
+#                            method="kendall", alternative = "two.sided")
+#   
+# #   # Linear model
+# #   gndvi.org.sdat.lm <- lm(gndvi.org.sdat[, i] ~ gndvi.org.sdat$DATE)
+# 
+#   # STL
+# #   gndvi.org.sdat.ts.stl <- stl((gndvi.org.sdat.ts),
+# #                                s.window="periodic", t.window=12)
+# #   gndvi.org.sdat.ts.lm <- lm(gndvi.org.sdat.ts ~ time(gndvi.org.sdat.ts))
+# #   gndvi.org.sdat.stl120 <- stl((gndvi.org.sdat.ts),
+# #                                s.window="periodic", t.window=120)
+# #   gndvi.org.sdat.stl300 <- stl((gndvi.org.sdat.ts),
+# #                                s.window="periodic", t.window=300)
+# 
+#   # BFAST
+#   rdist <- 10/length(gndvi.org.sdat.ts)
+#   gndvi.org.sdat.ts.bfit <- bfast(gndvi.org.sdat.ts, h=rdist,
+#                                   season="harmonic", max.iter=1, breaks=5)
+#   gndvi.org.sdat.ts.bfit.niter <- length(gndvi.org.sdat.ts.bfit$output)
+#   gndvi.org.sdat.ts.bfit.final <- gndvi.org.sdat.ts.bfit$output[[
+#     gndvi.org.sdat.ts.bfit.niter]]
+#   gndvi.org.sdat.ts.bfit.final.breakpoints <- round(as.numeric(
+#     format(head(gndvi.org.sdat$DATE, 1),format = "%Y")) + 
+#     gndvi.org.sdat.ts.bfit.final$bp.Vt$breakpoints/12, digits=0)
+# 
+# #   # GAM
+# #   gndvi.org.sdat$MONTH <- as.numeric(format(gndvi.org.sdat$DATE, format = "%m"))
+# #   gndvi.org.sdat$DATEN <- time(time(gndvi.org.sdat.ts))
+# # 
+# #   gndvi.org.sdat.mod <- gamm(gndvi.org.sdat[, i] ~ s(MONTH) + s(DATEN),
+# #                         data = gndvi.org.sdat)
+# #   gndvi.org.sdat.mod.pred <- predict(gndvi.org.sdat.mod$gam, 
+# #                                 newdata = gndvi.org.sdat, type = "terms")
+# #   gndvi.org.sdat.mod.pred.rains <- attr(gndvi.org.sdat.mod.pred, "constant") + 
+# #                                    gndvi.org.sdat.mod.pred[,1]
+# #   gndvi.org.sdat.mod.pred.raina <- attr(gndvi.org.sdat.mod.pred, "constant") + 
+# #                                    gndvi.org.sdat.mod.pred[,2]
+# 
+#   # Plot STL result
+#   print(paste("PID: ", gndvi.org[4,i],
+#         ", MK: ", round(gndvi.org.sdat.mk$estimate, digits = 3),
+#         ", SC: ", round(gndvi.org.sdat.sm$estimate, digits = 3),
+#         ", Years: ", toString(gndvi.org.sdat.ts.bfit.final.breakpoints)))
+# #   par(mfrow=c(1,1)) 
+# #    plot(gndvi.org.sdat.ts.stl,
+# #         main = paste("PID: ", gndvi.org[4,i],
+# #                      ", MK: ", round(gndvi.org.sdat.mk$estimate, digits = 3),
+# #                      ", SC:", round(gndvi.org.sdat.sm$estimate, digits = 3),
+# #                      ", Years: ", toString(gndvi.org.sdat.ts.bfit.final.breakpoints),
+# #                      sep=""))
+# 
+# #   # Plot BFAST results
+# #   plot(gndvi.org.sdat.ts.bfit, main = i)
+# #   plot(gndvi.org.sdat.ts.bfit, ANOVA=TRUE)
+# #   plot(gndvi.org.sdat.ts.bfit, type="trend", largest=TRUE)
+# #   plot(gndvi.org.sdat.ts.bfit, type="all")
+# #   par(mfrow=c(2,1))
+# #   plot(gndvi.org.sdat.ts.bfit.final$Vt, ylim = range(gndvi.org.sdat.ts.bfit.final$Vt))
+# #   par(new=TRUE)
+# #   plot(gndvi.org.sdat.ts.bfit.final$Tt, col='blue', ylim = range(gndvi.org.sdat.ts.bfit.final$Vt))
+# #   str(gndvi.org.sdat.ts.bfit.final$bp.Vt$breakpoints)
+# #   plot(gndvi.org.sdat.ts.bfit.final$Wt, ylim = range(gndvi.org.sdat.ts.bfit.final$Wt))
+# #   par(new=TRUE)
+# #   plot(gndvi.org.sdat.ts.bfit.final$St, col='red', ylim = range(gndvi.org.sdat.ts.bfit.final$Wt))
+#   
+#   # Plot combined STL results
+# #   par(new=FALSE)
+# #   plot(gndvi.org.sdat.ts, 
+# #        main = paste(i, "MK-tau/MK-P/R2/R2", 
+# #                     round(gndvi.org.sdat.mk$estimate, digits = 3), 
+# #                     round(gndvi.org.sdat.mk$p.value, digits = 3), 
+# #                     round(summary(gndvi.org.sdat.ts.lm)$r.squared, digits = 4),
+# #                     round(summary(gndvi.org.sdat.lm)$r.squared, digits = 4),
+# #                     sep=", "), 
+# #        xlab = "Time", ylab = "NDVI",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.org.sdat.ts),
+# #        axes=T, type = 'l', col = 'green')
+# #   abline(gndvi.org.sdat.ts.lm, col = "darkgreen", lwd = 2)
+# #   par(new=TRUE)
+# #   plot(gndvi.org.sdat.stl$time.series[,'trend'], 
+# #        xlab = "", ylab = "",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.org.sdat.ts),
+# #        axes=T, type = 'l', col = 'red', lwd = 2)
+# #   par(new=TRUE)
+# #   plot(gndvi.org.sdat.stl120$time.series[,'trend'], 
+# #        xlab = "", ylab = "",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.org.sdat.ts),
+# #        axes=T, type = 'l', col = 'purple', lwd = 2)
+# #   par(new=TRUE)
+# #   plot(gndvi.org.sdat.stl300$time.series[,'trend'], 
+# #        xlab = "", ylab = "",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.org.sdat.ts),
+# #        axes=T, type = 'l', col = 'orange', lwd = 2)
+# # #   par(new=TRUE)
+# # #   plot(gndvi.elev.org.mod.pred.raina,
+# # #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# # #        xlab = "", ylab = "", xaxt = "n",
+# # #        axes=T, type = 'l', col = "red")
+# #   par(new=TRUE)
+# #   plot(act.station.stl$time.series[,'trend'], 
+# #          xlab = "", ylab = "",
+# #          xlim = range(1982, 2006),
+# #          ylim = range(-500, 2500),
+# #          axes=F, type = 'l', col = 'blue')
+# #   axis(side=4, ylim = range(0, 2000))
+# #   legend('top', c("GIMMS", "lm trend", "stl 18m", "stl 120m", "stl 300m",
+# #                   paste("Rainfall", act.station_name, act.station_country, 
+# #                         sep = " ")), 
+# #          cex=0.5, col=c("green", "darkgreen", "red", "purple", "orange", "blue"), lty = 1)
+# }
+
+
+
+
+
+
+
+
+
+
+
+# gndvi.elev.org.levels <- colnames(gndvi.elev.org[3:length(gndvi.elev.org)])
+# 
+# # GHCN dataset for selected stations in Africa
+# if (actsys == "Windows") {
+#   wd <- path.ghcn.win
+#   setwd(wd)
+# } else {
+#   wd <- path.ghcn.lin
+#   setwd(wd)
+# }
+# ghcn <- read.csv("noaa-ncdc_64603_monthly_summaries_GHCN-Daily_east_africa.csv", 
+#                  header=TRUE, sep = ";")
+# ghcn$DATE <- as.Date(strptime(ghcn$DATE , "%Y%m%d"))
+# ghcn$TPCP <- ghcn$TPCP / 10.0
+# ghcn <- ghcn[order(ghcn$LATITUDE, decreasing = TRUE), ]
+# 
+# 
+# # Analyse and plot dataset for each height level
+# #par(mfrow=c(1,1))
+# i <- "H3000"
+# stations <- "GHCND:KE000063740"
+# 
+# for (i in gndvi.elev.org.levels) {
+#   # Correlation
+#   gndvi.elev.org.sm <- cor.test(gndvi.elev.org[, i], time(gndvi.elev.org$DATE), 
+#                            method="spearman", alternative = "two.sided")
+#   gndvi.elev.org.mk <- cor.test(gndvi.elev.org[, i], time(gndvi.elev.org$DATE), 
+#                            method="kendall", alternative = "two.sided")
+#   # Linear model
+#   gndvi.elev.org.lm <- lm(gndvi.elev.org[, i] ~ gndvi.elev.org$DATE)
+# 
+#   # STL
+#   gndvi.elev.org.ts <- ts(gndvi.elev.org[, i], 
+#                          start=as.numeric(format(head(gndvi.elev.org$DATE, 1), 
+#                                                  format = "%Y")), freq=12)
+#   gndvi.elev.org.stl <- stl((gndvi.elev.org.ts),s.window="periodic", t.window=12)
+#   gndvi.elev.org.ts.lm <- lm(gndvi.elev.org.ts ~ time(gndvi.elev.org.ts))
+#   gndvi.elev.org.stl120 <- stl((gndvi.elev.org.ts),s.window="periodic", t.window=120)
+#   gndvi.elev.org.stl300 <- stl((gndvi.elev.org.ts),s.window="periodic", t.window=300)
+#   
+#   # BFAST
+#   rdist <- 10/length(gndvi.elev.org.ts)
+#   gndvi.elev.org.bfit <- bfast(gndvi.elev.org.ts, h=rdist, season="harmonic", max.iter=1, breaks=5)
+# 
+#   # GAM
+#   gndvi.elev.org$MONTH <- as.numeric(format(gndvi.elev.org$DATE, format = "%m"))
+#   gndvi.elev.org$DATEN <- time(time(gndvi.elev.org.ts))
+#   
+#   
+#   #gndvi.elev.org.mod <- gamm(gndvi.elev.org[, i] ~ s(MONTH, bs="cc") + s(DATEN, bs="cr"),
+#   #                      data = gndvi.elev.org)
+#   gndvi.elev.org.mod <- gamm(gndvi.elev.org[, i] ~ s(MONTH) + s(DATEN),
+#                         data = gndvi.elev.org)
+#   gndvi.elev.org.mod.pred <- predict(gndvi.elev.org.mod$gam, 
+#                                 newdata = gndvi.elev.org, type = "terms")
+#   gndvi.elev.org.mod.pred.rains <- attr(gndvi.elev.org.mod.pred, "constant") + 
+#                                    gndvi.elev.org.mod.pred[,1]
+#   gndvi.elev.org.mod.pred.raina <- attr(gndvi.elev.org.mod.pred, "constant") + 
+#                                    gndvi.elev.org.mod.pred[,2]
+# 
+#   # GHCN Rainfall trend
+#   act.station <- subset(ghcn, ghcn$STATION == stations)
+#   act.station <- subset(act.station, 
+#                         act.station$DATE == unique(act.station$DATE) &
+#                         act.station$TPCP < 9000.0)
+#   act_quantile <- quantile(act.station$TPCP, 0.95)
+#   act.station <- subset(act.station, act.station$TPCP < act_quantile)
+#   act.station_name <- unique(act.station$STATION_NAME)
+#   act.station_country <- unique(act.station$COUNTRY)
+#   act.station.ts <- ts(act.station$TPCP, 
+#                        start=as.numeric(format(head(act.station$DATE, 1), format = "%Y")), freq=12)
+#   act.station.stl <- stl((act.station.ts),s.window="periodic")
+#   act.station.ts.lm <- lm(act.station.ts ~ time(act.station.ts))
+# 
+#   # Plot STL results
+#   plot(gndvi.elev.org.stl, main = paste(i, "MK", 
+#                                    round(gndvi.elev.org.mk$estimate, digits = 3),
+#                                    sep=", "),)
+# 
+#   # Plot BFAST results
+#   plot(gndvi.elev.org.bfit, main = i)
+#   plot(gndvi.elev.org.bfit, ANOVA=TRUE)
+#   plot(gndvi.elev.org.bfit, type="trend", largest=TRUE)
+#   plot(gndvi.elev.org.bfit, type="all")
+#   niter <- length(gndvi.elev.org.bfit$output)
+#   out <- gndvi.elev.org.bfit$output[[niter]]
+#   
+#   # Plot combined STL results
+#   par(new=FALSE)
+#   plot(gndvi.elev.org.ts, 
+#        main = paste(i, "MK-tau/MK-P/R2/R2", 
+#                     round(gndvi.elev.org.mk$estimate, digits = 3), 
+#                     round(gndvi.elev.org.mk$p.value, digits = 3), 
+#                     round(summary(gndvi.elev.org.ts.lm)$r.squared, digits = 4),
+#                     round(summary(gndvi.elev.org.lm)$r.squared, digits = 4),
+#                     sep=", "), 
+#        xlab = "Time", ylab = "NDVI",
+#        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+#        axes=T, type = 'l', col = 'green')
+#   abline(gndvi.elev.org.ts.lm, col = "darkgreen", lwd = 2)
+#   par(new=TRUE)
+#   plot(gndvi.elev.org.stl$time.series[,'trend'], 
+#        xlab = "", ylab = "",
+#        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+#        axes=T, type = 'l', col = 'red', lwd = 2)
+#   par(new=TRUE)
+#   plot(gndvi.elev.org.stl120$time.series[,'trend'], 
+#        xlab = "", ylab = "",
+#        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+#        axes=T, type = 'l', col = 'purple', lwd = 2)
+#   par(new=TRUE)
+#   plot(gndvi.elev.org.stl300$time.series[,'trend'], 
+#        xlab = "", ylab = "",
+#        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+#        axes=T, type = 'l', col = 'orange', lwd = 2)
+# #   par(new=TRUE)
+# #   plot(gndvi.elev.org.mod.pred.raina,
+# #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# #        xlab = "", ylab = "", xaxt = "n",
+# #        axes=T, type = 'l', col = "red")
+#   par(new=TRUE)
+#   plot(act.station.stl$time.series[,'trend'], 
+#          xlab = "", ylab = "",
+#          xlim = range(1982, 2006),
+#          ylim = range(-500, 2500),
+#          axes=F, type = 'l', col = 'blue')
+#   axis(side=4, ylim = range(0, 2000))
+#   legend('top', c("GIMMS", "lm trend", "stl 18m", "stl 120m", "stl 300m",
+#                   paste("Rainfall", act.station_name, act.station_country, 
+#                         sep = " ")), 
+#          cex=0.5, col=c("green", "darkgreen", "red", "purple", "orange", "blue"), lty = 1)
+#   
+#   
+# # Plot STL results overlayed in one plot and with linear model, GAMS prediction and rainfall
+# #   par(new=FALSE)
+# #   plot(gndvi.elev.org.ts, 
+# #        main = paste(i, "MK-tau/MK-P/R2/R2", 
+# #                     round(gndvi.elev.org.mk$estimate, digits = 3), 
+# #                     round(gndvi.elev.org.mk$p.value, digits = 3), 
+# #                     round(summary(gndvi.elev.org.ts.lm)$r.squared, digits = 4),
+# #                     round(summary(gndvi.elev.org.lm)$r.squared, digits = 4),
+# #                     sep=", "), 
+# #        xlab = "Time", ylab = "NDVI",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# #        axes=T, type = 'l', col = 'green')
+# #   abline(gndvi.elev.org.ts.lm, col = "darkgreen")
+# #   #axis(side=1, xlim = range(1982, 2006))
+# #   #axis(side=2, ylim = range(gndvi.elev.org.ts))
+# #   par(new=TRUE)
+# #   plot(gndvi.elev.org.stl$time.series[,'trend'], 
+# #        xlab = "", ylab = "",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# #        axes=T, type = 'l', col = 'red')
+# #   par(new=TRUE)
+# #   plot(gndvi.elev.org.stl$time.series[,'seasonal'], 
+# #        xlab = "", ylab = "",
+# #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# #        axes=T, type = 'l', col = 'blue')
+# #   par(new=TRUE)
+# #   plot(gndvi.elev.org.mod.pred.raina,
+# #        xlim = range(1982, 2006), ylim = range(gndvi.elev.org.ts),
+# #        xlab = "", ylab = "", xaxt = "n",
+# #        axes=T, type = 'l', col = "red")
+# #   par(new=TRUE)
+# #   plot(act.station.stl$time.series[,'trend'], 
+# #          xlab = "", ylab = "",
+# #          xlim = range(1982, 2006),
+# #          ylim = range(-500, 2500),
+# #          axes=F, type = 'l', col = 'blue')
+# #   axis(side=4, ylim = range(0, 2000))
+# #   legend('top', c("Satellite observation","Trend", "Linear", 
+# #                   paste("Rainfall", act.station_name, act.station_country, 
+# #                         sep = " ")), 
+# #          cex=0.5, col=c("green", "red", "darkgreen", "blue"), lty = 1)
+# #   
+#   # Plot GAM results    
+#   plot(gndvi.elev.org[, i] ~ DATE, data = gndvi.elev.org, 
+#        main = paste(i, "MK-tau/MK-P/R2/R2", 
+#                     round(gndvi.elev.org.mk$estimate, digits = 3), 
+#                     round(gndvi.elev.org.mk$p.value, digits = 3), 
+#                     round(summary(gndvi.elev.org.ts.lm)$r.squared, digits = 4),
+#                     round(summary(gndvi.elev.org.lm)$r.squared, digits = 4),
+#                     sep=", "), 
+#        xlab = "Time", ylab = "NDVI",
+#        col = "green", type = "l")
+#   lines(gndvi.elev.org.mod.pred.raina ~ DATE, data = gndvi.elev.org, 
+#         col = "red", lwd = 2)
+#   lines(gndvi.elev.org.mod.pred.rains ~ DATE, data = gndvi.elev.org, 
+#         col = "blue", lwd = 1, lty = 2)
+#   abline(gndvi.elev.org.lm, col = "darkgreen")
+#   legend('top', c("Satellite observation","Trend", "Seasonal", "Linear"), 
+#          cex=0.5, col=c("green", "red", "blue", "darkgreen"), lty = 1)
+# 
+#   plot(gndvi.elev.org.mod$gam, pages = 1, 
+#        main = paste(i, "MK", round(gndvi.elev.org.mk$estimate, digits = 3), 
+#                     sep=", "))
+# }
+```
+
