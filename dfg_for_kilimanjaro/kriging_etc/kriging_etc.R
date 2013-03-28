@@ -185,8 +185,8 @@ library(randomForest)
 
 ###### Kriging #################################################################
 eval.sample.size <- 10
-days <- 98:99
-ncycles <- 2
+days <- 1:152
+ncycles <- 50
 
 stations <- read.csv("/media/windows/tappelhans/uni/marburg/lehre/students/ZA/kordillaMarie/Ta_ele_asp_slp_ndvi_clean.csv",
                      stringsAsFactors = FALSE)
@@ -233,7 +233,6 @@ for (i in days) {
     scale.min <- min(c(Ta_pred[, 1], stns.pred$Ta_200)) - 1
     scale.max <- max(c(Ta_pred[, 1], stns.pred$Ta_200)) + 1 
     
-    rsq <- summary(lm(Ta_pred[, 1] ~ stns.pred$Ta_200))$r.squared
     day <- i
     cycle <- j
     df <- data.frame(day, cycle, stns.pred$Ta_200, Ta_pred[, 1])
@@ -312,7 +311,7 @@ for (i in days) {
                  hidden.layer = "sigmoid", output.layer = "purelin", 
                  method = "ADAPTgdwm")
     
-    trainedANN <- train(ann, train.inpt, train.trgt, show.step=1, n.shows=1000)
+    trainedANN <- train(ann, train.inpt, train.trgt, show.step=1, n.shows=10)
     
     pred.list <- lapply(seq(nrow(stns.pred)), function(m) {
       pred.tmp <- stns.pred@data[m, "Ta_200"]
@@ -348,10 +347,10 @@ for (i in days) {
                           each = nrow(stns.train)))
     fit <- aggregate(fit[, 1], by = list(fit[, 2]), FUN = mean)
     
-    rsq.nn <- summary(lm(fit$x ~ unique(pred.trgt)))$r.squared
     day <- i
     cycle <- j
-    df.nn <- data.frame(day, cycle, unique(pred.trgt), fit$x)
+    
+    df.nn <- data.frame(day, cycle, stns.pred$Ta_200, fit$x)
     
     write.table(df.nn, "../../results/nn.output.txt", col.names = FALSE, row.names = FALSE, 
                 append = TRUE, sep = ",")
@@ -361,7 +360,7 @@ for (i in days) {
     scale.min <- min(c(fit$x, stns.pred$Ta_200)) - 1
     scale.max <- max(c(fit$x, stns.pred$Ta_200)) + 1 
     
-    scatter.nn <- xyplot(fit$x ~ unique(pred.trgt), groups = stns.pred$PlotId,
+    scatter.nn <- xyplot(fit$x ~ stns.pred$Ta_200, groups = stns.pred$PlotId,
                          xlim = c(scale.min, scale.max), pch = 19,
                          ylim = c(scale.min, scale.max), asp = "iso",
                          xlab = "observed", ylab = "predicted", main = title.nn,
@@ -418,7 +417,7 @@ for (i in days) {
                  method = "ADAPTgdwm")
     
     trainedANN <- train(ann, train.inpt.wide, train.trgt.wide, 
-                        show.step=1, n.shows=1000)
+                        show.step=1, n.shows=10)
     
     
     pred.lst.wide <- lapply(seq(nrow(stns.pred)), function(m) {
@@ -468,10 +467,9 @@ for (i in days) {
     
     fit.wide <- sim(trainedANN$net, pred.inpt.wide)
         
-    rsq.nn.wide <- summary(lm(fit.wide ~ unique(pred.trgt)))$r.squared
     day <- i
     cycle <- j
-    df.nn.wide <- data.frame(day, cycle, unique(pred.trgt), fit.wide[, 1])
+    df.nn.wide <- data.frame(day, cycle, stns.pred$Ta_200, fit.wide[, 1])
     
     write.table(df.nn.wide, "../../results/nn.wide.output.txt", col.names = FALSE, row.names = FALSE, 
                 append = TRUE, sep = ",")
@@ -481,7 +479,7 @@ for (i in days) {
     scale.min <- min(c(fit.wide, stns.pred$Ta_200)) - 1
     scale.max <- max(c(fit.wide, stns.pred$Ta_200)) + 1 
     
-    scatter.nn.wide <- xyplot(fit.wide ~ unique(pred.trgt), groups = stns.pred$PlotId,
+    scatter.nn.wide <- xyplot(fit.wide ~ stns.pred$Ta_200, groups = stns.pred$PlotId,
                               xlim = c(scale.min, scale.max), pch = 19,
                               ylim = c(scale.min, scale.max), asp = "iso",
                               xlab = "observed", ylab = "predicted", main = title.nn.wide,
@@ -526,10 +524,9 @@ for (i in days) {
     fit.rf <- aggregate(fit.rf[, 1], by = list(fit.rf[, 2]), FUN = mean)
     
     ## writing prediction 
-    rsq.rf <- summary(lm(fit.rf$x ~ unique(pred.trgt)))$r.squared
     day <- i
     cycle <- j
-    df.rf <- data.frame(day, cycle, unique(pred.trgt), fit.rf$x)
+    df.rf <- data.frame(day, cycle, stns.pred$Ta_200, fit.rf$x)
     
     write.table(df.rf, "../../results/rf.output.txt", col.names = FALSE, row.names = FALSE, 
                 append = TRUE, sep = ",")
@@ -539,7 +536,7 @@ for (i in days) {
     scale.min <- min(c(fit.rf$x, stns.pred$Ta_200)) - 1
     scale.max <- max(c(fit.rf$x, stns.pred$Ta_200)) + 1 
     
-    scatter.rf <- xyplot(fit.rf$x ~ unique(pred.trgt), groups = stns.pred$PlotId,
+    scatter.rf <- xyplot(fit.rf$x ~ stns.pred$Ta_200, groups = stns.pred$PlotId,
                          xlim = c(scale.min, scale.max), pch = 19,
                          ylim = c(scale.min, scale.max), asp = "iso",
                          xlab = "observed", ylab = "predicted", main = title.rf,
