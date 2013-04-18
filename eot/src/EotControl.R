@@ -1,5 +1,5 @@
 EotControl <- function(pred, 
-                       resp, 
+                       resp = NULL, 
                        n = 1, 
                        path.out, 
                        ...) {
@@ -7,8 +7,13 @@ EotControl <- function(pred,
   
   ### Environmental settings
   
+  
   # Required functions
   source("src/EotCycle.R")
+ 
+  # Duplicate predictor set in case predictor and response are identical
+  if (is.null(resp))
+    resp <- pred
   
   
   ### Data processing
@@ -17,19 +22,19 @@ EotControl <- function(pred,
   for (z in seq(n)) {
     # Use initial response data set in case of first iteration
     if (z == 1) {
-      tst <- EotCycle(pred = pred.stck.crp, 
-                      resp = resp.stck.crp, 
+      tst <- EotCycle(pred = pred, 
+                      resp = resp,
                       n = z, 
                       path.out = path.out)
       # Use last entry of slot 'residuals' otherwise  
     } else if (z > 1) {
-      tmp.tst <- EotCycle(pred = pred.stck.crp, 
+      tmp.tst <- EotCycle(pred = pred, 
                           resp = if(!is.list(tst$residuals)) tst$residuals else tst$residuals[[length(tst$residuals)]], 
                           n = z, 
                           path.out = path.out)
       tst <- mapply(FUN = append, tst, tmp.tst, SIMPLIFY = FALSE)
     }
-  }
+  }  
   
   # Return output list
   return(tst)

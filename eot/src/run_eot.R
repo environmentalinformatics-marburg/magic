@@ -34,7 +34,7 @@ pred.stck <- stack(pred.files)
 resp.stck <- stack(resp.files)
 
 # # Artificial cropping
-# pred.stck.crp <- crop(pred.stck, extent(c(-180, -120, -20, 40)))
+# pred.stck.crp <- crop(pred.stck, extent(c(-180, -160, -20, 0)))
 # resp.stck.crp <- crop(resp.stck, extent(c(-160, -130, -10, 20)))
 
 # ## Mock data
@@ -53,11 +53,12 @@ resp.stck <- stack(resp.files)
 
 ## Perform EOT
 
-out <- EotControl(pred = pred.stck, 
-                  resp = resp.stck, 
-                  n = 3, 
-                  path.out = path.out)
-
+system.time({
+  out <- EotControl(pred = pred.stck, 
+                    resp = resp.stck, 
+                    n = 1, 
+                    path.out = path.out)
+})
 
 ### Plotting
 
