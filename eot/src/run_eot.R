@@ -16,49 +16,51 @@ library(compiler)
 library(raster)
 
 # Required functions
+source("src/EotDeseason.R")
+source("src/EotDenoise.R")
 source("src/EotControl.R")
 
 # Launch just-in-time (JIT) compilation
 enableJIT(3)
 
 
-### Data processing 
+### Data import 
 
-## Real data
+pred.files <- list.files(path.data, pattern = "sst.*.rst$", full.names = TRUE, recursive = TRUE)
+resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, recursive = TRUE)
 
-# Data import
-pred.files <- list.files(path.data, pattern = "sst.*.rst$", full.names = TRUE)
-resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE)
+pred.years <- unique(substr(basename(pred.files), 10, 13))
+resp.years <- unique(substr(basename(resp.files), 13, 16))
 
-pred.stck <- stack(pred.files)
-resp.stck <- stack(resp.files)
+pred.stck <- lapply(pred.years, function(i) {
+  stack(pred.files[grep(i, pred.files)])
+})
+resp.stck <- lapply(resp.years, function(i) {
+  stack(resp.files[grep(i, resp.files)])
+})
 
-# # Artificial cropping
-# pred.stck.crp <- crop(pred.stck, extent(c(-180, -160, -20, 0)))
-# resp.stck.crp <- crop(resp.stck, extent(c(-160, -130, -10, 20)))
 
-# ## Mock data
-# 
-# pred.rst.stck <- do.call("stack", lapply(seq(10), function(i) {
-#   pred.rst <- raster(nrows = 15, ncols = 15, xmn= 0, xmx = 10, ymn = 0, ymx = 10)
-#   pred.rst[] <- rnorm(225, 50, 10)
-#   return(pred.rst)
-# })
-# 
-# resp.rst.stck <- do.call("stack", lapply(seq(10), function(i) {
-#   resp.rst <- raster(nrows = 10, ncols = 10, xmn = 0, xmx = 10, ymn = 0, ymx = 10)
-#   resp.rst[] <- rnorm(100, 50, 10)
-#   return(resp.rst)
-# })
+### Deseasoning
 
-## Perform EOT
+pred.stck.dsn <- EotDeseason(data = pred.stck)
+resp.stck.dsn <- EotDeseason(data = resp.stck)
+
+
+### Denoising
+
+pred.stck.dns <- EotDenoise(data = pred.stck.dsn, k = 25)
+resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 5)
+
+
+### EOT
 
 system.time({
-  out <- EotControl(pred = pred.stck, 
-                    resp = resp.stck, 
-                    n = 1, 
+  out <- EotControl(pred = pred.stck.dns, 
+                    resp = resp.stck.dns, 
+                    n = 2, 
                     path.out = path.out)
 })
+
 
 ### Plotting
 

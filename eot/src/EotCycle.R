@@ -122,15 +122,15 @@ EotCycle <- function(pred,
               slp.response = rst.resp.slp,
               residuals = brck.resp.resids)
   
-  # Prepare output file names
-  out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "resp_r", "resp_rsq", "resp_slp"), function(i) {
-    paste("eot", sprintf("%02.f", n), i, sep = "_")
-  })
-  
-  # Store r, r-squared and slope raster images
-  out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.resp.r, rst.resp.rsq, rst.resp.slp), b = unlist(out.name)) %do% {
-                       writeRaster(a, paste(path.out, b, sep = "/"), format = "raster", overwrite = TRUE)
-                     }
+#   # Prepare output file names
+#   out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "resp_r", "resp_rsq", "resp_slp"), function(i) {
+#     paste("eot", sprintf("%02.f", n), i, sep = "_")
+#   })
+#   
+#   # Store r, r-squared and slope raster images
+#   out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.resp.r, rst.resp.rsq, rst.resp.slp), b = unlist(out.name)) %do% {
+#                        writeRaster(a, paste(path.out, b, sep = "/"), format = "raster", overwrite = TRUE)
+#                      }
   
   # Close cluster
   stopCluster(clstr)
