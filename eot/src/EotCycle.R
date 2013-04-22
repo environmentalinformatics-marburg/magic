@@ -2,11 +2,12 @@ EotCycle <- function(pred,
                      resp, 
                      n = 1,
                      path.out,
+                     names.out,
                      ...) {
   
   
   ### Environmental settings
-    
+  
   # Required packages
   stopifnot(require(raster))
   stopifnot(require(doParallel))
@@ -64,7 +65,7 @@ EotCycle <- function(pred,
     tmp.lm <- lm(resp.vals[i, ] ~ pred.vals[maxxy, ])
     coef(tmp.lm)[2] 
   })
-    
+  
   ## Residuals
   
   # Setup brick for residuals
@@ -72,7 +73,7 @@ EotCycle <- function(pred,
                             xmn = xmin(resp), xmx = xmax(resp), 
                             ymn = ymin(resp), ymx = ymax(resp), 
                             nl = nlayers(resp))
-
+  
   # Regression of identified pred pixel with all resp pixels
   resp.resids <- parLapply(clstr, seq(nrow(resp.vals)), function(i) {
     tmp.lm <- lm(resp.vals[i, ] ~ pred.vals[maxxy, ]) # Linear model
@@ -89,8 +90,8 @@ EotCycle <- function(pred,
   
   # Setup raster for r-squared
   rst.pred.r <- raster(nrows = nrow(pred), ncols = ncol(pred), 
-                         xmn = xmin(pred), xmx = xmax(pred), 
-                         ymn = ymin(pred), ymx = ymax(pred))
+                       xmn = xmin(pred), xmx = xmax(pred), 
+                       ymn = ymin(pred), ymx = ymax(pred))
   
   # Fit r in template
   rst.pred.r[] <- parSapply(clstr, seq(nrow(pred.vals)), function(i) {
@@ -107,7 +108,7 @@ EotCycle <- function(pred,
     tmp.lm <- lm(pred.vals[i, ] ~ pred.vals[maxxy, ])
     coef(tmp.lm)[2] 
   })
-
+  
   
   ### Output
   
@@ -122,15 +123,15 @@ EotCycle <- function(pred,
               slp.response = rst.resp.slp,
               residuals = brck.resp.resids)
   
-#   # Prepare output file names
-#   out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "resp_r", "resp_rsq", "resp_slp"), function(i) {
-#     paste("eot", sprintf("%02.f", n), i, sep = "_")
-#   })
-#   
-#   # Store r, r-squared and slope raster images
-#   out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.resp.r, rst.resp.rsq, rst.resp.slp), b = unlist(out.name)) %do% {
-#                        writeRaster(a, paste(path.out, b, sep = "/"), format = "raster", overwrite = TRUE)
-#                      }
+  # Prepare output file names
+  out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "resp_r", "resp_rsq", "resp_slp"), function(i) {
+    paste(names.out, "eot", sprintf("%02.f", n), i, sep = "_")
+  })
+  
+  # Store r, r-squared and slope raster images
+  out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.resp.r, rst.resp.rsq, rst.resp.slp), b = unlist(out.name)) %do% {
+    writeRaster(a, paste(path.out, b, sep = "/"), format = "raster", overwrite = TRUE)
+  }
   
   # Close cluster
   stopCluster(clstr)

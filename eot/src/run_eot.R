@@ -39,6 +39,10 @@ resp.stck <- lapply(resp.years, function(i) {
   stack(resp.files[grep(i, resp.files)])
 })
 
+# Artificial cropping
+pred.stck <- lapply(pred.stck, function(i) crop(i, extent(c(-180, -120, -20, 20))))
+resp.stck <- lapply(resp.stck, function(i) crop(i, extent(c(-160, -120, -10, 10))))
+
 
 ### Deseasoning
 
@@ -54,16 +58,20 @@ resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 5)
 
 ### EOT
 
-system.time({
-  out <- EotControl(pred = pred.stck.dns, 
-                    resp = resp.stck.dns, 
-                    n = 2, 
-                    path.out = path.out)
+# Output filenames
+names.out <- sapply(pred.stck, function(i) {
+  unique(substr(names(i), 1, 13))
 })
+
+out <- EotControl(pred = pred.stck.dns, 
+                  resp = resp.stck.dns, 
+                  n = 2, 
+                  path.out = path.out, 
+                  names.out = names.out)
 
 
 ### Plotting
 
-spplot(out$rsq.predictor)
-spplot(out$rsq.response)
-spplot(out$residuals, 2)
+spplot(out[[6]]$rsq.predictor[[1]])
+spplot(out[[6]]$rsq.response[[1]])
+spplot(out[[6]]$residuals[[1]], 2)
