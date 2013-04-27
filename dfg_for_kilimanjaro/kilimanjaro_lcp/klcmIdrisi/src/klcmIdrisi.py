@@ -124,54 +124,60 @@ def get_aster_datasets(input_aster_path):
         input_aster_path: Top-level path of the ASTER datasets
         
     Returns:
-        ast_dict: Dictionary of ASTER dataset filepaths
+        ASTC_dict: Dictionary of ASTER dataset filepaths
     '''
-    ast_dict = {}
-    ast_dict['AST_B030201'] = input_aster_path + os.sep + \
-        "bands_composites" + os.sep + "AST_B030201.rst"
-    ast_dict['AST_NDVI'] = input_aster_path + os.sep + \
-        "bands_indices" + os.sep + "AST_NDVI.rst"
-    ast_dict['AST_MNF1_SOL'] = input_aster_path + os.sep + \
-        "bands_mnf_sol" + os.sep + "AST_MNF1_SOL.rst"
-    ast_dict['AST_MNF2_SOL'] = input_aster_path + os.sep + \
-        "bands_mnf_sol" + os.sep + "AST_MNF2_SOL.rst"
-    ast_dict['AST_MNF3_SOL'] = input_aster_path + os.sep + \
-        "bands_mnf_sol" + os.sep + "AST_MNF3_SOL.rst"
-    ast_dict['AST_MNF1_SOL_ABF7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF1_SOL_ABF7.rst"
-    ast_dict['AST_MNF1_SOL_I_VFI7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF1_SOL_I_VFI7.rst"
-    ast_dict['AST_MNF1_SOL_MAX3'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF1_SOL_MAX3.rst"
-    ast_dict['AST_MNF1_SOL_SLOPE'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF1_SOL_SLOPE.rst"
-    ast_dict['AST_MNF1_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF1_SOL_SLOPE_MED7.rst"
-    ast_dict['AST_MNF2_SOL_ABF7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF2_SOL_ABF7.rst"
-    ast_dict['AST_MNF2_SOL_I_VFI7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF2_SOL_I_VFI7.rst"
-    ast_dict['AST_MNF2_SOL_MAX3'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF2_SOL_MAX3.rst"
-    ast_dict['AST_MNF2_SOL_SLOPE'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF2_SOL_SLOPE.rst"
-    ast_dict['AST_MNF2_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF2_SOL_SLOPE_MED7.rst"
-    ast_dict['AST_MNF3_SOL_ABF7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF3_SOL_ABF7.rst"
-    ast_dict['AST_MNF3_SOL_I_VFI7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF3_SOL_I_VFI7.rst"
-    ast_dict['AST_MNF3_SOL_MAX3'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF3_SOL_MAX3.rst"
-    ast_dict['AST_MNF3_SOL_SLOPE'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF3_SOL_SLOPE.rst"
-    ast_dict['AST_MNF3_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
-        "bands_mnf_sol_filtered" + os.sep + "AST_MNF3_SOL_SLOPE_MED7.rst"
-    ast_dict['AST_IMNF_123_TER1'] = input_aster_path + os.sep + \
-        "bands_mnf_ter" + os.sep + "AST_IMNF_123_TER1.rst"
-    ast_dict['AST_CLOUDMASK'] = input_aster_path + os.sep + \
-        "cloudmask" + os.sep + "AST_CLOUDMASK.rst"   
-    return ast_dict
+    ASTC_dict = {}
+    #ASTC_dict['ASTC_B030201'] = input_aster_path + os.sep + \
+    #    "bands_composites" + os.sep + "ASTC_B030201.rst"
+    ASTC_dict['ASTC_B01'] = input_aster_path + os.sep + \
+        "bands" + os.sep + "ASTC_B01.rst"
+    ASTC_dict['ASTC_B02'] = input_aster_path + os.sep + \
+        "bands" + os.sep + "ASTC_B02.rst"
+    ASTC_dict['ASTC_B03'] = input_aster_path + os.sep + \
+        "bands" + os.sep + "ASTC_B03.rst"
+    ASTC_dict['ASTC_NDVI'] = input_aster_path + os.sep + \
+        "bands_indices" + os.sep + "ASTC_NDVI.rst"
+    ASTC_dict['ASTC_MNF1_SOL'] = input_aster_path + os.sep + \
+        "bands_mnf_sol" + os.sep + "ASTC_MNF1_SOL.rst"
+    ASTC_dict['ASTC_MNF2_SOL'] = input_aster_path + os.sep + \
+        "bands_mnf_sol" + os.sep + "ASTC_MNF2_SOL.rst"
+    ASTC_dict['ASTC_MNF3_SOL'] = input_aster_path + os.sep + \
+        "bands_mnf_sol" + os.sep + "ASTC_MNF3_SOL.rst"
+    ASTC_dict['ASTC_MNF1_SOL_ABF7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF1_SOL_ABF7.rst"
+    ASTC_dict['ASTC_MNF1_SOL_I_VFI7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF1_SOL_I_VFI7.rst"
+    ASTC_dict['ASTC_MNF1_SOL_MAX3'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF1_SOL_MAX3.rst"
+    ASTC_dict['ASTC_MNF1_SOL_SLOPE'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF1_SOL_SLOPE.rst"
+    ASTC_dict['ASTC_MNF1_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF1_SOL_SLOPE_MED7.rst"
+    ASTC_dict['ASTC_MNF2_SOL_ABF7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF2_SOL_ABF7.rst"
+    ASTC_dict['ASTC_MNF2_SOL_I_VFI7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF2_SOL_I_VFI7.rst"
+    ASTC_dict['ASTC_MNF2_SOL_MAX3'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF2_SOL_MAX3.rst"
+    ASTC_dict['ASTC_MNF2_SOL_SLOPE'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF2_SOL_SLOPE.rst"
+    ASTC_dict['ASTC_MNF2_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF2_SOL_SLOPE_MED7.rst"
+    ASTC_dict['ASTC_MNF3_SOL_ABF7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF3_SOL_ABF7.rst"
+    ASTC_dict['ASTC_MNF3_SOL_I_VFI7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF3_SOL_I_VFI7.rst"
+    ASTC_dict['ASTC_MNF3_SOL_MAX3'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF3_SOL_MAX3.rst"
+    ASTC_dict['ASTC_MNF3_SOL_SLOPE'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF3_SOL_SLOPE.rst"
+    ASTC_dict['ASTC_MNF3_SOL_SLOPE_MED7'] = input_aster_path + os.sep + \
+        "bands_mnf_sol_filtered" + os.sep + "ASTC_MNF3_SOL_SLOPE_MED7.rst"
+    ASTC_dict['ASTC_IMNF_123_TER1_R'] = input_aster_path + os.sep + \
+        "bands_mnf_ter" + os.sep + "ASTC_IMNF_123_TER1_R.rst"
+    ASTC_dict['ASTC_CLOUDMASK'] = input_aster_path + os.sep + \
+        "cloudmask" + os.sep + "ASTC_CLOUDMASK.rst"   
+    return ASTC_dict
 
 
 def get_dem_datasets(input_dem_path):
@@ -184,9 +190,9 @@ def get_dem_datasets(input_dem_path):
         dem_dict: Dictionary of dem dataset filepaths
     '''
     dem_dict = {}
-    dem_dict['DEM_UTM37S'] = input_dem_path + os.sep + "DEM_UTM37S.rst"
-    dem_dict['DEM_UTM37S_SLOPE'] = input_dem_path + os.sep + \
-        "DEM_UTM37S_SLOPE.rst"
+    dem_dict['DEM_epsg-32737'] = input_dem_path + os.sep + "DEM_epsg-32737.rst"
+    dem_dict['DEM_epsg-32737_SLOPE'] = input_dem_path + os.sep + \
+        "DEM_epsg-32737_SLOPE.rst"
     return dem_dict
 
     
@@ -199,7 +205,7 @@ def main():
     RST files as target projection in gdalwarp and can be changed if the error
     no longer occures in a future release.
     
-    python klcmIdrisi.py -i E:\kilimanjaro_landcover\satellite_data\osm_mrg_utm37s -o E:\kilimanjaro_landcover\plots -a E:\kilimanjaro_landcover\satellite_data\ast14dmo_00302282011075438_20111206102625_30591 -d E:\kilimanjaro_landcover\satellite_data\dem
+    python klcmIdrisi.py -i E:\kilimanjaro_landcover\satellite_data\osm_mrg_utm37s -o E:\kilimanjaro_landcover\plots -a E:\kilimanjaro_landcover\satellite_data\ast14dmo_composite -d E:\kilimanjaro_landcover\satellite_data\dem
     '''
     print
     print 'Module: klcmIdrisi'
@@ -224,7 +230,7 @@ def main():
     target_plots = get_target_plots(output_plot_path)
     
     #Get ASTER source datasets
-    ast_dict = get_aster_datasets(input_aster_path)
+    ASTC_dict = get_aster_datasets(input_aster_path)
     
     #Get DEM source datasets
     dem_dict = get_dem_datasets(input_dem_path)
@@ -237,8 +243,8 @@ def main():
         output_path = output_plot_path + os.sep + \
                 target_plot + os.sep
         
-        for entry in ast_dict:
-            input_filepath = ast_dict[entry]
+        for entry in ASTC_dict:
+            input_filepath = ASTC_dict[entry]
             output_filepath = output_path + target_plot + "_" + \
                 os.path.basename(input_filepath)
             osm_dataset = output_path + target_plot + \
@@ -260,17 +266,17 @@ def main():
             IDRISI32.RunModule('WINDOW', idrisi_cmd, 1, '', '', '', '', 1)
 
         #Standardize datasets
-        ast_cloudmask = output_path + target_plot + "_" + \
-            os.path.basename(ast_dict["AST_CLOUDMASK"])
-        for entry in ast_dict:
+        ASTC_cloudmask = output_path + target_plot + "_" + \
+            os.path.basename(ASTC_dict["ASTC_CLOUDMASK"])
+        for entry in ASTC_dict:
             if "CLOUDMASK" not in entry and "B030201" not in entry:
                 input_filepath = output_path + target_plot + "_" + \
-                    os.path.basename(ast_dict[entry])
+                    os.path.basename(ASTC_dict[entry])
                 output_filepath = os.path.dirname(input_filepath) + os.sep + \
                     os.path.splitext(os.path.basename(input_filepath))[0] + \
                     "_SCM.rst"
                 idrisi_cmd = input_filepath + "*" + output_filepath + "*" + \
-                    ast_cloudmask
+                    ASTC_cloudmask
                 IDRISI32.RunModule('STANDARD', idrisi_cmd, 1, '', '', '', '', 1)
         
         for entry in dem_dict:
@@ -282,7 +288,7 @@ def main():
             idrisi_cmd = input_filepath + "*" + output_filepath
             IDRISI32.RunModule('STANDARD', idrisi_cmd, 1, '', '', '', '', 1)
 
-        #Compute osm RGB composites
+        #Compute RGB composites
         input_filepath_red = output_path + target_plot + \
             "_osm_mrg_epsg-32737_1.rst"
         input_filepath_green = output_path + target_plot + \
@@ -294,60 +300,70 @@ def main():
         idrisi_cmd = input_filepath_blue + "*" + input_filepath_green + "*" + \
             input_filepath_red + "*" + output_filepath + "*1*1*2*2"
         IDRISI32.RunModule('COMPOSITE', idrisi_cmd, 1, '', '', '', '', 1)
+
+        input_filepath_red = output_path + target_plot + "_ASTC_B03.rst"
+        input_filepath_green = output_path + target_plot + "_ASTC_B02.rst"
+        input_filepath_blue = output_path + target_plot + "_ASTC_B01.rst"
+        output_filepath = os.path.dirname(input_filepath_red) + os.sep + \
+            target_plot + "_ASTC_B030201.rst"
+        idrisi_cmd = input_filepath_blue + "*" + input_filepath_green + "*" + \
+            input_filepath_red + "*" + output_filepath + "*1*1*2*2"
+        IDRISI32.RunModule('COMPOSITE', idrisi_cmd, 1, '', '', '', '', 1)
         
         #Make raster group files
         rgf_mnf_sol_filepath = output_path + target_plot + \
-            "_AST_MNF_SOL_SCM.rgf"
+            "_ASTC_MNF_SOL_SCM.rgf"
         rgf_file = open(rgf_mnf_sol_filepath, "w")
         rgf_file.write("3\n")
         rgf_file.write(output_path + target_plot + "_" + \
             os.path.splitext(os.path.basename(\
-            ast_dict['AST_MNF1_SOL']))[0] + "_SCM\n")
+            ASTC_dict['ASTC_MNF1_SOL']))[0] + "_SCM\n")
         rgf_file.write(output_path + target_plot + "_" + \
             os.path.splitext(os.path.basename(\
-            ast_dict['AST_MNF2_SOL']))[0] + "_SCM\n")
+            ASTC_dict['ASTC_MNF2_SOL']))[0] + "_SCM\n")
         rgf_file.write(output_path + target_plot + "_" + \
             os.path.splitext(os.path.basename(\
-            ast_dict['AST_MNF3_SOL']))[0] + "_SCM\n")
+            ASTC_dict['ASTC_MNF3_SOL']))[0] + "_SCM\n")
         rgf_file.close()
         
-        rgf_ast_dem_filepath = output_path + target_plot + \
-            "_AST_DEM_SCM_CLASSIFICATION.rgf"
+        rgf_ASTC_dem_filepath = output_path + target_plot + \
+            "_ASTC_DEM_SCM_CLASSIFICATION.rgf"
         file_counter = 0
         file_content = []
-        for entry in ast_dict:
+        for entry in ASTC_dict:
             if "CLOUDMASK" not in entry and "B030201" not in entry and \
-            "AST_MNF1_SOL" is not entry and "AST_MNF2_SOL" is not entry and \
-            "AST_MNF3_SOL" is not entry:
+            "ASTC_MNF1_SOL" is not entry and "ASTC_MNF2_SOL" is not entry and \
+            "ASTC_MNF3_SOL" is not entry:
                 file_counter = file_counter + 1
                 file_content.append(output_path + target_plot + "_" + \
                     os.path.splitext(os.path.basename(\
-                    ast_dict[entry]))[0] + "_SCM\n")
+                    ASTC_dict[entry]))[0] + "_SCM\n")
         for entry in dem_dict:
             file_counter = file_counter + 1
             file_content.append(output_path + target_plot + "_" + \
             os.path.splitext(os.path.basename(\
             dem_dict[entry]))[0] + "_S\n")
-        rgf_file = open(rgf_ast_dem_filepath, "w")
+        rgf_file = open(rgf_ASTC_dem_filepath, "w")
         rgf_file.write(str(file_counter) + "\n")
         for line in sorted(file_content):
             rgf_file.write(line)
         rgf_file.close()
 
         #Clean up a little bit
-        misc_output_path = output_path + "misc" + os.sep
+        misc_output_path = output_path + target_plot + "_misc" + os.sep
         if not os.path.exists(misc_output_path):
             os.mkdir(misc_output_path)
         files=locate("*.*", "*", output_path)
         for file in files:
             if "_SCM" not in file and "_S." not in file and \
-            "osm_mrg_epsg-32737_123" not in file and "321" not in file:
+            "osm_mrg_epsg-32737_123" not in file and "321" not in file and \
+            "030201" not in file:
                 try:
                     shutil.move(file, misc_output_path) 
                 except:
                     continue
         
-        #Compute segmentation based on AST_MNF_SOL_SCM dataset
+        #Compute segmentation based on ASTC_MNF_SOL_SCM dataset
         weight_filepath = output_path + target_plot + \
             "_SEGMENTATION_WEIGHTS.txt"
         weight_file = open(weight_filepath, "w")
@@ -357,7 +373,7 @@ def main():
         weight_file.write("0.10 \n")
         weight_file.close()
         idrisi_cmd = rgf_mnf_sol_filepath + "*" + \
-            output_path + target_plot + "_AST_MNF_SOL_SCM_207010_7030" + \
+            output_path + target_plot + "_ASTC_MNF_SOL_SCM_207010_7030" + \
             "*" + "3" + "*" + \
             "140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10" + \
             "*" + weight_filepath + "*" + "0.70" + "*" + "0.30"
@@ -366,7 +382,7 @@ def main():
         #Create idrisi environment
         idrisi_env = open(output_path + target_plot + ".env", "w")
         idrisi_env.write(output_path + "\n")
-        idrisi_env.write(output_path + "misc\n")
+        idrisi_env.write(output_path + target_plot + "_misc\n")
         idrisi_env.close()
         gc.collect()
     
