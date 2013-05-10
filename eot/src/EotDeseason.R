@@ -1,4 +1,5 @@
 EotDeseason <- function(data, 
+                        cycle.window = 12, 
                         ...) {
   
   
@@ -17,19 +18,16 @@ EotDeseason <- function(data,
   
   ### Deseasoning
   
-  # Calculate long-term averages per monthly
-  if (is.list(data))
-    data.mv <- do.call(function(...) {overlay(..., fun = "mean", na.rm = TRUE)}, data)
-  else
-    stop(paste("Argument 'data' must be a list of almost two elements.")) 
+  # Calculate long-term monthly averages
+  clusterExport(clstr, c("data", "cycle.window"), envir = environment())
+  
+  data.mv <- do.call("stack", rep(parLapply(clstr, 1:cycle.window, function(i) {
+    calc(data[[seq(i, nlayers(data), cycle.window)]], fun = mean)
+  }), nlayers(data) / cycle.window))
   
   # Subtract monthly averages from actually measured values
-  clusterExport(clstr, c("data", "data.mv"), envir = environment())
-  
-  data.dsn <- parLapply(clstr, data, function(i) {
-    overlay(i, data.mv, fun = function(x, y) {x - y})
-  })
-  
+  data.dsn <- data - data.mv
+    
   # Deregister parallel backend
   stopCluster(clstr)
   
@@ -42,6 +40,6 @@ EotDeseason <- function(data,
 # ### Call
 # 
 # library(raster)
-# data <- list(stack(list.files("D:/programming/r/r_eot/data", pattern = "sst.*1983.*.rst$", full.names = TRUE, recursive = TRUE)), 
-#              stack(list.files("D:/programming/r/r_eot/data", pattern = "sst.*1984.*.rst$", full.names = TRUE, recursive = TRUE)))
+# data <- stack(c(list.files("E:/programming/r/r_eot/data", pattern = "sst.*1983.*.rst$", full.names = TRUE, recursive = TRUE), 
+#              list.files("E:/programming/r/r_eot/data", pattern = "sst.*1984.*.rst$", full.names = TRUE, recursive = TRUE)))
 # data.dsn <- EotDeseason(data)

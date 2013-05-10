@@ -58,30 +58,38 @@ EotCycle <- function(pred,
   # Fit r-squared in template
   rst.resp.rsq <- rst.resp.r^2
   
-  ## Slope
+  ## Slope and residuals
   
+  # Setup raster for slope values
   rst.resp.slp <- rst.resp.r
-  rst.resp.slp[] <- parSapply(clstr, seq(nrow(resp.vals)), function(i) {
-    tmp.lm <- lm(resp.vals[i, ] ~ pred.vals[maxxy, ])
-    coef(tmp.lm)[2] 
-  })
-  
-  ## Residuals
-  
-  # Setup brick for residuals
+  # Setup raster brick for residuals
   brck.resp.resids <- brick(nrows = nrow(resp), ncols = ncol(resp), 
                             xmn = xmin(resp), xmx = xmax(resp), 
                             ymn = ymin(resp), ymx = ymax(resp), 
                             nl = nlayers(resp))
+  # Setup raster for p-values
+  rst.resp.p <- rst.resp.r
   
-  # Regression of identified pred pixel with all resp pixels
-  resp.resids <- parLapply(clstr, seq(nrow(resp.vals)), function(i) {
-    tmp.lm <- lm(resp.vals[i, ] ~ pred.vals[maxxy, ]) # Linear model
-    resid(tmp.lm) # Residuals
-  }) 
+  # Calculate linear model and extract slope value and residuals
+  resp.slp.resids <- parLapply(clstr, seq(nrow(resp.vals)), function(i) {
+    tmp.lm <- lm(resp.vals[i, ] ~ pred.vals[maxxy, ])
+    tmp.slp <- coef(tmp.lm)[2] 
+    tmp.resids <- resid(tmp.lm)
+    tmp.p <- anova(tmp.lm)$"Pr(>F)"[1]
+    
+    return(list(tmp.slp, tmp.resids, tmp.p))
+  })
   
+  resp.slp.resids <- do.call(function(...) {
+    mapply(c, ..., SIMPLIFY = FALSE)
+  }, resp.slp.resids)
+  
+  # Fit slope in template
+  rst.resp.slp[] <- resp.slp.resids[[1]]
   # Fit residuals in template
-  brck.resp.resids[] <- do.call("rbind", resp.resids)
+  brck.resp.resids[] <- matrix(resp.slp.resids[[2]], ncol = nlayers(pred), byrow = TRUE)
+  # Fit p-values in template
+  rst.resp.p[] <- resp.slp.resids[[3]]
   
   
   ### Regression of most explanatory pred pixel with pred pixels
@@ -103,11 +111,30 @@ EotCycle <- function(pred,
   
   ## Slope
   
+  # Setup raster for slope values
   rst.pred.slp <- rst.pred.r
-  rst.pred.slp[] <- parSapply(clstr, seq(nrow(pred.vals)), function(i) {
+  # Setup raster for p-values
+  rst.pred.p <- rst.pred.r
+  
+  pred.slp.p <- parLapply(clstr, seq(nrow(pred.vals)), function(i) {
     tmp.lm <- lm(pred.vals[i, ] ~ pred.vals[maxxy, ])
-    coef(tmp.lm)[2] 
+    tmp.slp <- coef(tmp.lm)[2] 
+    tmp.p <- anova(tmp.lm)$"Pr(>F)"[1]
+    
+    return(list(tmp.slp, tmp.p))
   })
+  
+  # Deregister parallel backend
+  stopCluster(clstr)
+  
+  pred.slp.p <- do.call(function(...) {
+    mapply(c, ..., SIMPLIFY = FALSE)
+  }, pred.slp.p)
+  
+  # Fit slope in template
+  rst.pred.slp[] <- pred.slp.p[[1]]
+  # Fit p-values in template
+  rst.pred.p[] <- pred.slp.p[[2]]
   
   
   ### Output
@@ -118,22 +145,29 @@ EotCycle <- function(pred,
               r.predictor = rst.pred.r,
               rsq.predictor = rst.pred.rsq,
               slp.predictor = rst.pred.slp,
+              p.predictor = rst.pred.p,
               r.response = rst.resp.r,
               rsq.response = rst.resp.rsq,
               slp.response = rst.resp.slp,
+              p.response = rst.resp.p,
               residuals = brck.resp.resids)
   
   # Prepare output file names
-  out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "resp_r", "resp_rsq", "resp_slp"), function(i) {
+  out.name <- lapply(c("pred_r", "pred_rsq", "pred_slp", "pred_p", 
+                       "resp_r", "resp_rsq", "resp_slp", "resp_p"), function(i) {
     paste(names.out, "eot", sprintf("%02.f", n), i, sep = "_")
   })
   
   # Store r, r-squared and slope raster images
-  out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.resp.r, rst.resp.rsq, rst.resp.slp), b = unlist(out.name)) %do% {
+  clstr <- makeCluster(n.cores)
+  registerDoParallel(clstr)
+  
+  out.rst <- foreach(a = c(rst.pred.r, rst.pred.rsq, rst.pred.slp, rst.pred.p, 
+                           rst.resp.r, rst.resp.rsq, rst.resp.slp, rst.resp.p), b = unlist(out.name), .packages = "raster") %dopar% {
     writeRaster(a, paste(path.out, b, sep = "/"), format = "raster", overwrite = TRUE)
   }
   
-  # Close cluster
+  # Deregister parallel backend
   stopCluster(clstr)
   
   # Return output

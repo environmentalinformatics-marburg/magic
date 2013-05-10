@@ -4,7 +4,7 @@
 rm(list = ls(all = TRUE))
 
 # Working directory
-path.wd <- "D:/programming/r/r_eot"
+path.wd <- "E:/programming/r/r_eot"
 setwd(path.wd)
 
 # Paths and files
@@ -12,7 +12,7 @@ path.data <- "data"
 path.out <- "out"
 
 # Required packages
-library(compiler)
+# library(compiler)
 library(raster)
 
 # Required functions
@@ -21,7 +21,7 @@ source("src/EotDenoise.R")
 source("src/EotControl.R")
 
 # Launch just-in-time (JIT) compilation
-enableJIT(3)
+# enableJIT(3)
 
 
 ### Data import 
@@ -29,25 +29,30 @@ enableJIT(3)
 pred.files <- list.files(path.data, pattern = "sst.*.rst$", full.names = TRUE, recursive = TRUE)
 resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, recursive = TRUE)
 
-pred.years <- unique(substr(basename(pred.files), 10, 13))
-resp.years <- unique(substr(basename(resp.files), 13, 16))
+# # Stack data by year
+# pred.years <- unique(substr(basename(pred.files), 10, 13))
+# resp.years <- unique(substr(basename(resp.files), 13, 16))
+# 
+# pred.stck <- lapply(pred.years, function(i) {
+#   stack(pred.files[grep(i, pred.files)])
+# })
+# resp.stck <- lapply(resp.years, function(i) {
+#   stack(resp.files[grep(i, resp.files)])
+# })
 
-pred.stck <- lapply(pred.years, function(i) {
-  stack(pred.files[grep(i, pred.files)])
-})
-resp.stck <- lapply(resp.years, function(i) {
-  stack(resp.files[grep(i, resp.files)])
-})
+# Stack data
+pred.stck <- stack(pred.files)
+resp.stck <- stack(resp.files)
 
-# Artificial cropping
-pred.stck <- lapply(pred.stck, function(i) crop(i, extent(c(-180, -120, -20, 20))))
-resp.stck <- lapply(resp.stck, function(i) crop(i, extent(c(-160, -120, -10, 10))))
+# # Artificial cropping
+pred.stck <- crop(pred.stck, extent(c(-180, -120, -20, 20)))
+resp.stck <- crop(resp.stck, extent(c(-160, -120, -10, 10)))
 
 
 ### Deseasoning
 
-pred.stck.dsn <- EotDeseason(data = pred.stck)
-resp.stck.dsn <- EotDeseason(data = resp.stck)
+pred.stck.dsn <- EotDeseason(data = pred.stck, cycle.window = 12)
+resp.stck.dsn <- EotDeseason(data = resp.stck, cycle.window = 12)
 
 
 ### Denoising
@@ -59,15 +64,14 @@ resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 5)
 ### EOT
 
 # Output filenames
-names.out <- sapply(pred.stck, function(i) {
-  unique(substr(names(i), 1, 13))
-})
+names.out <- unique(substr(names(pred.stck), 1, 13))
 
 out <- EotControl(pred = pred.stck.dns, 
                   resp = resp.stck.dns, 
                   n = 2, 
                   path.out = path.out, 
-                  names.out = names.out)
+                  names.out = names.out, 
+                  cycle.window = 12)
 
 
 ### Plotting
