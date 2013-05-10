@@ -44,10 +44,6 @@ resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, 
 pred.stck <- stack(pred.files)
 resp.stck <- stack(resp.files)
 
-# # Artificial cropping
-pred.stck <- crop(pred.stck, extent(c(-180, -120, -20, 20)))
-resp.stck <- crop(resp.stck, extent(c(-160, -120, -10, 10)))
-
 
 ### Deseasoning
 
