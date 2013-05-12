@@ -1,5 +1,6 @@
 Bare_rock : 17
-Bare_soil : 23
+Bare_soil : 24
+Clearing : 25
 Clouds : 18
 Coffee : 4
 Cropland : 2
@@ -13,6 +14,7 @@ Forest_Podocarpus : 10
 Forest_Podocarpus_disturbed : 11
 Grassland : 22
 Grassland_Savanna : 1
+Grassland_trees : 23
 Helicrysum : 13
 Homegarden : 5
 Reforestation : 15

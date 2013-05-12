@@ -72,3 +72,4 @@
 72 : Bare_soil_1
 73 : Bare_soil_2
 74 : Bare_soil_3
+75 : Clearing

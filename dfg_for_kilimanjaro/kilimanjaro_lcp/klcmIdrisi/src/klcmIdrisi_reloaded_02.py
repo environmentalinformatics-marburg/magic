@@ -155,7 +155,7 @@ def get_aster_datasets(input_aster_path):
         ast_code = "AST_20050211_"
     elif "ast14dmo_composite" in input_aster_path:
         ast_code = "AST_20052013_"
-    
+        
     ast_input_dict = {}
     ast_input_dict['AST_B01'] = ast_code + "B01.rst"
     ast_input_dict['AST_B02'] = ast_code + "B02.rst"
@@ -339,7 +339,7 @@ def main():
         idrisi_working_directory = command_line_parsing()
     
     IDRISI32 = win32com.client.Dispatch('IDRISI32.IdrisiAPIServer')
-
+    
     #Get osm datasets (which define which plots are processed)
     satellite_datasets=locate("*.*", "*", input_path)
 
@@ -363,6 +363,7 @@ def main():
 
         #Set path
         output_path = output_plot_path + target_plot + os.sep
+        IDRISI32.SetWorkingDir(output_path)
         osm_dataset = output_path + target_plot + \
                 "_osm_mrg_epsg-32737_1.rst"
         output_filepath_prefix = output_path + target_plot + "_"
@@ -377,7 +378,7 @@ def main():
                 output_filepath = output_filepath_prefix + ast_input_dict[entry]
                 idrisi_cmd = input_filepath + "*" + output_filepath + "*3*" + \
                     osm_dataset
-                ###IDRISI32.RunModule('WINDOW',idrisi_cmd,1,'','','','',1)
+                ###success = IDRISI32.RunModule('WINDOW',idrisi_cmd,1,'','','','',1)
                 if os.path.isfile(\
                     os.path.splitext(output_filepath)[0] + ".rdc"):
                     metadata = read_metadata(\
@@ -394,7 +395,7 @@ def main():
                         str(metadata['max_y']) + "*" + \
                         str(metadata['cols']) + "*" + \
                         str(metadata['rows']) + "*0*2"
-                    ###IDRISI32.RunModule('PROJECT',idrisi_cmd,1,'','','','',1)
+                    ###success = IDRISI32.RunModule('PROJECT',idrisi_cmd,1,'','','','',1)
 
         #Extract windows from DEM data
         print "Extracting windows from dem..."
@@ -403,7 +404,7 @@ def main():
             output_filepath = output_filepath_prefix + dem_dict[entry]
             idrisi_cmd = input_filepath + "*" + output_filepath + "*3*" + \
                          osm_dataset
-            ###IDRISI32.RunModule('WINDOW',idrisi_cmd,1,'','','','',1)
+            ###success = IDRISI32.RunModule('WINDOW',idrisi_cmd,1,'','','','',1)
 
         #Compute RGB composites
         print "Computing composites..."
@@ -417,7 +418,7 @@ def main():
             "osm_mrg_epsg-32737_123.rst"
         idrisi_cmd = input_filepath_01 + "*" + input_filepath_02 + "*" + \
             input_filepath_03 + "*" + output_filepath + "*1*1*2*2"
-        ###IDRISI32.RunModule('COMPOSITE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('COMPOSITE',idrisi_cmd,1,'','','','',1)
 
         input_filepath_03 = output_filepath_prefix + \
             ast_input_dict["AST_B03"]
@@ -429,7 +430,7 @@ def main():
             ast_output_dict['AST_B030201']
         idrisi_cmd = input_filepath_01 + "*" + input_filepath_02 + "*" + \
             input_filepath_03 + "*" + output_filepath + "*1*1*2*2"
-        ###IDRISI32.RunModule('COMPOSITE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('COMPOSITE',idrisi_cmd,1,'','','','',1)
         
         #Create raster group file of bands 01 to 03
         rgf_sol_filepath = output_filepath_prefix + \
@@ -446,14 +447,14 @@ def main():
         output_filepath = output_filepath_prefix +  ast_output_dict['AST_NDVI']
         idrisi_cmd = "2*" + output_filepath + "*" + input_filepath_02 + \
             "*" + input_filepath_03
-        ###IDRISI32.RunModule('VEGINDEX',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('VEGINDEX',idrisi_cmd,1,'','','','',1)
         
         #Compute MNF
         print "Computing MNF..."
         output_filepath = output_filepath_prefix + "temp_"
         idrisi_cmd = "1*1*3*" + output_filepath + "*" + rgf_sol_filepath + \
             "*none*2"
-        ###IDRISI32.RunModule('MNF',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('MNF',idrisi_cmd,1,'','','','',1)
         try:
             os.remove(output_filepath + ".rgf")
         except:
@@ -507,34 +508,34 @@ def main():
         overlay_filepath = output_filepath_prefix + \
             ast_output_dict['AST_OVERLAY_100']
         idrisi_cmd = overlay_filepath + "*1*1*100*1*" + input_filepath + "*n"
-        ###IDRISI32.RunModule('INITIAL',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('INITIAL',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF1_SOL']
         output_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF1_SOL_I']
         idrisi_cmd = "3*" + input_filepath + "*" + overlay_filepath + "*" + \
                 output_filepath
-        ###IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
         idrisi_cmd = "1*" + output_filepath + "*" + output_filepath + "*1*2*2"
-        ###IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL']
         output_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL_I']
         idrisi_cmd = "3*" + input_filepath + "*" + overlay_filepath + "*" + \
                 output_filepath
-        ###IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
         idrisi_cmd = "1*" + output_filepath + "*" + output_filepath + "*1*2*2"
-        ###IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL']
         output_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL_I']
         idrisi_cmd = "3*" + input_filepath + "*" + overlay_filepath + "*" + \
                 output_filepath
-        ###IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
         idrisi_cmd = "1*" + output_filepath + "*" + output_filepath + "*1*2*2"
-        ###IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
             
         #Compute ABF7
         print "Computing ABF7..."
@@ -543,19 +544,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_ABF7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*9*7*0*1.5*0"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_ABF7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*9*7*0*1.5*0"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_ABF7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*9*7*0*1.5*0"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
 
         #Compute MAX3
         print "Computing MAX3..."
@@ -564,19 +565,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_MAX3']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*13"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_MAX3']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*13"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_MAX3']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*13"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         
         #Compute MED7
         print "Computing MED7..."
@@ -585,19 +586,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         
         #Compute SLOPE
         print "Computing SLOPE..."
@@ -606,19 +607,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_SLOPE']
         idrisi_cmd = "1*" + input_filepath + "*" + output_filepath + "*#*p*1"
-        ###IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_SLOPE']
         idrisi_cmd = "1*" + input_filepath + "*" + output_filepath + "*#*p*1"
-        ###IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_SLOPE']
         idrisi_cmd = "1*" + input_filepath + "*" + output_filepath + "*#*p*1"
-        ###IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('SLOPE',idrisi_cmd,1,'','','','',1)
 
         #Compute MED7 on SLOPE
         print "Computing MED7 on SLOPE..."
@@ -627,19 +628,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_SLOPE_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL_SLOPE']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_SLOPE_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL_SLOPE']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_SLOPE_MED7']
         idrisi_cmd = input_filepath + "*" + output_filepath + "*2*7"
-        ###IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('FILTER',idrisi_cmd,1,'','','','',1)
 
         #Compute VFI7
         print "Computing VFI7..."
@@ -648,19 +649,19 @@ def main():
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF1_SOL_I_VFI7']
         idrisi_cmd = "4*" + input_filepath + "*" + output_filepath + "*#*7"
-        ###IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF2_SOL_I']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF2_SOL_I_VFI7']
         idrisi_cmd = "4*" + input_filepath + "*" + output_filepath + "*#*7"
-        ###IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_MNF3_SOL_I']
         output_filepath = output_filepath_prefix +  \
             ast_output_dict['AST_MNF3_SOL_I_VFI7']
         idrisi_cmd = "4*" + input_filepath + "*" + output_filepath + "*#*7"
-        ###IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('TEXTURE',idrisi_cmd,1,'','','','',1)
         
         #Compute split window mean
         print "Computing split window mean..."
@@ -672,18 +673,18 @@ def main():
             ast_output_dict['AST_TEMP']
         idrisi_cmd = "1*" + input_filepath + "*" + overlay_filepath + "*" + \
                 output_filepath
-        ###IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
         overlay_filepath = output_filepath_prefix + \
             ast_output_dict['AST_OVERLAY_2']
         idrisi_cmd = overlay_filepath + "*1*1*2*1*" + input_filepath + "*n"
-        ###IDRISI32.RunModule('INITIAL',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('INITIAL',idrisi_cmd,1,'','','','',1)
         input_filepath = output_filepath_prefix + \
             ast_output_dict['AST_TEMP']
         output_filepath = output_filepath_prefix + \
             ast_output_dict['AST_B1314_SW']
         idrisi_cmd = "3*" + input_filepath + "*" + overlay_filepath + "*" + \
                 output_filepath
-        ###IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('OVERLAY',idrisi_cmd,1,'','','','',1)
 
         #Standardize datasets
         print "Standardizing data sets..."
@@ -697,14 +698,14 @@ def main():
                 output_filepath = output_filepath_prefix + \
                     os.path.splitext(ast_output_dict[entry])[0] + "_S.rst"
                 idrisi_cmd = input_filepath + "*" + output_filepath
-                ###IDRISI32.RunModule('STANDARD',idrisi_cmd,1,'','','','',1)
+                ###success = IDRISI32.RunModule('STANDARD',idrisi_cmd,1,'','','','',1)
         
         for entry in dem_dict:
             input_filepath = output_filepath_prefix + dem_dict[entry]
             output_filepath = output_filepath_prefix + \
                 os.path.splitext(dem_dict[entry])[0] + "_S.rst"
             idrisi_cmd = input_filepath + "*" + output_filepath
-            ###IDRISI32.RunModule('STANDARD',idrisi_cmd,1,'','','','',1)
+            ###success = IDRISI32.RunModule('STANDARD',idrisi_cmd,1,'','','','',1)
         
         #Make raster group files
         #MNF_SOL_S datasets
@@ -817,23 +818,23 @@ def main():
             "200, 180, 160, 140, 130, 120, 110, 100, " + \
             "90, 80, 70, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1" + \
             "*" + weight_filepath + "*" + "0.70" + "*" + "0.30"
-        ###IDRISI32.RunModule('SEGMENTATION',idrisi_cmd,1,'','','','',1)
+        ###success = IDRISI32.RunModule('SEGMENTATION',idrisi_cmd,1,'','','','',1)
         
         classification_files = []
         segtrain_files=locate("*SEGTRAIN.vct", "*", output_path)
         for segtrain_filepath in segtrain_files:
             #Extract signature based on manually defined segmentations
-            #'''
             print "Extracting signature..."
             #Remove existing sig and spf files
+            #'''
             sig_files=locate("*.sig", "*", output_path)
             for sig_file in sig_files:
                 os.remove(sig_file)
             spf_files=locate("*.spf", "*", output_path)
             for spf_file in spf_files:
                 os.remove(spf_file)
-            #Create signature group file
             #'''
+            #Create signature group file
             metadata = read_metadata(segtrain_filepath)
             classification_prefix =  \
                 output_filepath_prefix + ast_code + \
@@ -842,17 +843,17 @@ def main():
                     segtrain_filepath))[0][21:] + "_"
             print classification_prefix
             siggroup_filepath = classification_prefix + "SIGNATURE.sgf"
-            #'''
-            
             signame_file = open(siggroup_filepath, "w")
             for code in metadata["codes"]:
                 signame_file.write(str(code[4:].split(":")[0].strip()) + " ")
                 signame_file.write(output_filepath_prefix + \
                     str(code[4:].split(":")[1].strip()) + "\n")
             signame_file.close()
-            idrisi_cmd = "v*" + segtrain_filepath + "*5*" + \
+            idrisi_cmd = "v*" + segtrain_filepath + "*50*" + \
                 rgf_ast_all_s_classification_filepath + "*" + siggroup_filepath
-            IDRISI32.RunModule('MAKESIG',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MAKESIG',idrisi_cmd,1,'','','','',1)
+            '''
+            DEPRICATED
             #Move sig and spf files from IDRISI working directory to output path
             sig_files=locate("*.sig", "*", idrisi_working_directory)
             for sig_file in sig_files:
@@ -860,8 +861,8 @@ def main():
             spf_files=locate("*.spf", "*", idrisi_working_directory)
             for spf_file in spf_files:
                 shutil.move(spf_file, output_path)
-            #'''
-            
+            '''
+
             #MAXLIKE
             print "Computing MAXLIKE..."
             signame_file = open(siggroup_filepath, "w")
@@ -872,24 +873,22 @@ def main():
             signame_file.close()
             maxlike_filepath = classification_prefix + "MAXLIKE"
             idrisi_cmd = maxlike_filepath + "*" + siggroup_filepath + "*0.0*1"
-            print idrisi_cmd
-            IDRISI32.RunModule('MAXLIKE',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MAXLIKE',idrisi_cmd,1,'','','','',1)
             classification_files.append(maxlike_filepath)
             
             #KNN
             print "Computing KNN..."
             knn_filepath = classification_prefix + "KNN"
             idrisi_cmd = siggroup_filepath + "*" + knn_filepath + \
-                "*61*500*none"
-            print idrisi_cmd
-            IDRISI32.RunModule('KNN',idrisi_cmd,1,'','','','',1)
+                "*75*500*none"
+            success = IDRISI32.RunModule('KNN',idrisi_cmd,1,'','','','',1)
             classification_files.append(knn_filepath)
             
             #BAYCLASS
             print "Computing BAYCLASS..."
             bayclass_filepath = classification_prefix + "BAYCLASS_"
             idrisi_cmd = bayclass_filepath + "*" + siggroup_filepath + "*1"
-            IDRISI32.RunModule('BAYCLASS',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('BAYCLASS',idrisi_cmd,1,'','','','',1)
             harden_filepath = output_filepath_prefix + "harden.txt"
             harden_file = open(harden_filepath, "w")
             rgf_file = open(classification_prefix + "BAYCLASS_.rgf")
@@ -903,7 +902,7 @@ def main():
             rgf_file.close()
             harden_file.close()
             idrisi_cmd = "#*" + bayclass_filepath + "*4*" + harden_filepath
-            IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
             for i in range(1,5):
                 classification_files.append(bayclass_filepath + "_" + str(i))
             
@@ -911,7 +910,7 @@ def main():
             print "Computing MAHALCLASS..."
             mahalclass_filepath = classification_prefix + "MAHALCLASS_"
             idrisi_cmd = siggroup_filepath + "*" + mahalclass_filepath
-            IDRISI32.RunModule('MAHALCLASS',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MAHALCLASS',idrisi_cmd,1,'','','','',1)
             harden_filepath = output_filepath_prefix + "harden.txt"
             harden_file = open(harden_filepath, "w")
             rgf_file = open(classification_prefix + "MAHALCLASS_.rgf")
@@ -925,16 +924,15 @@ def main():
             rgf_file.close()
             harden_file.close()
             idrisi_cmd = "#*" + mahalclass_filepath + "*4*" + harden_filepath
-            IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
             for i in range(1,5):
                 classification_files.append(mahalclass_filepath + "_" + str(i))
             
             #BELCLASS
             print "Computing BELCLASS..."
             belclass_filepath = classification_prefix + "BELCLASS_"
-            idrisi_cmd = "1*" + belclass_filepath + "*" + \
-                siggroup_filepath + "*1"
-            IDRISI32.RunModule('BELCLASS',idrisi_cmd,1,'','','','',1)
+            idrisi_cmd = "1*" + belclass_filepath + "*" + siggroup_filepath + "*1"
+            success = IDRISI32.RunModule('BELCLASS',idrisi_cmd,1,'','','','',1)
             harden_filepath = output_filepath_prefix + "harden.txt"
             harden_file = open(harden_filepath, "w")
             rgf_file = open(classification_prefix + "BELCLASS_.rgf")
@@ -948,7 +946,7 @@ def main():
             rgf_file.close()
             harden_file.close()
             idrisi_cmd = "#*" + belclass_filepath + "*4*" + harden_filepath
-            IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
             for i in range(1,5):
                 classification_files.append(belclass_filepath + "_" + str(i))
             
@@ -956,8 +954,7 @@ def main():
             print "Computing FUZCLASS..."
             fuzclass_filepath = classification_prefix + "FUZCLASS_"
             idrisi_cmd = siggroup_filepath + "*2.5*1*" + fuzclass_filepath
-            print idrisi_cmd
-            IDRISI32.RunModule('FUZCLASS',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('FUZCLASS',idrisi_cmd,1,'','','','',1)
             harden_filepath = output_filepath_prefix + "harden.txt"
             harden_file = open(harden_filepath, "w")
             rgf_file = open(classification_prefix + "FUZCLASS_.rgf")
@@ -971,11 +968,10 @@ def main():
             rgf_file.close()
             harden_file.close()
             idrisi_cmd = "#*" + fuzclass_filepath + "*4*" + harden_filepath
-            IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
+            success = IDRISI32.RunModule('MDCHOICE',idrisi_cmd,1,'','','','',1)
             for i in range(1,5):
                 classification_files.append(fuzclass_filepath + "_" + str(i))
             
-            '''
             #Extract mode to segmentation polygons
             segmentation_files=locate("*207010*.rst", "*", output_path)
             for segmentation_filepath in segmentation_files:
@@ -995,13 +991,13 @@ def main():
                         idrisi_cmd = segmentation_filepath + "*" + \
                             classification_filepath + "*3*5*" + \
                             classification_filepath_mode
-                        ###IDRISI32.RunModule('EXTRACT',idrisi_cmd,1,'','','','',1)
+                        success = IDRISI32.RunModule('EXTRACT',idrisi_cmd,1,'','','','',1)
                         #Update metadata to add legend categories
                         classification_filepath_mode = os.path.splitext(\
                             classification_filepath_mode)[0] + "_mode"
                         idrisi_cmd = "1*" + classification_filepath_mode + \
                             "*" + classification_filepath_mode + "*1*2*2"
-                        ###IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
+                        success = IDRISI32.RunModule('CONVERT',idrisi_cmd,1,'','','','',1)
                         metadata = read_metadata(\
                             classification_filepath + ".rdc")
                         meta_filepath = classification_filepath_mode + \
@@ -1019,6 +1015,7 @@ def main():
                                     meta_file.write("legend cats : " + \
                                         metadata['legend cats'] + "\n")
                                     for code in metadata["codes"]:
+                                        #IF should not be necessary any more
                                         if "SEGTRAIN" in code:
                                             char_pos = list(find_strings(code,\
                                                 "_"))[11]+1
@@ -1026,7 +1023,10 @@ def main():
                                             meta_file.write(code[char_pos:] +\
                                                 "\n")
                                         else:
-                                            meta_file.write(code[char_pos:] + \
+                                            char_pos = list(find_strings(code,\
+                                                target_plot))[-1]+5
+                                            meta_file.write(code[0:14])
+                                            meta_file.write(code[char_pos:] +\
                                                 "\n")
                                     wrote_legend = True
                             else:
@@ -1034,29 +1034,62 @@ def main():
                         meta_file.close()
                         
                         #Reclass dataset to match final land cover classes
+                        metadata = read_metadata(meta_filepath)
                         klcc_final = {}
                         klcc_final_file =  open("klcc_final.txt")
                         for line in klcc_final_file:
                             key, val = line.split(":")
                             klcc_final[key.strip()] = int(val)
                         klcc_final_file.close()
-                        new_code = []
+                        new_codes = []
                         for entry in klcc_final:
                             for code in metadata["codes"]:
                                 if entry in code:
                                     value, lc = code.split(":")
-                                    new_code.append([int(value[4:]), \
+                                    new_codes.append([int(value[4:]), \
                                         klcc_final[entry], lc.strip(), entry])
-                        print new_code
-                        os.sys.exit()
+                        reclass_pattern = ''
+                        legend_entries = {}
+                        legend_metadata = {}
+                        linestart_1 = "code      "
+                        linestart_2 = "code     "
+                        for entry in new_codes:
+                            legend_entries[entry[1]] = 1
+                            if entry[1] < 10:
+                                linestart = linestart_1
+                            else:
+                                linestart = linestart_2
+                            legend_metadata[entry[1]] = linestart + \
+                                str(entry[1]) + " : " + entry[3]
+                            reclass_pattern = reclass_pattern + "*" + \
+                                str(entry[1]) + "*" + str(entry[0]) + "*" + \
+                                str(entry[0]+1)
                         classification_filepath_mode_final = \
                             classification_filepath_mode + "_final"
                         idrisi_cmd = "i*" + classification_filepath_mode + \
                             "*" + classification_filepath_mode_final + \
-                            "*2*1*0.0001*999999*-9999*1"
-                        ###IDRISI32.RunModule('RECLASS', idrisi_cmd, 1, '', '', '', '', 1)
-                        '''
-        
+                            "*2" + reclass_pattern + "*-9999*1"
+                        success = IDRISI32.RunModule('RECLASS', idrisi_cmd, 1, '', '', '', '', 1)
+                        meta_file = open(\
+                            classification_filepath_mode_final + ".rdc", "r")
+                        meta_content = meta_file.readlines()
+                        meta_file.close()
+                        meta_file = open(\
+                            classification_filepath_mode_final + ".rdc", "w")
+                        wrote_legend = False
+                        for line in meta_content:
+                            if wrote_legend == False:
+                                if "legend cats" not in line:
+                                    meta_file.write(line)
+                                else:
+                                    meta_file.write("legend cats : " + \
+                                        str(len(legend_entries)) + "\n")
+                                    for code in legend_metadata:
+                                            meta_file.write(legend_metadata[code] + "\n")
+                                    wrote_legend = True
+                            else:
+                                continue
+                        
         #Create idrisi environment
         idrisi_env = open(output_path + target_plot + ".env", "w")
         idrisi_env.write(output_path + "\n")
