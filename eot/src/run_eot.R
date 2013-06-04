@@ -14,6 +14,7 @@ path.out <- "out"
 # Required packages
 # library(compiler)
 library(raster)
+library(parallel)
 
 # Required functions
 source("src/EotDeseason.R")
@@ -26,7 +27,7 @@ source("src/EotControl.R")
 
 ### Data import 
 
-pred.files <- list.files(path.data, pattern = "sst.*.rst$", full.names = TRUE, recursive = TRUE)
+pred.files <- list.files(path.data, pattern = "SST.*.rst$", full.names = TRUE, recursive = TRUE)
 resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, recursive = TRUE)
 
 # # Stack data by year
@@ -44,6 +45,30 @@ resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, 
 pred.stck <- stack(pred.files)
 resp.stck <- stack(resp.files)
 
+# # Set pixel values == 0 (land masses) to NA
+# n.cores <- detectCores()
+# clstr <- makePSOCKcluster(n.cores)
+# clusterEvalQ(clstr, c(library(raster), library(rgdal)))
+# clusterExport(clstr, c("pred.stck", "resp.stck"))
+#               
+# pred.stck <- do.call("stack", parLapply(clstr, seq(nlayers(pred.stck)), function(i) {
+#   tmp <- pred.stck[[i]]
+#   tmp[which(tmp[] == 0)] <- NA
+#   return(tmp)
+# }))
+#               
+# resp.stck <- do.call("stack", parLapply(clstr, seq(nlayers(resp.stck)), function(i) {
+#   tmp <- resp.stck[[i]]
+#   tmp[which(tmp[] == 0)] <- NA
+#   return(tmp)
+# }))              
+# 
+# stopCluster(clstr)
+
+# # Artificial cropping
+# pred.stck <- crop(pred.stck, extent(c(-180, -120, -20, 20)))
+# resp.stck <- crop(resp.stck, extent(c(-160, -120, -10, 10)))
+
 
 ### Deseasoning
 
@@ -53,8 +78,8 @@ resp.stck.dsn <- EotDeseason(data = resp.stck, cycle.window = 12)
 
 ### Denoising
 
-pred.stck.dns <- EotDenoise(data = pred.stck.dsn, k = 25)
-resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 5)
+pred.stck.dns <- EotDenoise(data = pred.stck.dsn, k = 10)
+resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 10)
 
 
 ### EOT

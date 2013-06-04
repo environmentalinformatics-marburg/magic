@@ -14,8 +14,8 @@ EotDenoise <- function(data,
   clstr <- makePSOCKcluster(n.cores)
   
   # Load required packages and functions on cluster
-  clusterEvalQ(clstr, c(library(raster), 
-                        source("src/EotRunPca.R"), source("src/EotRecImage.R")))
+  clusterEvalQ(clstr, c(library(raster), library(rgdal), 
+                        source("src/EotRecImage.R")))
   
   
   ### Image reconstruction
@@ -23,36 +23,25 @@ EotDenoise <- function(data,
   # Extract proj4string and extent of raster data
   tmp.prj <- projection(data)
   tmp.ext <- extent(data)
-  # Unstack current RasterStack
-  tmp.rst <- unstack(data)
-  # Convert rasters to matrices
-  tmp.mat <- lapply(tmp.rst, function(h) {
-    as.matrix(h)
-  })
   
-  # Loop through single matrices
-  clusterExport(clstr, c("tmp.mat", "tmp.prj", "tmp.ext"), envir = environment())
+  # Convert RasterStack to matrix with spatial locations (== pixels) by column and time steps by row
+  tmp.mat <- t(as.matrix(data))
   
-  tmp.rst.dns <- parLapply(clstr, tmp.mat, function(j) {
-    
-    # Perform PCA and extract eigenvalues 
-    lambda <- EotRunPca(j)$values
-    
-    # Singular value decomposition
-    s <- svd(j)
-    
-    # Execute image reconstruction based on k PCs
-    z <- EotRecImage(s, k)
-    
-    # Convert reconstructed matrix to raster
-    raster(z, crs = tmp.prj, 
+  # Perform singular value decomposition (SVD)
+  s <- svd(tmp.mat)
+
+  # Reconstruct matrix based on k PCs
+  z <- EotRecImage(s, k)
+  
+  # Convert reconstructed matrix to RasterStack
+  clusterExport(clstr, c("z", "data", "tmp.prj", "tmp.ext"), envir = environment())
+  
+  data.dns <- stack(parLapply(clstr, seq(nrow(z)), function(i) {
+    mat <- matrix(z[i, ], nrow = dim(data[[i]])[1], ncol = dim(data[[i]])[2], byrow = TRUE)
+    raster(mat, crs = tmp.prj, 
            xmn = xmin(tmp.ext), xmx = xmax(tmp.ext), ymn = ymin(tmp.ext), ymx = ymax(tmp.ext))
-    
-  })
+  }))
   
-  # Stack and return reconstructed rasters
-  data.dns <- do.call("stack", tmp.rst.dns)
-    
   # Deregister parallel backend
   stopCluster(clstr)
   
