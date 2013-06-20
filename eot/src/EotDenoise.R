@@ -1,20 +1,41 @@
 EotDenoise <- function(data,
-                         k,
-                         ...) {
+                       k,
+                       ...) {
+
+  # Required packages
+  stopifnot(require(doParallel))
   
-  stopifnot(require(ade4))
+  # PCA
+  data.vals <- data[]
+  data.vals_pca <- prcomp(data.vals)
   
-  vals.df <- as.data.frame(getValues(data))
+  eivecs <- data.vals_pca$rotation[, 1:k]
+  pvals <- data.vals_pca$x[, 1:k]
+  cent <- data.vals_pca$center
   
-  pca.ls <- dudi.pca(vals.df, nf = k, scannf = FALSE)
+  # Reconstruction
+  recons <- lapply(seq(nrow(eivecs)), function(i) {
+    rowSums(t(eivecs[i, ] * t(pvals))) + cent[i]
+  })
   
-  rcnstrct <- reconst(pca.ls, nf = k)
-  
-  rst <- data
-  rst[] <- as.matrix(rcnstrct)
-  
-  return(rst)
-  
+  # Parallelization
+  clstr <- makePSOCKcluster(n.cores <- 4)
+  clusterExport(clstr, c("data", "recons"))
+  clusterEvalQ(clstr, library(raster))
+
+  # Insert reconstructed values in original data set
+  data.tmp <- do.call("brick", parLapply(clstr, seq(recons), function(i) {
+    tmp.data <- data[[i]]
+    tmp.recons <- recons[[i]]
+
+    tmp.data[] <- tmp.recons
+    return(tmp.data)
+  }))
+
+  # Deregister parallel backend
+  stopCluster(clstr)
+
+  # Return denoised data set
+  return(data)
+
 }
-                  
-                  
