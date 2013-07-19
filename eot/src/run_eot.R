@@ -4,8 +4,7 @@
 rm(list = ls(all = TRUE))
 
 # Working directory
-path.wd <- "E:/programming/r/r_eot"
-setwd(path.wd)
+setwd(path.wd <- "E:/programming/r/r_eot")
 
 # Paths and files
 path.data <- "data"
@@ -13,12 +12,10 @@ path.out <- "out"
 
 # Required packages
 library(raster)
-library(parallel)
 
 # Required functions
-source("src/EotDeseason.R")
-source("src/EotDenoise.R")
-source("src/EotControl.R")
+src <- c("src/EotDeseason.R", "src/EotDenoise.R", "src/EotControl.R")
+lapply(src, source)
 
 
 ### Data import 
@@ -29,6 +26,10 @@ resp.files <- list.files(path.data, pattern = "gpcp.*.rst$", full.names = TRUE, 
 # Stack data
 pred.stck <- stack(pred.files)
 resp.stck <- stack(resp.files)
+
+# # Artificial cropping
+# pred.stck <- crop(pred.stck, extent(-10, 10, -5, 5))
+# resp.stck <- crop(resp.stck, extent(-10, 10, -5, 5))
 
 
 ### Deseasoning
@@ -49,15 +50,16 @@ resp.stck.dns <- EotDenoise(data = resp.stck.dsn, k = 10)
 names.out <- unique(substr(names(pred.stck), 1, 13))
 
 out <- EotControl(pred = pred.stck.dns, 
-                  resp = resp.stck.dns, 
+                  resp = resp.stck.dns,   # defaults to pred if not provided
                   n = 2, 
-                  path.out = path.out, 
-                  names.out = names.out, 
-                  cycle.window = 12)
+                  write.out = TRUE,       # default is FALSE
+                  path.out = path.out,    # default is current wd
+                  names.out = names.out,  # default is NULL 
+                  cycle.window = 12)      # default is nlayers(pred)
 
 
 ### Plotting
 
-spplot(out[[6]]$rsq.predictor[[1]])
-spplot(out[[6]]$rsq.response[[1]])
-spplot(out[[6]]$residuals[[1]], 2)
+spplot(out[[1]]$rsq.predictor[[1]])
+spplot(out[[1]]$rsq.response[[1]])
+spplot(out[[1]]$resid.response[[1]])

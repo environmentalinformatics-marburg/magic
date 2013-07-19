@@ -1,5 +1,6 @@
 EotDenoise <- function(data,
                        k,
+                       n.cores = NULL, 
                        ...) {
 
   # Required packages
@@ -19,11 +20,14 @@ EotDenoise <- function(data,
   })
   
   # Parallelization
-  clstr <- makePSOCKcluster(n.cores <- 4)
-  clusterExport(clstr, c("data", "recons"))
+  if (is.null(n.cores)) 
+    n.cores <- detectCores()
+  
+  clstr <- makeCluster(n.cores)
   clusterEvalQ(clstr, library(raster))
 
   # Insert reconstructed values in original data set
+  clusterExport(clstr, c("data", "recons"), envir = environment())
   data.tmp <- do.call("brick", parLapply(clstr, seq(recons), function(i) {
     tmp.data <- data[[i]]
     tmp.recons <- recons[[i]]
@@ -37,5 +41,4 @@ EotDenoise <- function(data,
 
   # Return denoised data set
   return(data)
-
 }

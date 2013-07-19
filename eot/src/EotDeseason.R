@@ -1,18 +1,19 @@
 EotDeseason <- function(data, 
-                        cycle.window = 12, 
+                        cycle.window = 12,
+                        n.cores = NULL,
                         ...) {
-  
   
   ### Environmental settings
   
   # Required packages
-  stopifnot(require(raster, quietly = TRUE))
-  stopifnot(require(parallel, quietly = TRUE))
+  lib <- c("raster", "parallel")
+  sapply(lib, function(...) stopifnot(require(..., character.only = T)))
   
   # Parallelization
-  n.cores <- detectCores()
-  clstr <- makePSOCKcluster(n.cores)
+  if (is.null(n.cores)) 
+    n.cores <- detectCores()
   
+  clstr <- makePSOCKcluster(n.cores)
   clusterEvalQ(clstr, c(library(raster), library(rgdal)))
   
   
@@ -33,7 +34,6 @@ EotDeseason <- function(data,
   
   # Return output
   return(data.dsn)
-  
 }
 
 
