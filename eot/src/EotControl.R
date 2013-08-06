@@ -49,10 +49,10 @@ EotControl <- function(pred,
         # Use last entry of slot 'residuals' otherwise  
       } else if (z > 1) {
         tmp.pred.eot <- EotCycle(pred = pred[[i:(i+cycle.window-1)]], 
-                                 resp = if(!is.list(pred.eot$resid.response)) {
-                                   pred.eot$resid.response 
+                                 resp = if(!is.list(pred.eot$resid.predictor)) {
+                                   pred.eot$resid.predictor 
                                  } else {
-                                   pred.eot$resid.response[[length(pred.eot$resid.response)]] 
+                                   pred.eot$resid.predictor[[length(pred.eot$resid.predictor)]] 
                                  }, 
                                  resp.eq.pred = resp.eq.pred,
                                  n = z, 
