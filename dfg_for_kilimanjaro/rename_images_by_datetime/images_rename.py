@@ -1,4 +1,5 @@
-"""Rename the images from meta data exif 
+"""This programm renames the images from the given directory. 
+The name have to be created by datetime from the meta data datetime exif
 Copyright (C) 2013, Spaska forteva
 
 This program is free software: you can redistribute it and/or modify
@@ -34,7 +35,7 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option('-d', '--dir', 
                   dest = "dir", 
-                  default = "",
+                  default = "/home/dogbert/workspace/tic/incoming/",
                   )
 
 (options, args) = parser.parse_args()
@@ -59,7 +60,7 @@ def get_exif(fn):
     return creation_date  
    
 def rename_files(root, files):
-    '''Matching filename pattern recursively
+    '''Matching filename to datetime as name
 
     Args:
         root: Root directory 
@@ -68,7 +69,8 @@ def rename_files(root, files):
     try:
         for filename in files:
            newFileName = get_exif(root + "/" + filename)
-           os.rename(root + "/" + filename, root + "/" + newFileName + ".JPG")
+           if not os.path.exists(newFileName):
+               os.rename(root + "/" + filename, root + "/" + newFileName + "_0000_.JPG")
 
     except Exception as inst:
         print "An error occured with the following dataset."
