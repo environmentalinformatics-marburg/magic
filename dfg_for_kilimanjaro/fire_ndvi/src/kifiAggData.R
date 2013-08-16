@@ -5,12 +5,17 @@ kifiAggData <- function(data,
                         over.fun = sum, 
                         dsn = ".",
                         out.str = "data",
+                        out.proj = NULL, 
                         n.cores = 2,
                         ...) {
   
   # Required packages
   lib <- c("doParallel", "raster")
   sapply(lib, function(...) stopifnot(require(..., character.only = T)))
+  
+  # Parallelization
+  clstr <- makePSOCKcluster(n.cores)
+  clusterEvalQ(clstr, c(library(rgdal), library(raster)))
   
   # Loop through single years
   tmp.ts.agg <- foreach(h = years) %do% {
@@ -22,8 +27,6 @@ kifiAggData <- function(data,
     }
     
     # Aggregate every n layers of each year or whole time span
-    clstr <- makePSOCKcluster(n.cores)
-    clusterEvalQ(clstr, c(library(rgdal), library(raster)))
     clusterExport(clstr, "tmp.ts", envir = environment())
     tmp.ts.agg <- parLapply(clstr, seq(1, nrow(tmp.ts), n), function(i) {
       if (length(na.omit(tmp.ts[i:(i+7), 2])) > 0) {
@@ -33,6 +36,12 @@ kifiAggData <- function(data,
       }
       
       if (class(tmp) != "logical") {
+        
+        # Output projection
+        if (!is.null(out.proj)) 
+          tmp <- projectRaster(tmp, crs = out.proj, method = "ngb")
+        
+        # Aggregation
         overlay(tmp, fun = over.fun, unstack = TRUE, 
                 filename = paste(dsn, out.str, "_", strftime(tmp.ts[i, date.col], format = "%Y%j"), sep = ""), ...)
       } else {
