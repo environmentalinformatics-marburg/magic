@@ -1,8 +1,9 @@
 kifiAbsChange <- function(fire.scenes, 
                           fire.ts.fls, 
-                          timespan, 
-                          fire.rst, 
-                          ndvi.rst, 
+                          timespan,
+                          fire.rst,
+                          fire.mat, 
+                          ndvi.mat, 
                           n.cores = 2, 
                           ...) {
   
@@ -21,19 +22,19 @@ kifiAbsChange <- function(fire.scenes,
     tmp.date <- fire.ts.fls[c(((i-timespan):(i-1)), ((i+1):(i+timespan))), 1]
     
     tmp.fire <- sapply(list((i-timespan):(i-1), (i+1):(i+timespan)), function(j) {
-                              fire.rst[j]
-                            })
+      fire.mat[j]
+    })
     
     tmp.ndvi <- sapply(list((i-timespan):(i-1), (i+1):(i+timespan)), function(j) {
-                              ndvi.rst[j]
-                            })
+      ndvi.mat[j]
+    })
     
     # Skip current loop if NDVI is completely missing for at least one of the 
     # three defined time steps
     if(any(sapply(tmp.ndvi, function(j) all(is.logical(j))))) return(NULL)
     
     # Fire cells in current scene
-    tmp.fire.cells <- which(fire.rst[[i]][] > 0)
+    tmp.fire.cells <- which(t(fire.mat[[i]])[] > 0)
     
     # Loop through single fire cells of current scene
     tmp.out <- foreach(j = tmp.fire.cells, .combine = "rbind") %do% {
@@ -48,16 +49,17 @@ kifiAbsChange <- function(fire.scenes,
       ## Deviation from mean before and after fire
       
       # Return NULL in case of any missing values
-      if (any(is.na(tmp.ndvi[[length(tmp.ndvi) - timespan]][ndvi.cells]) |
-                is.na(tmp.ndvi[[length(tmp.ndvi) - timespan + 1]][ndvi.cells])))
+      if (any(is.na(t(tmp.ndvi[[length(tmp.ndvi) - timespan]])[ndvi.cells]) |
+                is.na(t(tmp.ndvi[[length(tmp.ndvi) - timespan + 1]])[ndvi.cells])))
         return(NULL)
       
       # Calculate mean and deviation from mean
-      ndvi.mean <- mean(tmp.ndvi[[length(tmp.ndvi) - timespan]][ndvi.cells], na.rm = T)
+      ndvi.mean <- mean(t(tmp.ndvi[[length(tmp.ndvi) - timespan]])[ndvi.cells], 
+                        na.rm = T)
       
-      ndvi.dev.pre <- tmp.ndvi[[length(tmp.ndvi) - timespan]][ndvi.cells] - ndvi.mean
-      ndvi.dev.post <- tmp.ndvi[[length(tmp.ndvi) - timespan + 1]][ndvi.cells] - ndvi.mean
-
+      ndvi.dev.pre <- t(tmp.ndvi[[length(tmp.ndvi) - timespan]])[ndvi.cells] - ndvi.mean
+      ndvi.dev.post <- t(tmp.ndvi[[length(tmp.ndvi) - timespan + 1]])[ndvi.cells] - ndvi.mean
+      
       # Cell with maximum change in deviation from mean
       ndvi.dev.diff <- ndvi.dev.post - ndvi.dev.pre
       ndvi.cell <- ndvi.cells[which(ndvi.dev.diff == min(ndvi.dev.diff))]
@@ -66,10 +68,10 @@ kifiAbsChange <- function(fire.scenes,
       if (length(ndvi.cell) == 1) {
         
         # Fire and NDVI value of current cell in given time span
-        fire.vals <- sapply(tmp.fire, function(k) k[j])
+        fire.vals <- sapply(tmp.fire, function(k) t(k)[j])
         fire.vals[(timespan+1):length(fire.vals)] <- 1
         
-        ndvi.vals <- round(sapply(tmp.ndvi, function(k) k[ndvi.cell]) / 10000, 
+        ndvi.vals <- round(sapply(tmp.ndvi, function(k) t(k)[ndvi.cell]) / 10000, 
                            digits = 3)
         
         # Merge date, fire and NDVI information for current cell
@@ -81,12 +83,11 @@ kifiAbsChange <- function(fire.scenes,
         
       } else {
         
-        # Fire and NDVI values of current cells in given time span
-        fire.vals <- sapply(tmp.fire, function(k) k[j])
+        fire.vals <- sapply(tmp.fire, function(k) t(k)[j])
         fire.vals[(timespan+1):length(fire.vals)] <- 1
         
         ndvi.vals <- unlist(lapply(ndvi.cell, function(l) {
-          round(sapply(tmp.ndvi, function(k) k[l]) / 10000, digits = 3)
+          round(sapply(tmp.ndvi, function(k) t(k)[l]) / 10000, digits = 3)
         }))
         
         # Repetition factor for date and fire data
