@@ -9,14 +9,15 @@ path.wd <- "G:/ki_modis_ndvi" # Windows
 setwd(path.wd) 
 
 # Required packages and functions
-lib <- c("doParallel", "raster", "latticeExtra", "popbio", "ggplot2")
+lib <- c("doParallel", "raster", "rgdal", "party", 
+         "latticeExtra", "popbio", "ggplot2")
 sapply(lib, function(x) stopifnot(require(x, character.only = T)))
 
 lib.par <- c("rgdal", "raster", "foreach")
 
 fun <- paste("src", 
-             c("kifiAggData.R", "kifiMaxChange.R", "kifiProbMat.R", 
-               "myMinorTick.R"), sep = "/")
+             c("kifiAggData.R", "kifiAbsChange.R", "kifiRelChange.R",  
+               "kifiProbMat.R", "myMinorTick.R", "ndviCell.R"), sep = "/")
 sapply(fun, source)
 
 # Parallelization
@@ -59,7 +60,7 @@ ndvi.rst <- foreach(i = seq(nrow(ndvi.ts.fls)), .packages = lib.par) %dopar% {
 
 ## MODIS fire
 
-# Import raster files and aggregate on 8 days
+# Daily data: import raster files and aggregate on 8 days
 aggregate.exe <- F
 
 if (aggregate.exe) {
@@ -89,32 +90,34 @@ if (aggregate.exe) {
     out.str = "md14a1", format = "GTiff", overwrite = T, 
     out.proj = "+init=epsg:32737", n.cores = 4
   ))
-} else {
-  # List files
-  fire.fls <- list.files("data/overlay/md14a1_agg", pattern = "md14a1.*.tif$", full.names = TRUE)
-  
-  # Setup time series
-  fire.dates <- substr(basename(fire.fls), 8, 14)
-  fire.years <- unique(substr(basename(fire.fls), 8, 11))
+} 
 
-  fire.ts <- do.call("c", lapply(fire.years, function(i) { 
-    seq(as.Date(paste(i, "01", "01", sep = "-")), 
-        as.Date(paste(i, "12", "31", sep = "-")), 8)
-  }))
-  
-  # Merge time series with available fire data
-  fire.ts.fls <- merge(data.frame(date = fire.ts), 
-                       data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
-                                  file = fire.fls, stringsAsFactors = F), 
-                       by = "date", all.x = T)
-  
-  # Import aggregated fire data
-  fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib.par) %dopar% {
-    if (is.na(fire.ts.fls[i, 2])) {
-      NA
-    } else {
-      raster(fire.ts.fls[i, 2])
-    }
+
+# Aggregated data: list files
+fire.fls <- list.files("data/overlay/md14a1_agg", pattern = "md14a1.*.tif$", full.names = TRUE)
+
+# Setup time series
+fire.dates <- substr(basename(fire.fls), 8, 14)
+fire.years <- unique(substr(basename(fire.fls), 8, 11))
+
+fire.ts <- do.call("c", lapply(fire.years, function(i) { 
+  seq(as.Date(paste(i, "01", "01", sep = "-")), 
+      as.Date(paste(i, "12", "31", sep = "-")), 8)
+}))
+
+# Merge time series with available fire data
+fire.ts.fls <- merge(data.frame(date = fire.ts), 
+                     data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
+                                file = fire.fls, stringsAsFactors = F), 
+                     by = "date", all.x = T)
+
+# Import aggregated fire data
+if (!exists("fire.rst"))
+fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib.par) %dopar% {
+  if (is.na(fire.ts.fls[i, 2])) {
+    NA
+  } else {
+    raster(fire.ts.fls[i, 2])
   }
 }
 
@@ -123,38 +126,102 @@ fire.scenes <- foreach(i = fire.rst, .combine = "c", .packages = lib.par) %dopar
   if (class(i) != "logical") {maxValue(i) > 0} else {NA}
 }
 
-fire.cells <- sort(unique(
-  foreach(i = fire.rst, .combine = "c", .packages = lib.par) %dopar% {
-    if (class(i) != "logical") {which(getValues(i) > 0)} else {NA}
-}))
-
 
 ### NDVI prior to and after fire
 
-## Absolute change
+## Convert fire / NDVI rasters to matrices
 
-abschange.df <- kifiAbsChange(fire.scenes = fire.scenes, 
-                              fire.ts.fls = fire.ts.fls, 
-                              timespan = 1, 
-                              fire.rst = fire.rst, 
-                              ndvi.rst = ndvi.rst, 
-                              n.cores = 4)
-
-write.csv(abschange.df, "out/abschange.csv", row.names = F, quote = F)
+fire.mat <- foreach(i = fire.rst, .packages = lib) %dopar% as.matrix(i)
+ndvi.mat <- foreach(i = ndvi.rst, .packages = lib) %dopar% as.matrix(i)
 
 
-## Relative change
+## Identify fire cell in NDVI 
 
-relchange.df <- kifiRelChange(fire.scenes = fire.scenes, 
-                              fire.ts.fls = fire.ts.fls, 
-                              timespan = 1, 
-                              fire.rst = fire.rst, 
-                              ndvi.rst = ndvi.rst, 
-                              n.cores = 4)
-relchange.df[, "ndvi_diff"] <- round(relchange.df[, "ndvi_diff"] / 10000, 3)
+burnt.ndvi.cells <- ndviCell(fire.scenes = fire.scenes, 
+                             fire.ts.fls = fire.ts.fls, 
+                             fire.rst = fire.rst,
+                             ndvi.rst = ndvi.rst,
+                             fire.mat = fire.mat, 
+                             ndvi.mat = ndvi.mat, 
+                             n.cores = 4)
 
-write.csv(relchange.df, "out/relchange.csv", row.names = F, quote = F)
+write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", row.names = F, quote = F)
 
+tmp <- ctree(as.factor(fire) ~ ndvi_diff + ndvi_meandev, data = burnt.ndvi.cells, 
+             controls = ctree_control(minbucket = 500))
+
+###
+set.seed(10)
+
+index <- sample(nrow(burnt.ndvi.cells), 1000)
+
+train <- burnt.ndvi.cells[index, ]
+valid <- burnt.ndvi.cells[-index, ]
+
+tree <- ctree(as.factor(fire) ~ ndvi_diff + ndvi_meandev + ndvi, data = train, 
+              controls = ctree_control(minbucket = 150))
+
+pred <- predict(tree, newdata = valid)
+
+table.result <- table(valid$fire, pred)
+# ftable(valid$fire, pred)
+
+C <- table.result[1,1]  # correct negatives
+F <- table.result[1,2]  # false alarm
+M <- table.result[2,1]  # misses
+H <- table.result[2,2]  # hits
+T <- C+F+M+H                 # total      
+
+Acc = (H+C)/T 
+BIAS = (H+F)/(H+M) 
+POD = H/(H+M) 
+PFD = F/(F+C) 
+FAR = F/(H+F) 
+CSI = H/(H+F+M) 
+H_random1 = ( ((H+F)*(H+M)) + ((C+F)*(C+M)) ) /T
+HSS = ((H+C)-H_random1)/(T-H_random1)
+HKD = (H/(H+M))-(F/(F+C))
+H_random2 = ((H+M)*(H+F))/(H+F+M+C)
+ETS=(H-H_random2)/((H+F+M)-H_random2) 
+AreaR = ((M+H)/T) * 100
+AreaS = ((F+H)/T) * 100
+
+score <- c(Acc, BIAS, POD, PFD, FAR, CSI,HSS,HKD,ETS,T,AreaR,AreaS,C,F,M,H)
+#return (score)
+score
+###
+
+
+
+# ## Absolute change
+# 
+# abschange.df <- kifiAbsChange(fire.scenes = fire.scenes, 
+#                               fire.ts.fls = fire.ts.fls, 
+#                               timespan = 1, 
+#                               fire.rst = fire.rst,
+#                               ndvi.rst = ndvi.rst,
+#                               fire.mat = fire.mat, 
+#                               ndvi.mat = ndvi.mat, 
+#                               n.cores = 4)
+# 
+# write.csv(abschange.df, "out/abschange.csv", row.names = F, quote = F)
+# 
+# 
+# ## Relative change
+# 
+# relchange.df <- kifiRelChange(fire.scenes = fire.scenes, 
+#                               fire.ts.fls = fire.ts.fls, 
+#                               timespan = 1, 
+#                               fire.rst = fire.rst,
+#                               ndvi.rst = ndvi.rst,
+#                               fire.mat = fire.mat, 
+#                               ndvi.mat = ndvi.mat, 
+#                               n.cores = 4)
+# 
+# write.csv(relchange.df, "out/relchange.csv", row.names = F, quote = F)
+# 
+# # Merge absolute and relative changes
+# absrelchange.df <- merge(abschange.df, relchange.df, all = T, by = c(1, 2))
 
 # ### Logistic regression
 # 
