@@ -17,7 +17,7 @@ lib.par <- c("rgdal", "raster", "foreach")
 
 fun <- paste("src", 
              c("kifiAggData.R", "kifiAbsChange.R", "kifiRelChange.R",  
-               "kifiProbMat.R", "myMinorTick.R", "ndviCell.R"), sep = "/")
+               "probRst.R", "myMinorTick.R", "ndviCell.R", "evalTree.R"), sep = "/")
 sapply(fun, source)
 
 # Parallelization
@@ -145,161 +145,94 @@ burnt.ndvi.cells <- ndviCell(fire.scenes = fire.scenes,
                              ndvi.mat = ndvi.mat, 
                              n.cores = 4)
 
-write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", row.names = F, quote = F)
-
-tmp <- ctree(as.factor(fire) ~ ndvi_diff + ndvi_meandev, data = burnt.ndvi.cells, 
-             controls = ctree_control(minbucket = 500))
-
-###
-set.seed(10)
-
-index <- sample(nrow(burnt.ndvi.cells), 1000)
-
-train <- burnt.ndvi.cells[index, ]
-valid <- burnt.ndvi.cells[-index, ]
-
-tree <- ctree(as.factor(fire) ~ ndvi_diff + ndvi_meandev + ndvi, data = train, 
-              controls = ctree_control(minbucket = 150))
-
-pred <- predict(tree, newdata = valid)
-
-table.result <- table(valid$fire, pred)
-# ftable(valid$fire, pred)
-
-C <- table.result[1,1]  # correct negatives
-F <- table.result[1,2]  # false alarm
-M <- table.result[2,1]  # misses
-H <- table.result[2,2]  # hits
-T <- C+F+M+H                 # total      
-
-Acc = (H+C)/T 
-BIAS = (H+F)/(H+M) 
-POD = H/(H+M) 
-PFD = F/(F+C) 
-FAR = F/(H+F) 
-CSI = H/(H+F+M) 
-H_random1 = ( ((H+F)*(H+M)) + ((C+F)*(C+M)) ) /T
-HSS = ((H+C)-H_random1)/(T-H_random1)
-HKD = (H/(H+M))-(F/(F+C))
-H_random2 = ((H+M)*(H+F))/(H+F+M+C)
-ETS=(H-H_random2)/((H+F+M)-H_random2) 
-AreaR = ((M+H)/T) * 100
-AreaS = ((F+H)/T) * 100
-
-score <- c(Acc, BIAS, POD, PFD, FAR, CSI,HSS,HKD,ETS,T,AreaR,AreaS,C,F,M,H)
-#return (score)
-score
-###
+# write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", row.names = F, quote = F)
+# burnt.ndvi.cells <- read.csv("out/burnt_ndvi_cells.csv")
 
 
+### Classification
 
-# ## Absolute change
-# 
-# abschange.df <- kifiAbsChange(fire.scenes = fire.scenes, 
-#                               fire.ts.fls = fire.ts.fls, 
-#                               timespan = 1, 
-#                               fire.rst = fire.rst,
-#                               ndvi.rst = ndvi.rst,
-#                               fire.mat = fire.mat, 
-#                               ndvi.mat = ndvi.mat, 
-#                               n.cores = 4)
-# 
-# write.csv(abschange.df, "out/abschange.csv", row.names = F, quote = F)
-# 
-# 
-# ## Relative change
-# 
-# relchange.df <- kifiRelChange(fire.scenes = fire.scenes, 
-#                               fire.ts.fls = fire.ts.fls, 
-#                               timespan = 1, 
-#                               fire.rst = fire.rst,
-#                               ndvi.rst = ndvi.rst,
-#                               fire.mat = fire.mat, 
-#                               ndvi.mat = ndvi.mat, 
-#                               n.cores = 4)
-# 
-# write.csv(relchange.df, "out/relchange.csv", row.names = F, quote = F)
-# 
-# # Merge absolute and relative changes
-# absrelchange.df <- merge(abschange.df, relchange.df, all = T, by = c(1, 2))
+## Evaluation
 
-# ### Logistic regression
-# 
-# tmp.sub <- maxchange.df[-seq(1, nrow(maxchange.df), 3), ]
-# # Remove penultimate NDVI values from data.frame
-# 
-# # Dependent and independent variables
-# depend <- tmp.sub$fire
-# independ <- tmp.sub$ndvi_diff
-# 
-# # GLM
-# model <- glm(depend ~ independ, family = binomial)
-# 
-# # Plot logistic regression
-# x.new <- seq(min(independ), max(independ), len = 100)
-# y.new <- predict(mod2, data.frame(independ = x.new), type = "response")
-# 
-# plot(fire ~ ndvi_diff, data = tmp.sub)
-# lines(x.new, y.new, col = "red")
+# Calculate ctree() for varying bucket sizes
+eval.tree <- evalTree(independ = c(6, 7, 8), 
+                     depend = 4, 
+                     data = burnt.ndvi.cells, 
+                     minbucket = seq(50, 450, 50), 
+                     n.cores = 2)
 
-# Calculate fire propability matrices of NDVI cells
-fire.prob.rst <- kifiProbMat(fire.scenes = fire.scenes, 
-                             fire.ts.fls = fire.ts.fls, 
-                             timespan = 1, 
-                             fire.rst = fire.rst, 
-                             ndvi.rst = ndvi.rst, 
-                             model = model, 
-                             n.cores = 4)
+# # Store output
+# write.csv(eval.tree, "out/ctree_scores.csv", quote = FALSE, row.names = FALSE)
+# eval.tree <- read.csv("out/ctree_scores.csv")
 
-# Store output
-foreach(i = fire.prob.rst, j = seq(fire.prob.rst), .packages = lib.par) %dopar% {
-  if(!is.null(i))
-    writeRaster(i, filename = paste("out/ndvi_prob", 
-                                    names(ndvi.rst[[which(fire.scenes)[j]]]), sep = "/"), 
+
+## Probability calculation
+
+# Classification tree
+model <- ctree(as.factor(fire) ~ ndvi + ndvi_diff + ndvi_meandev, 
+               data = burnt.ndvi.cells, controls = ctree_control(minbucket = 50))
+
+# Probability rasters
+prob.rst <- probRst(fire.scenes = fire.scenes, 
+                    fire.ts.fls = fire.ts.fls, 
+                    fire.rst = fire.rst,
+                    ndvi.rst = ndvi.rst,
+                    fire.mat = fire.mat, 
+                    ndvi.mat = ndvi.mat, 
+                    model = model, 
+                    n.cores = 4)
+
+# Output storage
+out.names <- paste(gsub("md14a1", "md13q1", 
+                        sapply(fire.rst[which(fire.scenes)], names)), 
+                   "prob.tif", sep = "_")
+
+foreach(i = prob.rst, j = seq(prob.rst), .packages = lib) %dopar% {
+  if (!is.null(i))
+    writeRaster(i, filename = paste("out/ndvi_prob", out.names[j], sep = "/"),  
                 format = "GTiff", overwrite = T)
 }
 
 
-### Plotting stuff
-
-# Individual color scheme
-my.bw.theme <- trellis.par.get()
-my.bw.theme$box.rectangle$col = "grey80" 
-my.bw.theme$box.umbrella$col = "grey80"
-my.bw.theme$plot.symbol$col = "grey80"
-
-# Plot logistic GLM fit including histogram 
-png("out/glm_ndvi_fire.png", width = 800, height = 600)
-par(bg = "white")
-logi.hist.plot(independ, depend, boxp = F, type = "hist", col = "gray", 
-               xlab = "Temporal change in NDVI")
-axis(3, seq(-1, 1, .2))
-for (i in 1:3) myMinorTick(side = i)
-dev.off()
-
-# Transform information about fire occurence (0/1) to factor
-tmp.sub$fire <- factor(ifelse(tmp.sub$fire == 0, "no", "yes"))
-
-# Scatterplot with point density distribution and boxplots
-png("out/fire_ndvi_prepos_mincell.png", width = 800, height = 600)
-plot(xyplot(fire ~ ndvi_diff, data = tmp.sub,
-            par.settings = my.bw.theme, 
-            xlab = "Temporal change in NDVI", ylab = "Fire", panel = function(x, y) {
-              panel.smoothScatter(x, y, nbin = 500, bandwidth = .1, cuts = 10, nrpoints = 0)
-              panel.bwplot(x, y, box.ratio = .25, pch = "|", notch = TRUE, 
-                           par.settings = my.bw.theme)
-            }))
-dev.off()
-
-# Densityplot
-png("out/dens_ndvi.png", width = 800, height = 600)
-print(ggplot(tmp.sub, aes(x = ndvi_diff, fill = fire)) + 
-  geom_density(alpha = .5) + 
-  scale_fill_manual(values = c("no" = "black", "yes" = "red")) + 
-  guides(fill = guide_legend(title = "Fire" ,
-                             title.theme = element_text( face="plain", angle=0 ))) + 
-  ylab("Density") + xlab("Temporal change in NDVI"))
-dev.off()
-
-# Deregister parallel backend
-stopCluster(clstr)
+# ### Plotting stuff
+# 
+# # Individual color scheme
+# my.bw.theme <- trellis.par.get()
+# my.bw.theme$box.rectangle$col = "grey80" 
+# my.bw.theme$box.umbrella$col = "grey80"
+# my.bw.theme$plot.symbol$col = "grey80"
+# 
+# # Plot logistic GLM fit including histogram 
+# png("out/glm_ndvi_fire.png", width = 800, height = 600)
+# par(bg = "white")
+# logi.hist.plot(independ, depend, boxp = F, type = "hist", col = "gray", 
+#                xlab = "Temporal change in NDVI")
+# axis(3, seq(-1, 1, .2))
+# for (i in 1:3) myMinorTick(side = i)
+# dev.off()
+# 
+# # Transform information about fire occurence (0/1) to factor
+# tmp.sub$fire <- factor(ifelse(tmp.sub$fire == 0, "no", "yes"))
+# 
+# # Scatterplot with point density distribution and boxplots
+# png("out/fire_ndvi_prepos_mincell.png", width = 800, height = 600)
+# plot(xyplot(fire ~ ndvi_diff, data = tmp.sub,
+#             par.settings = my.bw.theme, 
+#             xlab = "Temporal change in NDVI", ylab = "Fire", panel = function(x, y) {
+#               panel.smoothScatter(x, y, nbin = 500, bandwidth = .1, cuts = 10, nrpoints = 0)
+#               panel.bwplot(x, y, box.ratio = .25, pch = "|", notch = TRUE, 
+#                            par.settings = my.bw.theme)
+#             }))
+# dev.off()
+# 
+# # Densityplot
+# png("out/dens_ndvi.png", width = 800, height = 600)
+# print(ggplot(tmp.sub, aes(x = ndvi_diff, fill = fire)) + 
+#   geom_density(alpha = .5) + 
+#   scale_fill_manual(values = c("no" = "black", "yes" = "red")) + 
+#   guides(fill = guide_legend(title = "Fire" ,
+#                              title.theme = element_text( face="plain", angle=0 ))) + 
+#   ylab("Density") + xlab("Temporal change in NDVI"))
+# dev.off()
+# 
+# # Deregister parallel backend
+# stopCluster(cl)
