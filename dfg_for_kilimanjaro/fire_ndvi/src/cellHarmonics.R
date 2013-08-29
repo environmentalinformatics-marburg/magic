@@ -1,0 +1,90 @@
+cellHarmonics <- function(st, 
+                          nd, 
+                          st.start, st.end, 
+                          nd.start, nd.end, 
+                          n.cores = 2) {
+  
+  ## Environmental stuff
+  
+  # Packages
+  lib <- c("rgdal", "doParallel", "TSA")
+  sapply(lib, function(...) stopifnot(require(..., character.only = T)))
+  
+  # Parallelization
+  registerDoParallel(cl <- makeCluster(n.cores))
+  
+  
+  ## Data processing
+  
+  # Extract values
+  st.mat <- getValues(st)
+  nd.mat <- getValues(nd)
+  
+  # ndvi.start <- substr(unique(substr(ndvi.ts.fls[, 1], 1, 7)), 1, 4) %in% 
+  #   ndvi.years[2:4]
+  # ndvi.end <- substr(unique(substr(ndvi.ts.fls[, 1], 1, 7)), 1, 4) %in% 
+  #   ndvi.years[9:11]
+  # 
+  # rst.st <- stack(ndvi.rst.agg[ndvi.start])
+  # rst.nd <- stack(ndvi.rst.agg[ndvi.end])
+  
+  # Stop if start and end rasters have different number of cells
+  if (nrow(st.mat) != nrow(nd.mat))
+    stop("Start and end data have unequal number of cells.
+         Check data integrity!")
+  
+  
+  # Calculate differences in amplitude and phase per cell
+  params <- foreach(i = seq(nrow(st.mat))[1:12], .packages = lib) %dopar% {
+    
+    fit.med <- foreach(j = list(st.mat, nd.mat), k = list(st.start, nd.start), 
+                       l = list(st.end, nd.end)) %do% {
+      # Cell time series
+      tmp.ts <- ts(j[i, ], start = k, end = l, frequency = 12)
+      # Harmonic functions
+      tmp.har <- harmonic(tmp.ts)
+      
+      # Linear model fitting
+      tmp.mod <- lm(tmp.ts ~ tmp.har)
+      tmp.fit <- ts(fitted(tmp.mod), start = st.start, end = st.end, 
+                    frequency = 12)
+      
+      tmp.fit.med <- apply(matrix(tmp.fit, ncol = 12, byrow = T), 2, 
+                           FUN = median)
+    }
+    
+    # Month with hightest NDVI + corresponding value
+    st.max.x <- which(fit.med[[1]] == max(fit.med[[1]]))
+    st.max.y <- fit.med[[1]][st.max.x]
+    nd.max.x <- which(fit.med[[2]] == max(fit.med[[2]]))
+    nd.max.y <- fit.med[[2]][nd.max.x]
+    
+    # Month with lowest NDVI + corresponding value
+    st.min.x <- which(fit.med[[1]] == min(fit.med[[1]]))
+    st.min.y <- fit.med[[1]][st.min.x]
+    nd.min.x <- which(fit.med[[2]] == min(fit.med[[2]]))
+    nd.min.y <- fit.med[[2]][nd.min.x]
+    
+    # Return output    
+    return(list(st = list(max.x = st.max.x, 
+                          max.y = st.max.y, 
+                          min.x = st.min.x, 
+                          min.y = st.min.y), 
+                nd = list(max.x = nd.max.x, 
+                          max.y = nd.max.y, 
+                          min.x = nd.min.x, 
+                          min.y = nd.min.y)))
+  }
+  
+  # Rasterize calculated values
+  param.rst <- foreach(h = seq(2)) %do% {
+    foreach(i = seq(4), .combine = "stack", .packages = lib) %dopar% {
+      raster(matrix(sapply(lapply(params, "[[", h), "[[", i), ncol = ncol(st), 
+             nrow = nrow(st), byrow = T), template = st)
+    }
+  }
+  
+  # Return output
+  stopCluster(cl)
+  return(param.rst)
+}
