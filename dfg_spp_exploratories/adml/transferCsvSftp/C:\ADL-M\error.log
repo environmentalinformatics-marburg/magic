@@ -1,0 +1,484 @@
+=============================================================================
+August 9, 2013 10:08:00 AM CEST
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:92)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+=============================================================================
+August 9, 2013 10:10:04 AM CEST
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:93)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at Transfer.copyFilesToServer(Transfer.java:65)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.copyFilesToServer(Transfer.java:93)
+	at Transfer.copyFilesToServer(Transfer.java:74)
+	at Transfer.main(Transfer.java:40)
+=============================================================================
+August 9, 2013 10:10:11 AM CEST
+
+=============================================================================
+August 9, 2013 10:18:12 AM CEST
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+=============================================================================
+August 9, 2013 10:18:49 AM CEST
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._put(ChannelSftp.java:545)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:437)
+	at com.jcraft.jsch.ChannelSftp.put(ChannelSftp.java:338)
+	at Transfer.copyFilesToServer(Transfer.java:76)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.copyFilesToServer(Transfer.java:78)
+	at Transfer.main(Transfer.java:49)
+=============================================================================
+August 9, 2013 10:19:40 AM CEST
+
+=============================================================================
+August 9, 2013 10:24:03 AM CEST
+
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:77)
+	at Transfer.main(Transfer.java:49)
+=============================================================================
+August 9, 2013 10:25:04 AM CEST
+
+=============================================================================
+August 9, 2013 10:26:07 AM CEST
+
+=============================================================================
+August 9, 2013 10:27:33 AM CEST
+
+=============================================================================
+August 9, 2013 10:28:05 AM CEST
+
+=============================================================================
+August 9, 2013 10:28:12 AM CEST
+
+=============================================================================
+August 9, 2013 10:42:02 AM CEST
+
+=============================================================================
+August 9, 2013 10:42:44 AM CEST
+
+=============================================================================
+August 9, 2013 10:42:57 AM CEST
+
+=============================================================================
+August 9, 2013 10:45:47 AM CEST
+
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+=============================================================================
+August 9, 2013 10:46:25 AM CEST
+
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+=============================================================================
+August 9, 2013 10:49:12 AM CEST
+
+=============================================================================
+August 9, 2013 11:04:55 AM CEST
+
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+=============================================================================
+August 9, 2013 11:06:01 AM CEST
+
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at Transfer.copyFilesToServer(Transfer.java:81)
+	at Transfer.copyFilesToServer(Transfer.java:86)
+	at Transfer.main(Transfer.java:51)

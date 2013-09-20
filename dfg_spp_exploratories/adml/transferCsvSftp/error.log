@@ -1,0 +1,85 @@
+=============================================================================
+18. Januar 2013 15:58 Uhr MEZ
+
+java.lang.ArrayIndexOutOfBoundsException: 1
+	at CopyToServer.main(CopyToServer.java:49)
+=============================================================================
+18. Januar 2013 16:09 Uhr MEZ
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:97)
+	at CopyToServer.main(CopyToServer.java:50)
+=============================================================================
+18. Januar 2013 16:16 Uhr MEZ
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:98)
+	at CopyToServer.main(CopyToServer.java:50)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:115)
+	at CopyToServer.main(CopyToServer.java:50)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:98)
+	at CopyToServer.main(CopyToServer.java:50)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:115)
+	at CopyToServer.main(CopyToServer.java:50)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:98)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:121)
+	at CopyToServer.main(CopyToServer.java:50)
+4: Failure
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp.mkdir(ChannelSftp.java:2035)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:115)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:121)
+	at CopyToServer.main(CopyToServer.java:50)
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:98)
+	at CopyToServer.main(CopyToServer.java:50)
+=============================================================================
+18. Januar 2013 16:25 Uhr MEZ
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:108)
+	at CopyToServer.main(CopyToServer.java:50)
+=============================================================================
+18. Januar 2013 16:31 Uhr MEZ
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:108)
+	at CopyToServer.main(CopyToServer.java:50)
+=============================================================================
+18. Januar 2013 16:33 Uhr MEZ
+
+2: No such file
+	at com.jcraft.jsch.ChannelSftp.throwStatusError(ChannelSftp.java:2629)
+	at com.jcraft.jsch.ChannelSftp._realpath(ChannelSftp.java:2160)
+	at com.jcraft.jsch.ChannelSftp.cd(ChannelSftp.java:315)
+	at CopyToServer.copyFilesToServer(CopyToServer.java:108)
+	at CopyToServer.main(CopyToServer.java:50)
