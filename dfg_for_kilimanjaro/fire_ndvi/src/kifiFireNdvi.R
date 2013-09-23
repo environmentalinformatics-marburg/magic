@@ -4,20 +4,18 @@
 rm(list = ls(all = TRUE))
 
 # Working directory
-# path.wd <- "/media/pa_NDown/ki_modis_ndvi" # Linux
-path.wd <- "G:/ki_modis_ndvi" # Windows
-setwd(path.wd) 
+switch(Sys.info()[["sysname"]], 
+       "Linux" = {path.wd <- "/media/pa_NDown/ki_modis_ndvi/"}, 
+       "Windows" = {path.wd <- "G:/ki_modis_ndvi"})
+setwd(path.wd)
 
 # Required packages and functions
 lib <- c("doParallel", "raster", "rgdal", "party", 
          "latticeExtra", "popbio", "ggplot2")
 sapply(lib, function(x) stopifnot(require(x, character.only = T)))
 
-lib.par <- c("rgdal", "raster", "foreach")
-
-fun <- paste("src", 
-             c("kifiAggData.R", "kifiAbsChange.R", "kifiRelChange.R",  
-               "probRst.R", "myMinorTick.R", "ndviCell.R", "evalTree.R"), sep = "/")
+fun <- paste("src", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
+                      "ndviCell.R", "evalTree.R"), sep = "/")
 sapply(fun, source)
 
 # Parallelization
@@ -49,7 +47,7 @@ ndvi.ts.fls <- merge(data.frame(date = ndvi.ts),
                      by = "date", all.x = T)
 
 # Import raster files
-ndvi.rst <- foreach(i = seq(nrow(ndvi.ts.fls)), .packages = lib.par) %dopar% {
+ndvi.rst <- foreach(i = seq(nrow(ndvi.ts.fls)), .packages = lib) %dopar% {
   if (is.na(ndvi.ts.fls[i, 2])) {
     NA
   } else {
@@ -61,7 +59,7 @@ ndvi.rst <- foreach(i = seq(nrow(ndvi.ts.fls)), .packages = lib.par) %dopar% {
 ## MODIS fire
 
 # Daily data: import raster files and aggregate on 8 days
-aggregate.exe <- F
+aggregate.exe <- T
 
 if (aggregate.exe) {
   # List files
@@ -113,7 +111,7 @@ fire.ts.fls <- merge(data.frame(date = fire.ts),
 
 # Import aggregated fire data
 if (!exists("fire.rst"))
-fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib.par) %dopar% {
+fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib) %dopar% {
   if (is.na(fire.ts.fls[i, 2])) {
     NA
   } else {
@@ -122,7 +120,7 @@ fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib.par) %dopar% {
 }
 
 # Identification of fire scenes and fire pixels
-fire.scenes <- foreach(i = fire.rst, .combine = "c", .packages = lib.par) %dopar% {
+fire.scenes <- foreach(i = fire.rst, .combine = "c", .packages = lib) %dopar% {
   if (class(i) != "logical") {maxValue(i) > 0} else {NA}
 }
 
@@ -157,8 +155,7 @@ burnt.ndvi.cells <- ndviCell(fire.scenes = fire.scenes,
 eval.tree <- evalTree(independ = c(6, 7, 8), 
                      depend = 4, 
                      data = burnt.ndvi.cells, 
-                     minbucket = seq(50, 450, 50), 
-                     n.cores = 2)
+                     minbucket = seq(50, 450, 50))
 
 # # Store output
 # write.csv(eval.tree, "out/ctree_scores.csv", quote = FALSE, row.names = FALSE)
@@ -189,6 +186,28 @@ out.names <- paste(gsub("md14a1", "md13q1",
 foreach(i = prob.rst, j = seq(prob.rst), .packages = lib) %dopar% {
   if (!is.null(i))
     writeRaster(i, filename = paste("out/ndvi_prob", out.names[j], sep = "/"),  
+                format = "GTiff", overwrite = T)
+}
+
+# Response rasters
+resp.rst <- probRst(fire.scenes = fire.scenes, 
+                    fire.ts.fls = fire.ts.fls, 
+                    fire.rst = fire.rst,
+                    ndvi.rst = ndvi.rst,
+                    fire.mat = fire.mat, 
+                    ndvi.mat = ndvi.mat, 
+                    model = model, 
+                    type = "response",
+                    n.cores = 4)
+
+# Output storage
+out.names <- paste(gsub("md14a1", "md13q1", 
+                        sapply(fire.rst[which(fire.scenes)], names)), 
+                   "resp.tif", sep = "_")
+
+foreach(i = resp.rst, j = seq(resp.rst), .packages = lib) %dopar% {
+  if (!is.null(i))
+    writeRaster(i, filename = paste("out/ndvi_resp", out.names[j], sep = "/"),  
                 format = "GTiff", overwrite = T)
 }
 

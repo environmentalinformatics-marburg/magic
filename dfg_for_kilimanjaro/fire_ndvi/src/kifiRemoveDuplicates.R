@@ -5,18 +5,18 @@ kifiRemoveDuplicates <- function(hdf.path,
                                  ...) {
   
   # Packages
-  library(doParallel)
-  library(raster)
+  lib <- c("doParallel", "raster")
+  sapply(lib, function(x) stopifnot(require(x, character.only = T)))
   
   # Parallelisation
   registerDoParallel(clstr <- makeCluster(n.cores))
   
   # Retrieve DAYSOFYEAR for both TERRA (MOD) and AQUA (MYD)
   hdf.info <- foreach(i = hdf.pattern, .packages = "rgdal") %dopar% {
-    tmp.fls <- list.files(hdf.path, pattern = i, recursive = TRUE, full.names = TRUE)
+    tmp.fls <- list.files(hdf.path, pattern = i, recursive = T, full.names = T)
     
     tmp.fls.doy <- sapply(tmp.fls, function(j) {
-      tmp.info <- GDALinfo(j, returnScaleOffset = FALSE, silent = TRUE)
+      tmp.info <- GDALinfo(j, returnScaleOffset = F, silent = T)
       tmp.doy <- attr(tmp.info, "mdata")[grep("DAYSOFYEAR", attr(tmp.info, "mdata"))]
       
       return(unlist(strsplit(substr(tmp.doy, 12, nchar(tmp.doy)), ", ")))

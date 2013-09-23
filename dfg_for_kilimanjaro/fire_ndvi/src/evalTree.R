@@ -4,15 +4,14 @@ evalTree <- function(independ = NULL,
                      seed = 10, 
                      size = 1000,
                      minbucket = 100,
-                     n.cores = 1,
+                     rainy.areas = F,
                      ...) {
 
-  
   ##############################################################################
   ##  
-  ##  This function evaluates the performance of a so-called conditional
-  ##  inference tree (see ?ctree for details) by calculating various scores, 
-  ##  e.g. accuracy, probability of detection, false alarm ratio. See
+  ##  This function builts a conditional inference tree (see ?ctree for details) 
+  ##  and evaluates it by calling another function that calculates various 
+  ##  scores, e.g. accuracy, probability of detection, false alarm ratio. See
   ##  http://cawcr.gov.au/projects/verification/ for further information.
   ##  
   ##  Parameters are as follows:
@@ -25,17 +24,15 @@ evalTree <- function(independ = NULL,
   ##  size (numeric):       Size of the training sample.
   ##  minbucket (numeric):  Numeric vector specifying the minimum sum of weights
   ##                        in a terminal node.
-  ##  n.cores (numeric):    Number of cores for parallel execution.
   ##  ...                   Further arguments passed on to ctree_control().
   ##
   ##############################################################################
   
-  # Load required packages
-  lib <- c("doParallel", "party")
+  # Load required packages and functions
+  lib <- c("foreach", "party")
   sapply(lib, function(...) stopifnot(require(..., character.only = T)))
   
-  # Parallelization
-  registerDoParallel(cl <- makeCluster(n.cores))
+  source("src/calcScores.R")
   
   # Draw random sample
   set.seed(seed)
@@ -49,17 +46,14 @@ evalTree <- function(independ = NULL,
   if (is.null(independ)) {
     frml <- as.formula(paste(names(data)[depend], ".", sep = " ~ "))
   } else {
-    frml <- as.formula(paste(names(data)[depend], 
+    frml <- as.formula(paste("as.factor(", names(data)[depend], ") ~ ", 
                              paste(names(data)[independ], collapse = " + "), 
-                             sep = " ~ "))
+                             sep = ""))
   }
   
   # Loop through different bucket sizes
-  out.tree <- foreach(i = minbucket, .packages = "party", 
-                      .combine = function(...) {
-                        as.data.frame(rbind(...))
-                      }) %dopar% {
-                                                
+  out.tree <- foreach(i = minbucket, .combine = "rbind") %do% { 
+    
     # Conditional inference tree
     tree <- ctree(frml, data = train, 
                   controls = ctree_control(minbucket = i, ...))
@@ -68,45 +62,11 @@ evalTree <- function(independ = NULL,
     pred <- predict(tree, valid, type = "response")
     
     # Calculate and return scores
-    table.result <- table(valid$fire, pred)
-    
-    C <- table.result[1,1]  # correct negatives
-    F <- table.result[1,2]  # false alarm
-    M <- table.result[2,1]  # misses
-    H <- table.result[2,2]  # hits
-    T <- C+F+M+H            # total      
-    
-    Acc = (H+C)/T           # accuracy
-    BIAS = (H+F)/(H+M)      # bias score
-    POD = H/(H+M)           # probability of detection
-    PFD = F/(F+C)           # probability of false detection
-    FAR = F/(H+F)           # false alarm ratio
-    CSI = H/(H+F+M)         # critical success index
-    H_random1 = ( ((H+F)*(H+M)) + ((C+F)*(C+M)) ) /T
-    HSS = ((H+C)-H_random1)/(T-H_random1) # Heidke skill score
-    HKD = (H/(H+M))-(F/(F+C))             # Hanssen-Kuipers discriminant
-    H_random2 = ((H+M)*(H+F))/(H+F+M+C)
-    ETS=(H-H_random2)/((H+F+M)-H_random2) # equitable threat score
-    AreaR = ((M+H)/T) * 100               # rain area radar
-    AreaS = ((F+H)/T) * 100               # rain area satellite
-    
-    score <- c(Acc, BIAS, POD, PFD, FAR, CSI, HSS, HKD, ETS,
-               T, AreaR, AreaS, C, F, M, H)
-    
-    return(score)
+    calcScores(predicted = pred, 
+               observed = valid$fire, 
+               rainy.areas = rainy.areas)
   }
-  
-  # Set column and row names
-  names(out.tree) <- c("ACC", "BIAS", "POD", "PFD", "FAR", "CSI", "HSS", "HKD", 
-                       "ETS", "T", "AreaR", "AreaS", "C", "F", "M", "H")
-  #   names(out.tree) <- c("accuracy", "bias_score", "probability_of_detection", 
-  #                        "probability_of_false_detection", "false_alarm_ratio", 
-  #                        "critical_success_index", "heidke_skill_score", 
-  #                        "hanssen_kuipers_discriminant", "equitable_threat_score", 
-  #                        "total_pixels", "rain_area_radar", "rain_area_satellite", 
-  #                        "correct_negatives", "false_alarm", "misses", "hits")
-  
-  # Deregister cluster and return output
-  stopCluster(cl)
+    
+  # Return output
   return(data.frame(minbucket = minbucket, out.tree))
 }

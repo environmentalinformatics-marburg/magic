@@ -4,20 +4,17 @@
 rm(list = ls(all = T))
 
 # Working directory
-path.wd <- "G:/ki_modis_ndvi"
-setwd(path.wd) 
+switch(Sys.info()[["sysname"]], 
+       "Linux" = {path.wd <- "/media/pa_NDown/ki_modis_ndvi/"}, 
+       "Windows" = {path.wd <- "G:/ki_modis_ndvi"})
+setwd(path.wd)
 
 # Required packages and functions
 lib <- c("raster", "rgdal", "doParallel", "zoo", "Rssa")
 sapply(lib, function(...) require(..., character.only = T))
 
-lib.par <- c("rgdal", "raster", "zoo", "Rssa")
-
 fun <- paste("src", c("gfGapLength.R", "gfNogapLength.R"), sep = "/")
 sapply(fun, source)
-
-# Parallelization
-registerDoParallel(cl <- makeCluster(4))
 
 
 ### Data import
@@ -32,15 +29,30 @@ kili <- spTransform(kili, CRS("+init=epsg:32737"))
 
 ## NDVI data
 
-ndvi.rst <- foreach(i = c("NDVI.tif$", "pixel_reliability.tif$"), .packages = lib.par) %dopar% {
-  # List available files
-  ndvi.fls <- list.files("data/MODIS_ARC/PROCESSED", 
-                         pattern = i, recursive = T, full.names = T)
-  ndvi.fls <- ndvi.fls[order(substr(basename(ndvi.fls), 10, 16))]
-  
-  # Stack and crop files
-  ndvi.rst <- stack(ndvi.fls)
-  return(crop(ndvi.rst, extent(kili)))
+# ndvi.rst <- foreach(i = c("NDVI.tif$", "pixel_reliability.tif$"), .packages = lib) %dopar% {
+#   # List available files
+#   ndvi.fls <- list.files("data/MODIS_ARC/PROCESSED", 
+#                          pattern = i, recursive = T, full.names = T)
+#   ndvi.fls <- ndvi.fls[order(substr(basename(ndvi.fls), 10, 16))]
+#   
+#   # Stack and crop files
+#   ndvi.rst <- stack(ndvi.fls)
+#   return(crop(ndvi.rst, extent(kili)))
+# }
+
+# Crop and reproject NDVI data
+registerDoParallel(cl <- makeCluster(3))
+
+ndvi.rst <- foreach(i = c("NDVI.tif$", "pixel_reliability.tif$")) %do% {
+  tmp.fls <- list.files("data/MODIS_ARC/PROCESSED/md13_tmp/", 
+                        pattern = i, recursive = T, full.names = T)
+  tmp.fls <- tmp.fls[order(substr(basename(tmp.fls), 10, 16))]
+
+  tmp.rst <- foreach(j = tmp.fls, .packages = lib, .combine = "stack") %dopar% 
+    projectRaster(crop(raster(j), extent(37, 37.72, -3.4, -2.84)), 
+                  crs = "+init=epsg:32737", method = "ngb", overwrite = T,
+                  filename = paste("data/crop/md13q1", basename(j), sep = "/"))
+  return(tmp.rst)
 }
 
 # Rejection of low quality cells
@@ -49,27 +61,27 @@ ndvi.rst_qa <- overlay(ndvi.rst[[1]], ndvi.rst[[2]], fun = function(x, y) {
   return(x)
 })
 
-# # Store quality-controlled NDVI data
-# writeRaster(ndvi.rst_qa, "data/quality_control/QA", format = "GTiff", 
-#             bylayer = T, suffix = names(ndvi.rst[[1]]))
+# Store quality-controlled NDVI data
+writeRaster(ndvi.rst_qa, "data/quality_control/QA", format = "GTiff", 
+            bylayer = T, suffix = names(ndvi.rst[[1]]), overwrite = T)
 
 
 ### Gap filling
 
 # Convert QA rasters to matrices
-ndvi.mat_qa <- foreach(i = unstack(ndvi.rst_qa), .packages = lib.par) %dopar% {
+ndvi.mat_qa <- foreach(i = unstack(ndvi.rst_qa), .packages = lib) %dopar% {
   as.matrix(i)
 }
 
 # rowColFromCell -> for extracting values from matrix
-ndvi.row_col <- foreach(i = seq(ncell(ndvi.rst_gf)), .packages = lib.par) %dopar% {
+ndvi.row_col <- foreach(i = seq(ncell(ndvi.rst_gf)), .packages = lib) %dopar% {
   rowColFromCell(ndvi.mat_gf[[1]], i)
 }
 
 ## Small gaps (n <= 3) -> rollmean
 
 # Loop through all cells
-ts.rollmean <- foreach(i = seq(ncell(ndvi.rst_qa)), .packages = lib.par) %dopar% {
+ts.rollmean <- foreach(i = seq(ncell(ndvi.rst_qa)), .packages = lib) %dopar% {
   
   # Cell time series from matrices
   tmp.ts <- sapply(ndvi.mat_qa, function(j) j[ndvi.row_col[[i]]])
@@ -104,7 +116,7 @@ ts.rollmean <- foreach(i = seq(ncell(ndvi.rst_qa)), .packages = lib.par) %dopar%
 }
 
 # Insert calculated values
-ndvi.rst_gf9 <- do.call("brick", foreach(i = seq(nlayers(ndvi.rst_qa)), .packages = lib.par) %dopar% {
+ndvi.rst_gf9 <- do.call("brick", foreach(i = seq(nlayers(ndvi.rst_qa)), .packages = lib) %dopar% {
   tmp.val <- sapply(ts.rollmean, "[[", i)
   tmp.val.mat <- matrix(tmp.val, nrow = nrow(ndvi.rst_qa[[i]]), 
                         ncol = ncol(ndvi.rst_qa[[i]]), byrow = T)
@@ -127,17 +139,17 @@ ndvi.rst_gf9 <- do.call("brick", foreach(i = seq(nlayers(ndvi.rst_qa)), .package
 ## Splines
 
 # Convert NDVI raster data to matrices
-ndvi.mat_gf3 <- foreach(i = unstack(ndvi.rst_gf3), .packages = lib.par) %dopar% {
+ndvi.mat_gf3 <- foreach(i = unstack(ndvi.rst_gf3), .packages = lib) %dopar% {
   as.matrix(i)
 }
 
 # rowColFromCell -> for extracting values from matrix
-ndvi.row_col <- foreach(i = seq(ncell(ndvi.rst_gf3)), .packages = lib.par) %dopar% {
+ndvi.row_col <- foreach(i = seq(ncell(ndvi.rst_gf3)), .packages = lib) %dopar% {
   rowColFromCell(ndvi.mat_gf3[[1]], i)
 }
 
 # Loop through all cells
-ts.spline <- foreach(i = seq(ncell(ndvi.rst_gf3)), .packages = lib.par) %dopar% {
+ts.spline <- foreach(i = seq(ncell(ndvi.rst_gf3)), .packages = lib) %dopar% {
   
   # NDVI cell time series
   tmp.ts <- sapply(ndvi.mat_gf3, function(j) j[ndvi.row_col[[i]]])
@@ -154,7 +166,7 @@ ts.spline <- foreach(i = seq(ncell(ndvi.rst_gf3)), .packages = lib.par) %dopar% 
 
 # Insert gap-filled time series in RasterStacks
 ndvi.rst_gf3_sp12 <- do.call("stack", 
-                           foreach(i = seq(nlayers(ndvi.rst_gf3)), .packages = lib.par) %dopar% {
+                           foreach(i = seq(nlayers(ndvi.rst_gf3)), .packages = lib) %dopar% {
   tmp.val <- sapply(ts.spline, "[[", i)
   tmp.val[tmp.val > 10000 | tmp.val < -2000] <- NA
   tmp.val.mat <- matrix(tmp.val, nrow = nrow(ndvi.rst_gf3[[i]]), 
@@ -171,7 +183,7 @@ writeRaster(ndvi.rst.spline, "data/gap_filled/RM_SP", format = "GTiff",
 
 ## Longer gaps (n > 3) -> SSA
 
-ts.ssa <- foreach(i = seq(ncell(ndvi.rst.spline)), .packages = lib.par) %dopar% {
+ts.ssa <- foreach(i = seq(ncell(ndvi.rst.spline)), .packages = lib) %dopar% {
   
   tmp.ts <- sapply(ndvi.mat_gf, function(j) j[ndvi.row_col[[i]]])
   

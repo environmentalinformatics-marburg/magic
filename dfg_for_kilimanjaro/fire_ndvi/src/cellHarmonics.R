@@ -2,12 +2,14 @@ cellHarmonics <- function(st,
                           nd, 
                           st.start, st.end, 
                           nd.start, nd.end, 
+                          product = "MOD13Q1", 
+                          path.out = NULL,
                           n.cores = 2) {
   
   ## Environmental stuff
   
   # Packages
-  lib <- c("rgdal", "doParallel", "TSA")
+  lib <- c("raster", "rgdal", "doParallel", "TSA")
   sapply(lib, function(...) stopifnot(require(..., character.only = T)))
   
   # Parallelization
@@ -35,7 +37,7 @@ cellHarmonics <- function(st,
   
   
   # Calculate differences in amplitude and phase per cell
-  params <- foreach(i = seq(nrow(st.mat))[1:12], .packages = lib) %dopar% {
+  params <- foreach(i = seq(nrow(st.mat)), .packages = lib) %dopar% {
     
     fit.med <- foreach(j = list(st.mat, nd.mat), k = list(st.start, nd.start), 
                        l = list(st.end, nd.end)) %do% {
@@ -49,8 +51,11 @@ cellHarmonics <- function(st,
       tmp.fit <- ts(fitted(tmp.mod), start = st.start, end = st.end, 
                     frequency = 12)
       
+      # Median
       tmp.fit.med <- apply(matrix(tmp.fit, ncol = 12, byrow = T), 2, 
                            FUN = median)
+      # Moving average
+      tmp.fit.med.rmean <- filter(tmp.fit.med, rep(1/3, 3), circular = T)
     }
     
     # Month with hightest NDVI + corresponding value
@@ -79,11 +84,23 @@ cellHarmonics <- function(st,
   # Rasterize calculated values
   param.rst <- foreach(h = seq(2)) %do% {
     foreach(i = seq(4), .combine = "stack", .packages = lib) %dopar% {
-      raster(matrix(sapply(lapply(params, "[[", h), "[[", i), ncol = ncol(st), 
-             nrow = nrow(st), byrow = T), template = st)
+      raster(matrix(unlist(sapply(lapply(params, "[[", h), "[[", i)), 
+                    ncol = ncol(st), nrow = nrow(st), byrow = T), template = st)
     }
   }
+  param.rst <- foreach(i = param.rst, j = list("st", "nd")) %do% {
+    names(i) <- paste(j, c("max_x", "max_y", "min_x", "min_y"), sep = "_")
+    return(i)
+  }
   
+  if (!is.null(path.out)) {
+    param.rst <- foreach(i = param.rst, j = list("st", "nd"), .packages = lib) %dopar% {
+      names(i) <- paste(j, c("max_x", "max_y", "min_x", "min_y"), sep = "_")
+      writeRaster(i, paste(path.out, "/", product, "_", j, sep = ""), 
+                  format = "GTiff", overwrite = T, suffix = "names", bylayer = T)
+    }
+  }
+    
   # Return output
   stopCluster(cl)
   return(param.rst)

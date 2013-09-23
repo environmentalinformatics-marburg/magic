@@ -5,6 +5,7 @@ probRst <- function(fire.scenes,
                     fire.mat, 
                     ndvi.mat, 
                     model, 
+                    type = "prob", 
                     n.cores = 2, 
                     ...) {
   
@@ -17,7 +18,7 @@ probRst <- function(fire.scenes,
   
   # Loop through fire scenes
   out <- foreach(i = which(fire.scenes), .packages = lib) %dopar% {
-                                    
+                                        
     # Fire cells in current scene
     fire.cells <- which(t(fire.mat[[i]]) > 0)
     
@@ -121,11 +122,15 @@ probRst <- function(fire.scenes,
                                 ndvi_meandev = ndvi.meandev)
       
       # Predict fire probabilities
-      model.output <- predict(model, newdata = model.input, type = "prob")
+      model.output <- predict(model, newdata = model.input, type = type)
       
       tmp <- ndvi.rst[[300]]
       tmp[][-ndvi.cells] <- 0
-      tmp[ndvi.cells] <- sapply(model.output, "[[", 2)
+      tmp[ndvi.cells] <- if (type == "prob") {
+        sapply(model.output, "[[", 2)
+      } else {
+        ifelse(model.output == 0, 0, 1)
+      }
       
       # Return temporary output raster
       return(tmp)
