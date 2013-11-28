@@ -7,6 +7,7 @@ library(grid)
 library(rCharts)
 library(automap)
 library(raster)
+library(rgl)
 
 ### working directory
 path <- "/media/windows/tappelhans/uni/marburg/lehre/2013/ws/spezielle/daten_burgwald"
@@ -75,19 +76,26 @@ dat <- dat[!duplicated(dat$treeID), ]
 TNoffset <- 1.6
 p1.x <- 481073.00
 p1.y <- 5645524.00
+p1.z <- 296
 ori <- 5
 size.x <- 40
 size.y <- 40
-elevation <- 396
 ###
 ######
 
 ###### ACTUAL CALCULATIONS
+### invent corner point elevations
+dat$origin.z <- NA 
+dat$origin.z[dat$origin == "P1"] <- 296
+dat$origin.z[dat$origin == "P2"] <- 295.5
+dat$origin.z[dat$origin == "P3"] <- 309.8
+dat$origin.z[dat$origin == "P4"] <- 309.9
+
 ### calculate slope adjusted distances & direction from true north
 vert <- dirdis2xy(dat$inc, dat$dis)
 dat$dis_adj <- addrad2dis(dat$cbh, vert$y)
 dat$offset.z <- vert$x
-dat$tree.loc.z <- vert$x
+dat$tree.loc.z <- dat$origin.z + dat$offset.z
 
 dat$dir.m <- dat$dir
 dat$dir <- dat$dir + TNoffset
@@ -177,8 +185,8 @@ print(p)
 dat.sp <- dat[complete.cases(dat), ]
 coordinates(dat.sp) <- c("tree.loc.x", "tree.loc.y")
 proj4string(dat.sp) <- "+proj=utm +ellps=WGS84 +zone=32 +units=m +north"
-
-plotKML(dat.sp["spec"])
+# 
+# plotKML(dat.sp["spec"])
 ###
 
 
@@ -223,20 +231,33 @@ plot(env)
 ######
 
 
-# ###### CREATE DEM
-# ### kriging interpolation of z values
-# bbx <- dat.sp@bbox
-# ext <- extent(bbx)
-# grd <- raster(ext, 100, 100)
-# 
-# grd <- setValues(grd, rnorm(ncell(grd)))
-# 
-# spplot(grd)
-# grdsp <- as(grd, "SpatialPixelsDataFrame")
-# 
-# 
-# dem <- autoKrige(offset.z ~ 1, dat.sp, grdsp)
-# plot(dem)
-# 
-# levelplot(topo.kr[[i]]@data$var1.pred ~ topo.kr[[i]]@coords[, 1] + 
-#             #                     topo.kr[[i]]@coords[, 2], col.regions = clrs(1000)
+###### CREATE DEM
+### kriging interpolation of z values
+bbx <- dat.sp@bbox
+ext <- extent(bbx)
+grd <- raster(ext, 40, 40)
+
+grd <- setValues(grd, rnorm(ncell(grd)))
+
+spplot(grd)
+grdsp <- as(grd, "SpatialPixelsDataFrame")
+
+dem <- autoKrige(tree.loc.z ~ 1, dat.sp, grdsp)
+plot(dem)
+
+clrs <- colorRampPalette(rev(brewer.pal(9, "YlGnBu")))
+
+dat.xyz <- data.frame(x = dem$krige_output@coords[, 1],
+                      y = dem$krige_output@coords[, 2],
+                      z = dem$krige_output@data$var1.pred)
+
+zx.ratio <- diff(range(dat.xyz$z)) / diff(range(dat.xyz$x))
+
+wireframe(z ~ x + y, data = dat.xyz, col.regions = clrs(1000), 
+          asp = c(1, zx.ratio),  par.box = list(col = NA), 
+          ylab = "", xlab = "", zlab = "", scales = list(draw = FALSE),
+          shade = F, screen = list(z = 0, x = -65, y = 30),
+          drape = T, col = "black", zoom = 1.2, 
+          colorkey = FALSE)
+###
+######
