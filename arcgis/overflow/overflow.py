@@ -334,7 +334,7 @@ def main():
                 fpd["diff_dgm_poly_main"], overlap)
         
             print "Channel has been reached? ", reached_channel
-        os.sys.exit()
+
     print "...finished"
 
 if __name__ == '__main__':
