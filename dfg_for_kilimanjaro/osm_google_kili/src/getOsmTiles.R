@@ -4,6 +4,7 @@ getOsmTiles <- function(tile.cntr,
                         plot.bff = 100,
                         tmp.folder = NULL,
                         path.out = ".", 
+                        plot = NULL,
                         ...) {
   
   #########################################################################################
@@ -37,9 +38,13 @@ getOsmTiles <- function(tile.cntr,
   osm.rst.ls <- lapply(seq(tile.cntr), function(z) {
     
     # Current filename
-    fl <- paste0(path.out, "/kili_tile_", 
-                 formatC(z, width = 3, format = "d", flag = "0"), ".tif")
-    
+    if (is.null(plot)) {
+      fl <- paste0(path.out, "/kili_tile_", 
+                   formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+    } else {
+      fl <- paste0(path.out, "/", plot, "/kili_tile_", 
+                   formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+    }    
     # Proceed if file doesn't exist
     if (file.exists(fl)) {
       print(paste("File", fl, "already exists! Proceeding to the next tile ..."))
@@ -79,8 +84,16 @@ getOsmTiles <- function(tile.cntr,
       
       # Rasterize BING image
       tmp.osm.rst <- raster(tmp.osm)
-      writeRaster(tmp.osm.rst, paste0(path.out, "/kili_tile_", formatC(z, width = 3, format = "d", flag = "0")), 
-                  format = "GTiff", overwrite = T)
+      if (is.null(plot)) {
+        writeRaster(tmp.osm.rst, paste0(path.out, "/kili_tile_", 
+                                        formatC(z, width = 3, format = "d", flag = "0")), 
+                    format = "GTiff", overwrite = TRUE)
+      } else {
+        dir.create(paste(path.out, plot, sep = "/"))
+        writeRaster(tmp.osm.rst, paste0(path.out, "/", plot, "/kili_tile_", 
+                                        formatC(z, width = 3, format = "d", flag = "0")), 
+                    format = "GTiff", overwrite = TRUE)
+      }
       
       # Remove temporary files from local drive
       tmp.fls <- list.files(tmp.folder, full.names = T, recursive = T)

@@ -3,6 +3,7 @@ getGoogleTiles <- function(tile.cntr,
                            plot.res,
                            plot.bff,
                            path.out = ".",
+                           plot = NULL,
                            ...) {
   
   #########################################################################################
@@ -58,14 +59,28 @@ getGoogleTiles <- function(tile.cntr,
                            coordinates(tmp.bndry.br)[,2], coordinates(tmp.bndry.tl)[,2])
     
     # Download non-existent files only
-    tmp.fls <- paste(path.out, "/kili_dsm_tile_", formatC(z, width = 3, format = "d", flag = "0"), ".tif", sep = "")
+    if (is.null(plot)) {
+      tmp.fls <- paste0(path.out, "/kili_dsm_tile_", 
+                        formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+    } else {
+      tmp.fls <- paste0(path.out, "/", plot, "/kili_dsm_tile_", 
+                        formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+    }
+    
     if (!file.exists(tmp.fls)) {
       # Download Google Map of the given extent and save copy to HDD
       tmp.rst <- gmap(tmp.bndry.xt, ...)
       
       # Save Google Map as GeoTiff to HDD
-      writeRaster(tmp.rst, filename = tmp.fls, format = "GTiff", 
-                  overwrite = TRUE)
+      if (is.null(plot)) {
+        writeRaster(tmp.rst, filename = tmp.fls, format = "GTiff", 
+                    overwrite = TRUE)
+      } else {
+        dir.create(paste(path.out, plot, sep = "/"))
+        writeRaster(tmp.rst, paste0(path.out, "/", plot, "/kili_tile_", 
+                                    formatC(z, width = 3, format = "d", flag = "0")), 
+                    format = "GTiff", overwrite = TRUE)
+      }
       
       # Return DSM information
       return(data.frame(tile = formatC(z, width = 3, format = "d", flag = "0"), 
