@@ -39,6 +39,9 @@ plt.db.wgs84 <- spTransform(plt.db, CRS("+init=epsg:32737"))
 diff.wgs84.x <- coordinates(plt.db.wgs84)[, 1] - plt.db$Easting
 diff.wgs84.y <- coordinates(plt.db.wgs84)[, 2] - plt.db$Northing
 
+plt.db.wgs84$PlotID[abs(diff.wgs84.x) >= 97 | abs(diff.wgs84.x) < 95]
+plt.db.wgs84$PlotID[diff.wgs84.y >= -301 | diff.wgs84.y < -303]
+
 # Clarke80
 plt.db.clrk80 <- spTransform(plt.db, CRS("+init=epsg:21037"))
 
@@ -57,51 +60,60 @@ diff.clrk80.y[abs(diff.clrk80.y) > 1]
 # plotKML(tmp)
 
 for (i in 1:nrow(plt)) {
+  
   # Current plot
   plot <- as.character(plt@data[i, "PlotID"])
-  # Coordinates of current plot
-  crds <- plt[i, ]
-  # Relative tile coordinates
-  cntr <- getTileCenters(plt.rds = 2000, plt.res = 500)
   
-  # Download and merge OSM data
-  osm <- getOsmTiles(tile.cntr = cntr, 
-                     location = crds, 
-                     plot.res = 500, 
-                     plot.bff = 50,
-                     tmp.folder = "C:/Users/fdetsch/AppData/Local/Temp/R_raster_tmp", 
-                     path.out = "data/tls/osm", 
-                     plot = plot,
-                     type = "bing", mergeTiles = TRUE)
-  
-  osm.mrg <- osmRsmplMrg(path = paste0("data/tls/osm/", plot), 
-                         pattern = "kili_tile_.*.tif$", 
-                         rsmpl.exe = TRUE, 
-                         path.rsmpl = paste0("data/tls/osm/", plot),
-                         pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
-                         n.cores = 4, 
-                         file.rsmpl.mrg = paste0("data/tls/osm/", plot, ".tif"), 
-                         overwrite = TRUE)
-  
-  #   # Download and merge Google data
-  #   dsm <- getGoogleTiles(tile.cntr = cntr, 
-  #                         location = crds, 
-  #                         type = "satellite", rgb = TRUE,
-  #                         plot.res = 500, 
-  #                         plot.bff = 50, 
-  #                         plot = plot,
-  #                         path.out = "data/tls/dsm")
-  #   
-  #   dsm.mrg <- dsmRsmplMrg(path = paste0("data/tls/dsm/", plot), 
-  #                          pattern = "kili_tile_.*.tif$", 
-  #                          rsmpl.exe = TRUE, 
-  #                          path.rsmpl = paste0("data/tls/dsm/", plot),
-  #                          pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
-  #                          n.cores = 4, 
-  #                          file.rsmpl.mrg = paste0("data/tls/dsm/", plot, ".tif"), 
-  #                          overwrite = TRUE, 
-  #                          crop.google = TRUE, 
-  #                          crop.radius = 150)
+  if (file.exists(paste0("data/tls/osm/", plot, ".tif"))) {
+    cat("File", paste0("data/tls/osm/", plot, ".tif"), "already exists!")
+    next
+  } else {
+    # Coordinates of current plot
+    crds <- plt[i, ]
+    # Relative tile coordinates
+    cntr <- getTileCenters(plt.rds = 2000, plt.res = 1000)
+    
+    # Download and merge OSM data
+    osm <- getOsmTiles(tile.cntr = cntr, 
+                       location = crds, 
+                       plot.res = 1000, 
+                       plot.bff = 50,
+                       tmp.folder = "C:/Users/fdetsch/AppData/Local/Temp/R_raster_tmp", 
+                       path.out = "data/tls/osm", 
+                       plot = plot,
+                       type = "bing", mergeTiles = TRUE, zoom = 18)
+    
+    osm.mrg <- osmRsmplMrg(path = paste0("data/tls/osm/", plot), 
+                           pattern = "kili_tile_.*.tif$", 
+                           rsmpl.exe = TRUE, 
+                           path.rsmpl = paste0("data/tls/osm/", plot),
+                           pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
+                           n.cores = 4, 
+                           file.rsmpl.mrg = paste0("data/tls/osm/", plot, ".tif"), 
+                           overwrite = TRUE)
+    
+    file.remove(list.files(paste0("data/tls/osm/", plot), full.names = TRUE))
+    
+    #   # Download and merge Google data
+    #   dsm <- getGoogleTiles(tile.cntr = cntr, 
+    #                         location = crds, 
+    #                         type = "satellite", rgb = TRUE,
+    #                         plot.res = 500, 
+    #                         plot.bff = 50, 
+    #                         plot = plot,
+    #                         path.out = "data/tls/dsm")
+    #   
+    #   dsm.mrg <- dsmRsmplMrg(path = paste0("data/tls/dsm/", plot), 
+    #                          pattern = "kili_tile_.*.tif$", 
+    #                          rsmpl.exe = TRUE, 
+    #                          path.rsmpl = paste0("data/tls/dsm/", plot),
+    #                          pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
+    #                          n.cores = 4, 
+    #                          file.rsmpl.mrg = paste0("data/tls/dsm/", plot, ".tif"), 
+    #                          overwrite = TRUE, 
+    #                          crop.google = TRUE, 
+    #                          crop.radius = 150)
+  }
 }
 
 
@@ -116,17 +128,17 @@ for (i in 1:nrow(plt.db.wgs84)) {
     # Coordinates of current plot
     crds <- plt.db.wgs84[i, ]
     # Relative tile coordinates
-    cntr <- getTileCenters(plt.rds = 2000, plt.res = 500)
+    cntr <- getTileCenters(plt.rds = 2000, plt.res = 1000)
     
     # Download and merge OSM data
     osm <- getOsmTiles(tile.cntr = cntr, 
                        location = crds, 
-                       plot.res = 500, 
+                       plot.res = 1000, 
                        plot.bff = 50,
                        tmp.folder = "C:/Users/fdetsch/AppData/Local/Temp/R_raster_tmp", 
                        path.out = "data/tls/osm", 
                        plot = plot,
-                       type = "bing", mergeTiles = TRUE)
+                       type = "bing", mergeTiles = TRUE, zoom = 18)
     
     osm.mrg <- osmRsmplMrg(path = paste0("data/tls/osm/", plot), 
                            pattern = "kili_tile_.*.tif$", 
@@ -183,45 +195,48 @@ for (i in cld.ind) {
     # Coordinates of current plot
     crds <- plt.db.wgs84[i, ]
     # Relative tile coordinates
-    cntr <- getTileCenters(plt.rds = 2000, plt.res = 500)
+    cntr <- getTileCenters(plt.rds = 2000, plt.res = 250)
     
-#     # Download and merge OSM data
-#     osm <- getOsmTiles(tile.cntr = cntr, 
-#                        location = crds, 
-#                        plot.res = 500, 
-#                        plot.bff = 50,
-#                        tmp.folder = "C:/Users/fdetsch/AppData/Local/Temp/R_raster_tmp", 
-#                        path.out = "data/tls/osm", 
-#                        plot = plot,
-#                        type = "bing", mergeTiles = TRUE)
-#     
-#     osm.mrg <- osmRsmplMrg(path = paste0("data/tls/osm/", plot), 
-#                            pattern = "kili_tile_.*.tif$", 
-#                            rsmpl.exe = TRUE, 
-#                            path.rsmpl = paste0("data/tls/osm/", plot),
-#                            pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
-#                            n.cores = 4, 
-#                            file.rsmpl.mrg = paste0("data/tls/osm/", plot, ".tif"), 
-#                            overwrite = TRUE)
+    #     # Download and merge OSM data
+    #     osm <- getOsmTiles(tile.cntr = cntr, 
+    #                        location = crds, 
+    #                        plot.res = 500, 
+    #                        plot.bff = 50,
+    #                        tmp.folder = "C:/Users/fdetsch/AppData/Local/Temp/R_raster_tmp", 
+    #                        path.out = "data/tls/osm", 
+    #                        plot = plot,
+    #                        type = "bing", mergeTiles = TRUE)
+    #     
+    #     osm.mrg <- osmRsmplMrg(path = paste0("data/tls/osm/", plot), 
+    #                            pattern = "kili_tile_.*.tif$", 
+    #                            rsmpl.exe = TRUE, 
+    #                            path.rsmpl = paste0("data/tls/osm/", plot),
+    #                            pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
+    #                            n.cores = 4, 
+    #                            file.rsmpl.mrg = paste0("data/tls/osm/", plot, ".tif"), 
+    #                            overwrite = TRUE)
     
-      # Download and merge Google data
-      dsm <- getGoogleTiles(tile.cntr = cntr, 
-                            location = crds, 
-                            type = "satellite", rgb = TRUE,
-                            plot.res = 500, 
-                            plot.bff = 50, 
-                            plot = plot,
-                            path.out = "data/tls/dsm")
-      
-      dsm.mrg <- dsmRsmplMrg(path = paste0("data/tls/dsm/", plot), 
-                             pattern = "kili_tile_.*.tif$", 
-                             rsmpl.exe = TRUE, 
-                             path.rsmpl = paste0("data/tls/dsm/", plot),
-                             pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
-                             n.cores = 4, 
-                             file.rsmpl.mrg = paste0("data/tls/dsm/", plot, ".tif"), 
-                             overwrite = TRUE, 
-                             crop.google = TRUE, 
-                             crop.radius = 150)
+    # Download and merge Google data
+    dsm <- getGoogleTiles(tile.cntr = cntr, 
+                          location = crds, 
+                          type = "satellite", rgb = TRUE,
+                          plot.res = 250, 
+                          plot.bff = 50, 
+                          plot = plot,
+                          path.out = "data/tls/dsm", scale = 2)
+    
+    dsm.mrg <- dsmRsmplMrg(path = paste0("data/tls/dsm/", plot), 
+                           pattern = "kili_tile_.*.tif$", 
+                           rsmpl.exe = TRUE, 
+                           path.rsmpl = paste0("data/tls/dsm/", plot),
+                           pattern.rsmpl = "kili_tile_.*rsmpl.tif$",
+                           n.cores = 4, 
+                           file.rsmpl.mrg = paste0("data/tls/dsm/", plot, ".tif"), 
+                           overwrite = TRUE, 
+                           crop.google = TRUE, 
+                           crop.radius = 150)
+    
+    file.remove(list.files(paste0("data/tls/dsm/", plot), full.names = TRUE))
+    
   }
 }

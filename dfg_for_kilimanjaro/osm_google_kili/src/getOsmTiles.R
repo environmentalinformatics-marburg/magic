@@ -44,6 +44,7 @@ getOsmTiles <- function(tile.cntr,
     } else {
       fl <- paste0(path.out, "/", plot, "/kili_tile_", 
                    formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+#       fl <- paste0(path.out, "/", plot, ".tif")
     }    
     # Proceed if file doesn't exist
     if (file.exists(fl)) {
@@ -92,6 +93,7 @@ getOsmTiles <- function(tile.cntr,
         dir.create(paste(path.out, plot, sep = "/"))
         writeRaster(tmp.osm.rst, paste0(path.out, "/", plot, "/kili_tile_", 
                                         formatC(z, width = 3, format = "d", flag = "0")), 
+#         writeRaster(tmp.osm.rst, paste0(path.out, "/", plot), 
                     format = "GTiff", overwrite = TRUE)
       }
       
