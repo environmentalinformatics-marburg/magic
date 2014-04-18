@@ -1,4 +1,4 @@
-"""Project osm datasets from web mercator projection to WGS84 UTM 37s
+"""Convert geo data sets between format
 Copyright (C) 2013 Thomas Nauss
 
 This program is free software: you can redistribute it and/or modify
