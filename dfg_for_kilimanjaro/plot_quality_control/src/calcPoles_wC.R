@@ -23,100 +23,100 @@ calcPoles <- function(a.x, a.y, orientation = 0, size.x, size.y,
   size.y <- ifelse(size.y == 100, size.y / 2, size.y)
   
   b2offset <- dirdis2xy(orientation, size.y/2)
-  b2 <- data.frame(x = as.integer(b2offset$x + a.x), 
-                   y = as.integer(b2offset$y + a.y))
+  b2 <- data.frame(x = (b2offset$x + a.x), 
+                   y = (b2offset$y + a.y))
 
   c3offset <- dirdis2xy(orientation, size.y)
-  c3 <- data.frame(x = as.integer(c3offset$x + a.x), 
-                   y = as.integer(c3offset$y + a.y))
+  c3 <- data.frame(x = (c3offset$x + a.x), 
+                   y = (c3offset$y + a.y))
   
   b7offset <- dirdis2xy(orientation + 180, size.y/2)
-  b7 <- data.frame(x = as.integer(b7offset$x + a.x), 
-                   y = as.integer(b7offset$y + a.y))
+  b7 <- data.frame(x = (b7offset$x + a.x), 
+                   y = (b7offset$y + a.y))
   
   c14offset <- dirdis2xy(orientation + 180, size.y)
-  c14 <- data.frame(x = as.integer(c14offset$x + a.x), 
-                    y = as.integer(c14offset$y + a.y))
+  c14 <- data.frame(x = (c14offset$x + a.x), 
+                    y = (c14offset$y + a.y))
   
   b1offset <- dirdis2xy(270 + orientation, size.x/2)
-  b1 <- data.frame(x = as.integer(b1offset$x + b2$x), 
-                   y = as.integer(b1offset$y + b2$y))
+  b1 <- data.frame(x = (b1offset$x + b2$x), 
+                   y = (b1offset$y + b2$y))
   
   c1offset <- dirdis2xy(270 + orientation, size.x)
-  c1 <- data.frame(x = as.integer(c1offset$x + c3$x), 
-                   y = as.integer(c1offset$y + c3$y))
+  c1 <- data.frame(x = (c1offset$x + c3$x), 
+                   y = (c1offset$y + c3$y))
   
   c2offset <- dirdis2xy(270 + orientation, size.x/2)
-  c2 <- data.frame(x = as.integer(c2offset$x + c3$x), 
-                   y = as.integer(c2offset$y + c3$y))
+  c2 <- data.frame(x = (c2offset$x + c3$x), 
+                   y = (c2offset$y + c3$y))
   
   c6offset <- dirdis2xy(270 + orientation, size.x)
-  c6 <- data.frame(x = as.integer(c6offset$x + b2$x), 
-                   y = as.integer(c6offset$y + b2$y))
+  c6 <- data.frame(x = (c6offset$x + b2$x), 
+                   y = (c6offset$y + b2$y))
   
   b3offset <- dirdis2xy(90 + orientation, size.x/2)
-  b3 <- data.frame(x = as.integer(b3offset$x + b2$x), 
-                   y = as.integer(b3offset$y + b2$y))
+  b3 <- data.frame(x = (b3offset$x + b2$x), 
+                   y = (b3offset$y + b2$y))
   
   c5offset <- dirdis2xy(90 + orientation, size.x)
-  c5 <- data.frame(x = as.integer(c5offset$x + c3$x), 
-                   y = as.integer(c5offset$y + c3$y))
+  c5 <- data.frame(x = (c5offset$x + c3$x), 
+                   y = (c5offset$y + c3$y))
   
   c4offset <- dirdis2xy(90 + orientation, size.x/2)
-  c4 <- data.frame(x = as.integer(c4offset$x + c3$x), 
-                   y = as.integer(c4offset$y + c3$y))
+  c4 <- data.frame(x = (c4offset$x + c3$x), 
+                   y = (c4offset$y + c3$y))
   
   c7offset <- dirdis2xy(90 + orientation, size.x)
-  c7 <- data.frame(x = as.integer(c7offset$x + b2$x), 
-                   y = as.integer(c7offset$y + b2$y))
+  c7 <- data.frame(x = (c7offset$x + b2$x), 
+                   y = (c7offset$y + b2$y))
   
   b6offset <- dirdis2xy(270 + orientation, size.x/2)
-  b6 <- data.frame(x = as.integer(b6offset$x + b7$x), 
-                   y = as.integer(b6offset$y + b7$y))
+  b6 <- data.frame(x = (b6offset$x + b7$x), 
+                   y = (b6offset$y + b7$y))
   
   c12offset <- dirdis2xy(270 + orientation, size.x)
-  c12 <- data.frame(x = as.integer(c12offset$x + c14$x), 
-                    y = as.integer(c12offset$y + c14$y))
+  c12 <- data.frame(x = (c12offset$x + c14$x), 
+                    y = (c12offset$y + c14$y))
   
   c10offset <- dirdis2xy(270 + orientation, size.x)
-  c10 <- data.frame(x = as.integer(c10offset$x + b7$x), 
-                    y = as.integer(c10offset$y + b7$y))
+  c10 <- data.frame(x = (c10offset$x + b7$x), 
+                    y = (c10offset$y + b7$y))
   
   c13offset <- dirdis2xy(270 + orientation, size.x/2)
-  c13 <- data.frame(x = as.integer(c13offset$x + c14$x), 
-                    y = as.integer(c13offset$y + c14$y))
+  c13 <- data.frame(x = (c13offset$x + c14$x), 
+                    y = (c13offset$y + c14$y))
   
   b8offset <- dirdis2xy(90 + orientation, size.x/2)
-  b8 <- data.frame(x = as.integer(b8offset$x + b7$x), 
-                   y = as.integer(b8offset$y + b7$y))
+  b8 <- data.frame(x = (b8offset$x + b7$x), 
+                   y = (b8offset$y + b7$y))
   
   c16offset <- dirdis2xy(90 + orientation, size.x)
-  c16 <- data.frame(x = as.integer(c16offset$x + c14$x), 
-                    y = as.integer(c16offset$y + c14$y))
+  c16 <- data.frame(x = (c16offset$x + c14$x), 
+                    y = (c16offset$y + c14$y))
   
   c11offset <- dirdis2xy(90 + orientation, size.x)
-  c11 <- data.frame(x = as.integer(c11offset$x + b7$x), 
-                    y = as.integer(c11offset$y + b7$y))
+  c11 <- data.frame(x = (c11offset$x + b7$x), 
+                    y = (c11offset$y + b7$y))
   
   c15offset <- dirdis2xy(90 + orientation, size.x/2)
-  c15 <- data.frame(x = as.integer(c15offset$x + c14$x), 
-                    y = as.integer(c15offset$y + c14$y))
+  c15 <- data.frame(x = (c15offset$x + c14$x), 
+                    y = (c15offset$y + c14$y))
   
   b4offset <- dirdis2xy(270 + orientation, size.x/2)
-  b4 <- data.frame(x = as.integer(b4offset$x + a.x), 
-                   y = as.integer(b4offset$y + a.y))
+  b4 <- data.frame(x = (b4offset$x + a.x), 
+                   y = (b4offset$y + a.y))
   
   c8offset <- dirdis2xy(270 + orientation, size.x)
-  c8 <- data.frame(x = as.integer(c8offset$x + a.x), 
-                   y = as.integer(c8offset$y + a.y))
+  c8 <- data.frame(x = (c8offset$x + a.x), 
+                   y = (c8offset$y + a.y))
   
   b5offset <- dirdis2xy(90 + orientation, size.x/2)
-  b5 <- data.frame(x = as.integer(b5offset$x + a.x), 
-                   y = as.integer(b5offset$y + a.y))
+  b5 <- data.frame(x = (b5offset$x + a.x), 
+                   y = (b5offset$y + a.y))
   
   c9offset <- dirdis2xy(90 + orientation, size.x)
-  c9 <- data.frame(x = as.integer(c9offset$x + a.x), 
-                   y = as.integer(c9offset$y + a.y))
+  c9 <- data.frame(x = (c9offset$x + a.x), 
+                   y = (c9offset$y + a.y))
   
   #I think this only works if the plots would be noth south so i changed it
   #c2 <- data.frame(x = c3$x - size.x / 2,
@@ -144,64 +144,64 @@ calcPoles <- function(a.x, a.y, orientation = 0, size.x, size.y,
   #                  y = c14$y)
   
   tm1offset <- dirdis2xy(orientation, whitaker.y/2)
-  tm1 <- data.frame(x = as.integer(tm1offset$x + a.x), 
-                    y = as.integer(tm1offset$y + a.y))
+  tm1 <- data.frame(x = (tm1offset$x + a.x), 
+                    y = (tm1offset$y + a.y))
   
   tm2offset <- dirdis2xy(orientation + 180, whitaker.y/2)
-  tm2 <- data.frame(x = as.integer(tm2offset$x + a.x), 
-                    y = as.integer(tm2offset$y + a.y))
+  tm2 <- data.frame(x = (tm2offset$x + a.x), 
+                    y = (tm2offset$y + a.y))
   
   t1offset <- dirdis2xy(270 + orientation, whitaker.x/2)
-  t1 <- data.frame(x = as.integer(t1offset$x + tm1$x), 
-                   y = as.integer(t1offset$y + tm1$y))
+  t1 <- data.frame(x = (t1offset$x + tm1$x), 
+                   y = (t1offset$y + tm1$y))
   
   t2offset <- dirdis2xy(90 + orientation, whitaker.x/2)
-  t2 <- data.frame(x = as.integer(t2offset$x + tm1$x), 
-                   y = as.integer(t2offset$y + tm1$y))
+  t2 <- data.frame(x = (t2offset$x + tm1$x), 
+                   y = (t2offset$y + tm1$y))
   
   t3offset <- dirdis2xy(270 + orientation, whitaker.x/2)
-  t3 <- data.frame(x = as.integer(t3offset$x + tm2$x), 
-                   y = as.integer(t3offset$y + tm2$y))
+  t3 <- data.frame(x = (t3offset$x + tm2$x), 
+                   y = (t3offset$y + tm2$y))
   
   t4offset <- dirdis2xy(90 + orientation, whitaker.x/2)
-  t4 <- data.frame(x = as.integer(t4offset$x + tm2$x), 
-                   y = as.integer(t4offset$y + tm2$y))
+  t4 <- data.frame(x = (t4offset$x + tm2$x), 
+                   y = (t4offset$y + tm2$y))
   
   am1offset <- dirdis2xy(orientation, 5/2)
-  am1 <- data.frame(x = as.integer(am1offset$x + a.x), 
-                    y = as.integer(am1offset$y + a.y))
+  am1 <- data.frame(x = (am1offset$x + a.x), 
+                    y = (am1offset$y + a.y))
   
   am2offset <- dirdis2xy(orientation + 180, 5/2)
-  am2 <- data.frame(x = as.integer(am2offset$x + a.x), 
-                    y = as.integer(am2offset$y + a.y))
+  am2 <- data.frame(x = (am2offset$x + a.x), 
+                    y = (am2offset$y + a.y))
   
   a1offset <- dirdis2xy(270 + orientation, 20/2)
-  a1 <- data.frame(x = as.integer(a1offset$x + am1$x), 
-                   y = as.integer(a1offset$y + am1$y))
+  a1 <- data.frame(x = (a1offset$x + am1$x), 
+                   y = (a1offset$y + am1$y))
   
   a2offset <- dirdis2xy(90 + orientation, 20/2)
-  a2 <- data.frame(x = as.integer(a2offset$x + am1$x), 
-                   y = as.integer(a2offset$y + am1$y))
+  a2 <- data.frame(x = (a2offset$x + am1$x), 
+                   y = (a2offset$y + am1$y))
   
   a3offset <- dirdis2xy(270 + orientation, 20/2)
-  a3 <- data.frame(x = as.integer(a3offset$x + am2$x), 
-                   y = as.integer(a3offset$y + am2$y))
+  a3 <- data.frame(x = (a3offset$x + am2$x), 
+                   y = (a3offset$y + am2$y))
   
   a4offset <- dirdis2xy(90 + orientation, 20/2)
-  a4 <- data.frame(x = as.integer(a4offset$x + am2$x), 
-                   y = as.integer(a4offset$y + am2$y))
+  a4 <- data.frame(x = (a4offset$x + am2$x), 
+                   y = (a4offset$y + am2$y))
   
   b10offset <- dirdis2xy(orientation, size.y/2+30)
-  b10 <- data.frame(x = as.integer(b10offset$x + a.x), 
-                   y = as.integer(b10offset$y + a.y))
+  b10 <- data.frame(x = (b10offset$x + a.x), 
+                   y = (b10offset$y + a.y))
   
   b13offset <- dirdis2xy(orientation, size.y/2+10)
-  b13 <- data.frame(x = as.integer(b13offset$x + a.x), 
-                   y = as.integer(b13offset$y + a.y))
+  b13 <- data.frame(x = (b13offset$x + a.x), 
+                   y = (b13offset$y + a.y))
   
   b11offset <- dirdis2xy(90+orientation, size.y/2+30)
-  b11 <- data.frame(x = as.integer(b11offset$x + a.x), 
-                   y = as.integer(b11offset$y + a.y))
+  b11 <- data.frame(x = (b11offset$x + a.x), 
+                   y = (b11offset$y + a.y))
     
   polesAB <- list(A = data.frame(x = a.x, y = a.y), 
                   B1 = b1, 
