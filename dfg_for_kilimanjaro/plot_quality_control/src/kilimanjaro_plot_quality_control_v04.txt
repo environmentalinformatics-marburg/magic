@@ -1,0 +1,372 @@
+UPDATE OF DATA SET ID 11140: QUALITY CHECK AND MODIFICATION OF PLOT LOCATION
+
+CURRENT VERSION 2014-04-09
+
+BASE VERSION    2014-03-24
+
+EDITORIAL TEAM  Andreas Hemp, Thomas Nauss, Tim Appelhans
+
+
+
+SUMMARY
+================================================================================
+Based on two quality control checks, the following modifications have been made
+(for details see below):
+- cof1 has been moved by dX ~ 9.3, dY ~ -5.4
+- cof3-B3 (307710.3, 9642496,2) has been renamed to cof2-B3
+- cof5's centre has been moved with respect to all B poles
+- emg0 has been added from GPS measurement
+- fed2's Whittaker plot has been moved towards the far west
+- fer0 has been rotated to 45°
+- fer3's centre has been moved with respect to all B poles
+- foc0 has been added from GPS measurement
+- foc6 has been added from GPS measurement
+- fpd4 has been rotated to 140°
+- fpo0 has been added from GPS measurement
+- gar1-B4 has been renamed to gra1-B4
+- hel4-B5 (319603.94, 9655466.6) has been renamed to hel3-B5
+- hom4 has been rotated to 90° (except C poles)
+- hom5 has been flipped
+- hom5's centre has been moved with respect to all B poles
+- mai0 has been added from GPS measurement
+- mai1's centre has been moved with respect to all B poles
+- mai4 has been rotated to 0°
+- mai5 has been rotated to 340°
+- mcg0 has been added from GPS measurement
+- mch0 has been added from GPS measurement
+- mwh0 has been added from GPS measurement
+- nkw1 has been added visually from bing overlay
+- sav0 has been added from GPS measurement
+- sav5 has been rotated to 270°
+
+
+
+IMPORTANT STATEMENT ON GEOID TRANSFORMATION
+================================================================================
+In the following checks, the transformation between WGS 1984 and ARC 1960 dates
+is used. For this transformation, the "Arc_1960_To_WGS_1984" parameters with ID
+1122 are used. The details are as follows:
+
+Name                  ID    dx    dy  dz
+Arc_1960_To_WGS_1984  1122  -160  -6  -302 
+
+This date transformation is the one recommended for study regions stretching 
+across Kenya and Tanzania and the default for transforming WGS 1984 to Arc 1960
+for EPSG 21037 (i.e. UTM 37 S, Arc 1960) in the gdal library.
+
+Please note that this is not the default behaviour of ArcGIS which uses
+"Arc_1960_To_WGS_1984_2", ID 1284 (dx = -157, dy = -2, dz = -299) as default but
+"Arc_1960_To_WGS_1984_2" is recommended for Kenya (onshore and offshore) only. 
+For Tanzanian locations, the appropriate transformation would be
+"Arc_1960_To_WGS_1984_3", ID 1285 (dx = -175, dy = -23, dz = -303) but since the
+study area is located directly at the boarder, it is regarded as not sufficient.
+
+
+
+IMPORTANT STATEMENT ON PLOT CENTRE DEFINITION
+================================================================================
+The plot centre is the metric centre of the bounding box of all B poles located
+at a plot. Hence, it does not matter if the plot is divided into sub-plots or 
+not. If it is devided, than it is still the centre of all (in that case 14) B 
+poles. No exception from this rule.
+
+
+
+QUALITY CHECK 1: EYE-BALL VERIFICATION OF ALL PLOTS REGARDING B-POLES
+================================================================================
+To check the general plot location, the position of the plot B-poles from the 
+BPoles_ARC1960 data of the CP2 data set 11140, version from 2014-03-24 have been
+overlaid on top of high resolution Microsoft bing aerial images and inspected
+visually.
+
+
+QC1: PREPROCESSING OF DATA
+--------------------------------------------------------------------------------
+The basis for the GIS data set used within this check is the BPoles_ARC1960 
+shape data of the CP2 data set 11140, version from 2014-03-24.
+
+Procedure steps:
+- GIS file has been imported by R using gdal
+- GIS data has been transformed from its original projection in UTM 37 S, WGS84
+  (EPSG: 32737) to lat/lon, WGS84 (EPSG 4326) using R's gdal library (sp)
+- for each plot, an off-set of 0.01° is added to the bounding box of the B-poles 
+  which has been computed from the actual shape file data (i.e. not the values
+  listed in the attribute table)
+- MS bing/OSM aerial imagery is downloaded for each plot's extend bounding box 
+ (see previous step) from the openstreetmap API using R's openstreemap package
+- the downloaded imagery is transformed from its original web Mercator
+  projection (EPSG 3857) to UTM 37S, ARC 1960 (EPSG 21037) using R's gdal 
+  library (sp)
+- the B-Poles are also transformed from their original projection in UTM 37 S, 
+  WGS84 EPSG: 32737) to UTM 37S, ARC 1960 (EPSG 21037) using R's gdal library 
+  (sp)
+- if the MS bing/OSM imagery is cloudy, respective imagery from Google has been
+  processed (this applies only for a very limited number of plots):
+    - Google aerial imagery is downloaded for each plot's extend bounding box 
+      using R's ggmap package
+    - as these images come in a geographic lat/lon, WGS84 system and not as
+      spatial objects, the final pngs where created in this projection by 
+      transforming the B-poles locations to lat/lon, WGS84 (EPSG 4326)
+- the transformed imagery and B-poles locations are overlaid and stored as png
+- each png has been manually inspected for the correct plot location with 
+  respect to overall location in the landscape, orientation and completeness in
+  the sense of 9 B-poles per plot.
+For the check of the plot rotation, the GIS data set 11140 has been used.
+
+
+QC1: NOTICEABLE PECULIARITIES AND RESULTING MODIFICATIONS
+--------------------------------------------------------------------------------
+
+The attributed names of following B-poles were not correct and have been 
+modified:
+- cof3-B3 (307710.3, 9642496,2) has been renamed to cof2-B3
+- gar1-B4 has been renamed to gra1-B4
+- hel4-B5 (319603.94, 9655466.6) has been renamed to hel3-B5
+
+PLOT hom4: A, B and T poles have been rotated to 90°; C4/C14 have been moved
+The A and B plot had to be rotated to an exact north-south/east-west orientation
+with B1 to B3 directed to the east. The C plot is correct (although it looks not
+like that; special case) except for C4 and C14 which have to be moved by ~25 m
+in the respective direction.
+
+PLOT hom5: A, B and T poles have been flipped
+The A plot and the corresponding B poles 1 to 8 had to be rotated by 180°. B 
+poles 9 to 14 are correct.
+
+PLOT mai4: entire plot (A, B, T poles) has been rotated to 0°
+The plot had to be rotated to an exact north-south/east-west orientation
+with B1 to B3 directed to the north.
+
+PLOT mai5: entire plot (A, B, T poles) has been rotated to 340°
+The plot had to be rotated to a -20° north-south orientation
+with B1 to B3 directed to the north-west.
+
+PLOT sav5: entire plot (A, B, C, T poles) has been rotated to 270°
+The plot had be rotated to an exact north-south/east-west orientation
+with B1 to B3 directed to the west.
+
+PLOT fpd4: entire plot (A, B, T poles) has been rotated to 140°
+The plot had to be rotated to a 140° north-south orientation
+with B1 to B3 directed to the south-east.
+
+PLOT fer0: entire plot (A, B, T poles) has been rotated to 45°
+The plot had to be rotated to a 45° north-south orientation
+with B1 to B3 directed to the north-east.
+
+PLOT fed2: Whittaker plot has been moved towards the far west
+The A and B poles must be moved towards the west. The B poles and the plot 
+centre will not change!
+
+
+
+QUALITY CHECK 2: COMPARISON OF GPS DATA AGAINST DATA SET 11140
+================================================================================
+To check the plot location, the GPS-based coordinates of the plot centres
+have been compared to (i) the AMiddlePole_ARC1960 data and (ii) the 
+APoles_ARC1960 data of the CP2 data set 11140, version from 2014-03-24.
+
+QC2: PREPROCESSING OF ORIGINAL GPS DATA
+--------------------------------------------------------------------------------
+The basis for the GPS data set used within this bug fixing are the original
+recorded values by A. Hemp and A. Ensslin who have used a UTM 37S, ARC 1960
+projection (EPSG 21037).
+
+Procedure steps:
+- GPS coordinates have been exported from the GPS device to gpx files with
+  a lat/lon, WGS84 (EPSG 4326) reference
+- gpx files have been imported by R using gdal
+- gpx data has been transformed from the automatically registered projection 
+  (EPSG 4326) to UTM 37S, ARC 1960 (EPSG 21037) using R's gdal library (sp)
+- "Name" tag of the gpx data set has been processed in order to separate the
+  plot ids from the pole labels
+- gpx data has been filtered to only include location records labled with "A"
+  which indicates the centre of the respective (whitaker) plot
+- final data set has been built using plot ids, easting and norhting information
+As a result, a GPS-based data set containing plot ids as well as easting and 
+northing coordinates of the plot centre (i.e. A pole) in UTM 37S, ARC 1960
+(EPSG 21037) forms the basis for the comparison.
+
+
+PREPROCESSING OF ORIGINAL "AMiddlePole_ARC1960" GIS DATA FROM DATASET 11140
+One GIS data set used within this bug fixing is the AMiddlePole_ARC1960 shape 
+data of the CP2 data set 11140, version from 2014-03-24.
+
+Procedure steps:
+- GIS file has been imported by R using gdal
+- GIS data has been transformed from its original projection in UTM 37 S, WGS84
+  (EPSG: 32737) to UTM 37S, ARC 1960 (EPSG 21037) using R's gdal library (sp)
+- final data set has been built using plot ids and the easting/northing 
+  information from the actual shape file (i.e. not the values listed in the 
+  attribute table)
+As a result, a GIS-based data set containing plot ids as well as easting and 
+northing coordinates of the plot centre in UTM 37S, ARC 1960 (EPSG 21037) forms 
+the basis for the comparison.
+
+
+PREPROCESSING OF ORIGINAL "APoles_ARC1960" GIS DATA FROM DATASET 11140
+Another GIS data set used within this bug fixing is the APoles_ARC1960 shape 
+data of the CP2 data set 11140, version from 2014-03-24.
+
+Procedure steps:
+- GIS file has been imported by R using gdal
+- GIS data has been transformed from its original projection in UTM 37 S, WGS84
+  (EPSG: 32737) to UTM 37S, ARC 1960 (EPSG 21037) using R's gdal library (sp)
+- plot centre has been computed using the mean of the bounding box extend in
+  x and y direction; the bounding box has been computed from the actual shape file
+  data (i.e. not the values listed in the attribute table).
+- final data set has been built using plot ids and the computed easting/northing 
+  information for the plot centre (see previous step)
+As a result, a GIS-based data set containing plot ids as well as computed
+easting and northing coordinates of the plot centre in UTM 37S, ARC 1960 
+(EPSG 21037) forms the basis for the comparison.
+
+
+QC2: COMPARISON OF THE GPS AND GIS DATA SETS
+--------------------------------------------------------------------------------
+The comparison has been made between (i) the GPS and AMiddlePole_ARC1960 as well
+as (ii) the GPS and APoles_ARC1960 GIS preprocessed data sets.
+
+Procedure steps:
+- the absolute difference between the X and Y locations of the GPS-based plot 
+  centre and the information from AMiddlePole_ARC1960 has been computed
+- the absolute differences have been filtered by a threshold value of 5 meters 
+  to identify plots for which the location information of the two data sets 
+  deviate by more than this range in X or Y direction
+- the procedure steps above have been repeated for the APoles_ARC1960 GIS data 
+  set
+
+  
+QC2: RESULTS
+--------------------------------------------------------------------------------
+The following plots show a deviation (Delta*) between the GPS-based (GPS.*) and 
+AMiddlePole_ARC1960-based (ID11140.AMP.*) location of more than 5 meter in X or 
+Y direction:
+
+Table 1
+GPS.PlotId GPS.PosX GPS.PosY ID11140.AMP.X ID11140.AMP.Y     DeltaX     DeltaY
+      cof1 305570.1  9641686      305560.8       9641691   9.385397   5.396083
+      flm3 324098.9  9639806      324102.6       9639799   3.679720   7.734550
+      fpo2 317605.6  9649455      317957.8       9650229 352.238045 774.499088
+      fpo2 318014.8  9650699      317957.8       9650229  56.946756 470.271095
+      fpo3 317957.8  9650229      318014.8       9650699  56.946756 470.271095
+
+The following plots show a deviation (Delta*) between the GPS-based (GPS.*) and 
+APoles_ARC1960-based (ID11140.APC.*) centre location of more than 5 meter in X
+or Y direction:
+
+Table 2
+GPS.PlotID GPS.PosX GPS.PosY ID11140.BPC.X ID11140.BPC.Y     DeltaX     DeltaY
+      cof1 305570.1  9641686      305560.8       9641691   9.385397   5.396083
+      cof5 329966.4  9638174      329949.7       9638168  16.738963   5.920642
+      fer3 313444.0  9657259      313441.2       9657224   2.813390  35.399774
+      flm3 324098.9  9639806      324102.5       9639799   3.629987   7.709993
+      fpo2 317605.6  9649455      317957.8       9650229 352.184241 774.539602
+      fpo2 318014.8  9650699      317957.8       9650229  57.000560 470.230580
+      fpo3 317957.8  9650229      318014.8       9650699  56.986823 470.245453
+      hom5 344856.9  9638382      344839.0       9638375  17.877799   7.128321
+      mai1 304838.7  9634243      304818.4       9634214  20.290646  28.954747
+     
+     
+QC2: NOTICEABLE PECULIARITIES AND RESULTING MODIFICATIONS
+--------------------------------------------------------------------------------
+The following comments are based on Table 1 and 2 as well as a visual inspection
+of the different GPS and GIS data sets at the plots in question. Regarding the
+GPS-based information, information on the location of all poles available in the
+gpx files have also been considered (preprocessing has been performed analogous
+to the procedure steps mentioned above except that not only the A-poles have
+been filtered).
+
+PLOT cof1 (as of Table 1 and Table 2): plot has been moved (dX ~ 9.3, dY ~ -5.4)
+The GPS coordinates refer to the direct vicinity of Pole A4 in the GIS data set.
+Since the GPS based centre is also centred with respect to the GPS-based
+B-Poles it is very likely that the plot has to be moved by 9.385397 m towards E 
+and 5.396083 towards S. The plot should has been moved in the GIS data set.
+
+PLOT flm3 (as of Table 1): no modification
+Although the deviation is slightly above 5 in Y direction, the visual inspection
+of the geometry of the GPS-based poles and centre locations seems reasonable to 
+the overall plot layout in the GIS dataset.
+
+PLOT fpo2 (as of Table 1 and Table 2): no modification
+This plot occurs two times in the GPS data set:
+(1) The first occurrence with GPS coordinates 317605.6/9649455 is very likely
+an optional plot which has been surveyed at the beginning of the research 
+unit.
+(2) The second occurrence with GPS coordinates 318014.8/9650699 is very likely 
+the result of a mix-up with fp03 but the GIS-based location with fpo3 higher and
+towards the east is correct. The same applies for fpo3, see below.
+
+PLOT fpo3 (as of Table 1 and Table 2): no modification
+The deviation of the GIS location is very likely the result of a mix-up with 
+fpo2 but the GIS-based location with fpo2 lower and towards the west is correct.
+The same applies for fpo2, see above.
+
+PLOT cof5 (as of Table 2): plot centre pole has been moved
+Since this plot is only shown in table two, the respective GPS- and GIS-based
+centre coordinates are within a 5 m range (actually they are identical in this
+case). The noticed deviation in table 2 results from the fact that the plot
+is split into two sub-plots and the plot centre has been located in the more
+eastern one. Within that eastern sub-plot, the centre is placed correctly
+regarding the respective B poles. Regarding geo-statistical analysis the plot
+centre should be moved to the centre of the overall bounding box of all B poles.
+
+PLOT fer3 (as of Table 2): plot centre pole has been moved
+Since this plot is only shown in table two, the respective GPS- and GIS-based
+centre coordinates are within a 5 m range (actually they are identical in this
+case). The noticed deviation in table 2 results from the fact that the plot
+is split into two sub-plots and the plot centre has been located in the more
+northern one. Within that northern sub-plot, the centre is placed correctly
+regarding the respective B poles. Regarding geo-statistical analysis the plot
+centre should be moved to the centre of the overall bounding box of all B poles.
+
+PLOT hom5 (as of Table 2): plot centre pole has been moved
+Since this plot is only shown in table two, the respective GPS- and GIS-based
+centre coordinates are within a 5 m range (actually they are identical in this
+case). The noticed deviation in table 2 results from the fact that the plot
+is split into two sub-plots and the plot centre has been located in the more
+eastern one. Within that eastern sub-plot, the centre is placed correctly
+regarding the respective B poles. Regarding geo-statistical analysis the plot
+centre should be moved to the centre of the overall bounding box of all B poles.
+
+PLOT mai1 (as of Table 2): plot centre pole has been moved
+Since this plot is only shown in table two, the respective GPS- and GIS-based
+centre coordinates are within a 5 m range (actually they are identical in this
+case). The noticed deviation in table 2 results from the fact that the centre
+of the plot is (i) the centre with respect to the C poles (and not the B poles)
+and (ii) that the Whittaker plot is in the south-western corner of the plot.
+Hence, the plot centre should be moved to the centre of the B polygon.
+
+Note on PLOT fed5 (not shown): no modification
+This information is based on a comparison with the plot centre computed on the
+basis of the A pole distribution in the GIS dataset. We mention it only in case
+it will come up in a further discussion:
+Since this plot is only shown in table two, the respective GPS- and GIS-based
+centre coordinates are within a 5 m range (actually they are identical in this
+case). The noticed deviation in table 2 results from the fact that the centre
+of the plot is (i) the centre with respect to the B poles and (ii) that the 
+Whittaker plot is moved towards the east. Hence, the centre is correctly located
+within the B polygon.
+
+
+
+IMPORTANT STATEMENT ON OTHER DATA SETS FOR PLOT INFORMATION
+================================================================================
+It is urgently demanded that data set "CP2_KiLi Research Plots_Arc1960_UTM" with
+ID 10526 and the "Complete_Plots_midPoint_coordinates_update24032014.xlsx" Excel
+file from the documentation section of the web page are deleted.
+
+The Excel file has inconsistencies between its location informatino in lat/lon
+and UTM 37S, ARC 1960 for plots sav2, kid1, kid2, nkw1, flm3. As compared to the
+GIS-based CP2_KiLi Research Plots_Arc1960_UTM data set, the same is true for the
+plots which are part of both data sets (i.e. all except kid* and nkw1).
+
+The Excel file shows deviations of more than 5 m in X or Y direction for 20 
+plots as compared to the GIS-based AMiddlePole_ARC1960 data set analysed above.
+
+The GIS-Based CP2_KiLi Research Plots_Arc1960_UTM data set shows deviations of 
+more than 5 m in X or Y direction for 23 plots as compared to the GIS-based 
+AMiddlePole_ARC1960 data set analysed above.
+
+Only one data set for the plot locations should be made available in the future.
+This data set should be based on the updated data set 11140 which has been 
+quality corrected within this update.
