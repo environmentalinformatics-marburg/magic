@@ -21,6 +21,7 @@ Based on two quality control checks, the following modifications have been made
 - fer3's centre has been moved with respect to all B poles
 - foc0 has been added from GPS measurement
 - foc6 has been added from GPS measurement
+- fpd0 has been added from GPS measurement and bing overlay
 - fpd4 has been rotated to 140°
 - fpo0 has been added from GPS measurement
 - gar1-B4 has been renamed to gra1-B4
@@ -38,7 +39,7 @@ Based on two quality control checks, the following modifications have been made
 - nkw1 has been added visually from bing overlay
 - sav0 has been added from GPS measurement
 - sav5 has been rotated to 270°
-
+- height information from A. Hemp's DEM has been added to all plots
 
 
 IMPORTANT STATEMENT ON GEOID TRANSFORMATION
