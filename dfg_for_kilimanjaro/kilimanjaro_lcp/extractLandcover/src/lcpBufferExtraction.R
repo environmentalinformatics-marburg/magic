@@ -132,24 +132,30 @@ out <- lapply(seq(buffers), function(z) {
   # Extract values from current buffer column
   tmp.val <- sapply(buffered.values, "[", z)
   
-  # Insert values into temporary output template
+  # Insert values into temporary output template in case plot environment is
+  # classified (not valid for some FED plots)
   for (i in seq(tmp.val)) { 
-    tmp.out[i, tmp.val[[i]][, 1]] <- tmp.val[[i]][, 2]   
-    tmp.out.rm_clsh[i, tmp.val[[i]][, 1]] <- tmp.val[[i]][, 3]   
+    if (is.null(tmp.val[[i]])) {
+      tmp.out[i, 2:ncol(tmp.out)] <- NA
+    } else {
+      tmp.out[i, tmp.val[[i]][, 1]] <- tmp.val[[i]][, 2]   
+      tmp.out.rm_clsh[i, tmp.val[[i]][, 1]] <- tmp.val[[i]][, 3] 
+    }
   }
   
   # Write CSV and return output data
-  write.csv(tmp.out, paste("out/kili_lcp_", buffers[z], "m.csv", sep = ""), row.names = FALSE)
-  write.csv(tmp.out.rm_clsh, paste("out/kili_lcp_", buffers[z], "m_rm_clsh.csv", sep = ""), row.names = FALSE)
+  write.csv(tmp.out, paste0("out/kili_lcp_", buffers[z], "m.csv"), row.names = FALSE)
+  write.csv(tmp.out.rm_clsh, paste0("out/kili_lcp_", buffers[z], "m_rm_clsh.csv"), row.names = FALSE)
   return(list(tmp.out, tmp.out.rm_clsh))
 })
 
 # Concatenate output tables to one large table
 out.final <- do.call("cbind", lapply(seq(buffers), function(i) {
-  do.call(function(...) merge(..., by = "PlotID", suffixes = c(paste("_", buffers[i], sep = ""), paste("_", buffers[i], "_nc", sep = "")), all = TRUE), out[[i]])
-}))
+  do.call(function(...) {
+    merge(..., by = "PlotID", suffixes = c(paste0("_", buffers[i]), 
+                                           paste0("_", buffers[i], "_nc")), 
+          all = TRUE), out[[i]]
+    })}))
+
 out.final <- out.final[!duplicated(colnames(out.final))]
 write.csv(out.final, "out/kili_lcp_allbuff.csv", row.names = FALSE, quote = FALSE)
-
-# Deregister parallel backend
-stopCluster(clstr)
