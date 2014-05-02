@@ -28,6 +28,7 @@ library(caret)
 library(kernlab)
 source(paste(additionalFunctionPath,"/balancing.R",sep="")) #balance function
 source(paste(additionalFunctionPath,"/splitData.R",sep="")) #splitData function
+source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
 
 
 ##################################################################################################################
@@ -57,10 +58,10 @@ sampsize=50 #how many pixels from the training data should actually be used for 
 #                                            Predictors
 ##################################################################################################################
 predictorVariables=c("SZen",
-                     "B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"
+                     "B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11",
                      #"Tau",
                      #"Aef","CWP",
-                     #"B0103","B0409","B0406","B0709","B0910","B0509","B0610"
+                     "B0103","B0409","B0406","B0709","B0910","B0509","B0610"
 )
 ##################################################################################################################
 #                                      Learning adjustments
@@ -92,6 +93,7 @@ source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 #                             Prediction and Validation
 ##################################################################################################################
 source("PredictAndValidateClassificationModel.R")
+source("VisualizationOfModelPrediction.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
 rm(list=ls())
