@@ -18,7 +18,7 @@
 ###datapaths
 datapath="/media/hanna/ubt_kdata_0005/pub_rapidminer/input"
 resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
-scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts"
+scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
 additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
 setwd(scriptpath)
 ##################################################################################################################
@@ -54,6 +54,7 @@ cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=TRUE #consider balanced response classes?
 sampsize=50 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
+useSeeds=TRUE
 ##################################################################################################################
 #                                            Predictors
 ##################################################################################################################

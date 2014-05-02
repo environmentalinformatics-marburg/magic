@@ -15,6 +15,7 @@ ctrl <- trainControl(index=cvSplits,
 
 if (any(model=="rf")){
   ptm <- proc.time()
+  if(useSeeds) set.seed(20)
   fit_rf <- train (predictors, 
                    class, 
                    method = "rf", 
@@ -34,6 +35,7 @@ if (any(model=="mlp")){
   tuneGrid_MLP <- expand.grid(.size = c(2:length(predictors), 2:length(predictors)), 
                               .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1))
   ptm <- proc.time()
+  if(useSeeds) set.seed(20)
   fit_mlp <- train (predictors, 
               class, 
               method = "mlpWeightDecay",
@@ -53,6 +55,7 @@ if (any(model=="nnet")){
   tuneGrid_NNet <- expand.grid(.size = c(2:length(predictors)),
                                .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1))
   ptm <- proc.time()
+  if(useSeeds) set.seed(20)
   fit_nnet<-train (predictors, 
                    class, 
                    method = "nnet",
@@ -71,6 +74,7 @@ if (any(model=="svm")){
   tuneGrid_SVM <- expand.grid(.sigma =  sigest(as.matrix(predictors))[2],
                               .C=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 64.00, 128.00))
   ptm <- proc.time()
+  if(useSeeds) set.seed(20)
   fit_svm<-train (predictors, 
                    class, 
                    method = "svmRadial",
