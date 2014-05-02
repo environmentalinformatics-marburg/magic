@@ -18,7 +18,7 @@
 ###datapaths
 datapath="/media/hanna/ubt_kdata_0005/pub_rapidminer/input"
 resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
-scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML"
+scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts"
 additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
 setwd(scriptpath)
 ##################################################################################################################
