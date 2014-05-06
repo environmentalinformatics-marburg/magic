@@ -1,6 +1,7 @@
-splitData<-function(data,dateField,SizeOfTrainingSet){
+splitData<-function(data,dateField,SizeOfTrainingSet,seed){
   #create partition by choosing randomly SizeOfTrainingSet% of the scenes. 
   #These are used for training, the rest is used for testing
+  if(seed) set.seed(20)
   inTrain<-which(is.element(dateField, #determine the ids of the samples to be used for training
                             sample(unique(dateField),length(unique(dateField))*SizeOfTrainingSet)))
   splittedData=list()

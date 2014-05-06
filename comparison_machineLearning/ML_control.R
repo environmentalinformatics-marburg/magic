@@ -9,10 +9,10 @@
 ##################################################################################################################
 ##################################################################################################################
 
-
+doParallel=TRUE
 ##################################################################################################################
 ##################################################################################################################
-#                                    1. DATAPATHS AND FUNCTIONS 
+#                                    
 ##################################################################################################################
 ##################################################################################################################
 ###datapaths
@@ -21,6 +21,7 @@ resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
 scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
 additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
 setwd(scriptpath)
+#sink(paste(resultpath,"/logfile.txt",sep=""))
 ##################################################################################################################
 #                                       load packages and functions
 ##################################################################################################################
@@ -29,6 +30,12 @@ library(kernlab)
 source(paste(additionalFunctionPath,"/balancing.R",sep="")) #balance function
 source(paste(additionalFunctionPath,"/splitData.R",sep="")) #splitData function
 source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
+
+if (doParallel){
+  library(doParallel)
+  cl <- makeCluster(detectCores())
+  registerDoParallel(cl)
+}
 
 
 ##################################################################################################################
@@ -49,12 +56,13 @@ dateField="chDate" #field name of the date+time variable. identifier for scenes.
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
-SizeOfTrainingSet=0.5 #how many percent of scenes will be used for training
+SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=TRUE #consider balanced response classes?
+centerscale=TRUE#center and scale the predictor variables?
 sampsize=50 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
-useSeeds=TRUE
+useSeeds=FALSE
 ##################################################################################################################
 #                                            Predictors
 ##################################################################################################################
@@ -67,7 +75,7 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","mlp","nnet","svm") # supported: rv,mlp,nnet,svmRadial
+model=c("rf","mlp","nnet","svm") # supported: rv,mlp,nnet,svm
 ##### RF Settings
 ntree=1000
 ##### MLP Settings
@@ -83,12 +91,12 @@ ntree=1000
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-source("Preprocessing.R")
+source("Preprocessing.R",print.eval=TRUE)
 #source("VisualizationOfInput.R") #(first run preprocessing.R)
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################
-source("RunClassificationModels.R")
+source("RunClassificationModels.R",echo=TRUE)
 source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
@@ -97,4 +105,8 @@ source("PredictAndValidateClassificationModel.R")
 source("VisualizationOfModelPrediction.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
+if (doParallel){
+  stopCluster(cl)
+}
+#unlink("logfile.txt",append=TRUE, type="message")
 rm(list=ls())

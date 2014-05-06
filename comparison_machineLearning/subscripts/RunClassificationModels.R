@@ -22,7 +22,6 @@ if (any(model=="rf")){
                    trControl = ctrl,
                    tuneGrid=expand.grid(.mtry = c(2:length(predictors))),
                    ntree=ntree,
-                   preProcess = c("center", "scale"),
                    metric="ROC"
                    )
   ptm <- proc.time() - ptm
@@ -42,7 +41,6 @@ if (any(model=="mlp")){
               trControl = ctrl, 
 #              learnFuncParams=c(0.2,0,0,0),
               tuneGrid=tuneGrid_MLP,
-              preProcess = c("center", "scale"),
               metric="ROC")
   ptm <- proc.time() - ptm
   capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), cat("predictor Variables: "),predictorVariables,print(fit_mlp),file=paste(resultpath,"/fit_mlp.txt",sep=""))
@@ -61,7 +59,6 @@ if (any(model=="nnet")){
                    method = "nnet",
                    trControl = ctrl, 
                    tuneGrid=tuneGrid_NNet,
-                   preProcess = c("center", "scale"),
                    metric="ROC")
   ptm <- proc.time() - ptm
   capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
@@ -78,9 +75,8 @@ if (any(model=="svm")){
   fit_svm<-train (predictors, 
                    class, 
                    method = "svmRadial",
-                   trControl = ctrl, 
+                   trControl = c(ctrl, allowParallel = FALSE), 
                    tuneGrid=tuneGrid_SVM,
-                   preProcess = c("center", "scale"),
                   metric="ROC")
   ptm <- proc.time() - ptm
   capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))

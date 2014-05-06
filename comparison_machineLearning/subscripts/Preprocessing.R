@@ -11,12 +11,18 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
 dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 
 ############################################################################################################
+################################## Scale and center predictor Variables ####################################
+############################################################################################################
+if (centerscale){
+  data[,which(names(data) %in% predictorVariables)]=
+    scale(data[,which(names(data) %in% predictorVariables)])
+}
+############################################################################################################
 ################################## SPLIT DATA #######################################
 ############################################################################################################
 #create partition by choosing randomly SizeOfTrainingSet% of the scenes. 
 #These are used for training, the rest is used for testing
-if(useSeeds) set.seed(20)
-splittedData<-splitData(data,dateField,SizeOfTrainingSet)
+splittedData<-splitData(data,dateField,SizeOfTrainingSet,seed=useSeeds)
 testing=splittedData$testing
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
 rm(testing)
@@ -28,7 +34,7 @@ training=splittedData$training
 #in class with lower frequency
 
 if (balance) {
-  training<-balancing(training,response)
+  training<-balancing(training,response,seed=useSeeds)
 }
 ############################################################################################################
 ############################## Cut to sampsize ##############################
