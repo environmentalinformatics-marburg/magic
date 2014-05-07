@@ -60,7 +60,7 @@ SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=TRUE #consider balanced response classes?
 centerscale=TRUE#center and scale the predictor variables?
-sampsize=50 #how many pixels from the training data should actually be used for training? If
+sampsize=500 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
 useSeeds=FALSE
 ##################################################################################################################
@@ -75,7 +75,7 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","mlp","nnet","svm") # supported: rv,mlp,nnet,svm
+model=c("rf","nnet","svm") # supported: rv,mlp,nnet,svm
 ##### RF Settings
 ntree=1000
 ##### MLP Settings
@@ -91,7 +91,7 @@ ntree=1000
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-source("Preprocessing.R",print.eval=TRUE)
+source("Preprocessing.R",echo=TRUE)
 #source("VisualizationOfInput.R") #(first run preprocessing.R)
 ##################################################################################################################
 #                                          Learning
@@ -101,8 +101,9 @@ source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
-source("PredictAndValidateClassificationModel.R")
+source("PredictAndValidateClassificationModel.R",echo=TRUE)
 source("VisualizationOfModelPrediction.R",echo=TRUE)
+source("SpatialModelResults.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
 if (doParallel){

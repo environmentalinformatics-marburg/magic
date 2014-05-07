@@ -11,6 +11,7 @@ if (any(model=="svm")){
   load(paste(resultpath,"/prediction_svm.RData",sep=""))
 }
 load(paste(resultpath,"/predictorVariables.RData",sep=""))
+load(paste(resultpath,"/testing.RData",sep=""))
 
 ##################################################################################################################
 #                                         ROC
@@ -94,6 +95,23 @@ if (any(model=="nnet")){
 }
 if (any(model=="svm")){
   plot(prediction_svm$observed,prediction_svm$prediction,main="SVM",xlab="observed",ylab="predicted")
+}
+dev.off()
+
+###############################################################################################################
+# Boxplot: Rain rate of F alse Negatives and True Positives
+
+pdf(paste(resultpath,"/RainRateOfFalseNegatives.pdf",sep=""))
+for(i in 1:length(model)){
+  FalseNoRainPrediction<-eval(parse(text=paste("prediction_",model[i],sep="")))$prediction[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="norain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
+  ObsFalseNoRainPrediction<-testing$Rain[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="norain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
+
+  TrueRainPrediction<-eval(parse(text=paste("prediction_",model[i],sep="")))$prediction[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="rain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
+  ObsTrueRainPrediction<-testing$Rain[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="rain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
+
+  boxplot(ObsFalseNoRainPrediction,ObsTrueRainPrediction,ylab="Rain Rate",
+        names=c(paste("False Negatives (N= ",length(ObsFalseNoRainPrediction),")",sep=""),
+                paste("True Positives (N= ",length(ObsTrueRainPrediction),")",sep="")),outline=FALSE,main=model[i])
 }
 dev.off()
 

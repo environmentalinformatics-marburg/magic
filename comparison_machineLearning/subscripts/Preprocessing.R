@@ -25,7 +25,7 @@ if (centerscale){
 splittedData<-splitData(data,dateField,SizeOfTrainingSet,seed=useSeeds)
 testing=splittedData$testing
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
-rm(testing)
+rm(testing,data)
 training=splittedData$training
 ############################################################################################################
 ############################### BALANCE DATA #########################################
