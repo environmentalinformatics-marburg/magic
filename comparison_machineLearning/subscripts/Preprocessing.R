@@ -8,6 +8,7 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
                    header=T,
                    row.names=NULL,
                    na.strings="-99.000000")
+tmpDateField=dateField
 dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 
 ############################################################################################################
@@ -34,7 +35,7 @@ training=splittedData$training
 #in class with lower frequency
 
 if (balance) {
-  training<-balancing(training,response,seed=useSeeds)
+  training<-balancing(training,response,seed=useSeeds,factor)
 }
 ############################################################################################################
 ############################## Cut to sampsize ##############################
@@ -62,3 +63,4 @@ row.names(predictors)=NULL
 #overall training data set.
 if(useSeeds) set.seed(20)
 cvSplits <- createFolds(class, k = 10)
+dateField=tmpDateField

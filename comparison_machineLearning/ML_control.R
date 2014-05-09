@@ -59,10 +59,11 @@ dateField="chDate" #field name of the date+time variable. identifier for scenes.
 SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=TRUE #consider balanced response classes?
+balanceFactor=c(0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5) # number of pixels in max class = number of pixels in min class * balance factor
 centerscale=TRUE#center and scale the predictor variables?
 sampsize=500 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
-useSeeds=FALSE
+useSeeds=TRUE
 ##################################################################################################################
 #                                            Predictors
 ##################################################################################################################
@@ -77,9 +78,12 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rv,mlp,nnet,svm
 ##### RF Settings
-ntree=1000
+ntree=500
+
 ##### MLP Settings
+
 ##### NNET Setting
+
 ##### SVM Settings
 
 ##################################################################################################################
@@ -87,27 +91,36 @@ ntree=1000
 #                                       3.  RUN SUBSCRIPTS
 ##################################################################################################################
 ##################################################################################################################
-
+#if several balancing factors are tried, save models ins eperate folders
+tmpresultpath=resultpath
+for (factor in balanceFactor){
+  if (length(balanceFactor)>1){
+    resultpath=tmpresultpath
+    dir.create(paste(resultpath,"/balanceFactor_",factor,sep=""))
+    resultpath=paste(resultpath,"/balanceFactor_",factor,sep="")
+  }
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-source("Preprocessing.R",echo=TRUE)
-#source("VisualizationOfInput.R") #(first run preprocessing.R)
+  source("Preprocessing.R",echo=TRUE)
+  #source("VisualizationOfInput.R") #(first run preprocessing.R)
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################
-source("RunClassificationModels.R",echo=TRUE)
-source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
+  source("RunClassificationModels.R",echo=TRUE)
+  source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
-source("PredictAndValidateClassificationModel.R",echo=TRUE)
-source("VisualizationOfModelPrediction.R",echo=TRUE)
-source("SpatialModelResults.R",echo=TRUE)
+  source("PredictAndValidateClassificationModel.R",echo=TRUE)
+  source("VisualizationOfModelPrediction.R",echo=TRUE)
+  source("SpatialModelResults.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
-if (doParallel){
-  stopCluster(cl)
+
 }
 #unlink("logfile.txt",append=TRUE, type="message")
+  if (doParallel){
+    stopCluster(cl)
+  }
 rm(list=ls())

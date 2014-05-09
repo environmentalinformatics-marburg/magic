@@ -28,9 +28,11 @@ for(scene in 1: length (unique(eval(parse(text=paste("prediction_",model[1],"$ch
                                                                   unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene]],
     obs[eval(parse(text=paste("prediction_",model[1],"$chDate",sep="")))==unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene]]))
   
-  time=paste(substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],0,4),"-",substr(unique(parse(text=paste("prediction_",model[1],"$chDate",sep=""))$chDate)[scene],5,6),"-",
-             substr(unique(parse(text=paste("prediction_",model[1],"$chDate",sep=""))$chDate)[scene],7,8)," ", substr(unique(parse(text=paste("prediction_",model[1],"$chDate",sep=""))$chDate)[scene],9,10),":",
-             substr(unique(parse(text=paste("prediction_",model[1],"$chDate",sep=""))$chDate)[scene],11,12),sep="")
+  time=paste(substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],0,4),"-",
+             substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],5,6),"-",
+             substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],7,8)," ", 
+             substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],9,10),":",
+             substr(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],11,12),sep="")
   par(mfrow=c(1,length(model)+1),mar=c(0,0,3,0))
   plot(obsRaster,main=paste(time,", observed,", sep=""),legend=FALSE,axes=FALSE)
   

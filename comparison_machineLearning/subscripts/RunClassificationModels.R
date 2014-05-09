@@ -12,20 +12,23 @@ ctrl <- trainControl(index=cvSplits,
 ################### DETERMINE TUNING PARAMETERS AND TRAIN WITH BEST PARAMETERS ##########
 ############################################################################################################
                      
-
+#for (i in 1:length(balaceFactor))
 if (any(model=="rf")){
+  tuneGridRF=expand.grid(.mtry = c(2:length(predictors)))
   ptm <- proc.time()
   if(useSeeds) set.seed(20)
+  print ("test")
   fit_rf <- train (predictors, 
                    class, 
                    method = "rf", 
                    trControl = ctrl,
-                   tuneGrid=expand.grid(.mtry = c(2:length(predictors))),
+                   tuneGrid=tuneGridRF,
                    ntree=ntree,
                    metric="ROC"
                    )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), cat("predictor Variables: "),predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
+  print ("test2")
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), paste("Balancing= #MinClassPixel * ", factor), cat("predictor Variables: "),predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
   save(fit_rf,file=paste(resultpath,"/fit_rf.RData",sep=""))
   rm(fit_rf)
 }
@@ -43,7 +46,7 @@ if (any(model=="mlp")){
               tuneGrid=tuneGrid_MLP,
               metric="ROC")
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), cat("predictor Variables: "),predictorVariables,print(fit_mlp),file=paste(resultpath,"/fit_mlp.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), paste("Balancing= #MinClassPixel * ", factor),cat("predictor Variables: "),predictorVariables,print(fit_mlp),file=paste(resultpath,"/fit_mlp.txt",sep=""))
   save(fit_mlp,file=paste(resultpath,"/fit_mlp.RData",sep=""))
   rm(fit_mlp)
 }
@@ -61,7 +64,7 @@ if (any(model=="nnet")){
                    tuneGrid=tuneGrid_NNet,
                    metric="ROC")
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),paste("Balancing= #MinClassPixel * ", factor),cat("predictor Variables: "),predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
   save(fit_nnet,file=paste(resultpath,"/fit_nnet.RData",sep=""))
   rm(fit_nnet)
 }
@@ -79,7 +82,7 @@ if (any(model=="svm")){
                    tuneGrid=tuneGrid_SVM,
                   metric="ROC")
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),paste("Balancing= #MinClassPixel * ", factor),cat("predictor Variables: "),predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
   save(fit_svm,file=paste(resultpath,"/fit_svm.RData",sep=""))
   rm(fit_svm)
 }
