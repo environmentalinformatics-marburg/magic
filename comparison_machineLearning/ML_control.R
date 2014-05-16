@@ -21,7 +21,6 @@ resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
 scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
 additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
 setwd(scriptpath)
-#sink(paste(resultpath,"/logfile.txt",sep=""))
 ##################################################################################################################
 #                                       load packages and functions
 ##################################################################################################################
@@ -30,6 +29,13 @@ library(kernlab)
 source(paste(additionalFunctionPath,"/balancing.R",sep="")) #balance function
 source(paste(additionalFunctionPath,"/splitData.R",sep="")) #splitData function
 source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
+source(paste(additionalFunctionPath,"/rf_thres.R",sep="")) #RF function with threshold as tuning param
+source(paste(additionalFunctionPath,"/mlp_thres.R",sep="")) #MLP function with threshold as tuning param
+source(paste(additionalFunctionPath,"/nnet_thres.R",sep="")) #NNET function with threshold as tuning param
+source(paste(additionalFunctionPath,"/svm_thres.R",sep="")) #SVM function with threshold as tuning param
+source(paste(additionalFunctionPath,"/fourStats.R",sep="")) #fourStats funtion for summary function
+source(paste(additionalFunctionPath,"/cutoffplot.R",sep="")) #plot cutoff levels
+
 
 if (doParallel){
   library(doParallel)
@@ -56,14 +62,16 @@ dateField="chDate" #field name of the date+time variable. identifier for scenes.
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
-SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
+SizeOfTrainingSet=0.70 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
-balance=TRUE #consider balanced response classes?
-balanceFactor=c(0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5) # number of pixels in max class = number of pixels in min class * balance factor
+balance=FALSE #consider balanced response classes?
+balanceFactor=c(1) # number of pixels in max class = 
+#                                                                   number of pixels in min class * balance factor
 centerscale=TRUE#center and scale the predictor variables?
-sampsize=500 #how many pixels from the training data should actually be used for training? If
+sampsize=90 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
 useSeeds=TRUE
+tuneThreshold=TRUE
 ##################################################################################################################
 #                                            Predictors
 ##################################################################################################################
@@ -119,7 +127,6 @@ for (factor in balanceFactor){
 ##################################################################################################################
 
 }
-#unlink("logfile.txt",append=TRUE, type="message")
   if (doParallel){
     stopCluster(cl)
   }

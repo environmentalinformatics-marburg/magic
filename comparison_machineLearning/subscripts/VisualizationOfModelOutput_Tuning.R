@@ -29,3 +29,24 @@ if (any(model=="svm")){
   plot(fit_svm,main="svm")
 }
 dev.off()
+
+
+
+##########################
+if (tuneThreshold) {
+pdf(paste(resultpath,"/TuningStudy_Cutoff.pdf",sep=""))
+if (any(model=="rf")){
+  cutoffplot(fit_rf)
+}
+if (any(model=="mlp")){
+  cutoffplot(fit_mlp)
+}
+if (any(model=="nnet")){
+  cutoffplot(fit_nnet)
+}
+if (any(model=="svm")){
+  cutoffplot(fit_svm)
+}
+dev.off()
+}
+

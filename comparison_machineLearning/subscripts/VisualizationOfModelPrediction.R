@@ -81,7 +81,7 @@ if (any(model=="nnet")){
 if (any(model=="svm")){
   write.csv(table(prediction_svm$observed,prediction_svm$prediction),file=paste(resultpath,"/crosstabSVM.csv",sep=""))
 }
-
+###################
 pdf(paste(resultpath,"/prediction_crosstab.pdf",sep=""))
 if (length(model)>2) par(mfrow=c(2,2))
 if (any(model=="rf")){
