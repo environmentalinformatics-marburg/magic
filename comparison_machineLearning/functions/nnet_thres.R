@@ -16,7 +16,7 @@ expand.grid(size = ((1:len) * 2) - 1, decay = c(0, 10 ^ seq(-1, -4, length = len
 
 ## Here we fit a single nnet model (with a fixed size and decay)
 ## and loop over the threshold values to get predictions from the same
-## randomForest model.
+## nnet model.
 nnet_thres$loop = function(grid) {
   library(plyr)
   loop <- ddply(grid, c("size","decay"),
