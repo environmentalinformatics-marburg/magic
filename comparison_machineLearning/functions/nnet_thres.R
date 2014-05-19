@@ -1,6 +1,6 @@
 #nnet with cutoff as additional tuning parameter
-
-## Get the model code for the original random forest method:
+library(caret)
+## Get the model code for the original nnet method:
 
 nnet_thres <- getModelInfo("nnet", regex = FALSE)[[1]]
 nnet_thres$type <- c("Classification")
@@ -14,7 +14,7 @@ nnet_thres$grid <- function(x, y, len = NULL) {
 expand.grid(size = ((1:len) * 2) - 1, decay = c(0, 10 ^ seq(-1, -4, length = len - 1)), threshold = seq(.01, .99, length = len))
 }
 
-## Here we fit a single random forest model (with a fixed mtry)
+## Here we fit a single nnet model (with a fixed size and decay)
 ## and loop over the threshold values to get predictions from the same
 ## randomForest model.
 nnet_thres$loop = function(grid) {
@@ -23,27 +23,45 @@ nnet_thres$loop = function(grid) {
                 function(x) c(threshold = max(x$threshold)))
   submodels <- vector(mode = "list", length = nrow(loop))
   for(i in seq(along = loop$threshold)) {
-    #index <- which(grid$size == loop$size[i]&grid$decay == loop$decay[i])
-    index <- which(grid$size == loop$size[i])
+    index <- which(grid$size == loop$size[i]&grid$decay == loop$decay[i])
+    #index <- which(grid$size == loop$size[i])
     cuts <- grid[index, "threshold"]
     submodels[[i]] <- data.frame(threshold = cuts[cuts != loop$threshold[i]])
   }
   list(loop = loop, submodels = submodels)
+  
 }
 
 ## Fit the model independent of the threshold parameter
 nnet_thres$fit = function(x, y, wts, param, lev, last, classProbs, ...) {
-  if(length(levels(y)) != 2)
+  if(length(levels(y)) != 2) 
     stop("This works only for 2-class problems")
-  randomForest(x, y, size = param$size, decay = param$decay, ...)
+
+  dat <- x
+  dat$.outcome <- y
+  if (!is.null(wts)) {
+    out <- nnet(.outcome ~ ., data = dat, weights = wts, 
+              size = param$size, decay = param$decay, ...)
+  }
+  else out <- nnet(.outcome ~ ., data = dat, size = param$size, 
+                 decay = param$decay, ...)
+  out
+
 }
 
 ## Now get a probability prediction and use different thresholds to
 ## get the predicted class
 nnet_thres$predict = function(modelFit, newdata, submodels = NULL) {
-  class1Prob <- predict(modelFit,
-                        newdata,
-                        type = "prob")[, modelFit$obsLevels[1]]
+#?????????????????????????????????????????????????????????????????????
+    out <- predict(modelFit, newdata)
+    if (ncol(as.data.frame(out)) == 1) {
+      out <- cbind(out, 1 - out)
+      dimnames(out)[[2]] <- rev(modelFit$obsLevels)
+    }
+#?????????????????????????????????????????????????????????????????????
+
+class1Prob=out[,modelFit$obsLevels[1]]
+
   ## Raise the threshold for class #1 and a higher level of
   ## evidence is needed to call it class 1 so it should 
   ## decrease sensitivity and increase specificity
@@ -68,7 +86,13 @@ nnet_thres$predict = function(modelFit, newdata, submodels = NULL) {
 ## mulitple versions of the probs to evaluate the data across
 ## thresholds
 nnet_thres$prob = function(modelFit, newdata, submodels = NULL) {
-  out <- as.data.frame(predict(modelFit, newdata, type = "prob"))
+
+  out <- predict(modelFit, newdata)
+  if (ncol(as.data.frame(out)) == 1) {
+    out <- cbind(out, 1 - out)
+    dimnames(out)[[2]] <- rev(modelFit$obsLevels)
+  }
+  out <- as.data.frame(out)
   if(!is.null(submodels))
   {
     probs <- out
