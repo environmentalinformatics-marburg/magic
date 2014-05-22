@@ -1,4 +1,5 @@
 #svm with cutoff as additional tuning parameter
+#original script for rf bases on http://www.r-bloggers.com/optimizing-probability-thresholds-for-class-imbalances/
 library(caret)
 ## Get the model code for the original svm method:
 
@@ -54,7 +55,7 @@ svm_thres$fit = function(x, y, wts, param, lev, last, classProbs, ...) {
 ## get the predicted class
 svm_thres$predict = function(modelFit, newdata, submodels = NULL) {
 #  pred <- lev(modelFit)[apply(predict(modelFit, newdata, type = "probabilities"), 
-#                         1, which.max)] #warum geht die nicht?
+#                         1, which.max)] 
   pred <- predict(modelFit, newdata, type = "probabilities")
 
   if (is.character(lev(modelFit))) {
@@ -71,17 +72,15 @@ svm_thres$predict = function(modelFit, newdata, submodels = NULL) {
     }
   }
 
-# print(str(modelFit))
-print(dim(pred))
 class1Prob=pred[, lev(modelFit)[1]]
   ## Raise the threshold for class #1 and a higher level of
   ## evidence is needed to call it class 1 so it should 
   ## decrease sensitivity and increase specificity
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  out <- ifelse(class1Prob >= 0.8, #modelFit$bestTune$threshold,!!!!!!!!!!!!!!!!!!!!!!!
+#????????????????????????????????????????????????????????????????????????
+  out <- ifelse(class1Prob >= 0.8, #modelFit$bestTune$threshold
                 lev(modelFit)[1],
                 lev(modelFit)[2])
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#????????????????????????????????????????????????????????????????????????
 
   if(!is.null(submodels))
   {

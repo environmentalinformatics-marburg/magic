@@ -32,21 +32,57 @@ dev.off()
 
 
 
-##########################
-if (tuneThreshold) {
-pdf(paste(resultpath,"/TuningStudy_Cutoff.pdf",sep=""))
-if (any(model=="rf")){
-  cutoffplot(fit_rf)
-}
-if (any(model=="mlp")){
-  cutoffplot(fit_mlp)
-}
-if (any(model=="nnet")){
-  cutoffplot(fit_nnet)
-}
-if (any(model=="svm")){
-  cutoffplot(fit_svm)
-}
+###############################################################################################################
+#trade off######
+###############################################################################################################
+
+  library(reshape2)
+pdf(paste(resultpath,"/TuningStudy_Tradeoff_rf.pdf",sep=""))
+  if (any(model=="rf")&tuneThreshold){
+    t_mtry=unlist(fit_rf$finalModel$tuneValue[1])
+    metrics <- fit_rf$results[fit_rf$results$mtry==t_mtry, c(2, 4:6)]
+    metrics <- melt(metrics, id.vars = "threshold",
+                  variable.name = "Resampled",
+                  value.name = "Data")
+  
+    ggplot(metrics, aes(x = threshold, y = Data, color = Resampled)) +
+      geom_line() +
+      ylab("") + xlab("Probability Cutoff") +
+      theme(legend.position = "top") 
+  }
 dev.off()
-}
+  
+pdf(paste(resultpath,"/TuningStudy_Tradeoff_nnet.pdf",sep=""))
+  if (any(model=="nnet")&tuneThreshold){
+    t_size=unlist(fit_nnet$finalModel$tuneValue[1])
+    t_decay=unlist(fit_nnet$finalModel$tuneValue[2])
+    metrics <- fit_nnet$results[fit_nnet$results$size==t_size&fit_nnet$results$decay==t_decay, c(3, 5:7)]
+    metrics <- melt(metrics, id.vars = "threshold",
+                  variable.name = "Resampled",
+                  value.name = "Data")
+  
+    ggplot(metrics, aes(x = threshold, y = Data, color = Resampled)) +
+      geom_line() +
+      ylab("") + xlab("Probability Cutoff") +
+      theme(legend.position = "top")
+  }
+dev.off()
+pdf(paste(resultpath,"/TuningStudy_Tradeoff_svm.pdf",sep=""))
+  if (any(model=="svm")&tuneThreshold){
+    t_sigma=unlist(fit_svm$finalModel@kernelf@kpar$sigma)
+    t_C=unlist(fit_svm$finalModel@param[1])
+    metrics <- fit_svm$results[fit_svm$results$sigma==t_sigma&fit_svm$results$C==t_C, c(3, 5:7)]
+    metrics <- melt(metrics, id.vars = "threshold",
+                  variable.name = "Resampled",
+                  value.name = "Data")
+    ggplot(metrics, aes(x = threshold, y = Data, color = Resampled)) +
+      geom_line() +
+      ylab("") + xlab("Probability Cutoff") +
+      theme(legend.position = "top")
+  }
+dev.off()
+
+
+  
+
 

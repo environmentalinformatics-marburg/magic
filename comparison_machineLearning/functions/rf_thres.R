@@ -46,6 +46,7 @@ rf_thres$predict = function(modelFit, newdata, submodels = NULL) {
   class1Prob <- predict(modelFit,
                         newdata,
                         type = "prob")[, modelFit$obsLevels[1]]
+  
   ## Raise the threshold for class #1 and a higher level of
   ## evidence is needed to call it class 1 so it should 
   ## decrease sensitivity and increase specificity

@@ -137,7 +137,8 @@ if (any(model=="svm")){
   fit_svm<-train (predictors, 
                    class, 
                    method = method,
-                   trControl = c(ctrl, allowParallel = FALSE), 
+                   trControl = c(ctrl, 
+                                 allowParallel = FALSE), 
                    tuneGrid=tuneGrid_SVM,
                   metric=metric,
                   maximize =maximize #when dist is used, then min value is important

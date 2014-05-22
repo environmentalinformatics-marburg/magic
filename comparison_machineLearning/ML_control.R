@@ -56,19 +56,20 @@ if (doParallel){
 
 
 inputTable="rfInput_vp03_day_om.dat"
+#inputTable="sampleData.csv"
 response<-"RInfo" #field name of the response variable
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
                    #important to split the data. must be unique per scende
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
-SizeOfTrainingSet=0.70 #how many percent of scenes will be used for training
+SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=FALSE #consider balanced response classes?
 balanceFactor=c(1) # number of pixels in max class = 
 #                                                                   number of pixels in min class * balance factor
 centerscale=TRUE#center and scale the predictor variables?
-sampsize=90 #how many pixels from the training data should actually be used for training? If
+sampsize=100 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
 useSeeds=TRUE
 tuneThreshold=TRUE
@@ -84,9 +85,9 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","nnet","svm") # supported: rv,mlp,nnet,svm
+model=c("rf","nnet","svm") # supported: rf,mlp,nnet,svm. MLP only if tuneThreshold=FALSE
 ##### RF Settings
-ntree=500
+ntree=80
 
 ##### MLP Settings
 
@@ -116,10 +117,12 @@ for (factor in balanceFactor){
 #                                          Learning
 ##################################################################################################################
   source("RunClassificationModels.R",echo=TRUE)
+
   source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
+
   source("PredictAndValidateClassificationModel.R",echo=TRUE)
   source("VisualizationOfModelPrediction.R",echo=TRUE)
   source("SpatialModelResults.R",echo=TRUE)

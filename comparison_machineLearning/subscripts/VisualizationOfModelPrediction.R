@@ -16,34 +16,39 @@ load(paste(resultpath,"/testing.RData",sep=""))
 ##################################################################################################################
 #                                         ROC
 ##################################################################################################################
-
+library(ROCR)
 if (any(model=="rf")){
-  obs=as.character(prediction_rf$observed)
-  obs[obs=="rain"]=1
-  obs[obs=="norain"]=0
-  probRF=prediction_rf$predicted_prob$rain
-  rocRF=rocFromTab(probRF,obs,plot=FALSE)
+  obs=as.numeric(prediction_rf$observed)
+  obs[as.character(prediction_rf$observed)=="norain"]=0
+  obs[as.character(prediction_rf$observed)=="rain"]=1
+  pred <- prediction(prediction_rf$predicted_prob$rain,obs)
+  perf_rf <- performance(pred, "tpr", "fpr") 
+  auc_rf=unlist(performance(pred, measure="auc")@y.values)
+  
 }
 if (any(model=="mlp")){
-  obs=as.character(prediction_mlp$observed)
-  obs[obs=="rain"]=1
-  obs[obs=="norain"]=0
-  probMLP=prediction_mlp$predicted_prob$rain
-  rocMLP=rocFromTab(probMLP,obs,plot=FALSE)
+  obs=as.numeric(prediction_mlp$observed)
+  obs[as.character(prediction_mlp$observed)=="norain"]=0
+  obs[as.character(prediction_mlp$observed)=="rain"]=1
+  pred <- prediction(prediction_mlp$predicted_prob$rain,obs)
+  perf_mlp <- performance(pred, "tpr", "fpr") 
+  auc_mlp=unlist(performance(pred, measure="auc")@y.values)
 }  
 if (any(model=="nnet")){
-  obs=as.character(prediction_nnet$observed)
-  obs[obs=="rain"]=1
-  obs[obs=="norain"]=0
-  probNNET=prediction_nnet$predicted_prob$rain
-  rocNNET=rocFromTab(probNNET,obs,plot=FALSE)
+  obs=as.numeric(prediction_nnet$observed)
+  obs[as.character(prediction_nnet$observed)=="norain"]=0
+  obs[as.character(prediction_nnet$observed)=="rain"]=1
+  pred <- prediction(prediction_nnet$predicted_prob$rain,obs)
+  perf_nnet <- performance(pred, "tpr", "fpr") 
+  auc_nnet=unlist(performance(pred, measure="auc")@y.values)
 }
 if (any(model=="svm")){
-  obs=as.character(prediction_svm$observed)
-  obs[obs=="rain"]=1
-  obs[obs=="norain"]=0
-  probSVM=prediction_svm$predicted_prob$rain
-  rocSVM=rocFromTab(probSVM,obs,plot=FALSE)
+  obs=as.numeric(prediction_svm$observed)
+  obs[as.character(prediction_svm$observed)=="norain"]=0
+  obs[as.character(prediction_svm$observed)=="rain"]=1
+  pred <- prediction(prediction_svm$predicted_prob$rain,obs)
+  perf_svm <- performance(pred, "tpr", "fpr") 
+  auc_svm=unlist(performance(pred, measure="auc")@y.values)
 }
 
 if (length(model)==4) color=c("black","red","blue","green","grey")
@@ -53,15 +58,13 @@ if (length(model)==1) color=c("black","grey")
 
 legendnames=c()
 for (i in 1:length(model)){
-  legendnames=c(legendnames,paste(toupper(model[i]),round(eval(parse(text=paste("roc",toupper(model[i]),sep="")))[[1]],2)))
+  legendnames=c(legendnames,paste(toupper(model[i]),round(eval(parse(text=paste("auc_",model[i],sep=""))),2)))
 }
 pdf(paste(resultpath,"/prediction_roc.pdf",sep=""))
-plot(eval(parse(text=paste("roc",toupper(model[1]),sep="")))[[2]][,2],
-     eval(parse(text=paste("roc",toupper(model[1]),sep="")))[[2]][,3],
-     type="l",xlab="False positive rate",ylab="True positive rate",xlim=c(0,1),ylim=c(0,1),col=color[1])
+plot(eval(parse(text=paste("perf_",model[1],sep=""))),colorize=TRUE)
+plot(eval(parse(text=paste("perf_",model[1],sep=""))),col=color[1])
   for (i in 2:length(model)){
-      lines(eval(parse(text=paste("roc",toupper(model[i]),sep="")))[[2]][,2],
-          eval(parse(text=paste("roc",toupper(model[i]),sep="")))[[2]][,3],col=color[i])
+    plot(eval(parse(text=paste("perf_",model[i],sep=""))),col=color[i],add=TRUE)
   }
   lines(c(0,1),c(0,1),col="grey50")
   legend("bottomright",col=color,lty=c(1),legend=c(legendnames, "Random 0.5"),bty="n")
@@ -95,23 +98,6 @@ if (any(model=="nnet")){
 }
 if (any(model=="svm")){
   plot(prediction_svm$observed,prediction_svm$prediction,main="SVM",xlab="observed",ylab="predicted")
-}
-dev.off()
-
-###############################################################################################################
-# Boxplot: Rain rate of F alse Negatives and True Positives
-
-pdf(paste(resultpath,"/RainRateOfFalseNegatives.pdf",sep=""))
-for(i in 1:length(model)){
-  FalseNoRainPrediction<-eval(parse(text=paste("prediction_",model[i],sep="")))$prediction[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="norain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
-  ObsFalseNoRainPrediction<-testing$Rain[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="norain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
-
-  TrueRainPrediction<-eval(parse(text=paste("prediction_",model[i],sep="")))$prediction[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="rain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
-  ObsTrueRainPrediction<-testing$Rain[eval(parse(text=paste("prediction_",model[i],sep="")))$prediction=="rain"&eval(parse(text=paste("prediction_",model[i],sep="")))$observed=="rain"]
-
-  boxplot(ObsFalseNoRainPrediction,ObsTrueRainPrediction,ylab="Rain Rate",
-        names=c(paste("False Negatives (N= ",length(ObsFalseNoRainPrediction),")",sep=""),
-                paste("True Positives (N= ",length(ObsTrueRainPrediction),")",sep="")),outline=FALSE,main=model[i])
 }
 dev.off()
 

@@ -1,4 +1,6 @@
 #nnet with cutoff as additional tuning parameter
+#original script for rf bases on http://www.r-bloggers.com/optimizing-probability-thresholds-for-class-imbalances/
+
 library(caret)
 ## Get the model code for the original nnet method:
 

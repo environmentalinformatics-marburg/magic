@@ -56,4 +56,3 @@ if (any(model=="svm")){
 }
 ####################################### VALIDATE #######################################
 rm(testing)
-#wo unterschätzt er? da wo regenrate <??
