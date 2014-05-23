@@ -12,6 +12,11 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * Reads the UniversalDataBinFile File Format.
+ * @author Wöllauer
+ *
+ */
 public class UniversalDataBinFile {
 	
 	private final String filename;
@@ -19,16 +24,11 @@ public class UniversalDataBinFile {
 	private FileInputStream fileInputStream;
 	private FileChannel fileChannel;
 	private MappedByteBuffer mappedByteBuffer;
-	private long fileSize;
-	
-	/* --- header parameters ---*/
-	
-	private double dActTimeToSecondFactor;
-	private double startTime;
-	private double startTimeToDayFactor;
+	private int fileSize;
+
 	private short variableCount;
 	
-	/* ---   ---*/
+	TimeConverter timeConverter;
 	
 	private SensorHeader[] sensorHeaders;
 	
@@ -44,7 +44,10 @@ public class UniversalDataBinFile {
 	private void initFile() throws IOException {
 		fileInputStream = new FileInputStream(filename);
 		fileChannel = fileInputStream.getChannel();
-		fileSize = fileChannel.size();
+		if(fileChannel.size()>Integer.MAX_VALUE) {
+			throw new RuntimeException("File > Integer.MAX_VALUE: "+fileChannel.size());
+		}
+		fileSize = (int) fileChannel.size();
 		mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);
 	}
 	
@@ -74,18 +77,20 @@ public class UniversalDataBinFile {
 		if(moduleAdditionalDataLen>0) {
 			throw new RuntimeException("reading of additional optional data in header not implemented");
 		}
-		startTimeToDayFactor = mappedByteBuffer.getDouble();
+		double startTimeToDayFactor = mappedByteBuffer.getDouble();
 		System.out.println(startTimeToDayFactor+"\tstartTimeToDayFactor");
 		short dActTimeDataType = mappedByteBuffer.getShort();
 		System.out.println(dActTimeDataType+"\tdActTimeDataType");
-		dActTimeToSecondFactor = mappedByteBuffer.getDouble();
+		double dActTimeToSecondFactor = mappedByteBuffer.getDouble();
 		System.out.println(dActTimeToSecondFactor+"\tdActTimeToSecondFactor");
-		startTime = mappedByteBuffer.getDouble();
+		double startTime = mappedByteBuffer.getDouble();
 		System.out.println(startTime+"\tstartTime");
 		double sampleRate = mappedByteBuffer.getDouble();
 		System.out.println(sampleRate+"\tsampleRate");
 		variableCount = mappedByteBuffer.getShort();
 		System.out.println(variableCount+" variableCount");
+		
+		timeConverter = new TimeConverter(startTimeToDayFactor, dActTimeToSecondFactor, startTime);
 		
 		readSensorHeaders();
 		
@@ -157,10 +162,10 @@ public class UniversalDataBinFile {
 		}
 	}
 	
-	public void readSensorData() {
+	public double[][] readSensorData() {
 		mappedByteBuffer.position(dataSectionStartFilePosition);
 		
-		long dataRowByteSize = (variableCount+1)*4; 
+		int dataRowByteSize = (variableCount+1)*4; 
 		
 		
 		System.out.println("filesize\t"+fileSize);
@@ -171,15 +176,20 @@ public class UniversalDataBinFile {
 		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
 			throw new RuntimeException("wrong data entry calculation");
 		}
-		long dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
+		
+		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
 		
 		
+		double[][] rows = new double[dataEntryCount][];
 		
 		
 		for(int i=0;i<dataEntryCount;i++) {			
 			
 			double[] row = readDataRow(i);
 			
+			rows[i] = row;
+			
+			/*
 			System.out.print(oleAutomatonTimeToDateTime(offsetToOleAutomatonTime(i))+"\t");
 			
 			System.out.print(i+".\t");
@@ -190,7 +200,10 @@ public class UniversalDataBinFile {
 			System.out.println();
 			
 			System.out.println(fileSize+"     "+mappedByteBuffer.position());
+			*/
 		}
+		
+		return rows;
 	}
 	
 	public double[] readDataRow(int checkRowID) {
@@ -216,15 +229,19 @@ public class UniversalDataBinFile {
 	}
 	
 	
-	public double offsetToOleAutomatonTime(int offset) {
-		return offset*dActTimeToSecondFactor/86400d + startTime;		
-	}
-	
 	private static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);
 	
 	public LocalDateTime oleAutomatonTimeToDateTime(double oleAutomatonTimestamp) {
 		long oleAutomatonTimeSeconds = (long) Math.round(oleAutomatonTimestamp*24*60*60);
 		return OLE_AUTOMATION_TIME_START.plus(Duration.ofSeconds(oleAutomatonTimeSeconds));
+	}
+	
+	public SensorHeader[] getSensorHeaders() {
+		return sensorHeaders;
+	}
+	
+	public TimeConverter getTimeConverter() {
+		return timeConverter;
 	}
 	
 	

@@ -6,6 +6,11 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * Testing.
+ * @author Wöllauer
+ *
+ */
 public class UniversalDataBinFileDecoder {
 	
 	MappedByteBuffer mappedByteBuffer;

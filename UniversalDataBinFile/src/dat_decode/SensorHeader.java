@@ -1,5 +1,10 @@
 package dat_decode;
 
+/**
+ * Metadata of one sensor.
+ * @author Wöllauer
+ *
+ */
 public class SensorHeader {
 	
 	public final String name;
@@ -15,6 +20,14 @@ public class SensorHeader {
 	public void printHeader() {
 		System.out.println("sensor: "+name+"\t unit: "+unit);
 		
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getUnit() {
+		return unit;
 	}
 
 }
