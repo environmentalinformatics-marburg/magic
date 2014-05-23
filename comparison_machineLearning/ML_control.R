@@ -8,7 +8,8 @@
 #currently only for classification
 ##################################################################################################################
 ##################################################################################################################
-
+#pc="ui183"
+pc="hanna"
 
 ##################################################################################################################
 ##################################################################################################################
@@ -16,25 +17,28 @@
 ##################################################################################################################
 ##################################################################################################################
 ###datapaths
-datapath="/media/hanna/ubt_kdata_0005/pub_rapidminer/input"
-resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
-scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
-additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
-setwd(scriptpath)
+if (pc=="hanna"){
+  datapath="/media/hanna/ubt_kdata_0005/pub_rapidminer/input"
+  resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
+  scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
+  additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
+}
+if(pc=="ui183"){
+  datapath="/media/memory18201/casestudies/ML_comp/Input_Data"
+  resultpath<-"/media/memory18201/casestudies/ML_comp/Results"
+  scriptpath="/home/hmeyer/ML_comp_scripts/subscripts"
+  additionalFunctionPath="/home/hmeyer/ML_comp_scripts/functions"
+}
+  setwd(scriptpath)
 ##################################################################################################################
 #                                       load packages and functions
 ##################################################################################################################
 library(caret)
 library(kernlab)
-source(paste(additionalFunctionPath,"/balancing.R",sep="")) #balance function
-source(paste(additionalFunctionPath,"/splitData.R",sep="")) #splitData function
-#source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
-source(paste(additionalFunctionPath,"/rf_thres.R",sep="")) #RF function with threshold as tuning param
-source(paste(additionalFunctionPath,"/nnet_thres.R",sep="")) #NNET function with threshold as tuning param
-source(paste(additionalFunctionPath,"/svm_thres.R",sep="")) #SVM function with threshold as tuning param
-source(paste(additionalFunctionPath,"/fourStats.R",sep="")) #fourStats funtion for summary function
-#source(paste(additionalFunctionPath,"/cutoffplot.R",sep="")) #plot cutoff levels
 
+for (i in list.files(additionalFunctionPath)){
+  source(paste(additionalFunctionPath,"/",i,sep=""))
+}
 
 
 
