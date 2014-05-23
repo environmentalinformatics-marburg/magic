@@ -65,7 +65,7 @@ balance=FALSE #consider balanced response classes?
 balanceFactor=c(1) # number of pixels in max class = 
 #          number of pixels in min class * balance factor
 
-sampsize=500 #how many pixels from the training data should actually be used for training? If
+sampsize=10000 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
 
 
@@ -83,8 +83,8 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rf,nnet,svm.
 tuneThreshold=TRUE
-#thresholds=seq(0.0, 1.0, 0.01)
-thresholds=seq(0.0, 1.0, 0.3)
+thresholds=seq(0.0, 1.0, 0.01)
+#thresholds=seq(0.0, 1.0, 0.3)
 
 ##### RF Settings
 ntree=500
