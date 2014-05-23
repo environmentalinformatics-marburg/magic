@@ -55,7 +55,6 @@ useSeeds=FALSE
 
 
 inputTable="rfInput_vp03_day_om.dat"
-#inputTable="sampleData.csv"
 response<-"RInfo" #field name of the response variable
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
                    #important to split the data. must be unique per scende
@@ -69,7 +68,7 @@ balance=FALSE #consider balanced response classes?
 balanceFactor=c(1) # number of pixels in max class = 
 #          number of pixels in min class * balance factor
 
-sampsize=10000 #how many pixels from the training data should actually be used for training? If
+sampsize=100 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
 
 
