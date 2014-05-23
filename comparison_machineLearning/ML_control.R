@@ -9,7 +9,7 @@
 ##################################################################################################################
 ##################################################################################################################
 
-doParallel=TRUE
+
 ##################################################################################################################
 ##################################################################################################################
 #                                    
@@ -28,20 +28,14 @@ library(caret)
 library(kernlab)
 source(paste(additionalFunctionPath,"/balancing.R",sep="")) #balance function
 source(paste(additionalFunctionPath,"/splitData.R",sep="")) #splitData function
-source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
+#source(paste(additionalFunctionPath,"/rocFromTab.R",sep="")) #ROC function
 source(paste(additionalFunctionPath,"/rf_thres.R",sep="")) #RF function with threshold as tuning param
-source(paste(additionalFunctionPath,"/mlp_thres.R",sep="")) #MLP function with threshold as tuning param
 source(paste(additionalFunctionPath,"/nnet_thres.R",sep="")) #NNET function with threshold as tuning param
 source(paste(additionalFunctionPath,"/svm_thres.R",sep="")) #SVM function with threshold as tuning param
 source(paste(additionalFunctionPath,"/fourStats.R",sep="")) #fourStats funtion for summary function
-source(paste(additionalFunctionPath,"/cutoffplot.R",sep="")) #plot cutoff levels
+#source(paste(additionalFunctionPath,"/cutoffplot.R",sep="")) #plot cutoff levels
 
 
-if (doParallel){
-  library(doParallel)
-  cl <- makeCluster(detectCores())
-  registerDoParallel(cl)
-}
 
 
 ##################################################################################################################
@@ -49,7 +43,8 @@ if (doParallel){
 #                                    2. ADJUST PARAMETRS 
 ##################################################################################################################
 ##################################################################################################################
-
+doParallel=TRUE
+useSeeds=FALSE
 ##################################################################################################################
 #                                          Data
 ##################################################################################################################
@@ -60,6 +55,7 @@ inputTable="rfInput_vp03_day_om.dat"
 response<-"RInfo" #field name of the response variable
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
                    #important to split the data. must be unique per scende
+centerscale=TRUE#center and scale the predictor variables?
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
@@ -67,12 +63,12 @@ SizeOfTrainingSet=0.50 #how many percent of scenes will be used for training
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=FALSE #consider balanced response classes?
 balanceFactor=c(1) # number of pixels in max class = 
-#                                                                   number of pixels in min class * balance factor
-centerscale=TRUE#center and scale the predictor variables?
-sampsize=100 #how many pixels from the training data should actually be used for training? If
+#          number of pixels in min class * balance factor
+
+sampsize=500 #how many pixels from the training data should actually be used for training? If
 #to high (e.g after rebalancing) then the maximum number will be considered
-useSeeds=TRUE
-tuneThreshold=TRUE
+
+
 ##################################################################################################################
 #                                            Predictors
 ##################################################################################################################
@@ -85,22 +81,35 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","nnet","svm") # supported: rf,mlp,nnet,svm. MLP only if tuneThreshold=FALSE
-##### RF Settings
-ntree=80
+model=c("rf","nnet","svm") # supported: rf,nnet,svm.
+tuneThreshold=TRUE
+#thresholds=seq(0.0, 1.0, 0.01)
+thresholds=seq(0.0, 1.0, 0.3)
 
-##### MLP Settings
+##### RF Settings
+ntree=500
+rf_mtry=c(2:length(predictorVariables))
 
 ##### NNET Setting
+nnet_decay=c(0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1)
+nnet_size=c(2:length(predictorVariables))
 
 ##### SVM Settings
-
+svm_sigma="sigest(as.matrix(predictors))[2]"
+svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
 ##################################################################################################################
 ##################################################################################################################
 #                                       3.  RUN SUBSCRIPTS
 ##################################################################################################################
 ##################################################################################################################
-#if several balancing factors are tried, save models ins eperate folders
+if (doParallel){
+  library(doParallel)
+  cl <- makeCluster(detectCores())
+  registerDoParallel(cl)
+}
+
+
+#if several balancing factors are tried, save models in seperate folders
 tmpresultpath=resultpath
 for (factor in balanceFactor){
   if (length(balanceFactor)>1){
@@ -117,7 +126,6 @@ for (factor in balanceFactor){
 #                                          Learning
 ##################################################################################################################
   source("RunClassificationModels.R",echo=TRUE)
-
   source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation

@@ -21,17 +21,6 @@ if (any(model=="rf")){
   save(prediction_rf,file=paste(resultpath,"/prediction_rf.RData",sep=""))
   rm(prediction_rf)
 }
-if (any(model=="mlp")){
-  load(paste(resultpath,"/fit_mlp.RData",sep=""))
-  prediction_mlp=data.frame("prediction"=predict (fit_mlp,testing_predictors))
-  prediction_mlp$predicted_prob <- predict (fit_mlp,testing_predictors,type="prob")
-  prediction_mlp$observed=testing_observed
-  prediction_mlp$chDate=testing$chDate
-  prediction_mlp$x=testing$x
-  prediction_mlp$y=testing$y
-  save(prediction_mlp,file=paste(resultpath,"/prediction_mlp.RData",sep=""))
-  rm(prediction_mlp)
-}
 if (any(model=="nnet")){
   load(paste(resultpath,"/fit_nnet.RData",sep=""))
   prediction_nnet=data.frame("prediction"=predict (fit_nnet,testing_predictors))

@@ -34,11 +34,11 @@ if(balance) factorprint=paste("Balancing= #MinClassPixel * ", factor)
 if (any(model=="rf")){
   if (tuneThreshold) {
     method = rf_thres
-    tuneGridRF=expand.grid(.mtry = c(2:length(predictors)),.threshold=seq(.1, .99, 0.1))
+    tuneGridRF=expand.grid(.mtry = rf_mtry,.threshold=thresholds)
   }
   if (!tuneThreshold) {
     method = "rf"
-    tuneGridRF=expand.grid(.mtry = c(2:length(predictors)))
+    tuneGridRF=expand.grid(.mtry =rf_mtry)
   }
   ptm <- proc.time()
   if(useSeeds) set.seed(20)
@@ -52,53 +52,25 @@ if (any(model=="rf")){
                    maximize = maximize #when dist is used, then min value is important
                    )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), factorprint, cat("predictor Variables: "),predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), factorprint, cat("predictor Variables: "),
+                 predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
   save(fit_rf,file=paste(resultpath,"/fit_rf.RData",sep=""))
   rm(fit_rf)
 }
 
-if (any(model=="mlp")){
-  
-  if (tuneThreshold) {
-    method = mlp_thres
-    tuneGridMLP=expand.grid(.size = c(2:length(predictors), 2:length(predictors)), 
-                            .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1),.threshold=seq(.1, .99, 0.1))
-  }
-  if (!tuneThreshold) {
-    method = "mlpWeightDecay"
-    tuneGrid_MLP <- expand.grid(.size = c(2:length(predictors), 2:length(predictors)), 
-                                .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1))
-  }
-  
-  ptm <- proc.time()
-  if(useSeeds) set.seed(20)
-  fit_mlp <- train (predictors, 
-              class, 
-              method = method,
-              trControl = ctrl, 
-#              learnFuncParams=c(0.2,0,0,0),
-              tuneGrid=tuneGrid_MLP,
-              metric=metric,
-              maximize = maximize #when dist is used, then min value is important
-)
-  ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), factorprint,cat("predictor Variables: "),predictorVariables,print(fit_mlp),file=paste(resultpath,"/fit_mlp.txt",sep=""))
-  save(fit_mlp,file=paste(resultpath,"/fit_mlp.RData",sep=""))
-  rm(fit_mlp)
-}
 
 
 if (any(model=="nnet")){
   
   if (tuneThreshold) {
     method = nnet_thres
-    tuneGrid_NNet <- expand.grid(.size = c(2:length(predictors)),
-                                .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1),.threshold=seq(.1, .99, 0.075))
+    tuneGrid_NNet <- expand.grid(.size = nnet_size,
+                                .decay = nnet_decay,.threshold=thresholds)
   }
   if (!tuneThreshold) {
     method = "nnet"
-    tuneGrid_NNet <- expand.grid(.size = c(2:length(predictors)),
-                                 .decay = c(0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1))
+    tuneGrid_NNet <- expand.grid(.size = nnet_size,
+                                 .decay = nnet_decay)
   }
   ptm <- proc.time()
   if(useSeeds) set.seed(20)
@@ -111,7 +83,8 @@ if (any(model=="nnet")){
                    maximize = maximize #when dist is used, then min value is important
                    )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),
+                 predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
   save(fit_nnet,file=paste(resultpath,"/fit_nnet.RData",sep=""))
   rm(fit_nnet)
 }
@@ -121,16 +94,14 @@ if (any(model=="svm")){
   
   if (tuneThreshold) {
     method = svm_thres
-    tuneGrid_SVM <- expand.grid(.sigma =  sigest(as.matrix(predictors))[2],
-                                .C=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 64.00, 128.00),.threshold=seq(.1, .99, 0.1))
+    tuneGrid_SVM <- expand.grid(.sigma =  eval(parse(text=svm_sigma)),
+                                .C=svm_cost,.threshold=seq(.1, .99, 0.1))
   }
   if (!tuneThreshold) {
     method = "svmRadial"
-    tuneGrid_SVM <- expand.grid(.sigma =  sigest(as.matrix(predictors))[2],
-                                .C=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 64.00, 128.00))
+    tuneGrid_SVM <- expand.grid(.sigma =  eval(parse(text=svm_sigma)),
+                                .C=svm_cost)
   }
-  
-  
   
   ptm <- proc.time()
   if(useSeeds) set.seed(20)
@@ -144,7 +115,8 @@ if (any(model=="svm")){
                   maximize =maximize #when dist is used, then min value is important
                   )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),
+                 predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
   save(fit_svm,file=paste(resultpath,"/fit_svm.RData",sep=""))
   rm(fit_svm)
 }

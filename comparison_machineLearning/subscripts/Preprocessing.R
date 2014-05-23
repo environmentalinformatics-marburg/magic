@@ -25,6 +25,9 @@ if (centerscale){
 #These are used for training, the rest is used for testing
 splittedData<-splitData(data,dateField,SizeOfTrainingSet,seed=useSeeds)
 testing=splittedData$testing
+if (response=="RInfo"){
+  testing$RInfo=factor(testing$RInfo,levels=c("rain","norain"))
+}
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
 rm(testing,data)
 training=splittedData$training
@@ -50,6 +53,9 @@ training <- training[samples,] #samples used for training
 ############################## Define predictors and class ##############################
 ############################################################################################################
 class <- eval(parse(text=paste("training$",response,sep="")))
+if (response=="RInfo"){
+  class=factor(class,levels=c("rain","norain"))
+}
 predictors <-training[,names(training) %in%  predictorVariables]
 row.names(predictors)=NULL
 ############################################################################################################

@@ -2,9 +2,6 @@
 if (any(model=="rf")){
   load(paste(resultpath,"/prediction_rf.RData",sep=""))
 }
-if (any(model=="mlp")){
-  load(paste(resultpath,"/prediction_mlp.RData",sep=""))
-}
 if (any(model=="nnet")){
   load(paste(resultpath,"/prediction_nnet.RData",sep=""))
 }
