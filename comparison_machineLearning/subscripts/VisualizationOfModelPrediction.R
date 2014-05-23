@@ -1,9 +1,6 @@
 if (any(model=="rf")){
   load(paste(resultpath,"/prediction_rf.RData",sep=""))
 }
-if (any(model=="mlp")){
-  load(paste(resultpath,"/prediction_mlp.RData",sep=""))
-}
 if (any(model=="nnet")){
   load(paste(resultpath,"/prediction_nnet.RData",sep=""))
 }
@@ -26,14 +23,6 @@ if (any(model=="rf")){
   auc_rf=unlist(performance(pred, measure="auc")@y.values)
   
 }
-if (any(model=="mlp")){
-  obs=as.numeric(prediction_mlp$observed)
-  obs[as.character(prediction_mlp$observed)=="norain"]=0
-  obs[as.character(prediction_mlp$observed)=="rain"]=1
-  pred <- prediction(prediction_mlp$predicted_prob$rain,obs)
-  perf_mlp <- performance(pred, "tpr", "fpr") 
-  auc_mlp=unlist(performance(pred, measure="auc")@y.values)
-}  
 if (any(model=="nnet")){
   obs=as.numeric(prediction_nnet$observed)
   obs[as.character(prediction_nnet$observed)=="norain"]=0
@@ -72,9 +61,6 @@ dev.off()
 ##################################################################################################################
 #                                                 CROSSTABS
 ##################################################################################################################
-if (any(model=="mlp")){
-  write.csv(table(prediction_mlp$observed,prediction_mlp$prediction),file=paste(resultpath,"/crosstabMLP.csv",sep=""))
-}
 if (any(model=="rf")){
   write.csv(table(prediction_rf$observed,prediction_rf$prediction),file=paste(resultpath,"/crosstabRF.csv",sep=""))
 }
@@ -89,9 +75,6 @@ pdf(paste(resultpath,"/prediction_crosstab.pdf",sep=""))
 if (length(model)>2) par(mfrow=c(2,2))
 if (any(model=="rf")){
   plot(prediction_rf$observed,prediction_rf$prediction,main="RF",xlab="observed",ylab="predicted")
-}
-if (any(model=="mlp")){
-  plot(prediction_mlp$observed,prediction_mlp$prediction,main="MLP",xlab="observed",ylab="predicted")
 }
 if (any(model=="nnet")){
   plot(prediction_nnet$observed,prediction_nnet$prediction,main="NNET",xlab="observed",ylab="predicted")

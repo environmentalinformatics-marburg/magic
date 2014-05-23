@@ -8,9 +8,6 @@ load(paste(resultpath,"/fit_rf.RData",sep=""))
 if (any(model=="nnet")){
 load(paste(resultpath,"/fit_nnet.RData",sep=""))
 }
-if (any(model=="mlp")){
-load(paste(resultpath,"/fit_mlp.RData",sep=""))
-}
 if (any(model=="svm")){
 load(paste(resultpath,"/fit_svm.RData",sep=""))
 }
@@ -19,9 +16,6 @@ pdf(paste(resultpath,"/TuningStudy.pdf",sep=""))
 if (any(model=="rf")){
   plot(fit_rf,main="rf")
 }
-if (any(model=="mlp")){
-  plot(fit_mlp,main="mlp")
-}
 if (any(model=="nnet")){
   plot(fit_nnet,main="nnet")
 }
@@ -29,7 +23,34 @@ if (any(model=="svm")){
   plot(fit_svm,main="svm")
 }
 dev.off()
-
+####test
+pdf(paste(resultpath,"/TuningStudy_b.pdf",sep=""))
+if (any(model=="rf")){
+  plot(fit_rf$results$mtry[fit_rf$results$threshold==fit_rf$results$threshold[1]],
+       fit_rf$results$ROC[fit_rf$results$threshold==fit_rf$results$threshold[1]],
+       type="l",xlab="#Randomly Selected Predictors",ylab="AUC",main="RF")
+}
+if (any(model=="nnet")){
+  col=gray.colors(length(unique(fit_nnet$results$decay)),start = 0, end = 0.8)
+  k=1
+  i=unique(fit_nnet$results$decay)[1]
+  plot(fit_nnet$results$size[fit_nnet$results$threshold==fit_nnet$results$threshold[1]&fit_nnet$results$decay==i],
+       fit_nnet$results$ROC[fit_nnet$results$threshold==fit_nnet$results$threshold[1]&fit_nnet$results$decay==i],
+       type="l",xlab="#Hidden Units",ylab="AUC",main="NNET",col=col[k],
+       ylim=c(min(fit_nnet$results$ROC)-0.01,max(fit_nnet$results$ROC)))
+  for (i in unique(fit_nnet$results$decay)[-1]){
+    k=k+1
+    lines(fit_nnet$results$size[fit_nnet$results$threshold==fit_nnet$results$threshold[1]&fit_nnet$results$decay==i],
+         fit_nnet$results$ROC[fit_nnet$results$threshold==fit_nnet$results$threshold[1]&fit_nnet$results$decay==i],col=col[k])
+  }
+  legend("bottomright",legend=unique(fit_nnet$results$decay),col=col,lty=1,cex=0.8,ncol=2)
+}
+if (any(model=="svm")){
+  plot(fit_svm$results$C[fit_svm$results$threshold==fit_svm$results$threshold[1]],
+       fit_svm$results$ROC[fit_svm$results$threshold==fit_svm$results$threshold[1]],
+       type="l",xlab="#Cost",ylab="AUC",main="SVM")
+}
+dev.off()
 
 
 ###############################################################################################################
