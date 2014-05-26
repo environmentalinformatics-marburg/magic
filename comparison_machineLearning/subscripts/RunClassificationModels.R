@@ -95,7 +95,7 @@ if (any(model=="svm")){
   if (tuneThreshold) {
     method = svm_thres
     tuneGrid_SVM <- expand.grid(.sigma =  eval(parse(text=svm_sigma)),
-                                .C=svm_cost,.threshold=seq(.1, .99, 0.1))
+                                .C=svm_cost,.threshold=thresholds)
   }
   if (!tuneThreshold) {
     method = "svmRadial"
@@ -108,8 +108,8 @@ if (any(model=="svm")){
   fit_svm<-train (predictors, 
                    class, 
                    method = method,
-                   trControl = c(ctrl, 
-                                 allowParallel = FALSE), 
+                   trControl = c(ctrl), 
+   #                              allowParallel = FALSE), 
                    tuneGrid=tuneGrid_SVM,
                   metric=metric,
                   maximize =maximize #when dist is used, then min value is important
