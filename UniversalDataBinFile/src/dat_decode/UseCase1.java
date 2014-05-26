@@ -50,7 +50,7 @@ public class UseCase1 {
 		System.out.println(sensorTime);
 		
 		
-		SensorData sensorData = new SensorData(timeConverter, f.getSensorHeaders(),f.readSensorData());
+		SensorData sensorData = f.getSensorData();
 		
 		sensorData.getSensor(3).print(10);
 		

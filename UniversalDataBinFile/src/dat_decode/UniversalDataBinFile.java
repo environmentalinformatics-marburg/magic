@@ -11,6 +11,10 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Reads the UniversalDataBinFile File Format.
@@ -34,6 +38,8 @@ public class UniversalDataBinFile {
 	
 	private int dataSectionStartFilePosition;
 	
+	int badRowCount = 0;
+	
 	
 	public UniversalDataBinFile(String fileName) throws IOException {
 		this.filename = fileName;
@@ -55,48 +61,48 @@ public class UniversalDataBinFile {
 		fileChannel.position(0);
 
 		byte isBigEndian = mappedByteBuffer.get();
-		System.out.println(isBigEndian+"\tisBigEndian");
+		//System.out.println(isBigEndian+"\tisBigEndian");
 		if(isBigEndian!=1) {
 			throw new RuntimeException("Universal-Data-Bin-File variant not implemented");
 		}		
 		short version = mappedByteBuffer.getShort();
-		System.out.println(version+"\tversion");
+		//System.out.println(version+"\tversion");
 		if(version!=107) {
 			throw new RuntimeException("just Universal-Data-Bin-File version 1.07 implemented");
 		}
 		short typeVendorLen  = mappedByteBuffer.getShort();
-		System.out.println(typeVendorLen+"\ttypeVendorLen");
+		//System.out.println(typeVendorLen+"\ttypeVendorLen");
 		byte[] typeVendorBytes = new byte[typeVendorLen]; 
 		mappedByteBuffer.get(typeVendorBytes);
 		String typeVendor = new String(typeVendorBytes);
-		System.out.println(typeVendor+"\ttypeVendor");
+		//System.out.println(typeVendor+"\ttypeVendor");
 		byte withCheckSum = mappedByteBuffer.get();
-		System.out.println(withCheckSum+"\twithCheckSum");
+		//System.out.println(withCheckSum+"\twithCheckSum");
 		short moduleAdditionalDataLen = mappedByteBuffer.getShort();
-		System.out.println(moduleAdditionalDataLen+"\tmoduleAdditionalDataLen");
+		//System.out.println(moduleAdditionalDataLen+"\tmoduleAdditionalDataLen");
 		if(moduleAdditionalDataLen>0) {
 			throw new RuntimeException("reading of additional optional data in header not implemented");
 		}
 		double startTimeToDayFactor = mappedByteBuffer.getDouble();
-		System.out.println(startTimeToDayFactor+"\tstartTimeToDayFactor");
+		//System.out.println(startTimeToDayFactor+"\tstartTimeToDayFactor");
 		short dActTimeDataType = mappedByteBuffer.getShort();
-		System.out.println(dActTimeDataType+"\tdActTimeDataType");
+		//System.out.println(dActTimeDataType+"\tdActTimeDataType");
 		double dActTimeToSecondFactor = mappedByteBuffer.getDouble();
-		System.out.println(dActTimeToSecondFactor+"\tdActTimeToSecondFactor");
+		//System.out.println(dActTimeToSecondFactor+"\tdActTimeToSecondFactor");
 		double startTime = mappedByteBuffer.getDouble();
-		System.out.println(startTime+"\tstartTime");
+		//System.out.println(startTime+"\tstartTime");
 		double sampleRate = mappedByteBuffer.getDouble();
-		System.out.println(sampleRate+"\tsampleRate");
+		//System.out.println(sampleRate+"\tsampleRate");
 		variableCount = mappedByteBuffer.getShort();
-		System.out.println(variableCount+" variableCount");
+		//System.out.println(variableCount+" variableCount");
 		
-		timeConverter = new TimeConverter(startTimeToDayFactor, dActTimeToSecondFactor, startTime);
+		timeConverter = new TimeConverter(startTimeToDayFactor, dActTimeToSecondFactor, startTime, sampleRate);
 		
 		readSensorHeaders();
 		
 		int headerEndPosition = mappedByteBuffer.position();
 		
-		System.out.println(headerEndPosition+"\theaderEndPosition");
+		//System.out.println(headerEndPosition+"\theaderEndPosition");
 		
 		final int MIN_SEPARATION_CHARACTERS = 8;
 		
@@ -106,11 +112,11 @@ public class UniversalDataBinFile {
 		
 		int offset = ALIGN_GRID_SIZE - (minDataStartPosition % ALIGN_GRID_SIZE);
 		
-		System.out.println(offset+" offset");
+		//System.out.println(offset+" offset");
 		
 		dataSectionStartFilePosition = minDataStartPosition + offset;
 		
-		System.out.println(dataSectionStartFilePosition+"\tdataSectionStartFilePosition");
+		//System.out.println(dataSectionStartFilePosition+"\tdataSectionStartFilePosition");
 	
 		
 	}
@@ -121,32 +127,33 @@ public class UniversalDataBinFile {
 		
 		for(int i=0;i<variableCount;i++) {
 			short nameLen = mappedByteBuffer.getShort();
-			System.out.println(nameLen+"\tnameLen");
+			//System.out.println(nameLen+"\tnameLen");
 			byte[] nameBytes = new byte[nameLen-1];
 			mappedByteBuffer.get(nameBytes);
 			mappedByteBuffer.get();
 			String name = new String(nameBytes);
-			System.out.println(name+"\tname");
+			//System.out.println(name+"\tname");
 			short dataDirection = mappedByteBuffer.getShort();
-			System.out.println(dataDirection+"\tdataDirection");
+			//System.out.println(dataDirection+"\tdataDirection");
 			short dataType = mappedByteBuffer.getShort();
-			System.out.println(dataType+"\tdataType");
+			//System.out.println(dataType+"\tdataType");
 			short fieldLen = mappedByteBuffer.getShort();
-			System.out.println(fieldLen+"\tfieldLen");
+			//System.out.println(fieldLen+"\tfieldLen");
 			short precision = mappedByteBuffer.getShort();
-			System.out.println(precision+"\tprecision");
+			//System.out.println(precision+"\tprecision");
 			short unitLen = mappedByteBuffer.getShort();
-			System.out.println(unitLen+"\tunitLen");
+			//System.out.println(unitLen+"\tunitLen");
 			byte[] unitBytes = new byte[unitLen-1];
 			mappedByteBuffer.get(unitBytes);
 			String unit = new String(unitBytes);
-			System.out.println('"'+unit+"\"\tunit");
+			//System.out.println('"'+unit+"\"\tunit");
 			short additionalDataLen = mappedByteBuffer.getShort();
-			System.out.println(additionalDataLen+"\tadditionalDataLen");
+			//System.out.println(additionalDataLen+"\tadditionalDataLen");
 			if(additionalDataLen!=0) {
 				throw new RuntimeException("reading of additional optional data in element header not implemented");
 			}
-			System.out.println(mappedByteBuffer.get()+"\t?");
+			byte b = mappedByteBuffer.get();
+			//System.out.println(b+"\t?");
 			
 			sensorHeaders[i] = new SensorHeader(name,unit,dataType);
 			
@@ -162,7 +169,89 @@ public class UniversalDataBinFile {
 		}
 	}
 	
+	public SensorData getSensorData() {
+		double[][] data = readSensorData();
+		return new SensorData(timeConverter,sensorHeaders,data,badRowCount);
+	}
+	
+	
 	public double[][] readSensorData() {
+		mappedByteBuffer.position(dataSectionStartFilePosition);
+		int dataRowByteSize = (variableCount+1)*4;
+		
+		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
+			throw new RuntimeException("wrong data entry calculation");
+		}
+		
+		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
+		
+		Map<Integer,double[]> rowMap = new HashMap<Integer,double[]>();
+		
+		int maxRowID = 0;
+		
+		for(int i=0;i<dataEntryCount;i++) {
+			
+			double[] row = new double[variableCount];
+			int rowID = mappedByteBuffer.getInt();
+			for(int sensorID=0;sensorID<variableCount;sensorID++) {
+				switch(sensorHeaders[sensorID].dataType) {
+				case 8:
+					row[sensorID] = mappedByteBuffer.getFloat(); 
+					break;
+				case 7:
+					row[sensorID] = mappedByteBuffer.getInt();
+					break;
+				default:
+					throw new RuntimeException("type not implemented");
+				}
+				
+			}	
+			
+			rowMap.put(rowID, row);
+			
+			if(rowID>maxRowID) {
+				maxRowID = rowID;
+			}
+			
+		}
+		
+		System.out.println("Max rowID:"+maxRowID);
+		
+		double[][] data = new double[maxRowID+1][];
+		
+		for(Entry<Integer, double[]> e:rowMap.entrySet()) {
+			data[e.getKey()] = e.getValue();
+		}
+		
+		
+		
+		double[] NANrow = new double[variableCount];
+		for(int i=0;i<variableCount;i++) {
+			NANrow[i] = Double.NaN;
+		}
+		
+		badRowCount = 0;
+		
+		for(int i=0;i<data.length;i++) {
+			if(data[i]==null) {
+				data[i] = NANrow;
+				badRowCount++;
+			}
+		}
+				
+		return data;
+		
+		
+	}
+	
+
+	
+	
+	
+	
+	
+	
+	public double[][] readSensorDataOLD() {
 		mappedByteBuffer.position(dataSectionStartFilePosition);
 		
 		int dataRowByteSize = (variableCount+1)*4; 
@@ -185,7 +274,7 @@ public class UniversalDataBinFile {
 		
 		for(int i=0;i<dataEntryCount;i++) {			
 			
-			double[] row = readDataRow(i);
+			double[] row = readDataRowOLD(i);
 			
 			rows[i] = row;
 			
@@ -206,11 +295,12 @@ public class UniversalDataBinFile {
 		return rows;
 	}
 	
-	public double[] readDataRow(int checkRowID) {
+	public double[] readDataRowOLD(int checkRowID) {
 		double[] row = new double[variableCount];
 		int rowID = mappedByteBuffer.getInt();
+		//System.out.println("at "+ mappedByteBuffer.position());
 		if(rowID!=checkRowID) {
-			throw new RuntimeException("not expected row ID: "+rowID+" should be "+checkRowID);
+			throw new RuntimeException("at "+ mappedByteBuffer.position() +" not expected row ID: "+rowID+" should be "+checkRowID);
 		}
 		for(int sensorID=0;sensorID<variableCount;sensorID++) {
 			switch(sensorHeaders[sensorID].dataType) {

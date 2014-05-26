@@ -15,11 +15,13 @@ public class TimeConverter {
 	private final double dActTimeToSecondFactor;
 	private final double startTime;
 	private final double startTimeToDayFactor;
+	private final double sampleRate;
 	
-	public TimeConverter(double startTimeToDayFactor, double dActTimeToSecondFactor, double startTime) {
+	public TimeConverter(double startTimeToDayFactor, double dActTimeToSecondFactor, double startTime, double sampleRate) {
 		this.startTimeToDayFactor = startTimeToDayFactor;
 		this.dActTimeToSecondFactor = dActTimeToSecondFactor;
 		this.startTime = startTime;
+		this.sampleRate = sampleRate;
 	}	
 	
 	public LocalDateTime oleAutomatonTimeToDateTime(double oleAutomatonTimestamp) {
@@ -41,5 +43,14 @@ public class TimeConverter {
 	
 	public LocalDateTime getStartDateTime() {
 		return oleAutomatonTimeToDateTime(getStartOleAutomatonTime());
+	}
+	
+	public Duration getTimeStep() {
+		//System.out.println("sampleRate: "+sampleRate);
+		//System.out.println("dActTimeToSecondFactor: "+dActTimeToSecondFactor/86400d);
+		//double s = sampleRate*60*60*24;
+		//System.out.println("samples per day: "+s);
+		long oleAutomatonTimeSeconds = (long) Math.round((dActTimeToSecondFactor/86400d)*24*60*60);		
+		return Duration.ofSeconds(oleAutomatonTimeSeconds);
 	}
 }
