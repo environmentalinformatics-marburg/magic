@@ -56,13 +56,13 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rf,nnet,svm.
 tuneThreshold=TRUE #should the optimal probability threshold be tuned?
-thresholds=seq(0.0, 1.0, 0.02) #if tuneThreshold==TRUE: Which thresholds?
+thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
 ##### RF Settings:
 ntree=500
 rf_mtry=c(2:length(predictorVariables))
 ##### NNET Settings:
-nnet_decay=c(0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1)
-nnet_size=c(2:length(predictorVariables))
+nnet_decay=seq(0.01,0.1,0.02)
+nnet_size=seq(2,length(predictorVariables),2)
 ##### SVM Settings:
 svm_sigma="sigest(as.matrix(predictors))[2]" #analyticaly solved with sigest. vector is also allowed
 svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
@@ -169,3 +169,4 @@ if (doParallel){
   stopCluster(cl)
 }
 rm(list=ls())
+gc()

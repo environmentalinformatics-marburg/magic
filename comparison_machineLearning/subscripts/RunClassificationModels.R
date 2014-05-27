@@ -8,8 +8,8 @@ if (tuneThreshold) summaryFunction = "fourStats"
 if (!tuneThreshold) summaryFunction = "twoClassSummary"
 ctrl <- trainControl(index=cvSplits,
                      summaryFunction = eval(parse(text=summaryFunction)),
-                     classProbs = TRUE,
-                     savePredictions = TRUE)
+                     classProbs = TRUE)#,
+#                     savePredictions = TRUE)
 
 if (tuneThreshold){
   metric="Dist" #wenn nicht _thres dann "ROC
@@ -56,6 +56,7 @@ if (any(model=="rf")){
                  predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
   save(fit_rf,file=paste(resultpath,"/fit_rf.RData",sep=""))
   rm(fit_rf)
+  gc()
 }
 
 
@@ -87,6 +88,7 @@ if (any(model=="nnet")){
                  predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
   save(fit_nnet,file=paste(resultpath,"/fit_nnet.RData",sep=""))
   rm(fit_nnet)
+  gc()
 }
   
   
@@ -109,7 +111,6 @@ if (any(model=="svm")){
                    class, 
                    method = method,
                    trControl = c(ctrl), 
-   #                              allowParallel = FALSE), 
                    tuneGrid=tuneGrid_SVM,
                   metric=metric,
                   maximize =maximize #when dist is used, then min value is important
@@ -119,6 +120,7 @@ if (any(model=="svm")){
                  predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
   save(fit_svm,file=paste(resultpath,"/fit_svm.RData",sep=""))
   rm(fit_svm)
+  gc()
 }
 
 ############################################################################################################

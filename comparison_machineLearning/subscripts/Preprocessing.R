@@ -11,13 +11,17 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
 tmpDateField=dateField
 dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 
+data=na.omit(data[,which(names(data) %in% c(predictorVariables,response))]) #rm na rows
 ############################################################################################################
 ################################## Scale and center predictor Variables ####################################
 ############################################################################################################
+
+
 if (centerscale){
   data[,which(names(data) %in% predictorVariables)]=
     scale(data[,which(names(data) %in% predictorVariables)])
 }
+
 ############################################################################################################
 ################################## SPLIT DATA #######################################
 ############################################################################################################
@@ -31,6 +35,8 @@ if (response=="RInfo"){
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
 rm(testing,data)
 training=splittedData$training
+rm(splittedData)
+gc()
 ############################################################################################################
 ############################### BALANCE DATA #########################################
 ############################################################################################################
@@ -49,6 +55,7 @@ if(useSeeds) set.seed(20)
 samples<-createDataPartition(eval(parse(text=paste("training$",response,sep=""))),
                              p = (1/nrow(training))*sampsize,list=FALSE)
 training <- training[samples,] #samples used for training
+rm(samples)
 ############################################################################################################
 ############################## Define predictors and class ##############################
 ############################################################################################################
@@ -58,6 +65,8 @@ if (response=="RInfo"){
 }
 predictors <-training[,names(training) %in%  predictorVariables]
 row.names(predictors)=NULL
+rm(training)
+gc()
 ############################################################################################################
 ###################CREATE INDEX FOR RESAMPLING #########################################
 ############################################################################################################

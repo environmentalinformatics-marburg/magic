@@ -23,14 +23,14 @@ if (any(model=="svm")){
   plot(fit_svm,main="svm")
 }
 dev.off()
-####test
+####Tuning study b
 pdf(paste(resultpath,"/TuningStudy_b.pdf",sep=""))
-if (any(model=="rf")){
+if (any(model=="rf")&tuneThreshold){
   plot(fit_rf$results$mtry[fit_rf$results$threshold==fit_rf$results$threshold[1]],
        fit_rf$results$ROC[fit_rf$results$threshold==fit_rf$results$threshold[1]],
        type="l",xlab="#Randomly Selected Predictors",ylab="AUC",main="RF")
 }
-if (any(model=="nnet")){
+if (any(model=="nnet")&tuneThreshold){
   col=gray.colors(length(unique(fit_nnet$results$decay)),start = 0, end = 0.8)
   k=1
   i=unique(fit_nnet$results$decay)[1]
@@ -45,7 +45,7 @@ if (any(model=="nnet")){
   }
   legend("bottomright",legend=unique(fit_nnet$results$decay),col=col,lty=1,cex=0.8,ncol=2)
 }
-if (any(model=="svm")){
+if (any(model=="svm")&tuneThreshold){
   plot(fit_svm$results$C[fit_svm$results$threshold==fit_svm$results$threshold[1]],
        fit_svm$results$ROC[fit_svm$results$threshold==fit_svm$results$threshold[1]],
        type="l",xlab="#Cost",ylab="AUC",main="SVM")

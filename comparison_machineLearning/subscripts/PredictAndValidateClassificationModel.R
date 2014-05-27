@@ -20,6 +20,7 @@ if (any(model=="rf")){
   prediction_rf$y=testing$y
   save(prediction_rf,file=paste(resultpath,"/prediction_rf.RData",sep=""))
   rm(prediction_rf)
+  gc()
 }
 if (any(model=="nnet")){
   load(paste(resultpath,"/fit_nnet.RData",sep=""))
@@ -31,6 +32,7 @@ if (any(model=="nnet")){
   prediction_nnet$y=testing$y
   save(prediction_nnet,file=paste(resultpath,"/prediction_nnet.RData",sep=""))
   rm(prediction_nnet)
+  gc()
 }
 if (any(model=="svm")){
   load(paste(resultpath,"/fit_svm.RData",sep=""))
@@ -42,6 +44,8 @@ if (any(model=="svm")){
   prediction_svm$y=testing$y
   save(prediction_svm,file=paste(resultpath,"/prediction_svm.RData",sep=""))
   rm(prediction_svm)
+  gc()
 }
-####################################### VALIDATE #######################################
+##############################################################################
 rm(testing)
+gc()
