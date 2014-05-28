@@ -30,7 +30,6 @@ public class UseCase3 {
 				System.out.println("bad row count:\t"+sensorData.getBadRowCount());
 				System.out.println(sensorData.getSensor(0).getFirstDateTime()+" - "+ sensorData.getSensor(0).getLastDateTime()+": "+sensorData.getSensor(0).getTimeStep());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});

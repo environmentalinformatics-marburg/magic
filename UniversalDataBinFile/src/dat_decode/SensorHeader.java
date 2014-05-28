@@ -29,5 +29,10 @@ public class SensorHeader {
 	public String getUnit() {
 		return unit;
 	}
+	
+	@Override
+	public String toString() {
+		return name+" "+unit+" "+dataType;
+	}
 
 }

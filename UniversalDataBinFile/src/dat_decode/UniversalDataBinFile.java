@@ -11,10 +11,15 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Reads the UniversalDataBinFile File Format.
@@ -22,6 +27,8 @@ import java.util.Map.Entry;
  *
  */
 public class UniversalDataBinFile {
+	
+	private static final Logger log = LogManager.getLogger("general");
 	
 	private final String filename;
 	
@@ -110,7 +117,7 @@ public class UniversalDataBinFile {
 		
 		final int ALIGN_GRID_SIZE = 16;
 		
-		int offset = ALIGN_GRID_SIZE - (minDataStartPosition % ALIGN_GRID_SIZE);
+		int offset = (minDataStartPosition % ALIGN_GRID_SIZE)==0?0:ALIGN_GRID_SIZE - (minDataStartPosition % ALIGN_GRID_SIZE);
 		
 		//System.out.println(offset+" offset");
 		
@@ -157,6 +164,29 @@ public class UniversalDataBinFile {
 			
 			sensorHeaders[i] = new SensorHeader(name,unit,dataType);
 			
+			
+			
+		}
+		
+		int nullCount=0;
+		for(int i=0;i<sensorHeaders.length;i++) {
+			if(sensorHeaders[i].dataType==0) {
+				nullCount++;
+				//System.out.println("warning: header entry with no data: "+sensorHeaders[i].name+"\t"+sensorHeaders[i].unit);
+			}
+		}
+		
+		if(nullCount>0) {
+			SensorHeader[] temp = new SensorHeader[sensorHeaders.length-nullCount];
+			int c=0;
+			for(int i=0;i<sensorHeaders.length;i++) {
+				if(sensorHeaders[i].dataType!=0) {
+					temp[c] = sensorHeaders[i];
+					c++;
+				}
+			}
+			sensorHeaders = temp;
+			variableCount = (short) sensorHeaders.length;
 		}
 		
 		
@@ -174,13 +204,14 @@ public class UniversalDataBinFile {
 		return new SensorData(timeConverter,sensorHeaders,data,badRowCount);
 	}
 	
+		
 	
 	public double[][] readSensorData() {
 		mappedByteBuffer.position(dataSectionStartFilePosition);
 		int dataRowByteSize = (variableCount+1)*4;
 		
 		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
-			throw new RuntimeException("wrong data entry calculation");
+			throw new RuntimeException("wrong data entry calculation: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
 		}
 		
 		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
@@ -189,10 +220,35 @@ public class UniversalDataBinFile {
 		
 		int maxRowID = 0;
 		
+		int rowNotProcessedCount = 0;
+		
+		ArrayList<int[]> rowInWrongOrderList = new ArrayList<int[]>();
+		
 		for(int i=0;i<dataEntryCount;i++) {
 			
 			double[] row = new double[variableCount];
 			int rowID = mappedByteBuffer.getInt();
+			
+			/*if(rowID>(maxRowID+10000)) {
+				log.warn("maxRowID "+maxRowID+" rowID "+rowID+" diff "+(rowID-maxRowID)+" in\t"+filename);
+			}
+			if(rowID<0) {
+				for(int sensorID=0;sensorID<variableCount;sensorID++) {
+					switch(sensorHeaders[sensorID].dataType) {
+					case 8:
+						row[sensorID] = mappedByteBuffer.getFloat(); 
+						break;
+					case 7:
+						row[sensorID] = mappedByteBuffer.getInt();
+						break;
+					default:
+						throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
+					}
+					
+				}	
+				throw new RuntimeException("wrong data at file pos="+(mappedByteBuffer.position()-4)+": rowID = "+rowID+" at index "+i+" of "+(dataEntryCount-1)+"\twith dataRowByteSize\t"+dataRowByteSize+"\tin "+filename);
+			}*/
+			
 			for(int sensorID=0;sensorID<variableCount;sensorID++) {
 				switch(sensorHeaders[sensorID].dataType) {
 				case 8:
@@ -202,20 +258,45 @@ public class UniversalDataBinFile {
 					row[sensorID] = mappedByteBuffer.getInt();
 					break;
 				default:
-					throw new RuntimeException("type not implemented");
+					throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
 				}
 				
-			}	
+			}
 			
-			rowMap.put(rowID, row);
+			if(rowID<maxRowID) {
+				rowInWrongOrderList.add(new int[]{rowID,maxRowID});
+			}
 			
-			if(rowID>maxRowID) {
-				maxRowID = rowID;
+			if((rowID<0) || (rowID>(maxRowID+10000))) {
+				if(rowNotProcessedCount==0) {
+					log.warn("row not processed "+""+" in\t"+filename+"\t"+timeConverter.getStartDateTime());
+				}
+				rowNotProcessedCount++;
+			} else {
+
+				rowMap.put(rowID, row);
+				
+				if(rowID==maxRowID) {
+					log.warn("double rowID in "+filename);
+				}
+
+				if(rowID>maxRowID) {
+					maxRowID = rowID;
+				}
+
 			}
 			
 		}
 		
-		System.out.println("Max rowID:"+maxRowID);
+		
+		
+				
+
+		if(rowInWrongOrderList.size()>0) {
+			log.warn("wrong order in "+filename+"\t"+rowInWrongOrderList.size()+"\t"+pairListToString(rowInWrongOrderList));
+		}
+
+		//System.out.println("Max rowID:"+maxRowID);
 		
 		double[][] data = new double[maxRowID+1][];
 		
@@ -245,7 +326,16 @@ public class UniversalDataBinFile {
 	}
 	
 
-	
+	private String pairListToString(ArrayList<int[]> list) {
+		String s="";
+		
+		for(int[] p:list) {
+			s+= p[0]+"/"+p[1]+"\t";
+		}
+		
+		
+		return s;
+	}
 	
 	
 	

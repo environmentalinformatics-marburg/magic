@@ -1,5 +1,9 @@
 package dat_decode;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.util.Locale;
+
 /**
  * Collection of all sensor of one location.
  * @author Wöllauer
@@ -46,6 +50,55 @@ public class SensorData {
 	
 	public int getBadRowCount() {
 		return badRowCount;
+	}
+	
+	public void writeTable(String filename) throws FileNotFoundException {
+		
+		Locale locale = Locale.ENGLISH;
+		
+		PrintStream printStream = new PrintStream(filename);
+		
+		int rowcount = sensors[0].getSampleCount();
+		
+		/*
+		
+		for(int r=0;r<rowcount;r++) {
+			printStream.print(r);
+			
+			for(int c=0;c<10;c++) {
+				printStream.format(locale,";%2.2f", sensors[c].data[r]);
+			}
+			
+			printStream.println();
+			
+		}
+		
+		*/
+		
+		
+		printStream.print("OFFSET");
+		for(int c=0;c<sensors.length;c++) {
+			printStream.print(" "+sensors[c].getSensorName());
+		}
+		printStream.println();
+		
+		
+		for(int r=0;r<rowcount;r++) {
+			printStream.print(r);
+			
+			for(int c=0;c<sensors.length;c++) {
+				printStream.format(locale," %2.2f", sensors[c].data[r]);
+			}
+			
+			printStream.println();
+			
+		}
+		
+		
+		
+		
+		
+		printStream.close();
 	}
 	
 	
