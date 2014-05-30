@@ -24,7 +24,7 @@ public class UseCase3 {
 			System.out.println("filePath: "+filePath);
 			try {
 				UniversalDataBinFile udbf = new UniversalDataBinFile(filePath.toString());
-				SensorData sensorData = udbf.getSensorData();
+				SensorData sensorData = udbf.getConsolidatedSensorData();
 				System.out.println("sensors:\t"+sensorData.getSensorCount());
 				System.out.println(sensorData.getSensorNames());
 				System.out.println("bad row count:\t"+sensorData.getBadRowCount());

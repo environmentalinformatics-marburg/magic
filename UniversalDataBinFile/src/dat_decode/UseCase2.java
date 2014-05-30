@@ -12,11 +12,15 @@ public class UseCase2 {
 	public static void main(String[] args) throws IOException {
 		//final String FILENAME = "K:/20080516_^b0_0002.dat";
 		//final String FILENAME = "K:/20130117_^b0_0016.dat";
-		final String FILENAME = "K:/HG12/20080509_^b0_0001.dat";
+		//final String FILENAME = "K:/HG12/20080509_^b0_0001.dat";
+		final String FILENAME = "K:/incoming_ftp/adl-m/HEG/HG10/20100607_^b0_0009.dat";
 		UniversalDataBinFile udbf = new UniversalDataBinFile(FILENAME);
-		SensorData sensorData = udbf.getSensorData();
+		SensorData sensorData = udbf.getConsolidatedSensorData();
+		
+		sensorData.writeTable("K:/csv/20100607_^b0_0009.data");
 		
 		Sensor sensor = sensorData.getSensor(3);
+		
 		
 		System.out.println("----------------------");
 		System.out.println("sensor name:\t"+sensor.getSensorName());

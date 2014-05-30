@@ -7,7 +7,7 @@ package dat_decode;
 */
 public class DataUtil {
 	
-	public static void printArray(double[] data) {
+	public static void printArray(float[] data) {
 		int n = data.length<10?data.length:10;
 		for(int i=0;i<n;i++) {
 			//System.out.print(data[i]+"\t");

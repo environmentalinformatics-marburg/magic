@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
   <Appenders>
-    <Console name="STDOUT" target="SYSTEM_OUT">
+    <Console name="stdout" target="SYSTEM_OUT">
+      <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="[%-5p] (%F:%L) %m%n"/>
     </Console>
-    <File name="FileLoggerGeneral" fileName="k:/logs/general.log" append="false">
+    <File name="file_trace" fileName="k:/logs/UniversalDataBinFile_trace.log" append="false">
+      <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="[%p] %m%n"/>
-    </File> 
-  </Appenders>
+    </File>
+    <File name="file_warn" fileName="k:/logs/UniversalDataBinFile_warn.log" append="false">
+    <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%p] %m%n"/>
+    </File>
+ </Appenders>
   <Loggers>
-    <Logger name="general" level="info">
+    <Logger name="general" level="trace">
     </Logger>
-    <Root level="trace">
-      <AppenderRef ref="STDOUT"/>
-      <AppenderRef ref="FileLoggerGeneral"/>
+    <Root level="warn">
+      <AppenderRef ref="stdout"/>
+      <AppenderRef ref="file_trace"/>
+      <AppenderRef ref="file_warn"/>
     </Root>
   </Loggers>
 </Configuration>

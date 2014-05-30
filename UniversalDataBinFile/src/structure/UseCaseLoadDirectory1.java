@@ -13,19 +13,23 @@ public class UseCaseLoadDirectory1 {
 	
 	public static void main(String[] args){
 		
-		/*
-		log.trace("This is a trace message.");
-		log.debug("This is  a debug message.");
-		log.info("This is an info message.");
-		log.error("This is an error message");
-		*/
-		
-		
 		Path rootPath = Paths.get("K:/incoming_ftp/adl-m/HEG");
 		
 		Database database = new Database();
 		
+		System.gc();
+		Runtime runtime = Runtime.getRuntime();
+		
+		System.out.println("total memory: "+runtime.totalMemory()+" Bytes");
+		
+		System.out.println("read "+rootPath+" ...");
 		database.loadDirectoryOfOneExploratory(rootPath);
+		System.out.println("... end");
+		
+		System.gc();
+		System.out.println("total memory: "+runtime.totalMemory()+" Bytes");
+		
+		database.printInfo();
 		
 	}
 

@@ -3,11 +3,14 @@ package dat_decode;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -54,6 +57,10 @@ public class UniversalDataBinFile {
 		readHeader();
 	}
 	
+	/**
+	 * Opens a dat file for reading.
+	 * @throws IOException
+	 */
 	private void initFile() throws IOException {
 		fileInputStream = new FileInputStream(filename);
 		fileChannel = fileInputStream.getChannel();
@@ -64,6 +71,10 @@ public class UniversalDataBinFile {
 		mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);
 	}
 	
+	/**
+	 * Reads header info of data file.
+	 * @throws IOException
+	 */
 	private void readHeader() throws IOException {
 		fileChannel.position(0);
 
@@ -128,6 +139,9 @@ public class UniversalDataBinFile {
 		
 	}
 	
+	/**
+	 * Reads header info for all sensor entries. 
+	 */
 	private void readSensorHeaders() {
 		
 		sensorHeaders = new SensorHeader[variableCount];
@@ -193,235 +207,167 @@ public class UniversalDataBinFile {
 		
 	}
 	
-	public void printSensorHeaders() {
-		for(SensorHeader sensorHeader:sensorHeaders) {
-			sensorHeader.printHeader();
-		}
-	}
-	
-	public SensorData getSensorData() {
-		double[][] data = readSensorData();
-		return new SensorData(timeConverter,sensorHeaders,data,badRowCount);
-	}
-	
-		
-	
-	public double[][] readSensorData() {
+
+	/**
+	 * Reads all data rows from file without further processing.
+	 * @return Array of Datarows
+	 */
+	public DataRow[] readDataRows() {
 		mappedByteBuffer.position(dataSectionStartFilePosition);
 		int dataRowByteSize = (variableCount+1)*4;
 		
 		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
-			throw new RuntimeException("wrong data entry calculation: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
+			log.warn("file end not at boundary of data entry grid: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
+			//return null;
 		}
 		
 		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
 		
-		Map<Integer,double[]> rowMap = new HashMap<Integer,double[]>();
-		
-		int maxRowID = 0;
-		
-		int rowNotProcessedCount = 0;
-		
-		ArrayList<int[]> rowInWrongOrderList = new ArrayList<int[]>();
+		DataRow[] datarows = new DataRow[dataEntryCount];
 		
 		for(int i=0;i<dataEntryCount;i++) {
-			
-			double[] row = new double[variableCount];
+			float[] data = new float[variableCount];
 			int rowID = mappedByteBuffer.getInt();
-			
-			/*if(rowID>(maxRowID+10000)) {
-				log.warn("maxRowID "+maxRowID+" rowID "+rowID+" diff "+(rowID-maxRowID)+" in\t"+filename);
-			}
-			if(rowID<0) {
-				for(int sensorID=0;sensorID<variableCount;sensorID++) {
-					switch(sensorHeaders[sensorID].dataType) {
-					case 8:
-						row[sensorID] = mappedByteBuffer.getFloat(); 
-						break;
-					case 7:
-						row[sensorID] = mappedByteBuffer.getInt();
-						break;
-					default:
-						throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
-					}
-					
-				}	
-				throw new RuntimeException("wrong data at file pos="+(mappedByteBuffer.position()-4)+": rowID = "+rowID+" at index "+i+" of "+(dataEntryCount-1)+"\twith dataRowByteSize\t"+dataRowByteSize+"\tin "+filename);
-			}*/
-			
 			for(int sensorID=0;sensorID<variableCount;sensorID++) {
 				switch(sensorHeaders[sensorID].dataType) {
 				case 8:
-					row[sensorID] = mappedByteBuffer.getFloat(); 
+					data[sensorID] = mappedByteBuffer.getFloat(); 
 					break;
 				case 7:
-					row[sensorID] = mappedByteBuffer.getInt();
+					data[sensorID] = mappedByteBuffer.getInt();
 					break;
 				default:
 					throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
 				}
 				
 			}
-			
-			if(rowID<maxRowID) {
-				rowInWrongOrderList.add(new int[]{rowID,maxRowID});
-			}
-			
-			if((rowID<0) || (rowID>(maxRowID+10000))) {
-				if(rowNotProcessedCount==0) {
-					log.warn("row not processed "+""+" in\t"+filename+"\t"+timeConverter.getStartDateTime());
-				}
-				rowNotProcessedCount++;
-			} else {
-
-				rowMap.put(rowID, row);
-				
-				if(rowID==maxRowID) {
-					log.warn("double rowID in "+filename);
-				}
-
-				if(rowID>maxRowID) {
-					maxRowID = rowID;
-				}
-
-			}
-			
+			datarows[i] = new DataRow(rowID, data);
 		}
+		return datarows;
+	}
+	
+	/**
+	 * Converts data rows to an array of temporal continuous data entries.
+	 * @param datarows
+	 * @return
+	 */
+	public float[][] consolidateDataRows(DataRow[] datarows) {
 		
+		final int MAX_VALID_ROWID = 30000;
 		
+		int notValidRowIdCount = 0;
 		
-				
-
-		if(rowInWrongOrderList.size()>0) {
-			log.warn("wrong order in "+filename+"\t"+rowInWrongOrderList.size()+"\t"+pairListToString(rowInWrongOrderList));
-		}
-
-		//System.out.println("Max rowID:"+maxRowID);
-		
-		double[][] data = new double[maxRowID+1][];
-		
-		for(Entry<Integer, double[]> e:rowMap.entrySet()) {
-			data[e.getKey()] = e.getValue();
-		}
-		
-		
-		
-		double[] NANrow = new double[variableCount];
+		float[] NANrow = new float[variableCount];
 		for(int i=0;i<variableCount;i++) {
-			NANrow[i] = Double.NaN;
+			NANrow[i] = Float.NaN;
 		}
 		
-		badRowCount = 0;
+		int maxRowID = -1;
 		
-		for(int i=0;i<data.length;i++) {
-			if(data[i]==null) {
-				data[i] = NANrow;
-				badRowCount++;
+		for(int i=0;i<datarows.length;i++) {
+			int id = datarows[i].id;
+			if(id>=0&&id<=MAX_VALID_ROWID) {
+				if(maxRowID<id) {
+					maxRowID = id; 
+				}
+			} else {
+				notValidRowIdCount++;
 			}
 		}
-				
+		
+		/*if(datarows[datarows.length-1].id<maxRowID) {
+			log.warn("last id lower than maxID:"+datarows[datarows.length-1].id+"\t"+maxRowID);
+		}*/
+		
+		if(notValidRowIdCount>0) {
+			log.warn("some not valid ids (count="+notValidRowIdCount+") in "+filename);
+		
+		}
+		
+		float[][] data = new float[maxRowID+1][];
+		
+		for(int i=0;i<maxRowID+1;i++) {
+			data[i] = NANrow;
+		}
+		
+		int multipleEntryCount = 0;
+		
+		for(int i=0;i<datarows.length;i++) {
+			int id = datarows[i].id;
+			if(id>=0&&id<=MAX_VALID_ROWID) {
+				if( data[id]!= null) {
+					multipleEntryCount++;
+				}
+				data[id] = datarows[i].data;
+			}
+		}
+		
+		if(multipleEntryCount>0) {
+			log.info("multiple entries (count="+multipleEntryCount+") in "+filename);
+		}
+		
 		return data;
 		
-		
 	}
 	
-
-	private String pairListToString(ArrayList<int[]> list) {
-		String s="";
-		
-		for(int[] p:list) {
-			s+= p[0]+"/"+p[1]+"\t";
+	/**
+	 * Converts file content to SensorData.
+	 * @return
+	 */
+	public SensorData getConsolidatedSensorData() {
+		DataRow[] datarows = readDataRows();
+		if(datarows==null) {
+			return null;
 		}
-		
-		
-		return s;
-	}
-	
-	
-	
-	
-	
-	public double[][] readSensorDataOLD() {
-		mappedByteBuffer.position(dataSectionStartFilePosition);
-		
-		int dataRowByteSize = (variableCount+1)*4; 
-		
-		
-		System.out.println("filesize\t"+fileSize);
-		System.out.println("dataSectionStartFilePosition\t"+dataSectionStartFilePosition);
-		System.out.println("dataRowByteSize\t"+dataRowByteSize);
-
-		
-		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
-			throw new RuntimeException("wrong data entry calculation");
+		float[][] data = consolidateDataRows(datarows);
+		if(data==null) {
+			return null;
 		}
-		
-		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
-		
-		
-		double[][] rows = new double[dataEntryCount][];
-		
-		
-		for(int i=0;i<dataEntryCount;i++) {			
-			
-			double[] row = readDataRowOLD(i);
-			
-			rows[i] = row;
-			
-			/*
-			System.out.print(oleAutomatonTimeToDateTime(offsetToOleAutomatonTime(i))+"\t");
-			
-			System.out.print(i+".\t");
-			
-			for(int c=0;c<variableCount;c++) {
-				System.out.print(row[c]+"\t");
-			}
-			System.out.println();
-			
-			System.out.println(fileSize+"     "+mappedByteBuffer.position());
-			*/
+		return new SensorData(timeConverter,sensorHeaders,data,badRowCount);
+	}	
+	
+	/**
+	 * prints header info of sensors.
+	 */
+	public void printSensorHeaders() {
+		for(SensorHeader sensorHeader:sensorHeaders) {
+			sensorHeader.printHeader();
 		}
-		
-		return rows;
 	}
 	
-	public double[] readDataRowOLD(int checkRowID) {
-		double[] row = new double[variableCount];
-		int rowID = mappedByteBuffer.getInt();
-		//System.out.println("at "+ mappedByteBuffer.position());
-		if(rowID!=checkRowID) {
-			throw new RuntimeException("at "+ mappedByteBuffer.position() +" not expected row ID: "+rowID+" should be "+checkRowID);
-		}
-		for(int sensorID=0;sensorID<variableCount;sensorID++) {
-			switch(sensorHeaders[sensorID].dataType) {
-			case 8:
-				row[sensorID] = mappedByteBuffer.getFloat(); 
-				break;
-			case 7:
-				row[sensorID] = mappedByteBuffer.getInt();
-				break;
-			default:
-				throw new RuntimeException("type not implemented");
-			}
-			
-		}		
-		return row;
-	}
-	
-	
-	private static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);
-	
-	public LocalDateTime oleAutomatonTimeToDateTime(double oleAutomatonTimestamp) {
-		long oleAutomatonTimeSeconds = (long) Math.round(oleAutomatonTimestamp*24*60*60);
-		return OLE_AUTOMATION_TIME_START.plus(Duration.ofSeconds(oleAutomatonTimeSeconds));
-	}
-	
+	/**
+	 * Gets an array of sensor header info.
+	 * @return
+	 */
 	public SensorHeader[] getSensorHeaders() {
 		return sensorHeaders;
 	}
 	
+	/**
+	 * Gets a converter object to calculate time stamps of this file.
+	 * @return
+	 */
 	public TimeConverter getTimeConverter() {
 		return timeConverter;
+	}
+	
+	/**
+	 * Writes the raw list of row id's to text file.
+	 * @param datarows
+	 * @param filename
+	 */
+	public void idListToFile(DataRow[] datarows, String filename) {
+		try {
+			Path path = Paths.get(filename);
+			Path name = path.getName(path.getNameCount()-1);
+			PrintStream printStream = new PrintStream("K:/csv/"+name+".txt");
+			for(int i=0;i<datarows.length;i++) { 
+				printStream.println(datarows[i].id);
+			}
+			printStream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

@@ -13,9 +13,9 @@ public class Sensor {
 	
 	TimeConverter timeConverter;
 	SensorHeader metaData;
-	double[] data;
+	float[] data;
 	
-	public Sensor(TimeConverter timeConverter, SensorHeader metaData,double[] data) {
+	public Sensor(TimeConverter timeConverter, SensorHeader metaData, float[] data) {
 		this.timeConverter = timeConverter;
 		this.metaData = metaData;
 		this.data = data;
@@ -32,8 +32,16 @@ public class Sensor {
 		System.out.println();
 	}
 	
+	public double getStartOleAutomatonTime() {
+		return timeConverter.getStartOleAutomatonTime();
+	}
+	
 	public LocalDateTime getFirstDateTime() {
 		return timeConverter.getStartDateTime();
+	}
+	
+	public long getFirstEntryTimeOleMinutes() {
+		return timeConverter.getStartTimeOleMinutes();
 	}
 	
 	public LocalDateTime getLastDateTime() {
@@ -48,7 +56,7 @@ public class Sensor {
 		return metaData.unit;
 	}
 	
-	public double[] getData() {
+	public float[] getData() {
 		return data;
 	}
 	
@@ -56,50 +64,79 @@ public class Sensor {
 		return timeConverter.getTimeStep();
 	}
 	
-	public double getMin() {
-		double min = Double.MAX_VALUE;
-		for(double x:data) {
-			if(x<min) {
+	public long getTimeStepMinutes() {
+		return timeConverter.getTimeStepMinutes();
+	}
+	
+	public float getMin() {
+		float min = Float.MAX_VALUE;
+		for(float x:data) {
+			if(!Float.isNaN(x)&&x<min) {
 				min = x;
 			}
 		}
 		return min;
 	}
 	
-	public double getMax() {
-		double max = -Double.MAX_VALUE;
-		for(double x:data) {
-			if(x>max) {
+	public float getMax() {
+		float max = -Float.MAX_VALUE;
+		for(float x:data) {
+			if(!Float.isNaN(x)&&x>max) {
 				max = x;
 			}
 		}
 		return max;
 	}
 	
-	public double getAverage() {
-		double sum = 0;
-		for(double x:data) {
-			sum += x;
+	public float getAverage() {
+		int count = 0;
+		float sum = 0;
+		for(float x:data) {
+			if(!Float.isNaN(x)) {
+				sum += x;
+				count++;
+			}
 		}
-		return sum/data.length;
+		return sum/count;
 	}
 	
 	public int getSampleCount() {
 		return data.length;
 	}
 	
-	public double getStdDev() {		
-		double sum = 0;
-		double qsum = 0;
-		for(double x:data) {
+	public float getStdDev() {		
+		float sum = 0;
+		float qsum = 0;
+		int count = 0;
+		for(float x:data) {
+			if(!Float.isNaN(x)) {
 			sum += x;
 			qsum += x*x;
+			count++;
+			}
 		}
-		return Math.sqrt((1d/(data.length-1d))*(qsum-(1d/data.length)*(sum*sum)));
+		return (float) Math.sqrt((1d/(count-1d))*(qsum-(1d/count)*(sum*sum)));
 	}
 	
-	public double getMean() {
-		double[] temp = Arrays.copyOf(data,data.length);
+	public float getMean() {
+		int count = 0;
+	
+		for(float x:data) {
+			if(!Float.isNaN(x)) {
+				count++;
+			}
+		}
+		
+		float[] temp = new float[count];
+		
+		int c = 0;
+		for(float x:data) {
+			if(!Float.isNaN(x)) {
+				temp[c] = x;
+				c++;
+			}
+		}
+		
 		Arrays.sort(temp);
 		if(data.length%2==0) {
 			return (temp[data.length/2]+temp[data.length/2+1])/2;

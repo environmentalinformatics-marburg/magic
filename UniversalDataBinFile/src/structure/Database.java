@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +65,33 @@ public class Database {
 	public void loadUDBFile(Path path, String stationID) throws IOException {
 		try {
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(path.toString());
-		SensorData s = udbFile.getSensorData();
+		SensorData s = udbFile.getConsolidatedSensorData();
 		
-		log.trace("UDBFile:\t"+path+"\t\tstationID:\t"+stationID+"\t\t"+s.getSensor(0).getFirstDateTime()+"\t-\t"+s.getSensor(0).getLastDateTime());
-		} catch (Exception e) {
-			log.error(e.getMessage());
+		int sensorCount = s.getSensorCount();
+		for(int i=0;i<sensorCount;i++) {
+			dat_decode.Sensor sensor = s.getSensor(i);
+			String sensorSerial = stationID+"."+sensor.getSensorName();
+			storage.writeTimeSeries(sensorSerial, sensor.getData(), sensor.getFirstEntryTimeOleMinutes(), sensor.getTimeStepMinutes());
 		}
+		
+		
+		if(s!=null) {
+			log.trace("UDBFile:\t"+path+"\t\tstationID:\t"+stationID+"\t\t"+s.getSensor(0).getFirstDateTime()+"\t-\t"+s.getSensor(0).getLastDateTime());
+		} else {
+			log.warn(path+" not read");
+		}
+		
+		
+		
+		
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void printInfo() {
+		storage.printInfo();
 	}
 
 }

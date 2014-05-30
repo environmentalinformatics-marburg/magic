@@ -18,7 +18,7 @@ public class UseCase1 {
 		
 		f.printSensorHeaders();
 		
-		f.readSensorData();
+		f.getConsolidatedSensorData();
 		
 		TimeConverter timeConverter = f.getTimeConverter();
 		
@@ -50,7 +50,7 @@ public class UseCase1 {
 		System.out.println(sensorTime);
 		
 		
-		SensorData sensorData = f.getSensorData();
+		SensorData sensorData = f.getConsolidatedSensorData();
 		
 		sensorData.getSensor(3).print(10);
 		

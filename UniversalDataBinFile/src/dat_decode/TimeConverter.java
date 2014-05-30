@@ -45,12 +45,24 @@ public class TimeConverter {
 		return oleAutomatonTimeToDateTime(getStartOleAutomatonTime());
 	}
 	
+	public long getStartTimeOleMinutes() {
+		return (long) Math.round(getStartOleAutomatonTime()*24d*60d);
+	}
+	
 	public Duration getTimeStep() {
-		//System.out.println("sampleRate: "+sampleRate);
-		//System.out.println("dActTimeToSecondFactor: "+dActTimeToSecondFactor/86400d);
-		//double s = sampleRate*60*60*24;
-		//System.out.println("samples per day: "+s);
 		long oleAutomatonTimeSeconds = (long) Math.round((dActTimeToSecondFactor/86400d)*24*60*60);		
 		return Duration.ofSeconds(oleAutomatonTimeSeconds);
+	}
+	
+	public long getTimeStepMinutes() {
+		return (long) Math.round((dActTimeToSecondFactor/86400d)*24d*60d);
+	}
+	
+	public static LocalDateTime oleTimeMinutesToLocalDateTime(long oleTimeMinutes) {
+		return OLE_AUTOMATION_TIME_START.plus(Duration.ofMinutes(oleTimeMinutes));
+	}
+	
+	public static Duration minutesToDuration(long minutes) {
+		return Duration.ofSeconds(minutes);
 	}
 }

@@ -15,11 +15,11 @@ public class SensorData {
 	private Sensor[] sensors;
 	private int badRowCount;
 	
-	public SensorData(TimeConverter timeConverter, SensorHeader[] sensorHeaders, double[][] data, int badRowCount) {
+	public SensorData(TimeConverter timeConverter, SensorHeader[] sensorHeaders, float[][] data, int badRowCount) {
 		this.timeConverter = timeConverter;
 		sensors = new Sensor[sensorHeaders.length];
 		for(int i=0;i<sensors.length;i++) {
-			double[] col = new double[data.length];
+			float[] col = new float[data.length];
 			for(int r=0;r<data.length;r++) {
 				col[r] = data[r][i];
 			}
@@ -75,8 +75,8 @@ public class SensorData {
 		
 		*/
 		
-		
 		printStream.print("OFFSET");
+		printStream.print(" TIMESTAMP");
 		for(int c=0;c<sensors.length;c++) {
 			printStream.print(" "+sensors[c].getSensorName());
 		}
@@ -85,6 +85,7 @@ public class SensorData {
 		
 		for(int r=0;r<rowcount;r++) {
 			printStream.print(r);
+			printStream.print(" "+timeConverter.offsetToDateTime(r));
 			
 			for(int c=0;c<sensors.length;c++) {
 				printStream.format(locale," %2.2f", sensors[c].data[r]);
