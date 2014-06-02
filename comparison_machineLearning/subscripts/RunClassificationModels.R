@@ -7,9 +7,9 @@
 if (tuneThreshold) summaryFunction = "fourStats"
 if (!tuneThreshold) summaryFunction = "twoClassSummary"
 ctrl <- trainControl(index=cvSplits,
+                     method="cv",
                      summaryFunction = eval(parse(text=summaryFunction)),
-                     classProbs = TRUE)#,
-#                     savePredictions = TRUE)
+                     classProbs = TRUE)
 
 if (tuneThreshold){
   metric="Dist" #wenn nicht _thres dann "ROC

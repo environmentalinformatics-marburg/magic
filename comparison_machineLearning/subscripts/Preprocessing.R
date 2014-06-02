@@ -11,7 +11,6 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
 tmpDateField=dateField
 dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 
-data=na.omit(data[,which(names(data) %in% c(predictorVariables,response))]) #rm na rows
 ############################################################################################################
 ################################## Scale and center predictor Variables ####################################
 ############################################################################################################
@@ -22,6 +21,7 @@ if (centerscale){
     scale(data[,which(names(data) %in% predictorVariables)])
 }
 
+data=data[(rowSums(is.na(data[,which(names(data) %in% predictorVariables)])))==0,]#rm rows with na in predictors
 ############################################################################################################
 ################################## SPLIT DATA #######################################
 ############################################################################################################
