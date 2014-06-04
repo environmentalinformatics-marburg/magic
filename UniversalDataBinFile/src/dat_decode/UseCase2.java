@@ -30,7 +30,7 @@ public class UseCase2 {
 		System.out.println("last entry:\t"+sensor.getLastDateTime());
 		System.out.println("time step:\t"+sensor.getTimeStep());		
 		System.out.println("data: ");
-		DataUtil.printArray(sensor.getData());
+		DataUtil.printArray(sensor.getData(),10);
 		System.out.println("----------------------");
 		System.out.format("min: %.2f\n",sensor.getMin());
 		System.out.format("max: %.2f\n",sensor.getMax());

@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import structure.Storage.DataStorage;
 import dat_decode.SensorData;
 import dat_decode.UniversalDataBinFile;
 
@@ -23,7 +24,7 @@ public class Database {
 	private Map<String,Station> stationMap;
 	
 	public Database() {
-		storage = new Storage();
+		storage = new Storage(10);
 		stationMap = new HashMap<String, Station>();
 	}
 	
@@ -47,14 +48,14 @@ public class Database {
 	
 	public void loadDirectoryOfOneStation(Path rootPath) {
 		log.trace("path:\t\t"+rootPath);
-		String stationID = rootPath.subpath(rootPath.getNameCount()-1, rootPath.getNameCount()).toString();
-		log.trace("stationID:\t"+stationID);
+		String stationSerial = rootPath.subpath(rootPath.getNameCount()-1, rootPath.getNameCount()).toString();
+		log.trace("stationID:\t"+stationSerial);
 		
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath, x -> x.toString().endsWith(".dat"));
 			for(Path path:stream) {
 				log.trace("path: "+path);
-				loadUDBFile(path, stationID);
+				loadUDBFile(path, stationSerial);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -62,7 +63,14 @@ public class Database {
 		
 	}
 	
-	public void loadUDBFile(Path path, String stationID) throws IOException {
+	public void loadUDBFile(Path path, String stationSerial) throws IOException {
+		
+		Station station = stationMap.get(stationSerial);
+		if(station==null) {
+			station = new Station(stationSerial);
+			stationMap.put(stationSerial, station);
+		}
+		
 		try {
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(path.toString());
 		SensorData s = udbFile.getConsolidatedSensorData();
@@ -70,13 +78,13 @@ public class Database {
 		int sensorCount = s.getSensorCount();
 		for(int i=0;i<sensorCount;i++) {
 			dat_decode.Sensor sensor = s.getSensor(i);
-			String sensorSerial = stationID+"."+sensor.getSensorName();
-			storage.writeTimeSeries(sensorSerial, sensor.getData(), sensor.getFirstEntryTimeOleMinutes(), sensor.getTimeStepMinutes());
+			String sensorSerial = stationSerial+"."+sensor.getSensorName();
+			storage.insertTimeSeries(sensorSerial, sensor.getData(), sensor.getFirstEntryTimeOleMinutes(), sensor.getTimeStepMinutes());
 		}
 		
 		
 		if(s!=null) {
-			log.trace("UDBFile:\t"+path+"\t\tstationID:\t"+stationID+"\t\t"+s.getSensor(0).getFirstDateTime()+"\t-\t"+s.getSensor(0).getLastDateTime());
+			log.trace("UDBFile:\t"+path+"\t\tstationSerial:\t"+stationSerial+"\t\t"+s.getSensor(0).getFirstDateTime()+"\t-\t"+s.getSensor(0).getLastDateTime());
 		} else {
 			log.warn(path+" not read");
 		}
@@ -91,7 +99,14 @@ public class Database {
 	}
 	
 	public void printInfo() {
+		System.out.println();
+		System.out.println("database info:");
+		System.out.println("stattions:\t"+stationMap.size());
 		storage.printInfo();
+	}
+	
+	public Storage getStorage() {
+		return storage;
 	}
 
 }

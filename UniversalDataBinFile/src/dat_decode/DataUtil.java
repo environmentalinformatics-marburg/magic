@@ -7,8 +7,8 @@ package dat_decode;
 */
 public class DataUtil {
 	
-	public static void printArray(float[] data) {
-		int n = data.length<10?data.length:10;
+	public static void printArray(float[] data, int maxPrint) {
+		int n = data.length<maxPrint?data.length:maxPrint;
 		for(int i=0;i<n;i++) {
 			//System.out.print(data[i]+"\t");
 			System.out.format("%.2f\t",data[i]);
