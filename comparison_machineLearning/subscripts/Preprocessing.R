@@ -15,7 +15,6 @@ dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 ################################## Scale and center predictor Variables ####################################
 ############################################################################################################
 
-
 if (centerscale){
   data[,which(names(data) %in% predictorVariables)]=
     scale(data[,which(names(data) %in% predictorVariables)])
@@ -50,10 +49,9 @@ if (balance) {
 ############################## Cut to sampsize ##############################
 ############################################################################################################
 #training data are reduced to the defined sampsize with respect to the distribution of the response
-if (nrow(training)<sampsize) sampsize=nrow(training) #reduce sampsize if less pixels are available
 if(useSeeds) set.seed(20)
 samples<-createDataPartition(eval(parse(text=paste("training$",response,sep=""))),
-                             p = (1/nrow(training))*sampsize,list=FALSE)
+                             p = sampsize,list=FALSE)
 training <- training[samples,] #samples used for training
 rm(samples)
 ############################################################################################################

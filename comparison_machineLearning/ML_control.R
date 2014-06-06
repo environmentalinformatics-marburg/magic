@@ -23,7 +23,7 @@ rm(list=ls())
 profil="hanna"
 doParallel=TRUE
 useSeeds=TRUE
-shortTest=TRUE#if TRUE then learning parameters and data set are set automatically for quick test of the system
+shortTest=FALSE#if TRUE then learning parameters and data set are set automatically for quick test of the system
 ##################################################################################################################
 #                                          Data adjustments
 ##################################################################################################################
@@ -40,8 +40,7 @@ cvNumber=10 # number of cross validation samples (cVNumber fold CV)
 balance=FALSE #use balanced response classes?
 balanceFactor=c(1) #if balance==TRUE: how to balance?number of pixels in max class = 
 #          number of pixels in min class * balance factor
-sampsize=500 #how many pixels from the training data should actually be used for training? If
-#to high then the maximum number will be considered
+sampsize=0.02 #how many percent of training scene pixels from the training data should actually be used for training? 
 ##################################################################################################################
 #                                      Choose Predictors (must be included in "inputTable")
 ##################################################################################################################
@@ -80,7 +79,7 @@ svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
 ##################################################################################################################
 if(shortTest){
   inputTable="rfInput_vp03_day_om.dat"
-  sampsize=100
+  sampsize=0.001
   thresholds=seq(0.0, 1.0, 0.2)
   rf_mtry=c(2:5)
   ##### NNET Settings:
