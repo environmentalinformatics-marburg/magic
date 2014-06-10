@@ -3,6 +3,8 @@ package structure;
 import java.util.HashMap;
 import java.util.Map;
 
+
+@Deprecated
 public class Station {
 	
 	public final String stationID;

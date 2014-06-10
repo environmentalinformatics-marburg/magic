@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import dat_decode.TimeConverter;
 
+@Deprecated
 public class Storage {
 	
 	static class DataStorage {

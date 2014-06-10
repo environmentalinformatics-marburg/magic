@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class UniversalDataBinFile {
 	
+	final int MAX_VALID_ROWID = 30000;
+	
 	private static final Logger log = LogManager.getLogger("general");
 	
 	private final String filename;
@@ -253,7 +255,7 @@ public class UniversalDataBinFile {
 	 */
 	public float[][] consolidateDataRows(DataRow[] datarows) {
 		
-		final int MAX_VALID_ROWID = 30000;
+		
 		
 		int notValidRowIdCount = 0;
 		
@@ -280,7 +282,7 @@ public class UniversalDataBinFile {
 		}*/
 		
 		if(notValidRowIdCount>0) {
-			log.warn("some not valid ids (count="+notValidRowIdCount+") in "+filename);
+			log.warn("some invalid ID's (count="+notValidRowIdCount+") in "+filename+"\t"+timeConverter.getStartDateTime());
 		
 		}
 		
@@ -303,7 +305,7 @@ public class UniversalDataBinFile {
 		}
 		
 		if(multipleEntryCount>0) {
-			log.info("multiple entries (count="+multipleEntryCount+") in "+filename);
+			log.info("multiple entries for one ID (count="+multipleEntryCount+") in "+filename+"\t"+timeConverter.getStartDateTime());
 		}
 		
 		return data;
@@ -368,6 +370,64 @@ public class UniversalDataBinFile {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public TimeSeries getTimeSeries() {
+		DataRow[] dataRows = readDataRows();
+		
+		int maxRowID = -1;
+		
+		for(int i=0;i<dataRows.length;i++) {
+			int id = dataRows[i].id;
+			if(id>=0&&id<=MAX_VALID_ROWID) {
+				if(maxRowID<id) {
+					maxRowID = id; 
+				}
+			}
+		}		
+		
+		DataRow[] tempRows = new DataRow[maxRowID+1];
+				
+		int badRowCounter = 0;
+		int idPos = -1;
+		
+		for(int r=0;r<dataRows.length;r++) {
+			int id = dataRows[r].id;
+			if(id>=0&&id<=MAX_VALID_ROWID) {
+				tempRows[id] = dataRows[r];
+			} else {
+				badRowCounter++;
+			}
+		}
+		
+		int rowCount=0;
+		int gapCount=0;
+		for(int r=0;r<tempRows.length;r++) {
+			if(tempRows[r]==null) {
+				gapCount++;
+			} else {
+				rowCount++;
+			}
+		}
+		
+		long[] time = new long[rowCount];
+		float[][] data = new float[sensorHeaders.length][];
+		for(int s=0;s<sensorHeaders.length;s++) {
+			data[s] = new float[rowCount];
+		}
+		int c=0;
+		for(int r=0;r<tempRows.length;r++) {
+			if(tempRows[r]!=null) {
+				for(int s=0;s<sensorHeaders.length;s++) {
+					data[s][c] = tempRows[r].data[s];
+					
+				}
+				time[c] =  timeConverter.getStartTimeOleMinutes()+(tempRows[r].id*timeConverter.getTimeStepMinutes());
+				c++;
+			}
+		}
+		
+		return new TimeSeries(sensorHeaders, time, data);
 	}
 	
 	

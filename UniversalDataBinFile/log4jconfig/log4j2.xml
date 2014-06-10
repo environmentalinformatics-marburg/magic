@@ -2,11 +2,15 @@
 <Configuration>
   <Appenders>
     <Console name="stdout" target="SYSTEM_OUT">
-      <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+      <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="[%-5p] (%F:%L) %m%n"/>
     </Console>
     <File name="file_trace" fileName="k:/logs/UniversalDataBinFile_trace.log" append="false">
       <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%p] %m%n"/>
+    </File>
+    <File name="file_info" fileName="k:/logs/UniversalDataBinFile_info.log" append="false">
+      <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
       <PatternLayout pattern="[%p] %m%n"/>
     </File>
     <File name="file_warn" fileName="k:/logs/UniversalDataBinFile_warn.log" append="false">
@@ -20,6 +24,7 @@
     <Root level="warn">
       <AppenderRef ref="stdout"/>
       <AppenderRef ref="file_trace"/>
+      <AppenderRef ref="file_info"/>
       <AppenderRef ref="file_warn"/>
     </Root>
   </Loggers>

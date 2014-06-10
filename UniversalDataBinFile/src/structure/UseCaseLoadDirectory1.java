@@ -6,17 +6,21 @@ import java.nio.file.Paths;
 
 
 
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dat_decode.DataUtil;
 import dat_decode.TimeConverter;
 
+@Deprecated
 public class UseCaseLoadDirectory1 {
 	
 	private static final Logger log = LogManager.getLogger("general");
 	
 	public static void main(String[] args){
+		
+		log.trace("start");
 		
 		//Path rootPath = Paths.get("K:/incoming_ftp/adl-m/HEG");
 		Path rootPath = Paths.get("K:/HEG_short");

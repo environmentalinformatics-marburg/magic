@@ -16,6 +16,7 @@ import structure.Storage.DataStorage;
 import dat_decode.SensorData;
 import dat_decode.UniversalDataBinFile;
 
+@Deprecated
 public class Database {
 	
 	private static final Logger log = LogManager.getLogger("general");

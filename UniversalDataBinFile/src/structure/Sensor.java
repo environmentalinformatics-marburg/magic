@@ -3,6 +3,7 @@ package structure;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class Sensor {
 	
 	private String serialNumber = "";
