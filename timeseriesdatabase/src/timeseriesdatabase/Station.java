@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import de.umr.jepc.Attribute;
 
 public class Station {
 	
@@ -21,8 +25,11 @@ public class Station {
 	public Map<String, String> propertyMap;
 	
 	public Map<String,String> sensorNameTranlationMap;
+
+	private String generalStationName;
 	
-	public Station(TimeSeriesDatabase timeSeriesDatabase, String plotID, Map<String, String> propertyMap) {
+	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
+		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.propertyMap = propertyMap;
@@ -59,12 +66,63 @@ public class Station {
 		
 	}
 	
+	private String translateInputSensorName(String sensorName) {
+		String resultName = sensorNameTranlationMap.get(sensorName);
+		if(resultName!=null) {
+			return resultName;
+		}
+		resultName = timeSeriesDatabase.generalStationMap.get(generalStationName).sensorNameTranlationMap.get(sensorName);
+		if(resultName!=null) {
+			return resultName;
+		}
+		LoggerType loggerType = getLoggerType();
+		resultName = loggerType.sensorNameTranlationMap.get(sensorName);
+		if(resultName!=null) {
+			return resultName;
+		}
+		Attribute[] schema = loggerType.schema;
+		for(Attribute attribue:schema) {
+			if(attribue.getAttributeName().equals(sensorName)) {
+				return sensorName;
+			}
+		}
+		return null;
+	}
+	
 	public void loadUDBFFile(Path filename) throws IOException {
 		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+plotID);
 		
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
 		UDBFTimeSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
-		System.out.println(" "+udbfTimeSeries.time.length);
+		
+		SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
+		
+		int[] eventPos = new int[sensorHeaders.length];
+		Attribute[] schema = getLoggerType().schema;
+		
+		ArrayList<String> list = new ArrayList<String>();
+		for(Attribute attribute:schema) {
+			list.add(attribute.getAttributeName());
+		}
+		System.out.println(getLoggerType().typeName+" schema: "+list);
+		
+		for(int sensorIndex=0; sensorIndex<sensorHeaders.length; sensorIndex++) {
+			eventPos[sensorIndex] = -1;
+			SensorHeader sensorHeader = sensorHeaders[sensorIndex];
+			String sensorName = translateInputSensorName(sensorHeader.name);
+			System.out.println(sensorHeader.name+"->"+sensorName);
+			if(sensorName != null) {
+				for(int schemaIndex=0;schemaIndex<schema.length;schemaIndex++) {
+					Attribute attribute = schema[schemaIndex];
+					if(attribute.getAttributeName().equals(sensorName)) {
+						eventPos[sensorIndex] = schemaIndex;
+					}
+				}
+			}
+			if(eventPos[sensorIndex] == -1) {
+				log.warn("sensor name not in translation map or schema: "+sensorHeader.name);
+			}
+		}
 		
 		
 		/*

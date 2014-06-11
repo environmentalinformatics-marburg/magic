@@ -67,7 +67,7 @@ public class TimeSeriesDatabase {
 			Section section = ini.get(typeName);
 			List<String> names = new ArrayList<String>();			
 			for(String name:section.keySet()) {
-				names.add(typeName);
+				names.add(name);
 			}
 			Attribute[] schema = new Attribute[names.size()];
 			
@@ -99,7 +99,8 @@ public class TimeSeriesDatabase {
 				log.error("multiple properties for one station not implemented:\t"+entryMap.getValue());
 			} else {
 				String plotID = entryMap.getKey();
-				Station station = new Station(this,plotID, entryMap.getValue().get(0));
+				String generalStationName = plotID.substring(0, 3);
+				Station station = new Station(this, generalStationName, plotID, entryMap.getValue().get(0));
 				stationMap.put(plotID, station);
 			}
 		}
@@ -279,51 +280,11 @@ public class TimeSeriesDatabase {
 						} else {
 							log.warn("station does not exist: "+plotID);
 						}
-					} else {
+					} /*else {
 						System.out.println("unknown: "+sectionName);
-					}
-				}
-				
-				
-				
-				/*
-				for(String plot:plots) {
-					String prefix = "000"+plot;
-					if(sectionName.startsWith(prefix)) {
-						System.out.println("OK");
-						String general = prefix+"xx"+suffix;
-						if(sectionName.equals(general)) {
-							System.out.println("general");
-							
-							Map<String,String> sensorNameMap = readSensorNameMap(section);							
-							GeneralStation generalStation = new GeneralStation(plot, sensorNameMap);
-							if(!generalStationMap.containsKey(plot)) {
-								generalStationMap.put(plot, generalStation);
-							} else {
-								log.warn("GeneralStation already exists: "+plot);
-							}
-							
-						} else if(sectionName.endsWith(suffix)) {
-							String name = sectionName.substring(3, 8);
-							System.out.println("special: "+name);
-							
-							Map<String,String> sensorNameMap = readSensorNameMap(section);
-							
-							if(stationMap.get(name)!=null) {
-								stationMap.get(name).setSensorNameMap(sensorNameMap);
-							} else {
-								log.warn("station does not exist: "+name);
-							}							
-						} else {
-							System.out.println("not found: "+sectionName);
-						}
-					}
-				}*/
-				
-			}
-			
-			
-			
+					}*/
+				}				
+			}			
 		} catch (Exception e) {
 			log.error(e);
 		}
