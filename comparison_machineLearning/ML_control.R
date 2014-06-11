@@ -19,18 +19,19 @@ rm(list=ls())
 ##################################################################################################################
 #                                    General adjustments
 ##################################################################################################################
-#choose where to work (currently "hanna" and "ui183" are supported. New profiles have to be created in the "datapath" section)
+#choose where to work (currently "hanna" and "ui183" are supported. 
+#New profiles have to be created in the "datapath" section)
 profil="hanna"
 doParallel=TRUE
 useSeeds=TRUE
-shortTest=FALSE#if TRUE then learning parameters and data set are set automatically for quick test of the system
+shortTest=TRUE#if TRUE then learning parameters and data set are set automatically for quick test of the system
 ##################################################################################################################
 #                                          Data adjustments
 ##################################################################################################################
 inputTable="rfInput_vp03_day_om.dat"
 response<-"RInfo" #field name of the response variable
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
-                   #important to split the data. must be unique per scende
+                   #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
 ##################################################################################################################
 #                                Data splitting adjustments
@@ -55,6 +56,7 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rf,nnet,svm.
 tuneThreshold=TRUE #should the optimal probability threshold be tuned?
+adaptiveResampling=TRUE #use adaptive crosss validation?
 thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
 ##### RF Settings:
 ntree=500
@@ -79,7 +81,7 @@ svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
 ##################################################################################################################
 if(shortTest){
   inputTable="rfInput_vp03_day_om.dat"
-  sampsize=0.001
+  sampsize=0.002
   thresholds=seq(0.0, 1.0, 0.2)
   rf_mtry=c(2:5)
   ##### NNET Settings:
@@ -146,7 +148,7 @@ for (factor in balanceFactor){
 #                                           Preprocessing
 ##################################################################################################################
   source("Preprocessing.R",echo=TRUE)
-  #source("VisualizationOfInput.R") #(first run preprocessing.R)
+  #source("VisualizationOfInput.R")
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################
@@ -155,7 +157,6 @@ for (factor in balanceFactor){
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
-
   source("PredictAndValidateClassificationModel.R",echo=TRUE)
   source("VisualizationOfModelPrediction.R",echo=TRUE)
   source("SpatialModelResults.R",echo=TRUE)

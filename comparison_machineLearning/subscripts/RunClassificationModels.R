@@ -6,10 +6,24 @@
 ############################################################################################################
 if (tuneThreshold) summaryFunction = "fourStats"
 if (!tuneThreshold) summaryFunction = "twoClassSummary"
-ctrl <- trainControl(index=cvSplits,
-                     method="cv",
-                     summaryFunction = eval(parse(text=summaryFunction)),
-                     classProbs = TRUE)
+if (adaptiveResampling){
+  ctrl <- trainControl(index=cvSplits,
+                       method="adaptive_cv",
+                       summaryFunction = eval(parse(text=summaryFunction)),
+                       classProbs = TRUE,
+                       adaptive = list(min = 5,
+                                       alpha = 0.05,
+                                       method = "gls",
+                                       complete = TRUE))
+}
+
+if (!adaptiveResampling) {
+  ctrl <- trainControl(index=cvSplits,
+                       method="cv",
+                       summaryFunction = eval(parse(text=summaryFunction)),
+                       classProbs = TRUE)
+}
+
 
 if (tuneThreshold){
   metric="Dist" #wenn nicht _thres dann "ROC

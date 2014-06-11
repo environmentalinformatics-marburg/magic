@@ -75,5 +75,5 @@ gc()
 #the predictor variable like the distribution of the predictor variable in the 
 #overall training data set.
 if(useSeeds) set.seed(20)
-cvSplits <- createFolds(class, k = 10)
+cvSplits <- createFolds(class, k = 10,returnTrain=TRUE)
 dateField=tmpDateField
