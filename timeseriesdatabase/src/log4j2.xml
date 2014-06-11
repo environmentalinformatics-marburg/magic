@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="stdout" target="SYSTEM_OUT">
+      <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%-5p] (%F:%L) %m%n"/>
+    </Console>
+    <File name="file_trace" fileName="logs/TimeSeriesDatabase_trace.log" append="false">
+      <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%p] %m%n"/>
+    </File>
+    <File name="file_info" fileName="logs/TimeSeriesDatabase_info.log" append="false">
+      <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%p] %m%n"/>
+    </File>
+    <File name="file_warn" fileName="logs/TimeSeriesDatabase_warn.log" append="false">
+    <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="[%p] %m%n"/>
+    </File>
+ </Appenders>
+  <Loggers>
+    <Logger name="general" level="trace">
+    </Logger>
+    <Root level="warn">
+      <AppenderRef ref="stdout"/>
+      <AppenderRef ref="file_trace"/>
+      <AppenderRef ref="file_info"/>
+      <AppenderRef ref="file_warn"/>
+    </Root>
+  </Loggers>
+</Configuration>
