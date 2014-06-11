@@ -1,5 +1,6 @@
 package timeseriesdatabase; 
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +16,8 @@ import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ini4j.Wini;
+import org.ini4j.Profile.Section;
 
 import au.com.bytecode.opencsv.CSVReader;
 import dat_decode.SensorData;
@@ -32,11 +35,18 @@ public class Database {
 	//StationID -> Station
 	private Map<String, Station> stationMap;
 	
+	//LoggerType -> Logger
+	private Map<String,timeseriesdatabase.Logger> loggerMap;
+	
+	private Map<String,GeneralStation> generalStationMap;
+	
 	private Storage storage;
 
 	
 	public Database() {
 		stationMap = new HashMap<String, Station>();
+		loggerMap = new HashMap<String, timeseriesdatabase.Logger>();
+		generalStationMap = new HashMap<String,GeneralStation>();
 		storage = new Storage();
 	}
 	
@@ -75,7 +85,7 @@ public class Database {
 				//*** workaround for directory names ***
 				
 				if(stationID.startsWith("HG")) {
-					stationID = stationID.replace("HG", "HEG");
+					stationID = "HEG"+stationID.substring(2);
 				}
 				
 				//**********************************
@@ -99,12 +109,14 @@ public class Database {
 	 * Create entry for one station
 	 * @param stationID
 	 */
-	public void createStation(String stationID, Map<String,String> propertyMap) {
+	public void createStation(String stationID, Map<String,String> propertyMap) {		
 		if(stationMap.containsKey(stationID)) {
 			log.warn("station already exists: "+stationID);
 			return;
 		}
-		Station station = new Station(stationID, storage, propertyMap);
+		String generalStationName = stationID.substring(0, 3);
+		System.out.println("createStation: "+generalStationName+"\t"+stationID);		
+		Station station = new Station(this, generalStationName, stationID, storage, propertyMap);
 		stationMap.put(stationID, station);
 	}
 	
@@ -113,9 +125,9 @@ public class Database {
 	}
 	
 	public void configureStations(String config_file) {
-		Map<String,List<Map<String,String>>> plotidMap = readConfig(config_file);
+		Map<String,List<Map<String,String>>> plotIdMap = readStationConfig(config_file);
 		
-		for(Entry<String, List<Map<String, String>>> entryMap:plotidMap.entrySet()) {
+		for(Entry<String, List<Map<String, String>>> entryMap:plotIdMap.entrySet()) {
 			if(entryMap.getValue().size()!=1) {
 				log.error("multiple properties for one station not implemented:\t"+entryMap.getValue());
 			} else {
@@ -124,23 +136,7 @@ public class Database {
 		}
 	}
 	
-	private static Map<String,List<Map<String,String>>> readConfig(String config_file) {
-		/*try {
-			FileInputStream fileInputStream = new FileInputStream(config_file);
-			Scanner scanner = new Scanner(fileInputStream);
-			
-			while(scanner.hasNext()) {
-				scanner.useDelimiter(",");
-				System.out.println("scanner.next()"+scanner.next());
-				
-			}
-			
-			
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}*/
-		
+	private static Map<String,List<Map<String,String>>> readStationConfig(String config_file) {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(config_file));
 			List<String[]> list = reader.readAll();
@@ -196,10 +192,11 @@ public class Database {
 				entries.add(valueMap);
 			}
 			
-			
+			/*
 			for(List<Map<String, String>> v:plotidMap.values()) {
 				System.out.println(v);
 			}
+			*/
 			
 			return plotidMap;
 			
@@ -212,6 +209,122 @@ public class Database {
 		
 	}
 	
+	public Map<String, Station> getStations() {
+		return stationMap;
+	}
+	
+	public Station getStation(String stationID) {
+		return stationMap.get(stationID);
+	}
+	
+	private Map<String, String> readSensorNameMap(Section section) {
+		Map<String,String> sensorNameMap = new HashMap<String, String>();
+		for(String key:section.keySet()) {
+			if(!key.equals("NaN")) {
+				//System.out.println(key+" -> "+section.get(key));
+				sensorNameMap.put(key, section.get(key));
+			}
+		}
+		return sensorNameMap;
+	}
+	
+	public void readLoggerConfig(String config_file) {
+		System.out.println(("readLoggerConfig start..."));
+
+		try {
+			
+			String[] loggerTypeNames = new String[]{"00CEMU","00EEMU","00AEMU"};
+			
+			final String SENSOR_NAME_CONVERSION_HEADER_POSTFIX = "_header_0000";
+
+			Wini ini = new Wini(new File(config_file));
+			
+			for(String loggerTypeName:loggerTypeNames) {
+				System.out.println("read config for "+loggerTypeName);
+				Section section = ini.get(loggerTypeName+SENSOR_NAME_CONVERSION_HEADER_POSTFIX);
+				
+				Map<String,String> sensorNameMap = readSensorNameMap(section);
+				
+				timeseriesdatabase.Logger logger = new timeseriesdatabase.Logger(loggerTypeName, sensorNameMap);
+				
+				loggerMap.put(loggerTypeName, logger);
+			}
+			
+			String[] plots = {"AEG","AEW","HEG","HEW","SEG","SEW"};
+			
+			String suffix = "_soil_parameters_header_0000";
+
+			for(Section section:ini.values()) {
+				String sectionName=section.getName();
+				
+				
+				System.out.println("section: "+sectionName);
+				
+				for(String plot:plots) {
+					String prefix = "000"+plot;
+					if(sectionName.startsWith(prefix)) {
+						System.out.println("OK");
+						String general = prefix+"xx"+suffix;
+						if(sectionName.equals(general)) {
+							System.out.println("general");
+							
+							Map<String,String> sensorNameMap = readSensorNameMap(section);							
+							GeneralStation generalStation = new GeneralStation(plot, sensorNameMap);
+							if(!generalStationMap.containsKey(plot)) {
+								generalStationMap.put(plot, generalStation);
+							} else {
+								log.warn("GeneralStation already exists: "+plot);
+							}
+							
+						} else if(sectionName.endsWith(suffix)) {
+							String name = sectionName.substring(3, 8);
+							System.out.println("special: "+name);
+							
+							Map<String,String> sensorNameMap = readSensorNameMap(section);
+							
+							if(stationMap.get(name)!=null) {
+								stationMap.get(name).setSensorNameMap(sensorNameMap);
+							} else {
+								log.warn("station does not exist: "+name);
+							}							
+						} else {
+							System.out.println("not found: "+sectionName);
+						}
+					}
+				}
+				
+			}
+/*
+			Section section = ini.get("00CEMU_header_0000");
+			System.out.println("section name: "+section.getName());
+			Map<String,String> sensorNameMap = new HashMap<String, String>();
+			for(String key:section.keySet()) {
+				//System.out.println("key: "+key);
+				//System.out.println("value: "+section.get(key));
+				//System.out.println(key+" -> "+section.get(key));
+				sensorNameMap.put(key, section.get(key));
+			}
+
+			System.out.println("sensorNameMap: "+sensorNameMap);*/
+
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		System.out.println("...readLoggerConfig end");		
+
+
+
+	}
+	
+	public timeseriesdatabase.Logger getLogger(String loggerTypeName) {
+		return loggerMap.get(loggerTypeName);
+	}
+	
+	public GeneralStation getGeneralStation(String generalStationName) {
+		return generalStationMap.get(generalStationName);
+	}
+
 	
 
 }
