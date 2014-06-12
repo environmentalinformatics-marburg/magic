@@ -13,9 +13,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +28,7 @@ import org.ini4j.Profile.Section;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
+import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
 
 public class TimeSeriesDatabase {
@@ -39,6 +43,8 @@ public class TimeSeriesDatabase {
 	
 	public Map<String,GeneralStation> generalStationMap;
 	
+	public Set<String> ignoreSensorNameSet;
+	
 	public TimeSeriesDatabase() {
 		
 		log.trace("create TimeSeriesDatabase");
@@ -48,6 +54,7 @@ public class TimeSeriesDatabase {
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
+		ignoreSensorNameSet = new HashSet<String>();
 		
 		
 		store.open();		
@@ -193,6 +200,10 @@ public class TimeSeriesDatabase {
 		System.out.println("...end");
 	}
 	
+	public void clear() {
+		store.clear();
+	}
+	
 	public void close() {
 		store.close();
 	}
@@ -208,6 +219,8 @@ public class TimeSeriesDatabase {
 				
 				if(stationID.startsWith("HG")) {
 					stationID = "HEG"+stationID.substring(2);
+				} else if(stationID.startsWith("HW")) {
+					stationID = "HEW"+stationID.substring(2);
 				}
 				
 				//**********************************
@@ -244,7 +257,7 @@ public class TimeSeriesDatabase {
 		
 		try {
 			Wini ini = new Wini(new File(configFile));
-			
+
 			for(LoggerType loggerType:loggerTypeMap.values()) {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_NAME_CONVERSION_HEADER_SUFFIX);
@@ -254,37 +267,37 @@ public class TimeSeriesDatabase {
 					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
 			}
-			
-			
-			
+
+
+
 			String suffix = "_soil_parameters_header_0000";
 
 			for(Section section:ini.values()) {
 				String sectionName = section.getName();
-				
-				
+
+
 				System.out.println("section: "+sectionName);
-				
+
 				for(GeneralStation generalStation:generalStationMap.values()) {
 					String prefix = "000"+generalStation.name;
 					if(sectionName.startsWith(prefix)) {
 						String general_section = prefix+"xx"+suffix;
 						if(sectionName.equals(general_section)) {
 							generalStation.sensorNameTranlationMap = readSensorNameMap(section);
-						}
-					} else if(sectionName.endsWith(suffix)) {
-						String plotID = sectionName.substring(3, 8);
-						Station station = stationMap.get(plotID);
-						if(station!=null) {
-							station.sensorNameTranlationMap = readSensorNameMap(section);
+						} else if(sectionName.endsWith(suffix)) {
+							String plotID = sectionName.substring(3, 8);
+							Station station = stationMap.get(plotID);
+							if(station!=null) {
+								station.sensorNameTranlationMap = readSensorNameMap(section);
+							} else {
+								log.warn("station does not exist: "+plotID);
+							}
 						} else {
-							log.warn("station does not exist: "+plotID);
+							log.warn("unknown: "+sectionName);
 						}
-					} /*else {
-						System.out.println("unknown: "+sectionName);
-					}*/
-				}				
-			}			
+					}				
+				}
+			}
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -300,14 +313,50 @@ public class TimeSeriesDatabase {
 				generalStationMap.put(next, new GeneralStation(next));
 				next = reader.readLine();
 			}
-
+			reader.close();
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e);
 		}
 		
+	}
+
+	public void readIgnoreSensorNameConfig(String configFile) {
+		System.out.println("readIgnoreSensorNameConfig");
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(configFile));
+			String next = reader.readLine();
+			while(next!=null) {
+				System.out.println(next);
+				ignoreSensorNameSet.add(next);
+				next = reader.readLine();
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			log.error(e);
+		} catch (IOException e) {
+			log.error(e);
+		}
+		
+	}
+	
+	public void loadDirectoryOfAllExploratories(Path exploratoriesPath) {
+		log.info("load exploratories:\t"+exploratoriesPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriesPath);
+			for(Path path:stream) {
+				System.out.println(path);
+				loadDirectoryOfOneExploratory(path);
+			}
+		} catch (IOException e) {
+			log.error(e);
+		}
+		
+	}
+
+	public Iterator<Event> query(String sql) {
+		return store.query(sql);		
 	}
 
 }

@@ -36,7 +36,7 @@ public class Station {
 		
 		sensorNameTranlationMap = new HashMap<String, String>();
 		
-		System.out.println(propertyMap);
+		//System.out.println(propertyMap);
 		
 		if(!plotID.equals(propertyMap.get("PLOTID"))) {
 			log.error("wrong plotID");
@@ -55,11 +55,17 @@ public class Station {
 
 	public void loadDirectoryOfOneStation(Path stationPath) {
 		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
+		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(stationPath, x -> x.toString().endsWith(".dat"));
 			for(Path path:stream) {
+				try {
 				loadUDBFFile(path);
+				} catch (Exception e) {
+					log.error("file not read: "+path+"\t"+e);
+				}
 			}
+			timeSeriesDatabase.store.flushStream(plotID);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -104,69 +110,97 @@ public class Station {
 		for(Attribute attribute:schema) {
 			list.add(attribute.getAttributeName());
 		}
-		System.out.println(getLoggerType().typeName+" schema: "+list);
+		//System.out.println(getLoggerType().typeName+" schema: "+list);
 		
 		for(int sensorIndex=0; sensorIndex<sensorHeaders.length; sensorIndex++) {
 			eventPos[sensorIndex] = -1;
 			SensorHeader sensorHeader = sensorHeaders[sensorIndex];
-			String sensorName = translateInputSensorName(sensorHeader.name);
-			System.out.println(sensorHeader.name+"->"+sensorName);
-			if(sensorName != null) {
-				for(int schemaIndex=0;schemaIndex<schema.length;schemaIndex++) {
-					Attribute attribute = schema[schemaIndex];
-					if(attribute.getAttributeName().equals(sensorName)) {
-						eventPos[sensorIndex] = schemaIndex;
+			String rawSensorName = sensorHeader.name;
+			if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
+				String sensorName = translateInputSensorName(rawSensorName);
+				//System.out.println(sensorHeader.name+"->"+sensorName);
+				if(sensorName != null) {
+					for(int schemaIndex=0;schemaIndex<schema.length;schemaIndex++) {
+						Attribute attribute = schema[schemaIndex];
+						if(attribute.getAttributeName().equals(sensorName)) {
+							eventPos[sensorIndex] = schemaIndex;
+						}
 					}
 				}
-			}
-			if(eventPos[sensorIndex] == -1) {
-				log.warn("sensor name not in translation map or schema: "+sensorHeader.name);
+				if(eventPos[sensorIndex] == -1) {
+					if(sensorName==null) {
+						log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+filename+"\t"+propertyMap.get("LOGGER"));
+					} else {
+						log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+filename+"\t"+propertyMap.get("LOGGER"));
+					}
+				}
 			}
 		}
 		
+		try {
+		
+		int[] sensorPos = new int[schema.length];
+		for(int i=0;i<sensorPos.length;i++) {
+			sensorPos[i] = -1;
+		}
+		int validSensorCount = 0;
+		for(int i=0;i<eventPos.length;i++) {
+			if(eventPos[i]>-1) {
+				validSensorCount++;
+				sensorPos[eventPos[i]] = i;
+			}
+		}
+		
+		if(validSensorCount<1) {
+			log.trace("no fitting sensors in "+filename);
+			return;
+		}
 		
 		/*
-		try {
-			
-			String loggerTypeName = propertyMap.get("LOGGER");
-			
-			timeseriesdatabase.Logger logger = datebase.getLogger(loggerTypeName);
-			
-			if(logger!=null) {
-			
-			UniversalDataBinFile udbFile = new UniversalDataBinFile(filename.toString());
+		Object[] payloadTest = new Object[schema.length];
+		for(int i=0;i<schema.length;i++) {
+			payloadTest[i] = 0d;
+		}*/
+		
+		/*
+		System.out.println("write "+plotID);
+		for(int i=0;i<1000;i++) {
+			for(int j=0;j<schema.length;j++) {
+				payloadTest[j] = Float.NaN;
+			}
+			timeSeriesDatabase.store.pushEvent(plotID, payloadTest, i);
+		}*/
+		
+		
 
-			TimeSeries timeSeries = udbFile.getTimeSeries();
-
-			for(int s=0;s<timeSeries.header.length;s++) {
-				String rawSensorName = timeSeries.header[s].name;
-				//String nomalizedName = logger.getNormalizedName(rawSensorName);
-				
-				String nomalizedName = getNormalizedName(rawSensorName);
-
-				if(nomalizedName!=null) {
-					
-					String sensorID = nameToID(stationID,nomalizedName);
-
-					Sensor sensor = sensorMap.get(sensorID);
-					if(sensor==null) {
-						createSensor(sensorID);
-						sensor = sensorMap.get(sensorID);
-					}
-					sensor.loadTimeSeries(timeSeries.time, timeSeries.data[s]);
-				} else {
-					log.warn("name not found: "+rawSensorName+"\tin station:\t"+stationID+"\twith logger type:\t"+loggerTypeName+"\t"+filename);
+		//Float[] payload = new Float[schema.length];
+		Object[] payload = new Object[schema.length];
+		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
+			float[] row = udbfTimeSeries.data[rowIndex];
+			for(int attrNr=0;attrNr<schema.length;attrNr++) {
+				if(sensorPos[attrNr]<0) {
+					payload[attrNr] = Float.NaN;
+				} else {					
+					float value = row[sensorPos[attrNr]];
+					payload[attrNr] = value;
 				}
+				//System.out.print(payload[attrNr]+"\t");
 			}
-			
-			} else {
-				log.warn("unknown logger type:\t"+loggerTypeName);
+			//System.out.println("push: "+udbfTimeSeries.time[rowIndex]);
+			if(udbfTimeSeries.time[rowIndex]==58508670) {
+				System.out.println("write time 58508670 in "+plotID+"\t"+filename);
 			}
-
-
+			timeSeriesDatabase.store.pushEvent(plotID, payload, udbfTimeSeries.time[rowIndex]);
+			//timeSeriesDatabase.store.pushEvent(plotID, payloadTest, udbfTimeSeries.time[rowIndex]);
+			//System.out.println();
+		}
+		
 		} catch (Exception e) {
 			e.printStackTrace();
-		}*/
+		}
+		
+		
+	
 	}	
 
 }
