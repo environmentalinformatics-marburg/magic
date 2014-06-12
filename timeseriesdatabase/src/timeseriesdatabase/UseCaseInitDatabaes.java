@@ -14,6 +14,7 @@ public class UseCaseInitDatabaes {
 		timeSeriesDatabase.readStationConfig("config/be_config_station_inventory.cnf");
 		timeSeriesDatabase.readSensorNameTranslationConfig("config/be_config_level0050_standards.cnf");
 		timeSeriesDatabase.readIgnoreSensorNameConfig("config/ignore_sensor_name_list.txt");
+		timeSeriesDatabase.readSensorRangeConfig("config/be_config_level0050_standards.cnf");
 		timeSeriesDatabase.registerStreams();
 		
 		//timeSeriesDatabase.loadDirectoryOfOneExploratory(Paths.get("K:/HEG_short"));

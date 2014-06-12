@@ -44,6 +44,8 @@ public class TimeSeriesDatabase {
 	
 	public Map<String,GeneralStation> generalStationMap;
 	
+	public Map<String,Sensor> sensorMap;
+	
 	public Set<String> ignoreSensorNameSet;
 	
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {
@@ -64,6 +66,7 @@ public class TimeSeriesDatabase {
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
+		sensorMap = new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
 		
 		
@@ -258,6 +261,29 @@ public class TimeSeriesDatabase {
 			}
 		}
 		return sensorNameMap;
+	}
+	
+	public void readSensorRangeConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("parameter_range");
+			if(section!=null) {
+				for(String key:section.keySet()) {
+					String range = section.get(key);
+					String minString = range.substring(range.indexOf('[')+1, range.indexOf(','));
+					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
+					float min=Float.parseFloat(minString);
+					float max=Float.parseFloat(maxString);
+					System.out.println("range "+key+"\t"+range+"\t("+min+")\t("+max+")");
+					Sensor sensor = new Sensor(key);
+					sensor.min = min;
+					sensor.max = max;
+					sensorMap.put(key, sensor);
+				}
+			}
+		} catch (IOException e) {
+			log.warn(e);
+		}
 	}
 	
 	public void readSensorNameTranslationConfig(String configFile) {

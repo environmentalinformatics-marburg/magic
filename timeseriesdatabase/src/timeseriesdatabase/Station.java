@@ -6,13 +6,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.umr.jepc.Attribute;
+import de.umr.jepc.store.Event;
 
 public class Station {
 	
@@ -27,6 +31,8 @@ public class Station {
 	public Map<String,String> sensorNameTranlationMap;
 
 	private String generalStationName;
+	
+	public Set<Long> insertedTimestampSet = null; // *** duplicate workaround
 	
 	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
 		this.generalStationName = generalStationName;
@@ -54,6 +60,7 @@ public class Station {
 	}
 
 	public void loadDirectoryOfOneStation(Path stationPath) {
+		insertedTimestampSet = new HashSet<Long>(); // *** duplicate workaround
 		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		try {
@@ -69,7 +76,7 @@ public class Station {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		insertedTimestampSet = null; // *** duplicate workaround
 	}
 	
 	private String translateInputSensorName(String sensorName) {
@@ -157,6 +164,20 @@ public class Station {
 			return;
 		}
 		
+		
+		float[] min = new float[schema.length];
+		float[] max = new float[schema.length];
+		
+		for(int i=0;i<schema.length;i++) {
+			Sensor sensor = timeSeriesDatabase.sensorMap.get(schema[i].getAttributeName());
+			if(sensor!=null) {
+				min[i] = sensor.min;
+				max[i] = sensor.max;
+			} else {
+				min[i] = -Float.MAX_VALUE;
+				max[i] = Float.MAX_VALUE;
+			}
+		}
 
 		//Float[] payload = new Float[schema.length];
 		Object[] payload = new Object[schema.length];
@@ -167,6 +188,11 @@ public class Station {
 					payload[attrNr] = Float.NaN;
 				} else {					
 					float value = row[sensorPos[attrNr]];
+					
+					if(value<min[attrNr]||max[attrNr]<value) {
+						value = Float.NaN;
+					} 
+					
 					payload[attrNr] = value;
 				}
 				//System.out.print(payload[attrNr]+"\t");
@@ -175,9 +201,27 @@ public class Station {
 			if(udbfTimeSeries.time[rowIndex]==58508670) {
 				System.out.println("write time 58508670 in "+plotID+"\t"+filename);
 			}
-			timeSeriesDatabase.store.pushEvent(plotID, payload, udbfTimeSeries.time[rowIndex]);
+			long timestamp = udbfTimeSeries.time[rowIndex];
+			/*try {
+				Iterator<Event> it = timeSeriesDatabase.store.getHistoryPoint(plotID, timestamp);
+				if(it!=null) {
+					timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+				}
+			} catch(Exception e) {
+				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+			}
 			//timeSeriesDatabase.store.pushEvent(plotID, payloadTest, udbfTimeSeries.time[rowIndex]);
-			//System.out.println();
+			//System.out.println();*/
+			
+			if(insertedTimestampSet!=null) {
+				if(!insertedTimestampSet.contains(timestamp)) {
+					timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+					insertedTimestampSet.add(timestamp);
+				}
+			} else {			
+				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+			}
+			
 		}
 		
 		} catch (Exception e) {

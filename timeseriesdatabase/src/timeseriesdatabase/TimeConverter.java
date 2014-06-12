@@ -58,6 +58,6 @@ public class TimeConverter {
 	}
 	
 	public static Duration minutesToDuration(long minutes) {
-		return Duration.ofSeconds(minutes);
+		return Duration.ofMinutes(minutes);
 	}
 }
