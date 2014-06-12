@@ -30,6 +30,7 @@ import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
 import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
+import de.umr.jepc.util.enums.TimeRepresentation;
 
 public class TimeSeriesDatabase {
 	
@@ -45,11 +46,20 @@ public class TimeSeriesDatabase {
 	
 	public Set<String> ignoreSensorNameSet;
 	
-	public TimeSeriesDatabase() {
+	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {
 		
 		log.trace("create TimeSeriesDatabase");
 		
-		store = new TimeSplitBTreeEventStore();
+		FileInputStream configStream = null; 
+		try {
+			configStream = new FileInputStream(evenstoreConfigFile);
+		} catch (FileNotFoundException e) {
+			log.error(configStream);
+		}
+		
+		//TimeSplitBTreeEventStore(TimeRepresentation representation, String databasePath, InputStream configStream)
+		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);
+		//store = new TimeSplitBTreeEventStore();
 		
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new HashMap<String,Station>();
@@ -229,7 +239,6 @@ public class TimeSeriesDatabase {
 				if(!stationMap.containsKey(stationID)) {
 					log.error("station does not exist in database:\t"+stationID);
 				} else {				
-					//createStation(stationID);
 					Station station = stationMap.get(stationID);
 					station.loadDirectoryOfOneStation(stationPath);
 				}

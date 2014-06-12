@@ -1,0 +1,31 @@
+AIn1
+AIn2
+AIn3
+AIn4
+AIn5
+AIn6
+AIn7
+AIn8
+DI1
+DI2
+DI3
+DI4
+DI5
+DI6
+Rel1
+Rel2
+BF_Frei
+Analog_Input_01
+Analog_Input_02
+Analog_Input_03
+Analog_Input_04
+Analog_Input_05
+Analog_Input_06
+Analog_Input_07
+Analog_Input_08
+Betriebsspannung
+General State
+Run State
+Error State
+Performance Reserve
+Freier Speicher

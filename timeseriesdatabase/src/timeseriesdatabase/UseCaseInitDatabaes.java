@@ -6,7 +6,8 @@ public class UseCaseInitDatabaes {
 
 	public static void main(String[] args) {
 		System.out.println("begin...");
-		TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase();
+		
+		TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase("./database/","config/eventstore_config.properties");
 		timeSeriesDatabase.clear();
 		timeSeriesDatabase.readGeneralStationConfig("config/general_station_list.txt");
 		timeSeriesDatabase.readLoggerSchemaConfig("config/station_type_schema.ini");
@@ -15,8 +16,8 @@ public class UseCaseInitDatabaes {
 		timeSeriesDatabase.readIgnoreSensorNameConfig("config/ignore_sensor_name_list.txt");
 		timeSeriesDatabase.registerStreams();
 		
-		timeSeriesDatabase.loadDirectoryOfOneExploratory(Paths.get("K:/HEG_short"));
-		//timeSeriesDatabase.loadDirectoryOfAllExploratories(Paths.get("K:/incoming_ftp/adl-m"));
+		//timeSeriesDatabase.loadDirectoryOfOneExploratory(Paths.get("K:/HEG_short"));
+		timeSeriesDatabase.loadDirectoryOfAllExploratories(Paths.get("K:/incoming_ftp/adl-m"));
 		
 		
 		timeSeriesDatabase.close();

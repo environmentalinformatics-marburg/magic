@@ -100,6 +100,7 @@ public class Station {
 		
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
 		UDBFTimeSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
+		udbFile.close();
 		
 		SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
 		
@@ -155,22 +156,6 @@ public class Station {
 			log.trace("no fitting sensors in "+filename);
 			return;
 		}
-		
-		/*
-		Object[] payloadTest = new Object[schema.length];
-		for(int i=0;i<schema.length;i++) {
-			payloadTest[i] = 0d;
-		}*/
-		
-		/*
-		System.out.println("write "+plotID);
-		for(int i=0;i<1000;i++) {
-			for(int j=0;j<schema.length;j++) {
-				payloadTest[j] = Float.NaN;
-			}
-			timeSeriesDatabase.store.pushEvent(plotID, payloadTest, i);
-		}*/
-		
 		
 
 		//Float[] payload = new Float[schema.length];

@@ -20,6 +20,7 @@ public class UniversalDataBinFile {
 	private int fileSize;
 	private MappedByteBuffer mappedByteBuffer;
 	private FileChannel fileChannel;
+	private FileInputStream fileInputStream;
 	private short variableCount;
 	private timeseriesdatabase.TimeConverter timeConverter;
 	private int dataSectionStartFilePosition;
@@ -43,8 +44,17 @@ public class UniversalDataBinFile {
 		readHeader();
 	}
 	
+	public void close() {
+		try {
+			fileChannel.close();
+			fileInputStream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}
+	}
+	
 	private void initFile() throws IOException {
-		FileInputStream fileInputStream = new FileInputStream(filename.toString());
+		fileInputStream = new FileInputStream(filename.toString());
 		fileChannel = fileInputStream.getChannel();
 		if(fileChannel.size()>Integer.MAX_VALUE) {
 			throw new RuntimeException("File > Integer.MAX_VALUE: "+fileChannel.size());
