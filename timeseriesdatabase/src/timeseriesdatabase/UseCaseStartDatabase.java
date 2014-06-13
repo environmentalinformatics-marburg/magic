@@ -19,15 +19,17 @@ public class UseCaseStartDatabase {
 
 	public static void main(String[] args) {
 		System.out.println("begin...");
-		TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase("./database/","config/eventstore_config.properties");
-		timeSeriesDatabase.readGeneralStationConfig("config/general_station_list.txt");
-		timeSeriesDatabase.readLoggerSchemaConfig("config/station_type_schema.ini");
-		timeSeriesDatabase.readStationConfig("config/be_config_station_inventory.cnf");
-		timeSeriesDatabase.readSensorNameTranslationConfig("config/be_config_level0050_standards.cnf");
-		timeSeriesDatabase.readIgnoreSensorNameConfig("config/ignore_sensor_name_list.txt");
-		timeSeriesDatabase.readSensorRangeConfig("config/be_config_level0050_standards.cnf");
 		
-		String sql = "SELECT tstart, Ta_10, Ts_10 FROM HEG03";
+		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
+		
+		Attribute[] schema = timeSeriesDatabase.stationMap.get("HEG03").getLoggerType().schema;
+		String attrs="tstart";
+		for(Attribute attribute:schema) {
+			attrs+=","+attribute.getAttributeName();
+		}
+		
+		String sql = "SELECT "+attrs+" FROM HEG03";
+		//String sql = "SELECT tstart, Ta_10, Ts_10 FROM HEG03";
 		//String sql = "SELECT tstart, Ta_10, Ts_10 FROM HEG03 WHERE tstart>=0 AND tstart<=57401280";
 		//String sql = "SELECT tstart, Ta_10, Ts_10 FROM HEG03 WHERE tstart>=58508670 AND tstart<=58508690";
 		//String sql = "SELECT Ta_10, Ts_10 FROM HEG03 WHERE tstart=58508670";
@@ -55,7 +57,7 @@ public class UseCaseStartDatabase {
 					long currTimestamp = e.getTimestamp();
 					long diff = currTimestamp-prevTimestamp;
 					if(diff<=0) {
-						System.out.println(counter+"\tdiff:\t"+TimeConverter.minutesToDuration(diff)+"\tat\t"+TimeConverter.oleTimeMinutesToLocalDateTime(currTimestamp));
+						System.out.println(counter+"\tdiff:\t"+TimeConverter.minutesToDuration(diff)+"\tat\t"+currTimestamp+"\t"+TimeConverter.oleTimeMinutesToLocalDateTime(currTimestamp));
 					}
 				}
 				prevEvent = e;
