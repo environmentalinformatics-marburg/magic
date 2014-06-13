@@ -5,6 +5,11 @@ import java.util.Map;
 
 import de.umr.jepc.Attribute;
 
+/**
+ * This class contains metadata that associated with a logger type (station type).
+ * @author Stephan Wöllauer
+ *
+ */
 public class LoggerType {
 	
 	public String typeName;

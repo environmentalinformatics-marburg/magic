@@ -3,6 +3,11 @@ package timeseriesdatabase;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * This class convertes beween date and time systems and keeps timestamp info from a UDBF-File.
+ * @author Stephan Wöllauer
+ *
+ */
 public class TimeConverter {
 	
 	private static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);

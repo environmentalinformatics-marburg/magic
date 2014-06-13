@@ -1,5 +1,10 @@
 package timeseriesdatabase;
 
+/**
+ * This class contains header data from UDBF-File of one sensor.
+ * @author Stephan Wöllauer
+ *
+ */
 public class SensorHeader {
 	
 	public final String name;

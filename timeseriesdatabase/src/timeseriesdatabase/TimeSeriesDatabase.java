@@ -32,9 +32,14 @@ import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
 import de.umr.jepc.util.enums.TimeRepresentation;
 
+/**
+ * This is the main class of the timeseries database.
+ * @author Stephan Wöllauer
+ *
+ */
 public class TimeSeriesDatabase {
 	
-	private static final Logger log = LogManager.getLogger("general");
+	private static final Logger log = Util.log;
 	
 	TimeSplitBTreeEventStore store;
 	

@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ConsoleProcessor;
@@ -15,7 +18,14 @@ import de.umr.eventstore.storage.Schema;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
+/**
+ * UseCaseStartDatabase opens an existing database and processes some queries.
+ * @author Stephan Wöllauer
+ *
+ */
 public class UseCaseStartDatabase {
+	
+	private static final Logger log = Util.log;
 
 	public static void main(String[] args) {
 		System.out.println("begin...");

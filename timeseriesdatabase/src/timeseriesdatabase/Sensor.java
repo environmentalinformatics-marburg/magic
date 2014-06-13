@@ -1,5 +1,10 @@
 package timeseriesdatabase;
 
+/**
+ * This class contains metadata that is associated with a sensor.
+ * @author Stephan Wöllauer
+ *
+ */
 public class Sensor {
 	
 	public String name;

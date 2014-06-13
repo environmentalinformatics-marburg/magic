@@ -2,6 +2,11 @@ package timeseriesdatabase;
 
 import java.nio.file.Path;
 
+/**
+ * UDBFTimeSeries contains relevant data of a UDBF-File.
+ * @author Stephan Wöllauer
+ *
+ */
 public class UDBFTimeSeries {
 	
 	public final Path filename;

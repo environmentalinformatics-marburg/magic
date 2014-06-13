@@ -18,9 +18,14 @@ import org.apache.logging.log4j.Logger;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
+/**
+ * This class contains metadata that is associated with a station (plotID).
+ * @author Stephan Wöllauer
+ *
+ */
 public class Station {
 	
-	private static final Logger log = LogManager.getLogger("general");
+	private static final Logger log = Util.log;
 	
 	public TimeSeriesDatabase timeSeriesDatabase;
 	
