@@ -32,7 +32,7 @@ public class UseCaseStartDatabase {
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
 		
-		Attribute[] schema = timeSeriesDatabase.stationMap.get("HEG03").getLoggerType().schema;
+		Attribute[] schema = timeSeriesDatabase.stationMap.get("HEG03").getLoggerType()._schema;
 		String attrs="tstart";
 		for(Attribute attribute:schema) {
 			attrs+=","+attribute.getAttributeName();
@@ -46,6 +46,7 @@ public class UseCaseStartDatabase {
 		System.out.println("\n"+sql);
 		
 		Stream stream = timeSeriesDatabase.store.getStream("HEG03");
+		
 		ProcessingEngine engine = new ProcessingEngine(stream);
         //engine.appendProcessor(new ConsoleProcessor());
         try {
@@ -67,7 +68,7 @@ public class UseCaseStartDatabase {
 					long currTimestamp = e.getTimestamp();
 					long diff = currTimestamp-prevTimestamp;
 					if(diff<=0) {
-						System.out.println(counter+"\tdiff:\t"+TimeConverter.minutesToDuration(diff)+"\tat\t"+currTimestamp+"\t"+TimeConverter.oleTimeMinutesToLocalDateTime(currTimestamp));
+						System.out.println(counter+"\tdiff:\t"+TimeConverter.minutesToDuration(diff)+"\tat\t"+currTimestamp+"\t"+TimeConverter.oleMinutesToLocalDateTime(currTimestamp));
 					}
 				}
 				prevEvent = e;

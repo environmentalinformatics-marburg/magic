@@ -94,14 +94,17 @@ public class TimeSeriesDatabase {
 			for(String name:section.keySet()) {
 				names.add(name);
 			}
-			Attribute[] schema = new Attribute[names.size()];
 			
-			for(int i=0;i<schema.length;i++) {
+			String[] sensorNames = new String[names.size()];
+			Attribute[] schema = new Attribute[names.size()+1];
+			for(int i=0;i<names.size();i++) {
+				sensorNames[i] = names.get(i);
 				schema[i] =  new Attribute(names.get(i),DataType.FLOAT);
 			}
-			
+			schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
+						
 			System.out.println("create logger type: "+typeName);
-			loggerTypeMap.put(typeName, new LoggerType(typeName,schema));
+			loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
 			
 		}
 
@@ -212,7 +215,7 @@ public class TimeSeriesDatabase {
 		
 		for(Station station:stationMap.values()) {
 			//System.out.println(station.getLoggerType().schema+"\t"+station.plotID);
-			store.registerStream(station.plotID, station.getLoggerType().schema);
+			store.registerStream(station.plotID, station.getLoggerType()._schema);
 		}
 		
 		System.out.println("...end");
@@ -397,6 +400,14 @@ public class TimeSeriesDatabase {
 
 	public Iterator<Event> query(String sql) {
 		return store.query(sql);		
+	}
+	
+	public  Iterator<Event> queryTimeSeries(String PlotID, String ParameterName, long startTime, long endTime) {
+		return store.getHistoryRange(PlotID, startTime, endTime);
+		
+		
+		
+		
 	}
 
 }

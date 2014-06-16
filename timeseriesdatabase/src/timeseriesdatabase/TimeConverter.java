@@ -58,11 +58,15 @@ public class TimeConverter {
 		return (long) Math.round((dActTimeToSecondFactor/86400d)*24d*60d);
 	}
 	
-	public static LocalDateTime oleTimeMinutesToLocalDateTime(long oleTimeMinutes) {
+	public static LocalDateTime oleMinutesToLocalDateTime(long oleTimeMinutes) {
 		return OLE_AUTOMATION_TIME_START.plus(Duration.ofMinutes(oleTimeMinutes));
 	}
 	
 	public static Duration minutesToDuration(long minutes) {
 		return Duration.ofMinutes(minutes);
+	}
+	
+	public static long DateTimeToOleMinutes(LocalDateTime datetime) {
+		return Duration.between(OLE_AUTOMATION_TIME_START, datetime).toMinutes();
 	}
 }
