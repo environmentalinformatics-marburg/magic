@@ -21,7 +21,7 @@ public class UseCaseQuery1 {
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		
-		Stream stream = timeSeriesDatabase.store.getStream("HEG01");
+		Stream stream = timeSeriesDatabase.store.getStream("HEG03");
 		
 		
 		Schema<? extends Attribute> schema = stream.getSchema();
@@ -39,7 +39,11 @@ public class UseCaseQuery1 {
 				long timestamp = e.getTimestamp();
 				if(lastTimeStamp!=null) {
 					long timespan = timestamp-lastTimeStamp;
-					System.out.println(TimeConverter.oleMinutesToLocalDateTime(timestamp)+"\ttimespan: "+timespan+"\t"+e.getPayload()[e.getPayload().length-2]+"\t"+e.getPayload()[1]);
+					if(timespan<0||(timespan!=30&&timespan!=10&&timespan!=60&&timespan!=20)) {
+						System.out.println(TimeConverter.oleMinutesToLocalDateTime(timestamp)+"\ttimespan: "+timespan);
+					}
+					//System.out.println(TimeConverter.oleMinutesToLocalDateTime(timestamp)+"\ttimespan: "+timespan);
+					//System.out.println(e);
 				}
 				lastTimeStamp = timestamp;
 			}
@@ -64,7 +68,7 @@ public class UseCaseQuery1 {
 		long timeEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2013,03,01,18,0));
 		
 		//String sql = "SELECT * FROM HEG01 WHERE tstart>="+timeStart+" AND tstart<="+timeEnd;
-		String sql = "SELECT * FROM HEG01";
+		String sql = "SELECT * FROM HEG03";
 		System.out.println(sql);
 		Query query = new SQLQuery(sql);
         engine.processQuery(query);

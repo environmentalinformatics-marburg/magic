@@ -106,15 +106,106 @@ public class Station {
 				try {
 					UDBFTimeSeries timeSeries = readUDBFTimeSeries(path);
 					List<Event> eventList = translateToEvents(timeSeries);
-					eventsList.add(eventList);
+					if(eventList!=null) {
+						eventsList.add(eventList);
+					}
 					//timeSeriesList.add(timeSeries);
 					} catch (Exception e) {
 						log.error("file not read: "+path+"\t"+e);
 					}
 			}
 			
+			//Iterator<Event> it = eventsList.get(0).iterator();
 			
-			for(List<Event> eventList:eventsList) {
+			@SuppressWarnings("unchecked")
+			Iterator<Event>[] iterators = new Iterator[eventsList.size()];
+			
+			for(int i=0;i<eventsList.size();i++) {
+				iterators[i]=eventsList.get(i).iterator();
+			}
+			
+			Event[] currentEvent = new Event[iterators.length];
+			
+			for(int i=0;i<iterators.length;i++) {
+				if(iterators[i].hasNext()) {
+					currentEvent[i] = iterators[i].next();
+				}				
+			}
+			
+			long currentTimestamp = -1;
+			Event collectorEvent = null;
+			
+			while(true) {
+				
+				int minIndex=-1;
+				long minTimeStamp = Long.MAX_VALUE;
+				for(int i=0;i<iterators.length;i++) {
+					if(currentEvent[i]!=null) {
+						if(currentEvent[i].getTimestamp()<minTimeStamp) {
+							minTimeStamp = currentEvent[i].getTimestamp();
+							minIndex = i;
+						}
+					}
+				}
+				
+				if(minIndex<0) {
+					break;
+				}
+				
+				if(currentTimestamp<currentEvent[minIndex].getTimestamp()) {
+					if(collectorEvent!=null) {
+						pushEvent(collectorEvent);
+					}
+					currentTimestamp = currentEvent[minIndex].getTimestamp();
+					collectorEvent = null;
+				}
+				if(collectorEvent==null) {
+					collectorEvent = currentEvent[minIndex];
+				} else {
+					Object[] payload = currentEvent[minIndex].getPayload();
+					Object[] collectorPayload = collectorEvent.getPayload();
+					for(int i=0;i<collectorPayload.length-1;i++) { // TODO
+						if(!Float.isNaN((float) payload[i])&&Float.isNaN((float) collectorPayload[i])) {
+							//System.out.println("fill:"+i);
+							collectorPayload[i] = payload[i];
+						}
+					}
+					//for(event.getPayload())
+					
+					//System.out.println("TODO");
+				}
+				
+				
+				/*if(currentTimestampEventList==null) {
+					currentTimestampEventList = new ArrayList<Event>();
+				}
+				currentTimestampEventList.add(currentEvent[minIndex]);*/
+				//pushEvent(currentEvent[minIndex]);
+				
+				//push event
+				//pushEvent(currentEvent[minIndex]);
+				
+				
+				if(iterators[minIndex].hasNext()) {
+					currentEvent[minIndex] = iterators[minIndex].next();
+				} else {
+					currentEvent[minIndex] = null;
+				}
+				
+				
+				
+			}
+			
+			if(collectorEvent!=null) {
+				pushEvent(collectorEvent);
+			}
+			
+			
+			
+			
+			
+			
+			/*for(List<Event> eventList:eventsList) {
 				//loadIntoDatabaseUDBFFile(timeSeries);
 				//System.out.println(timeSeries.filename);
 
@@ -139,13 +230,34 @@ public class Station {
 					}
 				}
 
-			}			
+			}*/			
 			
 		}		
 		
 		insertedTimestampSet = null; // *** duplicate workaround
 		
 		timeSeriesDatabase.store.flushStream(plotID);
+	}
+	
+	private void pushEventsWithSameTimestamp(List<Event> events) {
+		for(Event event:events) {
+			pushEvent(event);
+		}
+	}
+	
+	private void pushEvent(Event event) {
+		Object[] payload = event.getPayload();
+		long timestamp = event.getTimestamp();						
+		
+		if(insertedTimestampSet!=null) {
+			if(!insertedTimestampSet.contains(timestamp)) {
+				//System.out.println(payload[1]);
+				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+				insertedTimestampSet.add(timestamp);
+			}
+		} else {			
+			timeSeriesDatabase.store.pushEvent(plotID, event.getPayload(),event.getTimestamp());
+		}
 	}
 	
 	private String translateInputSensorName(String sensorName) {

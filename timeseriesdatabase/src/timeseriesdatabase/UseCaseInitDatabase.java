@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
  * @author Stephan Wöllauer
  *
  */
-public class UseCaseInitDatabaes {
+public class UseCaseInitDatabase {
 
 	private static final Logger log = Util.log;
 
