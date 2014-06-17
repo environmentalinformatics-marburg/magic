@@ -7,14 +7,19 @@ package timeseriesdatabase;
  */
 public class Sensor {
 	
+	enum AggregationType {NONE,AVERAGE,SUM,WIND_DIRECTION,WIND_VELOCITY};
+	
 	public String name;
 	public float min;
 	public float max;
+	
+	public AggregationType baseAggregationType;
 	
 	public Sensor(String name) {
 		this.name = name;
 		min = -Float.MAX_VALUE;
 		max = Float.MAX_VALUE;
+		baseAggregationType = AggregationType.NONE;
 	}
 
 }

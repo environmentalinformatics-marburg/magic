@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
+import timeseriesdatabase.Sensor.AggregationType;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
@@ -53,6 +54,8 @@ public class TimeSeriesDatabase {
 	
 	public Set<String> ignoreSensorNameSet;
 	
+	public Set<String> baseAggregatonSensorNameSet;
+	
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {
 		
 		log.trace("create TimeSeriesDatabase");
@@ -73,13 +76,14 @@ public class TimeSeriesDatabase {
 		generalStationMap = new HashMap<String, GeneralStation>();
 		sensorMap = new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
+		baseAggregatonSensorNameSet = new HashSet<String>(); 
 		
 		
 		store.open();		
 	}
 	
 	public void readLoggerSchemaConfig(String configFile) {
-		System.out.println("begin readLoggerSchemaConfig...");
+		//System.out.println("begin readLoggerSchemaConfig...");
 
 		try {
 		
@@ -103,22 +107,22 @@ public class TimeSeriesDatabase {
 			}
 			schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
 						
-			System.out.println("create logger type: "+typeName);
+			//System.out.println("create logger type: "+typeName);
 			loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
 			
 		}
 
-		System.out.println();
+		//System.out.println();
 		
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 
-		System.out.println("...end");		
+		//System.out.println("...end");		
 	}
 	
 	public void readStationConfig(String configFile) {
-		System.out.println("begin readStationConfig...");
+		//System.out.println("begin readStationConfig...");
 		
 		Map<String,List<Map<String,String>>> plotIdMap = readStationConfigInternal(configFile);
 		
@@ -134,7 +138,7 @@ public class TimeSeriesDatabase {
 		}
 		
 		
-		System.out.println("...end");
+		//System.out.println("...end");
 	}
 	
 	private static Map<String,List<Map<String,String>>> readStationConfigInternal(String config_file) {
@@ -215,7 +219,7 @@ public class TimeSeriesDatabase {
 		
 		for(Station station:stationMap.values()) {
 			//System.out.println(station.getLoggerType().schema+"\t"+station.plotID);
-			store.registerStream(station.plotID, station.getLoggerType()._schema);
+			store.registerStream(station.plotID, station.getLoggerType().schema);
 		}
 		
 		System.out.println("...end");
@@ -282,7 +286,7 @@ public class TimeSeriesDatabase {
 					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
 					float min=Float.parseFloat(minString);
 					float max=Float.parseFloat(maxString);
-					System.out.println("range "+key+"\t"+range+"\t("+min+")\t("+max+")");
+					//System.out.println("range "+key+"\t"+range+"\t("+min+")\t("+max+")");
 					Sensor sensor = new Sensor(key);
 					sensor.min = min;
 					sensor.max = max;
@@ -319,7 +323,7 @@ public class TimeSeriesDatabase {
 				String sectionName = section.getName();
 
 
-				System.out.println("section: "+sectionName);
+				//System.out.println("section: "+sectionName);
 
 				for(GeneralStation generalStation:generalStationMap.values()) {
 					String prefix = "000"+generalStation.name;
@@ -347,12 +351,12 @@ public class TimeSeriesDatabase {
 	}
 
 	public void readGeneralStationConfig(String configFile) {
-		System.out.println("readGeneralStationConfig");
+		//System.out.println("readGeneralStationConfig");
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(configFile));
 			String next = reader.readLine();
 			while(next!=null) {
-				System.out.println(next);
+				//System.out.println(next);
 				generalStationMap.put(next, new GeneralStation(next));
 				next = reader.readLine();
 			}
@@ -366,12 +370,12 @@ public class TimeSeriesDatabase {
 	}
 
 	public void readIgnoreSensorNameConfig(String configFile) {
-		System.out.println("readIgnoreSensorNameConfig");
+		//System.out.println("readIgnoreSensorNameConfig");
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(configFile));
 			String next = reader.readLine();
 			while(next!=null) {
-				System.out.println(next);
+				//System.out.println(next);
 				ignoreSensorNameSet.add(next);
 				next = reader.readLine();
 			}
@@ -381,6 +385,58 @@ public class TimeSeriesDatabase {
 		} catch (IOException e) {
 			log.error(e);
 		}
+		
+	}
+	
+	public void readBaseAggregationConfig(String configFile) {
+		/*try {
+			BufferedReader reader = new BufferedReader(new FileReader(configFile));
+			String next = reader.readLine();
+			while(next!=null) {
+				baseAggregatonSensorNameSet.add(next);
+				next = reader.readLine();
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			log.error(e);
+		} catch (IOException e) {
+			log.error(e);
+		}*/
+		
+		
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("base_aggregation");
+			if(section!=null) {
+				for(String sensorName:section.keySet()) {
+					Sensor sensor =sensorMap.get(sensorName);
+					if(sensor!=null) {
+						String aggregateTypeText = section.get(sensorName);
+						AggregationType aggregateType = AggregationType.NONE;
+						if(aggregateTypeText.toLowerCase().equals("avg")) {
+							aggregateType = AggregationType.AVERAGE;
+						} else if(aggregateTypeText.toLowerCase().equals("sum")) {
+							aggregateType = AggregationType.SUM;
+						} else if(aggregateTypeText.toLowerCase().equals("wind_direction")) {
+							aggregateType = AggregationType.WIND_DIRECTION;
+						} else if(aggregateTypeText.toLowerCase().equals("wind_velocity")) {
+							aggregateType = AggregationType.WIND_VELOCITY;							
+							
+						} else {
+							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
+						}
+						sensor.baseAggregationType = aggregateType;
+						baseAggregatonSensorNameSet.add(sensorName);
+					} else {
+						log.warn("sensor not found: "+sensorName);
+					}
+				}
+			}
+		} catch (IOException e) {
+			log.warn(e);
+		}		
+		
+		
 		
 	}
 	
@@ -403,11 +459,21 @@ public class TimeSeriesDatabase {
 	}
 	
 	public  Iterator<Event> queryTimeSeries(String PlotID, String ParameterName, long startTime, long endTime) {
-		return store.getHistoryRange(PlotID, startTime, endTime);
+		return store.getHistoryRange(PlotID, startTime, endTime);		
+	}
+	
+	/**
+	 * Processes base data
+	 * @param plotID
+	 */
+	public TimeSeries queryBasisData(String plotID) {
 		
-		
-		
+		Station station = stationMap.get(plotID);
+		return station.queryBasisData();
 		
 	}
+	
+	
+	
 
 }

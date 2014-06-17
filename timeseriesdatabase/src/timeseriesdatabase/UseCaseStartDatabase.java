@@ -32,7 +32,7 @@ public class UseCaseStartDatabase {
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
 		
-		Attribute[] schema = timeSeriesDatabase.stationMap.get("HEG03").getLoggerType()._schema;
+		Attribute[] schema = timeSeriesDatabase.stationMap.get("HEG03").getLoggerType().schema;
 		String attrs="tstart";
 		for(Attribute attribute:schema) {
 			attrs+=","+attribute.getAttributeName();

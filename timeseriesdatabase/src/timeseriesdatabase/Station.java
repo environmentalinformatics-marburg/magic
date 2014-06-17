@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.Sensor.AggregationType;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -34,25 +35,52 @@ public class Station {
 	
 	public TimeSeriesDatabase timeSeriesDatabase;
 	
+	/**
+	 * Stream name of this station
+	 */
 	public String plotID;
 	
+	/**
+	 * general properties like logger type
+	 */
 	public Map<String, String> propertyMap;
 	
+	/**
+	 * translation map: input sensor name -> database sensor name
+	 * This map contains only entries that are specific for this Station (or plotID)
+	 */
 	public Map<String,String> sensorNameTranlationMap;
 
+	/**
+	 * The general name of this plotID for example HEG03 it is HEG
+	 * This name belongs to a GeneralStation Object
+	 */
 	private String generalStationName;
 	
-	public Set<Long> insertedTimestampSet = null; // *** duplicate workaround
+	/**
+	 * This set contains all time stamps of inserted events.
+	 */
+	public Set<Long> insertedTimestampSet = null;
+	
+	/**
+	 * workaround for not ordered timestamps
+	 */
+	public Map<Long,Event> eventMap = null;
+	
+	/**
+	 * The greatest time stamp that was inserted so far.
+	 */
+	public long lastInsertTimestamp;
 	
 	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
+		this.lastInsertTimestamp = -1;
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.propertyMap = propertyMap;
 		
 		sensorNameTranlationMap = new HashMap<String, String>();
-		
-		//System.out.println(propertyMap);
+
 		
 		if(!plotID.equals(propertyMap.get("PLOTID"))) {
 			log.error("wrong plotID");
@@ -69,12 +97,17 @@ public class Station {
 		return loggerType;
 	}
 
+	/**
+	 * Reads all UDBF-Files of one directory and inserts the data entries into database
+	 * @param stationPath
+	 */
 	public void loadDirectoryOfOneStation(Path stationPath) {
 		insertedTimestampSet = new HashSet<Long>(); // *** duplicate workaround
+		eventMap = new TreeMap<Long,Event>(); // *** workaround for not ordered timestamps
 		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		
-		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // prefix needs to be ordered!
+		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap because prefix needs to be ordered!
 		
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(stationPath, x -> x.toString().endsWith(".dat"));
@@ -99,7 +132,6 @@ public class Station {
 			String prefix = entry.getKey();
 			List<Path> pathList = entry.getValue();	
 			
-			//List<UDBFTimeSeries> timeSeriesList = new ArrayList<UDBFTimeSeries>();
 			List<List<Event>> eventsList = new ArrayList<List<Event>>();
 			
 			for(Path path:pathList) {
@@ -109,13 +141,10 @@ public class Station {
 					if(eventList!=null) {
 						eventsList.add(eventList);
 					}
-					//timeSeriesList.add(timeSeries);
 					} catch (Exception e) {
 						log.error("file not read: "+path+"\t"+e);
 					}
 			}
-			
-			//Iterator<Event> it = eventsList.get(0).iterator();
 			
 			@SuppressWarnings("unchecked")
 			Iterator<Event>[] iterators = new Iterator[eventsList.size()];
@@ -154,7 +183,7 @@ public class Station {
 				
 				if(currentTimestamp<currentEvent[minIndex].getTimestamp()) {
 					if(collectorEvent!=null) {
-						pushEvent(collectorEvent);
+						pushCheckedEvent(collectorEvent);
 					}
 					currentTimestamp = currentEvent[minIndex].getTimestamp();
 					collectorEvent = null;
@@ -166,25 +195,10 @@ public class Station {
 					Object[] collectorPayload = collectorEvent.getPayload();
 					for(int i=0;i<collectorPayload.length-1;i++) { // TODO
 						if(!Float.isNaN((float) payload[i])&&Float.isNaN((float) collectorPayload[i])) {
-							//System.out.println("fill:"+i);
 							collectorPayload[i] = payload[i];
 						}
 					}
-					//for(event.getPayload())
-					
-					//System.out.println("TODO");
 				}
-				
-				
-				/*if(currentTimestampEventList==null) {
-					currentTimestampEventList = new ArrayList<Event>();
-				}
-				currentTimestampEventList.add(currentEvent[minIndex]);*/
-				//pushEvent(currentEvent[minIndex]);
-				
-				//push event
-				//pushEvent(currentEvent[minIndex]);
-				
 				
 				if(iterators[minIndex].hasNext()) {
 					currentEvent[minIndex] = iterators[minIndex].next();
@@ -192,74 +206,72 @@ public class Station {
 					currentEvent[minIndex] = null;
 				}
 				
-				
-				
 			}
 			
 			if(collectorEvent!=null) {
-				pushEvent(collectorEvent);
-			}
-			
-			
-			
-			
-			
-			
-			/*for(List<Event> eventList:eventsList) {
-				//loadIntoDatabaseUDBFFile(timeSeries);
-				//System.out.println(timeSeries.filename);
-
-				if(eventList!=null) {				
-					for(Event event:eventList) {						
-						
-						Object[] payload = event.getPayload();
-						long timestamp = event.getTimestamp();						
-						
-						if(insertedTimestampSet!=null) {
-							if(!insertedTimestampSet.contains(timestamp)) {
-								//System.out.println(payload[1]);
-								timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
-								insertedTimestampSet.add(timestamp);
-							}
-						} else {			
-							timeSeriesDatabase.store.pushEvent(plotID, event.getPayload(),event.getTimestamp());
-						}
-						
-						
-						
-					}
-				}
-
-			}*/			
-			
+				pushCheckedEvent(collectorEvent);
+			}			
 		}		
 		
 		insertedTimestampSet = null; // *** duplicate workaround
 		
+		// *** workaround for not ordered timestamps
+		for(Event event:eventMap.values()) {
+			//System.out.println(event.getTimestamp());
+			pushEvent(event.getPayload(),event.getTimestamp());
+		}	
+		eventMap = null; 
+		
 		timeSeriesDatabase.store.flushStream(plotID);
 	}
 	
-	private void pushEventsWithSameTimestamp(List<Event> events) {
-		for(Event event:events) {
-			pushEvent(event);
-		}
-	}
-	
-	private void pushEvent(Event event) {
+	/**
+	 * pushs event into database if there has not been inserted a same time stamp before.
+	 * @param event
+	 */
+	private void pushCheckedEvent(Event event) {
 		Object[] payload = event.getPayload();
 		long timestamp = event.getTimestamp();						
 		
 		if(insertedTimestampSet!=null) {
 			if(!insertedTimestampSet.contains(timestamp)) {
-				//System.out.println(payload[1]);
-				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+				//pushEvent(payload,timestamp);
+				// *** workaround for not ordered timestamps
+				eventMap.put(event.getTimestamp(), event);
 				insertedTimestampSet.add(timestamp);
 			}
 		} else {			
-			timeSeriesDatabase.store.pushEvent(plotID, event.getPayload(),event.getTimestamp());
+			//pushEvent(payload,timestamp);
+			// *** workaround for not ordered timestamps
+			eventMap.put(event.getTimestamp(), event);
 		}
 	}
 	
+	/**
+	 * psuh event into data base and updates lastInsertTimestamp.
+	 * @param payload
+	 * @param timestamp
+	 */
+	private void pushEvent(Object[] payload, long timestamp) {
+		timeSeriesDatabase.store.pushEvent(plotID, payload,timestamp);
+		if(lastInsertTimestamp>timestamp) {
+			log.warn("insert outdated timestemp: "+timestamp+" newest is "+lastInsertTimestamp+"\t"+plotID);
+		} else {
+			lastInsertTimestamp = timestamp;
+		}
+	}
+	
+	
+	/**
+	 * This method determines the database sensor name out of an input sensor name.
+	 * Steps:
+	 * 1. check if there an entry in the plotID specific sensorNameTranlationMap
+	 * 2. else check if there is an entry in the general station  sensorNameTranlationMap
+	 * 3. else check if there is an entry in the logger type sensorNameTranlationMap
+	 * 4. else return null (either input sensor name and database sensor name are identical or sensor name is unknown / not used)
+	 * @param sensorName
+	 * @return
+	 */
 	private String translateInputSensorName(String sensorName) {
 		String resultName = sensorNameTranlationMap.get(sensorName);
 		if(resultName!=null) {
@@ -284,6 +296,12 @@ public class Station {
 	}
 	
 	
+	/**
+	 * Reads an UDBF-File and return structured data as UDBFTimeSeries Object.
+	 * @param filename
+	 * @return
+	 * @throws IOException
+	 */
 	public UDBFTimeSeries readUDBFTimeSeries(Path filename) throws IOException {
 		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+plotID);
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
@@ -293,29 +311,27 @@ public class Station {
 	}
 	
 	
-	
+	/**
+	 * Convertes rows of input file data into events with matching schema of the event stream of this plotID 
+	 * @param udbfTimeSeries
+	 * @return List of Events, time stamp ordered 
+	 */
 	public List<Event> translateToEvents(UDBFTimeSeries udbfTimeSeries) {
-		List<Event> eventList = new ArrayList<Event>();
+		List<Event> resultList = new ArrayList<Event>(); // result list of events	
 		
-		
-		
-SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
-		
-		int[] eventPos = new int[sensorHeaders.length];
+		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
+		int[] eventPos = new int[udbfTimeSeries.sensorHeaders.length];  
 		
 		LoggerType loggerType = getLoggerType();
 		
+		//sensor names contained in event stream schema
 		String[] sensorNames = getLoggerType().sensorNames;
 		
-		/*ArrayList<String> list = new ArrayList<String>();
-		for(Attribute attribute:schema) {
-			list.add(attribute.getAttributeName());
-		}*/
-		//System.out.println(getLoggerType().typeName+" schema: "+list);
-		
-		for(int sensorIndex=0; sensorIndex<sensorHeaders.length; sensorIndex++) {
+
+		//creates mapping eventPos   (  udbf pos -> event pos )
+		for(int sensorIndex=0; sensorIndex<udbfTimeSeries.sensorHeaders.length; sensorIndex++) {
 			eventPos[sensorIndex] = -1;
-			SensorHeader sensorHeader = sensorHeaders[sensorIndex];
+			SensorHeader sensorHeader = udbfTimeSeries.sensorHeaders[sensorIndex];
 			String rawSensorName = sensorHeader.name;
 			if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
 				String sensorName = translateInputSensorName(rawSensorName);
@@ -338,8 +354,8 @@ SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
 			}
 		}
 		
-		try {
 		
+		//mapping event index position -> sensor index position 
 		int[] sensorPos = new int[sensorNames.length];
 		for(int i=0;i<sensorPos.length;i++) {
 			sensorPos[i] = -1;
@@ -352,15 +368,16 @@ SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
 			}
 		}
 		
+		
 		if(validSensorCount<1) {
 			log.trace("no fitting sensors in "+udbfTimeSeries.filename);
-			return null;
+			return null; //all event columns are empty
 		}
 		
-		
+		//physical minimum and maximum of input values
+		//just for testing purpose will be removed / changed later
 		float[] min = new float[sensorNames.length];
-		float[] max = new float[sensorNames.length];
-		
+		float[] max = new float[sensorNames.length];		
 		for(int i=0;i<sensorNames.length;i++) {
 			Sensor sensor = timeSeriesDatabase.sensorMap.get(sensorNames[i]);
 			if(sensor!=null) {
@@ -372,70 +389,219 @@ SensorHeader[] sensorHeaders = udbfTimeSeries.sensorHeaders;
 			}
 		}
 
-		Object[] payload = new Object[loggerType._schema.length];
+		//create events
+		Object[] payload = new Object[loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
-		payload[loggerType._schema.length-1] = sampleRate; 
+		payload[loggerType.schema.length-1] = sampleRate; 
+		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
+			// one input row
 			float[] row = udbfTimeSeries.data[rowIndex];
+			
+			//fill event columns with input data values
 			for(int attrNr=0;attrNr<sensorNames.length;attrNr++) {
-				if(sensorPos[attrNr]<0) {
+				if(sensorPos[attrNr]<0) { // no input column
 					payload[attrNr] = Float.NaN;
-				} else {					
+				} else {
 					float value = row[sensorPos[attrNr]];
 					
+					//just for testing purpose will be removed / changed later
 					if(value<min[attrNr]||max[attrNr]<value) {
 						value = Float.NaN;
 					} 
 					
 					payload[attrNr] = value;
 				}
-				//System.out.print(payload[attrNr]+"\t");
 			}
-			//System.out.println("push: "+udbfTimeSeries.time[rowIndex]);
+
+			//just for testing purpose
 			if(udbfTimeSeries.time[rowIndex]==58508670) {
 				System.out.println("write time 58508670 in "+plotID+"\t"+udbfTimeSeries.filename);
 			}
 			long timestamp = udbfTimeSeries.time[rowIndex];
-			/*try {
-				Iterator<Event> it = timeSeriesDatabase.store.getHistoryPoint(plotID, timestamp);
-				if(it!=null) {
-					timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
-				}
-			} catch(Exception e) {
-				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
+		}
+		
+		return resultList;
+	}
+
+	public TimeSeries queryBasisData() {
+		ArrayList<String> parameterNameList = new ArrayList<String>();
+		String[] schemaSensorNames = getLoggerType().sensorNames;
+		for(String sensorName:schemaSensorNames) {
+			if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(sensorName)) {
+				parameterNameList.add(sensorName);				
 			}
-			//timeSeriesDatabase.store.pushEvent(plotID, payloadTest, udbfTimeSeries.time[rowIndex]);
-			//System.out.println();*/
-			
-			
-			eventList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));
-			
-			/*
-			if(insertedTimestampSet!=null) {
-				if(!insertedTimestampSet.contains(timestamp)) {
-					timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
-					insertedTimestampSet.add(timestamp);
+		}
+		String[] parameterNames = (String[]) parameterNameList.toArray(new String[0]);
+		
+		
+		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
+		Iterator<Event> it = timeSeriesDatabase.store.getHistory(plotID);
+		
+		
+		float[] aggSum = new float[parameterNames.length];
+		int[] aggCnt = new int[parameterNames.length];
+		
+		float wind_u_sum=0;
+		float wind_v_sum=0;
+		int wind_cnt=0;
+		int wind_direction_pos=-1;
+		int wind_velocity_pos=-1;
+		boolean aggregate_wind_direction = false;
+		
+		
+		for(int i=0;i<aggSum.length;i++) {
+			aggSum[i] = 0;
+			aggCnt[i] = 0;
+		}
+		
+		int[] eventPos = new int[parameterNames.length];
+		for(int i=0;i<eventPos.length;i++) {
+			eventPos[i] = -1;
+			for(int pos=0;pos<schemaSensorNames.length;pos++) {
+				if(parameterNames[i].equals(schemaSensorNames[pos])) {
+					eventPos[i] = pos;
+					break;
 				}
-			} else {			
-				timeSeriesDatabase.store.pushEvent(plotID, payload, timestamp);
+			}			
+		}
+		
+		int[] columnEntryCounter = new int[parameterNames.length];
+		for(int i=0;i<parameterNames.length;i++) {
+			columnEntryCounter[i] = 0;
+		}
+		
+		
+		Sensor[] sensors = new Sensor[parameterNames.length];
+		for(int i=0;i<parameterNames.length;i++) {
+			sensors[i] = timeSeriesDatabase.sensorMap.get(parameterNames[i]);
+			if(sensors[i].baseAggregationType==AggregationType.WIND_DIRECTION) {
+				if(wind_direction_pos==-1) {
+					wind_direction_pos = i;
+				} else {
+					log.error("just one wind_direction sensor can be aggregated");
+				}				
 			}
-			*/
+			if(sensors[i].baseAggregationType==AggregationType.WIND_VELOCITY) {
+				if(wind_velocity_pos==-1) {
+					wind_velocity_pos = i;
+				} else {
+					log.error("just one wind_velocity sensor can be aggregated");
+				}				
+			}			
+		}
+		
+		if(wind_velocity_pos>-1&&wind_direction_pos>-1) {
+			aggregate_wind_direction = true;
+		} else if(wind_velocity_pos>-1||wind_direction_pos>-1) {
+			log.error("wind_direction or wind_velocity sensor missing");
+		}
+		
+		
+		while(it.hasNext()) {
+			Event event = it.next();
+			long timestamp = event.getTimestamp();
+			Object[] payload = event.getPayload();
+			
+			for(int i=0;i<parameterNames.length;i++) {
+				float value = (float) payload[eventPos[i]];
+				
+				if(Float.isNaN(value)||value<sensors[i].min||sensors[i].max<value) { // physical range check
+					//not valid value
+				} else {			
+					aggSum[i] += value;
+					aggCnt[i] ++;
+				}
+			}
+			if(aggregate_wind_direction) {
+				float wd_degrees = (float) payload[wind_direction_pos];
+				float ws = (float) payload[wind_velocity_pos];
+				if(!(Float.isNaN(wd_degrees)||Float.isNaN(ws))) {
+					float wd_radian = (float) ((wd_degrees*Math.PI)/180f);
+					float u = (float) (-ws * Math.sin(wd_radian));
+					float v = (float) (-ws * Math.cos(wd_radian));
+					wind_u_sum+=u;
+					wind_v_sum+=v;
+					wind_cnt++;
+				}
+			}
+
+			if(timestamp%60==0) {// base aggregation timestamp border
+				float[] data = new float[parameterNames.length];
+				int validValueCounter=0;
+				for(int i=0;i<data.length;i++) {					
+					System.out.print(aggCnt[i]+" ");
+					if(aggCnt[i]!=0) {// at least one entry has been collected
+						switch(sensors[i].baseAggregationType) {
+						case AVERAGE:
+						case WIND_VELOCITY:	
+							data[i] = aggSum[i]/aggCnt[i];
+							validValueCounter++;
+							columnEntryCounter[i]++;
+						case SUM:
+							data[i] = aggSum[i];
+							validValueCounter++;
+							columnEntryCounter[i]++;
+							break;
+						case NONE:
+							data[i] = Float.NaN;							
+							//log.error("no aggeration for this sensor");
+							break;
+						case WIND_DIRECTION:
+							if(aggregate_wind_direction) {
+								if(wind_cnt>0) {
+									System.out.println("wind_cnt: "+wind_cnt);
+									float u = wind_u_sum/wind_cnt;
+									float v = wind_v_sum/wind_cnt;
+									float temp_radians = (float) (Math.atan2(v, u)+Math.PI); // + Math.PI added
+									float temp_degrees = (float) ((temp_radians*180)/Math.PI);
+									data[i] = temp_degrees;
+									
+									//reset values for next aggregate
+									wind_cnt = 0;
+									wind_u_sum = 0;
+									wind_v_sum = 0;
+								}
+							} else {
+								data[i] = Float.NaN;
+							}
+							break;							
+						default:
+							data[i] = Float.NaN;
+							log.error("aggration type unknown");
+						}						
+						
+						//reset values for next aggregate
+						aggSum[i] = 0;
+						aggCnt[i] = 0;
+						
+					} else {// no entry in this period
+						data[i] = Float.NaN;
+					}
+				}
+				System.out.println();
+				if(validValueCounter>0) {
+					entryList.add(new TimeSeriesEntry(event.getTimestamp(),data));
+				}
+			}
+			
+			
 			
 			
 			
 		}
 		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-		
-		
-		
-		
-		return eventList;
+		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList);
+		for(int i=0;i<parameterNames.length;i++) {
+			if(columnEntryCounter[i] == 0) {
+				timeSeries.removeEmptyColumns();
+				break;
+			}
+		}
+				
+		return timeSeries;
 	}
-	
-	
-	
+
 
 }

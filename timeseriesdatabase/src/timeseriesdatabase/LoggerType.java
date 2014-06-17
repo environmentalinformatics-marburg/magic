@@ -13,14 +13,14 @@ import de.umr.jepc.Attribute;
 public class LoggerType {
 	
 	public String typeName;
-	public Attribute[] _schema;
+	public Attribute[] schema;
 	public String[] sensorNames;
 	public Map<String,String> sensorNameTranlationMap;
 	
 	public LoggerType(String typeName, String[] sensorNames, Attribute[] schema) {
 		this.typeName = typeName;
 		this.sensorNames = sensorNames;
-		this._schema = schema;
+		this.schema = schema;
 		this.sensorNameTranlationMap = new HashMap<String, String>();
 	}
 
