@@ -7,7 +7,7 @@ package timeseriesdatabase;
  */
 public class Sensor {
 	
-	enum AggregationType {NONE,AVERAGE,SUM,WIND_DIRECTION,WIND_VELOCITY};
+	enum AggregationType {NONE,AVERAGE,SUM,WIND_DIRECTION,WIND_VELOCITY, MAXIMUM};
 	
 	public String name;
 	public float min;

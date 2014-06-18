@@ -389,21 +389,6 @@ public class TimeSeriesDatabase {
 	}
 	
 	public void readBaseAggregationConfig(String configFile) {
-		/*try {
-			BufferedReader reader = new BufferedReader(new FileReader(configFile));
-			String next = reader.readLine();
-			while(next!=null) {
-				baseAggregatonSensorNameSet.add(next);
-				next = reader.readLine();
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-		}*/
-		
-		
 		try {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("base_aggregation");
@@ -413,13 +398,15 @@ public class TimeSeriesDatabase {
 					if(sensor!=null) {
 						String aggregateTypeText = section.get(sensorName);
 						AggregationType aggregateType = AggregationType.NONE;
-						if(aggregateTypeText.toLowerCase().equals("avg")) {
+						if(aggregateTypeText.toLowerCase().equals("average")) {
 							aggregateType = AggregationType.AVERAGE;
 						} else if(aggregateTypeText.toLowerCase().equals("sum")) {
 							aggregateType = AggregationType.SUM;
-						} else if(aggregateTypeText.toLowerCase().equals("wind_direction")) {
+						} else if(aggregateTypeText.toLowerCase().equals("maximum")) {
+							aggregateType = AggregationType.MAXIMUM;							
+						} else if(aggregateTypeText.toLowerCase().equals("average_wind_direction")) {
 							aggregateType = AggregationType.WIND_DIRECTION;
-						} else if(aggregateTypeText.toLowerCase().equals("wind_velocity")) {
+						} else if(aggregateTypeText.toLowerCase().equals("average_wind_velocity")) {
 							aggregateType = AggregationType.WIND_VELOCITY;							
 							
 						} else {
@@ -466,12 +453,25 @@ public class TimeSeriesDatabase {
 	 * Processes base data
 	 * @param plotID
 	 */
-	public TimeSeries queryBasisData(String plotID) {
-		
+	public TimeSeries queryBasisData(String plotID) {		
 		Station station = stationMap.get(plotID);
-		return station.queryBasisData();
-		
+		return station.queryBasisData();		
 	}
+	
+	public TimeSeries queryBasisData(String plotID, long start, long end) {		
+		Station station = stationMap.get(plotID);
+		TimeSeries timeseries = station.queryBasisData();
+		TimeSeries timeseriesInterval = timeseries.getTimeInterval(start, end);
+		timeseriesInterval.removeEmptyColumns();
+		return timeseriesInterval;
+	}
+	
+	public TimeSeries queryRawData(String plotID) {
+		Station station = stationMap.get(plotID);
+		return station.queryRawData();	
+	}
+	
+	
 	
 	
 	

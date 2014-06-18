@@ -23,16 +23,17 @@ public class TimeSeries {
 	
 	@Override
 	public String toString() {
+		int n = parameterNames.length>=10?10:parameterNames.length;
 		String s="";
 		s+="("+entryList.size()+")\t\t";
 		for(int i=0;i<parameterNames.length;i++) {
 			s+=parameterNames[i]+"\t";
 		}
 		s+='\n';
-		for(int i=entryList.size()-10;i<entryList.size();i++) {			
+		for(int i=entryList.size()-n;i<entryList.size();i++) {			
 			TimeSeriesEntry entry = entryList.get(i);
 			float[] data = entry.data;
-			s+="["+entry.timestamp+"]\t";
+			s+="["+entry.timestamp+"   "+TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"]\t";
 			for(int c=0;c<data.length;c++) {
 				s+=Util.floatToString(data[c])+"\t";
 			}
@@ -88,11 +89,25 @@ public class TimeSeries {
 		entryList = newEntryList;
 	}
 	
-	public void writeToCSV(String filename, String separator, String nanText, boolean time) {
+	enum CSVTimeType {TIMESTAMP,DATETIME,NONE};
+	
+	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+		boolean time=false;
+		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME) {
+			time=true;
+		}
 		try {
 			PrintStream printStream = new PrintStream(filename);
 			if(time) {
-				printStream.print("timestamp");
+				switch(csvTimeType) {
+				case TIMESTAMP:
+					printStream.print("timestamp");
+					break;
+				case DATETIME:
+					printStream.print("datetime");
+				default:
+					printStream.print("???");
+				}
 			}
 			for(int i=0;i<parameterNames.length;i++) {
 				if(time||i>0) {
@@ -103,8 +118,16 @@ public class TimeSeries {
 			printStream.println();
 			for(TimeSeriesEntry entry:entryList) {
 				if(time) {
-					//printStream.print(entry.timestamp);
-					printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
+					switch(csvTimeType) {
+					case TIMESTAMP:
+						printStream.print(entry.timestamp);
+						break;
+					case DATETIME:
+						printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
+						break;
+					default:
+						printStream.print("---");
+					}
 				}
 				float[] data = entry.data;
 				for(int i=0;i<entry.data.length;i++) {
@@ -124,6 +147,17 @@ public class TimeSeries {
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		}
+	}
+	
+	public TimeSeries getTimeInterval(long start, long end) {
+		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
+		for(TimeSeriesEntry entry:entryList) {
+			long timestamp = entry.timestamp;
+			if( start<=timestamp && timestamp<=end ) {
+				resultList.add(entry);
+			}
+		}
+		return new TimeSeries(parameterNames,resultList);
 	}
 
 }
