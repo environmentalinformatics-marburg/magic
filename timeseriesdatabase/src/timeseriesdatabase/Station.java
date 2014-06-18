@@ -568,7 +568,8 @@ public class Station {
 										//System.out.println("wind_cnt: "+wind_cnt);
 										float u = wind_u_sum/wind_cnt;
 										float v = wind_v_sum/wind_cnt;
-										float temp_radians = (float) (Math.atan2(v, u)+Math.PI); // + Math.PI added
+										//float temp_radians = (float) (Math.atan2(v, u)+Math.PI); // + Math.PI added
+										float temp_radians = (float) (Math.atan2(u, v)+Math.PI); // + Math.PI added
 										float temp_degrees = (float) ((temp_radians*180)/Math.PI);
 										data[i] = temp_degrees;
 										validValueCounter++;

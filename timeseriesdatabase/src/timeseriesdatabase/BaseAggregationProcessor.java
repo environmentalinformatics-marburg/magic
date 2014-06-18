@@ -129,10 +129,9 @@ public class BaseAggregationProcessor {
 				case WIND_DIRECTION:
 					if(aggregate_wind_direction) {
 						if(wind_cnt>0) {
-							//System.out.println("wind_cnt: "+wind_cnt);
 							float u = wind_u_sum/wind_cnt;
 							float v = wind_v_sum/wind_cnt;
-							float temp_radians = (float) (Math.atan2(v, u)+Math.PI); // + Math.PI added
+							float temp_radians = (float) (Math.atan2(u, v)+Math.PI); // +Math.PI added
 							float temp_degrees = (float) ((temp_radians*180)/Math.PI);
 							data[i] = temp_degrees;
 							validValueCounter++;
@@ -258,14 +257,22 @@ public class BaseAggregationProcessor {
 	}
 
 	public static long calcAggregationTimestamp(long timestamp) {
-		final int AGGREGATION_TIME_INTERVAL = 24*60; // aggregation for standard timeseriesdatabase base aggregation with one hour
-		//final int TIME_OFFSET = 0; // !! aggregation for standard timeseriesdatabase
-		//final int TIME_OFFSET = 30; // !! aggregation for compatiblity with julendat processing
+		/*
+		//timeseriesdatabase base aggregation timestamps
+		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standard timeseriesdatabase base aggregation with one hour
 
 		if(timestamp%AGGREGATION_TIME_INTERVAL==0) {
 			return timestamp-AGGREGATION_TIME_INTERVAL;
 		} else {
 			return timestamp-timestamp%AGGREGATION_TIME_INTERVAL;
-		}		
+		}
+		*/
+		
+		//julendat base aggregation timestamps
+		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standard timeseriesdatabase base aggregation with one hour
+		return timestamp-timestamp%AGGREGATION_TIME_INTERVAL;
+		
+		
+		
 	}
 }

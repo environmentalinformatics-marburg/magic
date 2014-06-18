@@ -26,8 +26,8 @@ public class UseCaseBaseAggregation {
 		System.out.println("query data...");
 		
 		String plotID = "HEG31";
-		LocalDateTime start = LocalDateTime.of(2012,05,01,0,0);
-		LocalDateTime end = LocalDateTime.of(2012,05,31,23,59);
+		LocalDateTime start = LocalDateTime.of(2013,01,01,0,0);
+		LocalDateTime end = LocalDateTime.of(2013,01,31,23,59);
 		long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
 		long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
 		
@@ -41,8 +41,7 @@ public class UseCaseBaseAggregation {
 		
 		System.out.println("write data to file...");
 
-		//timeSeries.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.DATETIME);
-		timeSeries.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP);
+		timeSeries.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		System.out.println("...end");
 

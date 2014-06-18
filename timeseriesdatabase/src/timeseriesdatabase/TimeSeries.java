@@ -89,11 +89,11 @@ public class TimeSeries {
 		entryList = newEntryList;
 	}
 	
-	enum CSVTimeType {TIMESTAMP,DATETIME,NONE};
+	enum CSVTimeType {TIMESTAMP,DATETIME,NONE,TIMESTAMP_AND_DATETIME};
 	
 	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
-		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME) {
+		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
 		}
 		try {
@@ -105,6 +105,12 @@ public class TimeSeries {
 					break;
 				case DATETIME:
 					printStream.print("datetime");
+					break;
+				case TIMESTAMP_AND_DATETIME:
+					printStream.print("timestamp");
+					printStream.print(separator);
+					printStream.print("datetime");
+					break;
 				default:
 					printStream.print("???");
 				}
@@ -125,6 +131,11 @@ public class TimeSeries {
 					case DATETIME:
 						printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
 						break;
+					case TIMESTAMP_AND_DATETIME:
+						printStream.print(entry.timestamp);
+						printStream.print(separator);
+						printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
+						break;
 					default:
 						printStream.print("---");
 					}
@@ -138,7 +149,7 @@ public class TimeSeries {
 						printStream.print(nanText);
 					} else {
 						//s+=Util.floatToString(entry.data[i]);
-						printStream.format(Locale.ENGLISH," %2.2f", entry.data[i]);
+						printStream.format(Locale.ENGLISH," %3.3f", entry.data[i]);
 					}
 				}
 				printStream.println();
