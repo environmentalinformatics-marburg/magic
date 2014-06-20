@@ -7,8 +7,6 @@ package timeseriesdatabase;
  */
 public class Sensor {
 	
-	enum AggregationType {NONE,AVERAGE,SUM,WIND_DIRECTION,WIND_VELOCITY, MAXIMUM};
-	
 	public String name;
 	public float min;
 	public float max;
@@ -20,6 +18,14 @@ public class Sensor {
 		min = -Float.MAX_VALUE;
 		max = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
+	}
+	
+	public boolean checkPhysicalRange(float value) {
+		if(Float.isNaN(value)) {
+			return false;
+		}
+		return min<=value&&value<=max;
+		
 	}
 
 }

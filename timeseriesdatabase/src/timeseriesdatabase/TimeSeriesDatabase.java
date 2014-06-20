@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
-import timeseriesdatabase.Sensor.AggregationType;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
@@ -405,9 +404,9 @@ public class TimeSeriesDatabase {
 						} else if(aggregateTypeText.toLowerCase().equals("maximum")) {
 							aggregateType = AggregationType.MAXIMUM;							
 						} else if(aggregateTypeText.toLowerCase().equals("average_wind_direction")) {
-							aggregateType = AggregationType.WIND_DIRECTION;
+							aggregateType = AggregationType.AVERAGE_WIND_DIRECTION;
 						} else if(aggregateTypeText.toLowerCase().equals("average_wind_velocity")) {
-							aggregateType = AggregationType.WIND_VELOCITY;							
+							aggregateType = AggregationType.AVERAGE_WIND_VELOCITY;							
 							
 						} else {
 							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
@@ -450,30 +449,74 @@ public class TimeSeriesDatabase {
 	}
 	
 	/**
-	 * Processes base data
+	 * Get base aggregated data
 	 * @param plotID
+	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
+	 * @return
 	 */
-	public TimeSeries queryBasisData(String plotID) {		
+	public TimeSeries queryBaseAggregatedData(String plotID,String[] querySensorNames) {		
 		Station station = stationMap.get(plotID);
-		return station.queryBasisData();		
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		return station.queryBaseAggregatedData(querySensorNames,null,null);		
 	}
 	
-	public TimeSeries queryBasisData(String plotID, long start, long end) {		
+	/**
+	 * Get base aggregated data
+	 * @param plotID
+	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public TimeSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, long start, long end) {		
 		Station station = stationMap.get(plotID);
-		TimeSeries timeseries = station.queryBasisData();
-		TimeSeries timeseriesInterval = timeseries.getTimeInterval(start, end);
-		timeseriesInterval.removeEmptyColumns();
-		return timeseriesInterval;
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start, end);
+		return timeseries;
 	}
 	
 	public TimeSeries queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
-		return station.queryRawData();	
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		return station.queryRawData(null,null,null);	
 	}
 	
+	public TimeSeries queryRawData(String plotID, String[] querySensorNames) {
+		Station station = stationMap.get(plotID);
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		return station.queryRawData(querySensorNames,null,null);	
+	}
 	
-	
-	
-	
+	public TimeSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
+		Station station = stationMap.get(plotID);
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		return station.queryRawData(querySensorNames,start,end);	
+	}
 
+	public Sensor[] getSensors(String[] sensorNames) {
+		Sensor[] sensors = new Sensor[sensorNames.length];
+		for(int i=0;i<sensorNames.length;i++) {
+			Sensor sensor = sensorMap.get(sensorNames[i]);
+			sensors[i] = sensor;
+			if(sensor==null) {
+				log.warn("sensor "+sensorNames+" not found");
+			}
+		}
+		return sensors;
+	}
 }

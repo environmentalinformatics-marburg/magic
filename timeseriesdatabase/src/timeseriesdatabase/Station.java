@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.Sensor.AggregationType;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -374,21 +373,6 @@ public class Station {
 			return null; //all event columns are empty
 		}
 		
-		//physical minimum and maximum of input values
-		//just for testing purpose will be removed / changed later
-		float[] min = new float[sensorNames.length];
-		float[] max = new float[sensorNames.length];		
-		for(int i=0;i<sensorNames.length;i++) {
-			Sensor sensor = timeSeriesDatabase.sensorMap.get(sensorNames[i]);
-			if(sensor!=null) {
-				min[i] = sensor.min;
-				max[i] = sensor.max;
-			} else {
-				min[i] = -Float.MAX_VALUE;
-				max[i] = Float.MAX_VALUE;
-			}
-		}
-
 		//create events
 		Object[] payload = new Object[loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
@@ -403,13 +387,7 @@ public class Station {
 				if(sensorPos[attrNr]<0) { // no input column
 					payload[attrNr] = Float.NaN;
 				} else {
-					float value = row[sensorPos[attrNr]];
-					
-					//just for testing purpose will be removed / changed later
-					if(value<min[attrNr]||max[attrNr]<value) {
-						value = Float.NaN;
-					} 
-					
+					float value = row[sensorPos[attrNr]];				
 					payload[attrNr] = value;
 				}
 			}
@@ -425,236 +403,63 @@ public class Station {
 		return resultList;
 	}
 
-	public TimeSeries queryBasisData() {
+	/**
+	 * Get base aggregated data
+	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
+	 * @param start start time stamp, if null start from oldest data
+	 * @param end end time stamp, if null get data up to newest data
+	 * @return
+	 */
+	public TimeSeries queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
-		Set<String> baseAggregatonSensorNameSet = timeSeriesDatabase.baseAggregatonSensorNameSet;
-		Map<String, Sensor> sensorMap = timeSeriesDatabase.sensorMap;
-		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(schemaSensorNames,baseAggregatonSensorNameSet,sensorMap);
-		Iterator<Event> it = timeSeriesDatabase.store.getHistory(plotID);
+		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames);
+		Iterator<Event> it;
+		if(start!=null) {
+			long startTime = BaseAggregationTimeUtil.calcMinRawTimestampOfBaseAggregationTimestamp(start);
+			if(end!=null) {
+				long endTime = BaseAggregationTimeUtil.calcMaxRawTimestampOfBaseAggregationTimestamp(end);
+				it = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
+			} else {
+				it = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
+			}
+		} else {
+			if(end!=null) {
+				long endTime = BaseAggregationTimeUtil.calcMaxRawTimestampOfBaseAggregationTimestamp(end);
+				it = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
+			} else {
+				it = timeSeriesDatabase.store.getHistory(plotID);
+			}
+		}		
 		return baseAggregationProcessor.process(it);
 	}
 	
-	public TimeSeries queryRawData() {
-		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames);
-		Iterator<Event> it = timeSeriesDatabase.store.getHistory(plotID);
+	/**
+	 * Get raw sensor data
+	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
+	 * @param start start time stamp, if null start from oldest data
+	 * @param end end time stamp, if null get data up to newest data
+	 * @return
+	 */
+	public TimeSeries queryRawData(String[] querySensorNames, Long start, Long end) {
+		String[] schemaSensorNames = getLoggerType().sensorNames;
+		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames, querySensorNames);
+		Iterator<Event> it;
+		if(start!=null) {
+			long startTime = start;
+			if(end!=null) {
+				long endTime = end;
+				it = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
+			} else {
+				it = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
+			}
+		} else {
+			if(end!=null) {
+				long endTime = end;
+				it = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
+			} else {
+				it = timeSeriesDatabase.store.getHistory(plotID);
+			}
+		}		
 		return rawDataProcessor.process(it);
 	}
-	
-	
-	public TimeSeries queryBasisDataOLD() {
-		ArrayList<String> parameterNameList = new ArrayList<String>();
-		String[] schemaSensorNames = getLoggerType().sensorNames;
-		for(String sensorName:schemaSensorNames) {
-			if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(sensorName)) {
-				parameterNameList.add(sensorName);				
-			}
-		}
-		String[] parameterNames = (String[]) parameterNameList.toArray(new String[0]);
-		
-		
-		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
-		Iterator<Event> it = timeSeriesDatabase.store.getHistory(plotID);
-		
-		
-		int[] aggCnt = new int[parameterNames.length];
-		float[] aggSum = new float[parameterNames.length];
-		float[] aggMax = new float[parameterNames.length];
-		
-		
-		float wind_u_sum=0;
-		float wind_v_sum=0;
-		int wind_cnt=0;
-		int wind_direction_pos=-1;
-		int wind_velocity_pos=-1;
-		boolean aggregate_wind_direction = false;
-		
-		//reset aggregates
-		for(int i=0;i<parameterNames.length;i++) {
-			aggCnt[i] = 0;
-			aggSum[i] = 0;
-			aggMax[i] = Float.NEGATIVE_INFINITY;
-		}
-		
-		int[] eventPos = new int[parameterNames.length];
-		for(int i=0;i<eventPos.length;i++) {
-			eventPos[i] = -1;
-			for(int pos=0;pos<schemaSensorNames.length;pos++) {
-				if(parameterNames[i].equals(schemaSensorNames[pos])) {
-					eventPos[i] = pos;
-					break;
-				}
-			}			
-		}
-		
-		int[] columnEntryCounter = new int[parameterNames.length];
-		for(int i=0;i<parameterNames.length;i++) {
-			columnEntryCounter[i] = 0;
-		}
-		
-		
-		Sensor[] sensors = new Sensor[parameterNames.length];
-		for(int i=0;i<parameterNames.length;i++) {
-			sensors[i] = timeSeriesDatabase.sensorMap.get(parameterNames[i]);
-			if(sensors[i].baseAggregationType==AggregationType.WIND_DIRECTION) {
-				if(wind_direction_pos==-1) {
-					wind_direction_pos = i;
-				} else {
-					log.error("just one wind_direction sensor can be aggregated");
-				}				
-			}
-			if(sensors[i].baseAggregationType==AggregationType.WIND_VELOCITY) {
-				if(wind_velocity_pos==-1) {
-					wind_velocity_pos = i;
-				} else {
-					log.error("just one wind_velocity sensor can be aggregated");
-				}				
-			}			
-		}
-		
-		if(wind_velocity_pos>-1&&wind_direction_pos>-1) {
-			aggregate_wind_direction = true;
-		} else if(wind_velocity_pos>-1||wind_direction_pos>-1) {
-			log.error("either wind_direction or wind_velocity sensor missing");
-		}
-		
-		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standart timeseriesdatabase base aggregation with one hour 
-		//final int TIME_OFFSET = 0; // !! aggregation for standart timeseriesdatabase
-		final int TIME_OFFSET = 30; // !! aggregation for compatiblity with julendat processing
-		
-		
-		long aggregation_timestamp = -1;
-		
-		while(it.hasNext()) { // begin of while-loop for raw input-events
-			Event event = it.next();
-			long timestamp = event.getTimestamp();
-			Object[] payload = event.getPayload();
-			
-			long nextAggTimestamp = calcAggregationTimestamp(timestamp);
-			if(nextAggTimestamp>aggregation_timestamp) { // all values for aggregation_timestamp are collected 
-				if(aggregation_timestamp>-1) { // for first aggregate there are no values
-					
-					// result aggregate data
-					float[] data = new float[parameterNames.length];
-					
-					//counter of valid aggregates
-					int validValueCounter=0;
-					for(int i=0;i<data.length;i++) {					
-						//System.out.print(aggCnt[i]+" ");
-						if(aggCnt[i]>0) {// at least one entry has been collected
-							switch(sensors[i].baseAggregationType) {
-							case AVERAGE:
-							case WIND_VELOCITY:	
-								data[i] = aggSum[i]/aggCnt[i];
-								validValueCounter++;
-								columnEntryCounter[i]++;
-								break;
-							case SUM:
-								data[i] = aggSum[i];
-								validValueCounter++;
-								columnEntryCounter[i]++;
-								break;
-							case MAXIMUM:
-								data[i] = aggMax[i];
-								validValueCounter++;
-								columnEntryCounter[i]++;
-								break;
-							case NONE:
-								data[i] = Float.NaN;							
-								//log.error("no aggeration for this sensor");
-								break;
-							case WIND_DIRECTION:
-								if(aggregate_wind_direction) {
-									if(wind_cnt>0) {
-										//System.out.println("wind_cnt: "+wind_cnt);
-										float u = wind_u_sum/wind_cnt;
-										float v = wind_v_sum/wind_cnt;
-										//float temp_radians = (float) (Math.atan2(v, u)+Math.PI); // + Math.PI added
-										float temp_radians = (float) (Math.atan2(u, v)+Math.PI); // + Math.PI added
-										float temp_degrees = (float) ((temp_radians*180)/Math.PI);
-										data[i] = temp_degrees;
-										validValueCounter++;
-										columnEntryCounter[i]++;
-									}
-								} else {
-									data[i] = Float.NaN;
-								}
-								break;							
-							default:
-								data[i] = Float.NaN;
-								log.error("aggration type unknown");
-							}							
-						} else {// no entry in this period
-							data[i] = Float.NaN;
-						}
-					}
-					//System.out.println();
-					if(validValueCounter>0) { // if there are some valid aggregates => push entry
-						entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
-					}		
-								
-				}
-				//reset values for next aggregate
-				aggregation_timestamp = nextAggTimestamp;
-				for(int i=0;i<parameterNames.length;i++) {
-					aggCnt[i] = 0;
-					aggSum[i] = 0;
-					aggMax[i] = Float.NEGATIVE_INFINITY;
-				}
-				wind_cnt = 0;
-				wind_u_sum = 0;
-				wind_v_sum = 0;		
-			}
-
-			
-			//collect values for aggregation
-			for(int i=0;i<parameterNames.length;i++) {
-				float value = (float) payload[eventPos[i]];				
-				if(Float.isNaN(value)||value<sensors[i].min||sensors[i].max<value) { // physical range check
-					//not valid value
-				} else {
-					aggCnt[i] ++;					
-					aggSum[i] += value;
-					if(value>aggMax[i]) {
-						aggMax[i] = value;
-					}
-				}
-			}
-			if(aggregate_wind_direction) {
-				float wd_degrees = (float) payload[wind_direction_pos];
-				float ws = (float) payload[wind_velocity_pos];
-				if(!(Float.isNaN(wd_degrees)||Float.isNaN(ws))) {
-					float wd_radian = (float) ((wd_degrees*Math.PI)/180f);
-					float u = (float) (-ws * Math.sin(wd_radian));
-					float v = (float) (-ws * Math.cos(wd_radian));
-					wind_u_sum+=u;
-					wind_v_sum+=v;
-					wind_cnt++;
-				}
-			}			
-		}  // end of while-loop for raw input-events
-		
-		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList);
-		for(int i=0;i<parameterNames.length;i++) {
-			if(columnEntryCounter[i] == 0) {
-				timeSeries.removeEmptyColumns();
-				break;
-			}
-		}
-				
-		return timeSeries;
-	}
-	
-	public static long calcAggregationTimestamp(long timestamp) {
-		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standart timeseriesdatabase base aggregation with one hour 
-		//final int TIME_OFFSET = 0; // !! aggregation for standart timeseriesdatabase
-		//final int TIME_OFFSET = 30; // !! aggregation for compatiblity with julendat processing
-		
-		if(timestamp%AGGREGATION_TIME_INTERVAL==0) {
-			return timestamp-AGGREGATION_TIME_INTERVAL;
-		} else {
-			return timestamp-timestamp%AGGREGATION_TIME_INTERVAL;
-		}		
-	}
-
-
 }

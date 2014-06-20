@@ -30,9 +30,10 @@ public class UseCaseBaseAggregation {
 		LocalDateTime end = LocalDateTime.of(2013,01,31,23,59);
 		long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
 		long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
+		String[] queryParameterNames = new String[] {"Ta_200","WD","WV"};
 		
-		TimeSeries timeSeries = timeSeriesDatabase.queryBasisData(plotID,startTimestamp,endTimestamp);
-		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID);
+		TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, startTimestamp, endTimestamp);
+		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID, queryParameterNames, startTimestamp, endTimestamp);
 
 		
 		System.out.println("print part of timeseries...");

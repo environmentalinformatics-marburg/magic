@@ -13,24 +13,26 @@ public class TimeSeries {
 	
 	private static final Logger log = Util.log;
 	
+	public static final TimeSeries EMPTY_TIMESERIES = new TimeSeries(new String[0],new ArrayList<TimeSeriesEntry>(0));
+	
 	String[] parameterNames;	
 	List<TimeSeriesEntry> entryList;
 	
-	TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList) {
+	public TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList) {
 		this.parameterNames = parameterNames;
 		this.entryList = entryList;
 	}
 	
 	@Override
 	public String toString() {
-		int n = parameterNames.length>=10?10:parameterNames.length;
+		int n = entryList.size()>=10?10:entryList.size();
 		String s="";
 		s+="("+entryList.size()+")\t\t";
 		for(int i=0;i<parameterNames.length;i++) {
 			s+=parameterNames[i]+"\t";
 		}
 		s+='\n';
-		for(int i=entryList.size()-n;i<entryList.size();i++) {			
+		for(int i=0;i<n;i++) {			
 			TimeSeriesEntry entry = entryList.get(i);
 			float[] data = entry.data;
 			s+="["+entry.timestamp+"   "+TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"]\t";

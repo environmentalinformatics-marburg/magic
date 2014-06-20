@@ -8,68 +8,49 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.Sensor.AggregationType;
 import de.umr.jepc.store.Event;
 
 public class BaseAggregationProcessor {
 
 	private static final Logger log = Util.log;
-
+	
 	String[] parameterNames;
 	Sensor[] sensors;
-	int[] eventPos;
-
-	int[] aggCnt;
-	float[] aggSum;
-	float[] aggMax;
-
-	boolean aggregate_wind_direction;
-	float wind_u_sum;
-	float wind_v_sum;
-	int wind_cnt;
+	int[] eventPos;// mapping of input event columns to output data columns
+	boolean aggregate_wind_direction;	
 	int wind_direction_pos;
 	int wind_velocity_pos;
 
-	int[] columnEntryCounter;	
+	//*** collector variables for aggregation
+	int[] aggCnt;
+	float[] aggSum;
+	float[] aggMax;
+	float wind_u_sum;
+	float wind_v_sum;
+	int wind_cnt;
+	int[] columnEntryCounter;
+	//***
 
-	public BaseAggregationProcessor(String[] schemaSensorNames, Set<String> baseAggregatonSensorNameSet, Map<String, Sensor> sensorMap) {
-		
-		// create output schema of aggregated data in parameterNames
-		ArrayList<String> parameterNameList = new ArrayList<String>();
-		for(String sensorName:schemaSensorNames) {
-			if(baseAggregatonSensorNameSet.contains(sensorName)) {
-				parameterNameList.add(sensorName);				
-			}
-		}
-		parameterNames = (String[]) parameterNameList.toArray(new String[0]);
+	public BaseAggregationProcessor(TimeSeriesDatabase timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames) {
+		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
+		sensors = timeSeriesDatabase.getSensors(parameterNames);		
+		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
+		prepareWindDirectionAggregation();		
+	}
 
-		// create mapping of input event columns to output data columns
-		eventPos = new int[parameterNames.length];
-		for(int i=0;i<eventPos.length;i++) {
-			eventPos[i] = -1;
-			for(int pos=0;pos<schemaSensorNames.length;pos++) {
-				if(parameterNames[i].equals(schemaSensorNames[pos])) {
-					eventPos[i] = pos;
-					break;
-				}
-			}			
-		}
-		
-		//process sensor metadata
+	private void prepareWindDirectionAggregation() {
 		wind_direction_pos=-1;
 		wind_velocity_pos=-1;
 		aggregate_wind_direction = false;
-		sensors = new Sensor[parameterNames.length];
 		for(int i=0;i<parameterNames.length;i++) {
-			sensors[i] = sensorMap.get(parameterNames[i]);
-			if(sensors[i].baseAggregationType==AggregationType.WIND_DIRECTION) {
+			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_WIND_DIRECTION) {
 				if(wind_direction_pos==-1) {
 					wind_direction_pos = i;
 				} else {
 					log.error("just one wind_direction sensor can be aggregated");
 				}				
 			}
-			if(sensors[i].baseAggregationType==AggregationType.WIND_VELOCITY) {
+			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_WIND_VELOCITY) {
 				if(wind_velocity_pos==-1) {
 					wind_velocity_pos = i;
 				} else {
@@ -77,84 +58,101 @@ public class BaseAggregationProcessor {
 				}				
 			}			
 		}
-		
-		//check if wind direction parameter should be aggregated
-		if(wind_velocity_pos>-1&&wind_direction_pos>-1) {
-			aggregate_wind_direction = true;
-		} else if(wind_velocity_pos>-1||wind_direction_pos>-1) {
-			log.error("either wind_direction or wind_velocity sensor missing");
+
+		if(wind_direction_pos>-1) {
+			if(wind_velocity_pos>-1) {
+				aggregate_wind_direction = true;
+			} else {
+				log.warn("wind_velocity sensor for wind_direction aggregation is missing");
+			}
 		}
-
-		
-
-		
-
-		
-
-		
-
-
 	}
 	
+	private static String[] getResultSchema(TimeSeriesDatabase timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames) {
+		if(querySensorNames==null) {// all available sensors are in result schema
+			// create output schema of aggregated data in parameterNames
+			ArrayList<String> parameterNameList = new ArrayList<String>();
+			for(String sensorName:schemaSensorNames) {
+				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(sensorName)) {
+					parameterNameList.add(sensorName);				
+				}
+			}
+			return (String[]) parameterNameList.toArray(new String[0]);			
+		} else {		
+			Map<String, Integer> schemaSensorNameMap = Util.StringArrayToMap(schemaSensorNames);
+			ArrayList<String> parameterNameList = new ArrayList<String>();		
+			for(String querySensorName:querySensorNames) {
+				if(schemaSensorNameMap.containsKey(querySensorName)) {
+					if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(querySensorName)) {
+						parameterNameList.add(querySensorName);
+					} else {
+						log.warn(querySensorName+" not available in base aggregation: "+timeSeriesDatabase.baseAggregatonSensorNameSet);
+					}
+				} else {
+					log.warn(querySensorName+" not in schema: "+schemaSensorNameMap);
+				}
+			}
+			return (String[]) parameterNameList.toArray(new String[0]);
+		}
+	}
+	
+	/**
+	 * process collected data to aggregates
+	 * @return result or null if there are no valid aggregates
+	 */
 	private float[] aggregateCollectedData() {
-		// result aggregate data
-		float[] data = new float[parameterNames.length];
+		float[] resultData = new float[parameterNames.length];	
+		int validValueCounter=0; //counter of valid aggregates
 
-		//counter of valid aggregates
-		int validValueCounter=0;
-		for(int i=0;i<data.length;i++) {					
-			//System.out.print(aggCnt[i]+" ");
+		for(int i=0;i<parameterNames.length;i++) {					
 			if(aggCnt[i]>0) {// at least one entry has been collected
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
-				case WIND_VELOCITY:	
-					data[i] = aggSum[i]/aggCnt[i];
+				case AVERAGE_WIND_VELOCITY:	
+					resultData[i] = aggSum[i]/aggCnt[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
 					break;
 				case SUM:
-					data[i] = aggSum[i];
+					resultData[i] = aggSum[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
 					break;
 				case MAXIMUM:
-					data[i] = aggMax[i];
+					resultData[i] = aggMax[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
 					break;
 				case NONE:
-					data[i] = Float.NaN;							
-					//log.error("no aggeration for this sensor");
+					resultData[i] = Float.NaN;							
 					break;
-				case WIND_DIRECTION:
+				case AVERAGE_WIND_DIRECTION:
 					if(aggregate_wind_direction) {
 						if(wind_cnt>0) {
 							float u = wind_u_sum/wind_cnt;
 							float v = wind_v_sum/wind_cnt;
 							float temp_radians = (float) (Math.atan2(u, v)+Math.PI); // +Math.PI added
 							float temp_degrees = (float) ((temp_radians*180)/Math.PI);
-							data[i] = temp_degrees;
+							resultData[i] = temp_degrees;
 							validValueCounter++;
 							columnEntryCounter[i]++;
 						}
 					} else {
-						data[i] = Float.NaN;
+						resultData[i] = Float.NaN;
 					}
 					break;							
 				default:
-					data[i] = Float.NaN;
-					log.error("aggration type unknown");
+					resultData[i] = Float.NaN;
+					log.warn("aggration type unknown");
 				}							
-			} else {// no entry in this period
-				data[i] = Float.NaN;
+			} else {// no entry in this aggregation time period
+				resultData[i] = Float.NaN;
 			}
 		}
-		//System.out.println();
-		if(validValueCounter>0) { // if there are some valid aggregates => push entry
-			//entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
-			return data;
+		if(validValueCounter>0) { // if there are some valid aggregates return result data
+			return resultData;
 		}
-		return null;
+		return null; //no aggregates created
 	}
 
 
@@ -172,9 +170,9 @@ public class BaseAggregationProcessor {
 			long timestamp = event.getTimestamp();
 			Object[] payload = event.getPayload();
 
-			long nextAggTimestamp = calcAggregationTimestamp(timestamp);
+			long nextAggTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // all values for aggregation_timestamp are collected
-				if(aggregation_timestamp>-1) {
+				if(aggregation_timestamp>-1) { // if not init timestamp
 					float[] data = aggregateCollectedData();
 					if(data!=null) {
 						entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
@@ -188,29 +186,26 @@ public class BaseAggregationProcessor {
 
 			//collect values for aggregation
 			for(int i=0;i<parameterNames.length;i++) {
-				float value = (float) payload[eventPos[i]];				
-				if(Float.isNaN(value)||value<sensors[i].min||sensors[i].max<value) { // physical range check
-					//not valid value
-				} else {
+				float value = (float) payload[eventPos[i]];
+				if(sensors[i].checkPhysicalRange(value)) {
 					aggCnt[i] ++;					
 					aggSum[i] += value;
 					if(value>aggMax[i]) {
 						aggMax[i] = value;
 					}
 				}
-			}
+			}			
 			if(aggregate_wind_direction) {
 				float wd_degrees = (float) payload[eventPos[wind_direction_pos]];				
-				float ws = (float) payload[eventPos[wind_velocity_pos]];
-				if(!(Float.isNaN(wd_degrees)||Float.isNaN(ws))) {
-					//System.out.println("wd_degrees: "+wd_degrees);
+				float ws = (float) payload[eventPos[wind_velocity_pos]];				
+				if(sensors[wind_direction_pos].checkPhysicalRange(wd_degrees)&&sensors[wind_velocity_pos].checkPhysicalRange(ws)) {
 					float wd_radian = (float) ((wd_degrees*Math.PI)/180f);
 					float u = (float) (-ws * Math.sin(wd_radian));
 					float v = (float) (-ws * Math.cos(wd_radian));
 					wind_u_sum+=u;
 					wind_v_sum+=v;
-					wind_cnt++;
-				}
+					wind_cnt++;			
+				}				
 			}			
 		}  // end of while-loop for raw input-events
 		
@@ -222,6 +217,7 @@ public class BaseAggregationProcessor {
 		
 		//create resulting TimeSeries Object
 		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList);
+		//check and remove empty columns
 		for(int i=0;i<parameterNames.length;i++) {
 			if(columnEntryCounter[i] == 0) {
 				timeSeries.removeEmptyColumns();
@@ -231,8 +227,6 @@ public class BaseAggregationProcessor {
 
 		return timeSeries;
 	}
-
-	
 	
 	private void initAggregates() {
 		aggCnt = new int[parameterNames.length];
@@ -256,23 +250,5 @@ public class BaseAggregationProcessor {
 		wind_cnt=0;
 	}
 
-	public static long calcAggregationTimestamp(long timestamp) {
-		/*
-		//timeseriesdatabase base aggregation timestamps
-		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standard timeseriesdatabase base aggregation with one hour
 
-		if(timestamp%AGGREGATION_TIME_INTERVAL==0) {
-			return timestamp-AGGREGATION_TIME_INTERVAL;
-		} else {
-			return timestamp-timestamp%AGGREGATION_TIME_INTERVAL;
-		}
-		*/
-		
-		//julendat base aggregation timestamps
-		final int AGGREGATION_TIME_INTERVAL = 60; // aggregation for standard timeseriesdatabase base aggregation with one hour
-		return timestamp-timestamp%AGGREGATION_TIME_INTERVAL;
-		
-		
-		
-	}
 }
