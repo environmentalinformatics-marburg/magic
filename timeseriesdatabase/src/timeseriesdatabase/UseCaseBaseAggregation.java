@@ -32,7 +32,7 @@ public class UseCaseBaseAggregation {
 		long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
 		String[] queryParameterNames = new String[] {"Ta_200","WD","WV"};
 		
-		TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, startTimestamp, endTimestamp);
+		TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, null, startTimestamp, endTimestamp);
 		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID, queryParameterNames, startTimestamp, endTimestamp);
 
 		

@@ -81,6 +81,11 @@ public class TimeSeriesDatabase {
 		store.open();		
 	}
 	
+	/**
+	 * for each station type read schema of data, only data of names in this schema is included in the database
+	 * This method creates LoggerType Objects
+	 * @param configFile
+	 */
 	public void readLoggerSchemaConfig(String configFile) {
 		//System.out.println("begin readLoggerSchemaConfig...");
 
@@ -120,9 +125,11 @@ public class TimeSeriesDatabase {
 		//System.out.println("...end");		
 	}
 	
+	/**
+	 * reads properties of stations and creates Station Objects
+	 * @param configFile
+	 */
 	public void readStationConfig(String configFile) {
-		//System.out.println("begin readStationConfig...");
-		
 		Map<String,List<Map<String,String>>> plotIdMap = readStationConfigInternal(configFile);
 		
 		for(Entry<String, List<Map<String, String>>> entryMap:plotIdMap.entrySet()) {
@@ -134,12 +141,13 @@ public class TimeSeriesDatabase {
 				Station station = new Station(this, generalStationName, plotID, entryMap.getValue().get(0));
 				stationMap.put(plotID, station);
 			}
-		}
-		
-		
-		//System.out.println("...end");
+		}	
 	}
 	
+	/**
+	 * reads properties of stations
+	 * @param configFile
+	 */
 	private static Map<String,List<Map<String,String>>> readStationConfigInternal(String config_file) {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(config_file));
@@ -177,9 +185,7 @@ public class TimeSeriesDatabase {
 				if(entries==null) {
 					entries = new ArrayList<Map<String,String>>(1);
 					plotidMap.put(plotid, entries);
-				}
-				
-				
+				}				
 				
 				Map<String,String> valueMap = new HashMap<String, String>();
 				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
@@ -187,24 +193,12 @@ public class TimeSeriesDatabase {
 					String value = row[mapEntry.getValue()];
 					if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {
 						valueMap.put(mapEntry.getKey(), value);
-					}
-					
-					
-					
+					}					
 				}
 				
 				entries.add(valueMap);
 			}
-			
-			/*
-			for(List<Map<String, String>> v:plotidMap.values()) {
-				System.out.println(v);
-			}
-			*/
-			
-			return plotidMap;
-			
-			
+			return plotidMap;			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -213,6 +207,9 @@ public class TimeSeriesDatabase {
 		
 	}
 	
+	/**
+	 * Registers streams for all containing stations (with stream name == plotID)
+	 */
 	public void registerStreams() {
 		System.out.println("register streams...");
 		
@@ -224,13 +221,20 @@ public class TimeSeriesDatabase {
 		System.out.println("...end");
 	}
 	
+	/**
+	 * clears all stream data in EventStore
+	 */
 	public void clear() {
 		store.clear();
 	}
 	
+	/**
+	 * closed EventStore, all data is written to disk
+	 */
 	public void close() {
 		store.close();
 	}
+	
 	
 	public void loadDirectoryOfOneExploratory(Path exploratoriyPath) {
 		log.info("load exploratory:\t"+exploratoriyPath);
@@ -263,6 +267,11 @@ public class TimeSeriesDatabase {
 		
 	}
 	
+	/**
+	 * creates a map of all entries in one section of an "ini"-file
+	 * @param section
+	 * @return
+	 */
 	private Map<String, String> readSensorNameMap(Section section) {
 		Map<String,String> sensorNameMap = new HashMap<String, String>();
 		for(String key:section.keySet()) {

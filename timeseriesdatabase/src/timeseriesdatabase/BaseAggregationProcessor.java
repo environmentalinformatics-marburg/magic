@@ -10,6 +10,21 @@ import org.apache.logging.log4j.Logger;
 
 import de.umr.jepc.store.Event;
 
+/**
+ * processes raw sensor data to aggregated data in base time interval steps
+ * 
+ * implemented processing:
+ * - check if query parameters are in station type schema
+ * - database columns are projected to query parameters
+ * - only data in query time interval is processed
+ * - check if value is in physical valid range
+ * - empty rows and gaps are not part of the result
+ * - empty columns are not in the resulting TimeSeries Object
+ * - all (valid) data in one base time interval is aggregated with special treatment for wind direction aggregate
+ * 
+ * @author Stephan Wöllauer
+ *
+ */
 public class BaseAggregationProcessor {
 
 	private static final Logger log = Util.log;

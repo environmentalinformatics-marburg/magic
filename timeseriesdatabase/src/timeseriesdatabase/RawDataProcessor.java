@@ -9,6 +9,18 @@ import org.apache.logging.log4j.Logger;
 
 import de.umr.jepc.store.Event;
 
+/**
+ * collects raw sensor data and returns a TimeSeries Object
+ * 
+ * Implemented processing:
+ * - return only data with time stamp within query time interval 
+ * - check and mapping from station type to query sensor names
+ * - remove empty rows (rows that consist of NaN values only)
+ * - remove empty columns
+ * 
+ * @author Stephan Wöllauer
+ *
+ */
 public class RawDataProcessor {
 	
 	private static final Logger log = Util.log;
