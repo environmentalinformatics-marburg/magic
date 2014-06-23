@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +58,10 @@ public class Util {
 			}		
 		}
 		return sourcePos;
+	}
+	
+	public static void readTable(String filename) {
+		
 	}
 
 }

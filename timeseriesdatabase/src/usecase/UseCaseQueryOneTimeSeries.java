@@ -1,8 +1,11 @@
-package timeseriesdatabase;
+package usecase;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ProcessingEngine;

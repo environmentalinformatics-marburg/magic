@@ -1,9 +1,13 @@
-package timeseriesdatabase;
+package usecase;
 
 import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import util.Util;
 
 /**
  * UseCaseInitDatabase loads source data into an emptied database.

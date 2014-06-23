@@ -1,5 +1,6 @@
 package timeseriesdatabase;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,6 +13,8 @@ public class GeneralStation {
 	public String name;
 	
 	public Map<String,String> sensorNameTranlationMap;
+	
+	public List<Station> stationList;
 	
 	public GeneralStation(String name) {
 		this.name = name;

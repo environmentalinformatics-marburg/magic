@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
 import de.umr.jepc.store.Event;
 
 /**
@@ -231,7 +232,7 @@ public class BaseAggregationProcessor {
 		}
 		
 		//create resulting TimeSeries Object
-		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList);
+		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList, (long) 60); //TODO
 		//check and remove empty columns
 		for(int i=0;i<parameterNames.length;i++) {
 			if(columnEntryCounter[i] == 0) {

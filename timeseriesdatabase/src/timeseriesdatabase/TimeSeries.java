@@ -9,18 +9,23 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
+
 public class TimeSeries {
 	
 	private static final Logger log = Util.log;
 	
-	public static final TimeSeries EMPTY_TIMESERIES = new TimeSeries(new String[0],new ArrayList<TimeSeriesEntry>(0));
+	public static final TimeSeries EMPTY_TIMESERIES = new TimeSeries(new String[0],new ArrayList<TimeSeriesEntry>(0),null);
 	
-	String[] parameterNames;	
-	List<TimeSeriesEntry> entryList;
+	public String[] parameterNames;	
+	public List<TimeSeriesEntry> entryList;
+	public Long timeinterval; // null if raw data
 	
-	public TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList) {
+	
+	public TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList,Long timeinterval) {
 		this.parameterNames = parameterNames;
 		this.entryList = entryList;
+		this.timeinterval = timeinterval;
 	}
 	
 	@Override
@@ -91,7 +96,7 @@ public class TimeSeries {
 		entryList = newEntryList;
 	}
 	
-	enum CSVTimeType {TIMESTAMP,DATETIME,NONE,TIMESTAMP_AND_DATETIME};
+	public enum CSVTimeType {TIMESTAMP,DATETIME,NONE,TIMESTAMP_AND_DATETIME};
 	
 	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
@@ -170,7 +175,45 @@ public class TimeSeries {
 				resultList.add(entry);
 			}
 		}
-		return new TimeSeries(parameterNames,resultList);
+		return new TimeSeries(parameterNames,resultList,timeinterval);
+	}
+	
+	public List<Long> getNaNList(String parameterName) {
+		
+		int columnID = Util.StringArrayToMap(parameterNames).get(parameterName);
+
+		List<Long> gapList = new ArrayList<Long>();
+		long currentTimeStamp = -1;
+		for(TimeSeriesEntry entry:entryList) {
+			if(!Float.isNaN(entry.data[columnID])) {
+				long nextTimeStamp = entry.timestamp;
+				if(currentTimeStamp>-1&&currentTimeStamp+timeinterval<nextTimeStamp) {
+					System.out.println("gap: "+(nextTimeStamp-(currentTimeStamp+timeinterval)));
+					gapList.add(nextTimeStamp);
+				}
+				currentTimeStamp = nextTimeStamp;
+			}
+		}
+		return gapList;
+	}
+	
+	public TimeSeries getGapTimeSeries() {
+		List<TimeSeriesEntry> gapList = new ArrayList<TimeSeriesEntry>();
+		long currentTimeStamp = -1;
+		for(TimeSeriesEntry entry:entryList) {
+				long nextTimeStamp = entry.timestamp;
+				while(currentTimeStamp>-1 && currentTimeStamp+timeinterval<nextTimeStamp) {
+					currentTimeStamp += timeinterval;
+					float[] gapData = new float[parameterNames.length];
+					for(int i=0;i<parameterNames.length;i++) {
+						gapData[i] = Float.NaN;
+					}
+					gapList.add(new TimeSeriesEntry(currentTimeStamp, gapData));
+				}
+				gapList.add(entry);
+				currentTimeStamp = nextTimeStamp;
+		}
+		return new TimeSeries(parameterNames,gapList,timeinterval);
 	}
 
 }

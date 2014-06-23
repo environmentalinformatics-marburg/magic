@@ -2,7 +2,7 @@ package timeseriesdatabase;
 
 public class BaseAggregationTimeUtil {
 	
-	private final static int AGGREGATION_TIME_INTERVAL = 60; // time interval of aggregation in minutes 
+	public final static int AGGREGATION_TIME_INTERVAL = 60; // time interval of aggregation in minutes 
 	
 	public static long calcBaseAggregationTimestamp(long timestamp) {
 		/*

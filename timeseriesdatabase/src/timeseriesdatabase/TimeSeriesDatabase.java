@@ -12,6 +12,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,12 +20,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ini4j.BasicMultiMap;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
+import util.Table;
+import util.Util;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
@@ -41,7 +46,7 @@ public class TimeSeriesDatabase {
 	
 	private static final Logger log = Util.log;
 	
-	TimeSplitBTreeEventStore store;
+	public TimeSplitBTreeEventStore store;
 	
 	public Map<String,LoggerType> loggerTypeMap;
 	
@@ -480,7 +485,7 @@ public class TimeSeriesDatabase {
 	 * @param end
 	 * @return
 	 */
-	public TimeSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, long start, long end) {		
+	public TimeSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
@@ -489,6 +494,45 @@ public class TimeSeriesDatabase {
 		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start, end);
 		return timeseries;
 	}
+	
+	
+	public TimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {
+		Station station = stationMap.get(plotID);
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return TimeSeries.EMPTY_TIMESERIES; 				
+		}
+		TimeSeries ___timeseries = station.queryBaseAggregatedDataGapFilled(querySensorNames, start, end);
+		
+		TimeSeries gapTimeSeries = ___timeseries.getGapTimeSeries();
+		
+		final int STATION_INTERPOLATION_COUNT = 2;
+		
+		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
+		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
+			interpolationStations[i] = station.nearestStationList.get(i);
+		}
+		
+		
+		for(int parameterIndex=0;parameterIndex<gapTimeSeries.parameterNames.length;parameterIndex++) {
+			System.out.println("gapfilling for: "+gapTimeSeries.parameterNames[parameterIndex]);
+			for(int i=0;i<interpolationStations.length;i++) {
+				interpolationStations[i].queryBaseAggregatedData(new String[]{gapTimeSeries.parameterNames[parameterIndex]}, null, null);
+			}
+			for(int rowIndex=0;rowIndex<gapTimeSeries.entryList.size();rowIndex++) {
+				TimeSeriesEntry entry = gapTimeSeries.entryList.get(rowIndex);
+				if(Float.isNaN(entry.data[parameterIndex])) {
+					// TODO: interpolation
+					entry.data[parameterIndex] = -99;
+				}
+			}
+		}
+		
+		
+		
+		return gapTimeSeries;
+	}
+	
 	
 	public TimeSeries queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
@@ -528,4 +572,117 @@ public class TimeSeriesDatabase {
 		}
 		return sensors;
 	}
+	
+	public void readStationGeoPositionConfig(String config_file) {
+
+		try{
+		
+		Table table = Table.readCSV(config_file);
+		
+		int plotidIndex = table.getColumnIndex("PlotID");
+		int epplotidIndex = table.getColumnIndex("EP_Plotid");
+		int lonIndex = table.getColumnIndex("Lon");
+		int latIndex = table.getColumnIndex("Lat");
+		
+		
+		for(String[] row:table.rows) {
+			String plotID = row[epplotidIndex];
+			if(!plotID.endsWith("_canceled")) {
+				Station station = stationMap.get(plotID);
+				if(station!=null) {
+					
+					try {
+					
+					double lon = Double.parseDouble(row[lonIndex]);
+					double lat = Double.parseDouble(row[latIndex]);
+					
+					station.geoPoslongitude = lon;
+					station.geoPosLatitude = lat;
+					
+					GeneralStation generalStation = generalStationMap.get(station.generalStationName);
+					if(generalStation!=null) {
+					//System.out.println(station.generalStationName+": "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+					} else {
+						log.warn("general station not found: "+station.generalStationName+" in "+plotID);
+					}
+					
+					} catch(Exception e) {
+						log.warn("geo pos not read: "+plotID);
+					}
+					
+				} else {
+					log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+				}
+			}
+		}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		calcNearestStations();
+		
+	}
+	
+	public void updateGeneralStations() {
+		
+		for(GeneralStation g:generalStationMap.values()) {
+			g.stationList = new ArrayList<Station>();
+		}
+		
+		for(Station station:stationMap.values()) {
+			generalStationMap.get(station.generalStationName).stationList.add(station);
+		}
+		
+	}
+	
+	public void calcNearestStations() {
+		updateGeneralStations();
+		
+		for(Station station:stationMap.values()) {
+			
+			
+			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
+			
+			List<Object[]> differenceList = new ArrayList<Object[]>();
+			
+			List<Station> stationList = generalStationMap.get(station.generalStationName).stationList;
+			//System.out.println(station.plotID+" --> "+stationList);
+			for(Station targetStation:stationList) {
+				if(station!=targetStation) { // reference compare
+					double[] targetGeoPos = transformCoordinates(targetStation.geoPoslongitude,targetStation.geoPosLatitude);
+					double difference = getDifference(geoPos, targetGeoPos);
+					differenceList.add(new Object[]{difference,targetStation});
+				}
+			}
+			
+			differenceList.sort(new Comparator<Object[]>() {
+
+				@Override
+				public int compare(Object[] o1, Object[] o2) {
+					double d1 = (double) o1[0];
+					double d2 = (double) o2[0];					
+					return Double.compare(d1, d2);
+				}
+			});
+			
+			List<Station> targetStationList = new ArrayList<Station>(differenceList.size());
+			for(Object[] targetStation:differenceList) {
+				targetStationList.add((Station) targetStation[1]);
+			}
+			
+			station.nearestStationList = targetStationList;
+			//System.out.println(station.plotID+" --> "+station.nearestStationList);
+		}
+		
+	}
+	
+	public static double[] transformCoordinates(double longitude, double latitude) {
+		// TODO: do real transformation
+		return new double[]{longitude,latitude};
+	}
+	
+	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
+		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
+	}
+
 }

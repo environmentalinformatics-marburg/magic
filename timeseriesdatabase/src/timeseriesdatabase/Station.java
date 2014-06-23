@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -39,6 +40,9 @@ public class Station {
 	 */
 	public String plotID;
 	
+	public double geoPoslongitude;
+	public double geoPosLatitude;
+	
 	/**
 	 * general properties like logger type
 	 */
@@ -54,7 +58,12 @@ public class Station {
 	 * The general name of this plotID for example HEG03 it is HEG
 	 * This name belongs to a GeneralStation Object
 	 */
-	private String generalStationName;
+	public String generalStationName;
+	
+	/**
+	 * list of stations of same general station id ordered by position difference to this station
+	 */
+	public List<Station> nearestStationList;
 	
 	/**
 	 * This set contains all time stamps of inserted events.
@@ -77,6 +86,8 @@ public class Station {
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.propertyMap = propertyMap;
+		this.geoPoslongitude = Float.NaN;
+		this.geoPosLatitude = Float.NaN;
 		
 		sensorNameTranlationMap = new HashMap<String, String>();
 
@@ -433,6 +444,12 @@ public class Station {
 		return baseAggregationProcessor.process(it);
 	}
 	
+	public TimeSeries queryBaseAggregatedDataGapFilled(String [] querySensorNames, Long start, Long end) {
+		TimeSeries timeseries = queryBaseAggregatedData(querySensorNames, start, end);
+		//TODO		
+		return timeseries;
+	}
+	
 	/**
 	 * Get raw sensor data
 	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
@@ -461,5 +478,10 @@ public class Station {
 			}
 		}		
 		return rawDataProcessor.process(it);
+	}
+	
+	@Override
+	public String toString() {
+		return plotID;
 	}
 }

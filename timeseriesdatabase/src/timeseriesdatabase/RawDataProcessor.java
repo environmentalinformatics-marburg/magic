@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
 import de.umr.jepc.store.Event;
 
 /**
@@ -58,7 +59,7 @@ public class RawDataProcessor {
 			}
 		}
 
-		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList);
+		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList, null);
 		timeSeries.removeEmptyColumns();		
 		return timeSeries;
 	}

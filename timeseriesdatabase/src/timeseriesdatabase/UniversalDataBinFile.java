@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
+
 /**
  * UniversalDataBinFile reads, cleans and structures data of a UDBF-File.
  * @author Stephan Wöllauer

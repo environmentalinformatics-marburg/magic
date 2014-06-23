@@ -3,6 +3,8 @@ package timeseriesdatabase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import util.Util;
+
 /**
  * Factory for TimeSeriesDatabase
  * @author Stephan Wöllauer
@@ -25,6 +27,7 @@ public class TimeSeriesDatabaseFactory {
 		timeSeriesDatabase.readIgnoreSensorNameConfig("config/ignore_sensor_name_list.txt");
 		timeSeriesDatabase.readSensorRangeConfig("config/sensor_range_config.ini");
 		timeSeriesDatabase.readBaseAggregationConfig("config/base_aggregation_config.ini");
+		timeSeriesDatabase.readStationGeoPositionConfig("config/be_station_master.csv");
 		
 		return timeSeriesDatabase;
 		
