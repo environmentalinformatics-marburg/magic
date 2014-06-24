@@ -15,6 +15,8 @@ public class GapFiller {
 	
 	public static void process(long sourceStartTimestamp, float[][] source, long targetStartTimestamp, float[] target, int timeinterval) {
 		
+		int interpolatedgapCount = 0;
+		
 		if((targetStartTimestamp-sourceStartTimestamp)%timeinterval!=0) {
 			log.error("wrong alignment between sourceStartTimestamp and targetStartTimestamp "+sourceStartTimestamp+"\t"+targetStartTimestamp+"\t"+timeinterval);
 		}
@@ -28,7 +30,11 @@ public class GapFiller {
 			int sourceTrainingStartIndex = sourceGapPositionIndex-TRAINING_VALUE_COUNT;
 			int targetTrainingStartIndex = i-TRAINING_VALUE_COUNT;
 			
-			System.out.println("gap: "+i+" sourceTrainingStartIndex: "+sourceTrainingStartIndex+"\t targetTrainingStartIndex: "+targetTrainingStartIndex);
+			if(source[0].length<sourceTrainingStartIndex+TRAINING_VALUE_COUNT) {
+				return;
+			}
+			
+			//System.out.println("gap: "+i+" sourceTrainingStartIndex: "+sourceTrainingStartIndex+"\t targetTrainingStartIndex: "+targetTrainingStartIndex);
 
 			if(sourceTrainingStartIndex>=0 && targetTrainingStartIndex>=0) {
 				boolean vaildData = true;
@@ -72,16 +78,17 @@ public class GapFiller {
 						gapValue += source[stationIndex][sourceGapPositionIndex]*a[1+stationIndex];
 					}
 					
-					System.out.println("gapValue: "+gapValue);
+					System.out.println(i+" gapValue: "+gapValue+"\t"+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+i));
 					
 					target[i] = (float) gapValue;
+					interpolatedgapCount++;
 					
 					//***
 					
 					
 					
 				} else {
-					System.out.println("data not valid");
+					//System.out.println("data not valid");
 				}
 			}
 			
@@ -89,6 +96,8 @@ public class GapFiller {
 				
 			}
 		}
+		
+		System.out.println("interpolatedgapCount: "+interpolatedgapCount);
 		
 	}
 	

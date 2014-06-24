@@ -497,19 +497,32 @@ public class TimeSeriesDatabase {
 	
 	
 	public BaseTimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {
+		
+		final int STATION_INTERPOLATION_COUNT = 15;
+		
+		final int TRAINING_VALUE_COUNT = 24*7*4; // four weeks with one hoer time step
+		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return null; 				
 		}
-		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, null, null);
+		
+		if(start==null) {
+			start = (long) Integer.MIN_VALUE;
+		}
+		if(end==null) {
+			end = (long) Integer.MAX_VALUE;
+		}
+		
+		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start- (TRAINING_VALUE_COUNT*60), end); // TODO
 
 		long startTimestamp = timeseries.getFirstTimestamp();
 		long endTimestamp = timeseries.getLastTimestamp();
 
 		BaseTimeSeries resultBaseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);
 
-		final int STATION_INTERPOLATION_COUNT = 2;
+		
 
 		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
 		BaseTimeSeries[] interpolationBaseTimeseries = new BaseTimeSeries[STATION_INTERPOLATION_COUNT];
@@ -520,40 +533,17 @@ public class TimeSeriesDatabase {
 		}
 		
 		
-		
-		return resultBaseTimeSeries;
-		
-		
-		
-		/*
-		
-		TimeSeries gapTimeSeries = ___timeseries.getGapTimeSeries();
-		
-		final int STATION_INTERPOLATION_COUNT = 2;
-		
-		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
-		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
-			interpolationStations[i] = station.nearestStationList.get(i);
-		}
-		
-		
-		for(int parameterIndex=0;parameterIndex<gapTimeSeries.parameterNames.length;parameterIndex++) {
-			System.out.println("gapfilling for: "+gapTimeSeries.parameterNames[parameterIndex]);
-			for(int i=0;i<interpolationStations.length;i++) {
-				interpolationStations[i].queryBaseAggregatedData(new String[]{gapTimeSeries.parameterNames[parameterIndex]}, null, null);
-			}
-			for(int rowIndex=0;rowIndex<gapTimeSeries.entryList.size();rowIndex++) {
-				TimeSeriesEntry entry = gapTimeSeries.entryList.get(rowIndex);
-				if(Float.isNaN(entry.data[parameterIndex])) {
-					// TODO: interpolation
-					entry.data[parameterIndex] = -99;
-				}
-			}
+		for(String parameterName:querySensorNames) {
+			GapFiller.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
 		}
 		
 		
 		
-		return gapTimeSeries;*/
+		return resultBaseTimeSeries.getClipped(start, end);
+		
+		
+		
+
 	}
 	
 	

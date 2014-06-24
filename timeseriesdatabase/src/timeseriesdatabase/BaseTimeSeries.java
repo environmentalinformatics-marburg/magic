@@ -32,15 +32,81 @@ public class BaseTimeSeries {
 	public static BaseTimeSeries toBaseTimeSeries(long startTimestamp, long endTimestamp, TimeSeries timeSeries) {
 		if(timeSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
+		}		
+		int timeStep = timeSeries.timeinterval;
+		if(endTimestamp<startTimestamp) {
+			log.error("error");
+		}
+		if((endTimestamp-startTimestamp)%timeStep!=0) {
+			log.error("error");
+		}
+		
+		Iterator<TimeSeriesEntry> it = timeSeries.entryList.iterator();
+		TimeSeriesEntry nextEntry;		
+		if(it.hasNext()) {
+			nextEntry = it.next();
+			if(nextEntry.timestamp%timeStep!=0) {
+				log.error("wrong data");
+			}
+		} else {
+		    nextEntry = null;
+		}
+		
+		while(nextEntry!=null&&nextEntry.timestamp<startTimestamp) {
+			if(it.hasNext()) {
+				nextEntry = it.next();
+				if(nextEntry.timestamp%timeStep!=0) {
+					log.error("wrong data");
+				}
+			} else {
+			    nextEntry = null;
+			}
+		}
+		
+		float[][] resultData = new float[timeSeries.parameterNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
+		int dataIndex=0;
+		for(long timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=timeStep) {
+			if(nextEntry!=null&&nextEntry.timestamp==timestamp) {
+				// insert row
+				for(int columnIndex=0;columnIndex<timeSeries.parameterNames.length;columnIndex++) {
+					resultData[columnIndex][dataIndex] = nextEntry.data[columnIndex];
+					if(it.hasNext()) {
+						nextEntry = it.next();
+						if(nextEntry.timestamp%timeStep!=0) {
+							log.error("wrong data");
+						}
+					} else {
+					    nextEntry = null;
+					}
+				}
+			} else if(nextEntry!=null&&nextEntry.timestamp<timestamp) {
+				log.error("error: nextEntry.timestamp "+nextEntry.timestamp+"\t timestamp"+timestamp);
+			} else {
+				// insert NaN
+				for(int columnIndex=0;columnIndex<timeSeries.parameterNames.length;columnIndex++) {
+					resultData[columnIndex][dataIndex] = Float.NaN;					
+				}
+			}
+			dataIndex++;
+		}
+		
+		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeStep, resultData);
+		
+		
+		
+		/*
+		if(timeSeries.timeinterval==null) {
+			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
 		}
 		Integer timeinterval = timeSeries.timeinterval;
 		List<TimeSeriesEntry> gapList = new ArrayList<TimeSeriesEntry>();
 		
 		Iterator<TimeSeriesEntry> it = timeSeries.entryList.iterator();
-		TimeSeriesEntry nextEntry = null;
-		
+		TimeSeriesEntry nextEntry = null;		
 		if(it.hasNext()) {
-			nextEntry = it.next();
+			nextEntry = it.next();			
+		} else {
+		    nextEntry = null;
 		}		
 		
 		for(long timestamp=startTimestamp; timestamp<=endTimestamp; timestamp+=timeinterval) {			
@@ -77,7 +143,7 @@ public class BaseTimeSeries {
 			}
 		}
 		
-		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeinterval, data);	
+		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeinterval, data);*/	
 	}
 	
 	public String toString() {
@@ -162,6 +228,30 @@ public class BaseTimeSeries {
 	
 	public float[] getValues(String parameterName) {
 		return data[getParameterNameIndex(parameterName)];
+	}
+	
+	public BaseTimeSeries getClipped(long clipStartTimestamp, long clipEndTimestamp) {
+		if(clipStartTimestamp>clipEndTimestamp) {
+			log.error("wrong data");
+			return null;
+		}
+		if(clipStartTimestamp%timeStep!=0||clipEndTimestamp%timeStep!=0) {
+			log.error("timeststamps not alligned");
+			return null;			
+		}
+		float[][] resultData = new float[parameterNames.length][(int) (((clipEndTimestamp-clipStartTimestamp)/timeStep)+1)];
+		for(long timestamp=clipStartTimestamp;timestamp<=clipEndTimestamp;timestamp+=timeStep) {
+			if(timestamp<startTimestamp || timestamp>startTimestamp+(this.data[0].length*timeStep)) {
+				for(int i=0; i<parameterNames.length; i++) {
+					resultData[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = Float.NaN;
+				}
+			} else {
+				for(int i=0; i<parameterNames.length; i++) {
+					resultData[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = this.data[i][(int) ((timestamp-startTimestamp)/timeStep)];
+				}
+			}
+		}
+		return new BaseTimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData);
 	}
 
 }

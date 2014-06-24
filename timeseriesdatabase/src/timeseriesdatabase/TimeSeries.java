@@ -154,7 +154,7 @@ public class TimeSeries {
 						printStream.print(nanText);
 					} else {
 						//s+=Util.floatToString(entry.data[i]);
-						printStream.format(Locale.ENGLISH," %3.3f", entry.data[i]);
+						printStream.format(Locale.ENGLISH,"%3.3f", entry.data[i]);
 					}
 				}
 				printStream.println();

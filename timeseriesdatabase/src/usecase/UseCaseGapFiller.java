@@ -72,10 +72,7 @@ public class UseCaseGapFiller {
     	System.out.println("write to file...");
     	
     	targetBaseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
-    	
-		//BaseTimeSeries baseTimeSeries = new BaseTimeSeries(parameterNames, sourceStartTimestamp, TIMEINTERVAL, source);    	
-    	//baseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
-    	
+
     	
     	
     	
