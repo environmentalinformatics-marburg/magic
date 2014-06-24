@@ -6,7 +6,7 @@ import java.util.List;
 
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeries;
-import timeseriesdatabase.TimeSeries.CSVTimeType;
+import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import de.umr.eventstore.Stream;

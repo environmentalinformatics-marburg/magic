@@ -96,8 +96,6 @@ public class TimeSeries {
 		entryList = newEntryList;
 	}
 	
-	public enum CSVTimeType {TIMESTAMP,DATETIME,NONE,TIMESTAMP_AND_DATETIME};
-	
 	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
