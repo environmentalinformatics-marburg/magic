@@ -6,7 +6,7 @@ rm(list = ls(all = T))
 # Working directory
 switch(Sys.info()[["sysname"]], 
        "Linux" = {path.wd <- "/media/pa_NDown/ki_modis_ndvi/"}, 
-       "Windows" = {path.wd <- "G:/ki_modis_ndvi"})
+       "Windows" = {path.wd <- "F:/ki_modis_ndvi"})
 setwd(path.wd)
 
 # Required packages and functions
@@ -16,57 +16,70 @@ sapply(lib, function(...) require(..., character.only = T))
 fun <- paste("src", c("kifiRemoveDuplicates.R", "kifiExtractDoy.R"), sep = "/")
 sapply(fun, source)
 
+# Parallelization
+registerDoParallel(cl <- makeCluster(4))
+
 
 ### Data import
 
-# Stack MODIS fire data
-registerDoParallel(cl <- makeCluster(n.cores <- 4))
-modis.fire.stacks <- foreach(i = c("MOD.*FireMask", "MYD.*FireMask")) %do% {
-  tmp.fls <- list.files("data/MODIS_ARC/PROCESSED/md14_tmp/", 
-                        pattern = i, recursive = T, full.names = T)
+# Update MODIS collection, 
+# extract relevant SDS layers
+# and reproject to EPSG:32737 (UTM-37S, WGS84)
+kifiModisDownload(modis.products = c("MOD14A1", "MYD14A1"), 
+                  modis.download.only = FALSE, 
+                  modis.outproj = "EPSG:32737", 
+                  tileH = 21, tileV = 9, SDSstring = "1100", job = "md14_tmp")
 
-  tmp.stack <- foreach(j = tmp.fls, .packages= lib) %dopar%
-    projectRaster(crop(stack(j), extent(37, 37.72, -3.4, -2.84)), 
-                  crs = "+init=epsg:32737", method = "ngb", overwrite = T,
-                  filename = paste("data/crop", basename(j), sep = "/"))
+# Crop MODIS fire data
+template.ext.ll <- extent(37, 37.72, -3.4, -2.84)
+template.rst.ll <- raster(ext = template.ext.ll)
+template.rst.utm <- projectExtent(template.rst.ll, crs = "+init=epsg:32737")
+
+modis.fire.stacks <- foreach(i = c("MOD.*FireMask", "MYD.*FireMask"), 
+                             .packages = lib) %dopar% {
+                               
+  tmp.fls <- list.files("data/MODIS_ARC/PROCESSED/md14_tmp/", 
+                        pattern = i, recursive = TRUE, full.names = TRUE)
+
+  # Crop and reproject fire data, removing possible NA margins
+  tmp.stack <- foreach(j = tmp.fls) %do% {
+    crop(stack(j), template.rst.utm, 
+         filename = paste("data/crop", basename(j), sep = "/"),  
+         overwrite = TRUE)
+  }
+  
   return(tmp.stack)
 }
 
-# modis.fire.stacks <- foreach(i = c("MOD.*FireMask", "MYD.*FireMask")) %do% {
-#   tmp.fls <- list.files("data/crop", pattern = i, recursive = T, full.names = T)
-#   
-#   tmp.stack <- foreach(j = tmp.fls, .packages= lib) %dopar% stack(j)
-#   return(tmp.stack)
-# }
-
-# Unstack RasterStack objects 
-modis.fire.rasters <- foreach(i = modis.fire.stacks) %do% {
-  Reduce("append", foreach(j = i, .packages = lib) %dopar% {
-    if (nlayers(j) == 1) return(j[[1]]) else return(unstack(j))
-  })
+modis.fire.rasters <- foreach(i = c("MOD.*FireMask", "MYD.*FireMask"), 
+                             .packages = lib) %dopar% {
+  tmp.fls <- list.files("data/crop", pattern = i, recursive = TRUE, 
+                        full.names = TRUE)
+  
+  return(Reduce("append", lapply(tmp.fls, function(x) unstack(stack(x)))))
 }
 
 # Remove duplicated RasterLayers
-modis.fire.rasters <- kifiRemoveDuplicates(hdf.path = "data/MODIS_ARC", 
+modis.fire.rasters.rmdupl <- kifiRemoveDuplicates(hdf.path = "data/MODIS_ARC", 
                                            hdf.pattern = c("MOD14A1.*.hdf$", "MYD14A1.*.hdf$"), 
                                            data = modis.fire.rasters, 
                                            n.cores = 4)
 
 # Import information about availability of MOD/MYD14A1
-# kifiExtractDoy(hdf.path = "data/MODIS_ARC", 
-#                hdf.doy.path = "data/md14_doy_availability.csv", 
-#                hdf.pattern = c("MOD14A1.*.hdf$", "MYD14A1.*.hdf$"), 
-#                n.cores = 4)
+kifiExtractDoy(hdf.path = "data/MODIS_ARC", 
+               hdf.doy.path = "data/md14_doy_availability.csv", 
+               hdf.pattern = c("MOD14A1.*.hdf$", "MYD14A1.*.hdf$"), 
+               n.cores = 4)
 modis.fire.avl <- read.csv("data/md14_doy_availability.csv")
 
-# Change filepath of MODIS Terra and Aqua data (necessary when switching from Linux to Windows)
-modis.fire.rasters <- foreach(i = modis.fire.rasters) %do% {
-  foreach(j = seq(i)) %do% {
-    tmp <- i[[j]]
-    tmp@file@name <- gsub("/media/pa_NDown", "G:", tmp@file@name)
-    return(tmp)
-  }
-}
+# # Change filepath of MODIS Terra and Aqua data (necessary when switching from Linux to Windows)
+# modis.fire.rasters <- foreach(i = modis.fire.rasters) %do% {
+#   foreach(j = seq(i)) %do% {
+#     tmp <- i[[j]]
+#     tmp@file@name <- gsub("/media/pa_NDown", "G:", tmp@file@name)
+#     return(tmp)
+#   }
+# }
 
 
 ### Merge MODIS Terra and Aqua

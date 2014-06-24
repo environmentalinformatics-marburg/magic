@@ -1,17 +1,18 @@
 probRst <- function(fire.scenes, 
-                    fire.ts.fls, 
+                    fire.dates, 
                     fire.rst, 
                     ndvi.rst, 
                     fire.mat, 
                     ndvi.mat, 
                     model, 
                     type = "prob", 
+                    id = 300,
                     n.cores = 2, 
                     ...) {
   
   # Required packages
-  lib <- c("raster", "rgdal", "foreach", "party")
-  sapply(lib, function(x) stopifnot(require(x, character.only = T)))
+  lib <- c("raster", "rgdal", "foreach", "randomForest")
+  sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
   
   # Parallelization
   registerDoParallel(cl <- makeCluster(n.cores))
@@ -29,12 +30,12 @@ probRst <- function(fire.scenes,
       tmp <- fire.rst[[i]]
       tmp[][-j] <- NA
       tmp.shp <- rasterToPolygons(tmp)
-      ndvi.cells <- cellsFromExtent(ndvi.rst[[300]], extent(tmp.shp))
+      ndvi.cells <- cellsFromExtent(ndvi.rst[[id]], extent(tmp.shp))
       
       
-      ## Identify last/next valid layer in case of missing NDVI
+      ## Identify preceding/succeeding valid layer in case of missing NDVI
       
-      # Before fire
+      # One time step before fire
       gap.before <- 0
       na_in_ndvi <- any(is.na(t(ndvi.mat[[i-1]])[ndvi.cells]))
       
@@ -46,37 +47,35 @@ probRst <- function(fire.scenes,
       
       # Two time steps before fire
       gap.2_before <- 0
-      na_in_ndvi <- any(is.na(t(ndvi.mat[[i-(gap.before+1)-1]])[ndvi.cells]))
+      na_in_ndvi <- any(is.na(t(ndvi.mat[[i-(gap.before+1)-2]])[ndvi.cells]))
       
       while (na_in_ndvi) {
-        gap.2_before <- gap.2_before + 1
+        gap.2_before <- gap.2_before + 2
         
-        na_in_ndvi <- any(is.na(t(ndvi.mat[[i-(gap.before+1)-1-gap.2_before]])[ndvi.cells]))
+        na_in_ndvi <- any(is.na(t(ndvi.mat[[i-(gap.before+1)-2-gap.2_before]])[ndvi.cells]))
       }
       
-      # After fire
+      # One time step after fire
       gap.after <- 0
       na_in_ndvi <- any(is.na(t(ndvi.mat[[i+1]])[ndvi.cells]))
       
       while (na_in_ndvi) {
-        gap.after <- gap.after + 1
+        gap.after <- gap.after + ifelse(gap.before %% 2 == 0, 2, 1)
         
         na_in_ndvi <- any(is.na(t(ndvi.mat[[i+1+gap.after]])[ndvi.cells]))
       }
       
-      # Skip current iteration in case of fire distortion / missing fire data
-      fire.before <- sapply(fire.mat[(i-(gap.before+1)-1-gap.2_before):(i-1)], function(k) t(k)[j])
+      # Skip current iteration in case of preceding/succeeding fire distortion 
+      # or missing fire data      
+      fire.before <- sapply(fire.mat[(i-(gap.before+1)-2-gap.2_before):(i-1)], function(k) t(k)[j])
       fire.after <- sapply(fire.mat[(i+1):(i+gap.after+1)], function(k) t(k)[j])
       
       if (any(c(fire.before > 0, is.na(fire.before),
-                fire.after > 0, is.na(fire.after)), na.rm = T)) return(NULL)
+                fire.after > 0, is.na(fire.after)), na.rm = TRUE)) return(NULL)
       
-      # Merge valid fire/NDVI layers and extract corresponding dates
-      tmp.fire <- fire.mat[c(i-(gap.before+1)-1-gap.2_before, i-1-gap.before, i+1+gap.after)]
-      tmp.ndvi <- ndvi.mat[c(i-(gap.before+1)-1-gap.2_before, i-1-gap.before, i+1+gap.after)]
-      
-      tmp.date <- fire.ts.fls[i, 1]
-      
+      # Subset valid NDVI layers and extract date of fire event
+      tmp.ndvi <- ndvi.mat[c(i-(gap.before+1)-2-gap.2_before, i-1-gap.before, i+1+gap.after)]
+            
       
       ## Relation between change difference from NDVI before to after the fire
       
@@ -113,7 +112,7 @@ probRst <- function(fire.scenes,
       ndvi.meandev <- round(ndvi.dev2 / 10000, digits = 3)
       
       # Merge data
-      model.input <- data.frame(date = tmp.date, 
+      model.input <- data.frame(date = fire.dates[i], 
                                 scene_fire = i, 
                                 cell_fire = j, 
                                 cell_ndvi = ndvi.cells, 
@@ -124,10 +123,10 @@ probRst <- function(fire.scenes,
       # Predict fire probabilities
       model.output <- predict(model, newdata = model.input, type = type)
       
-      tmp <- ndvi.rst[[300]]
+      tmp <- ndvi.rst[[id]]
       tmp[][-ndvi.cells] <- 0
       tmp[ndvi.cells] <- if (type == "prob") {
-        sapply(model.output, "[[", 2)
+        model.output[, 2]
       } else {
         ifelse(model.output == 0, 0, 1)
       }

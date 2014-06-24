@@ -5,119 +5,106 @@ rm(list = ls(all = TRUE))
 
 # Working directory
 switch(Sys.info()[["sysname"]], 
-       "Linux" = {path.wd <- "/media/pa_NDown/ki_modis_ndvi/"}, 
-       "Windows" = {path.wd <- "G:/ki_modis_ndvi"})
-setwd(path.wd)
+       "Linux" = setwd("/media/fdetsch/XChange/kilimanjaro/ndvi/"), 
+       "Windows" = setwd("F:/kilimanjaro/ndvi"))
 
 # Required packages and functions
-lib <- c("doParallel", "raster", "rgdal", "party", 
+lib <- c("doParallel", "raster", "rgdal", "randomForest",
          "latticeExtra", "popbio", "ggplot2")
-sapply(lib, function(x) stopifnot(require(x, character.only = T)))
+sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
-fun <- paste("src", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
-                      "ndviCell.R", "evalTree.R"), sep = "/")
+fun <- paste0("src/", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
+                        "ndviCell.R", "evalTree.R"))
 sapply(fun, source)
 
 # Parallelization
-registerDoParallel(cl <- makeCluster(4))
+registerDoParallel(cl <- makeCluster(3))
 
 
 ### Data import
 
 ## MODIS NDVI 
 
-# List files and order by date
-ndvi.fls <- list.files("data/quality_control/", recursive = T, full.names = T)
+# Import Whittaker-filled files (2003-2013)
+ndvi.rst.wht <- lapply(c("mod13q1", "myd13q1"), function(i) {
+  ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
+                         pattern = "^NDVI_Yearly.*_year.*.tif$", 
+                         full.names = TRUE)
+  
+  st <- ifelse(i == "mod13q1", "2001", "2003")
+  nd <- "2013"
+  
+  ndvi.fls <- ndvi.fls[grep(st, ndvi.fls):grep(nd, ndvi.fls)]
+  ndvi.rst <- stack(ndvi.fls)
+  
+  # Import corresponding date information
+  ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/outProj/", 
+                              pattern = paste0(toupper(i), ".*_NDVI.tif$"))
+  ndvi.fls.init <- ndvi.fls.init[grep(st, ndvi.fls.init)[1]:
+                                   grep(nd, ndvi.fls.init)[length(grep(nd, ndvi.fls.init))]]
+  ndvi.dates <- as.Date(substr(ndvi.fls.init, 10, 16), format = "%Y%j")
+  
+  # Return RasterStack and corresponding layer dates
+  return(list(ndvi.rst, ndvi.dates))
+})
 
-ndvi.dates <- substr(basename(ndvi.fls), 13, 19)
-ndvi.years <- unique(substr(basename(ndvi.fls), 13, 16))
+# Rearrange raster layers according to date information
+dates <- do.call("c", sapply(ndvi.rst.wht, "[[", 2))
+index <- order(dates)
+dates <- dates[index]
 
-ndvi.fls <- ndvi.fls[order(ndvi.dates)]
+ndvi.stck.wht <- stack(sapply(ndvi.rst.wht, "[[", 1))
+ndvi.stck.wht <- ndvi.stck.wht[[index]]
 
 # Setup time series
-ndvi.ts <- do.call("c", lapply(ndvi.years, function(i) { 
+ndvi.ts <- do.call("c", lapply(2001:2013, function(i) { 
   seq(as.Date(paste(i, "01", "01", sep = "-")), 
       as.Date(paste(i, "12", "31", sep = "-")), 8)
 }))
 
-# Merge time series with available NDVI files
-ndvi.ts.fls <- merge(data.frame(date = ndvi.ts), 
-                     data.frame(date = as.Date(ndvi.dates, format = "%Y%j"), 
-                                file = ndvi.fls, stringsAsFactors = F), 
-                     by = "date", all.x = T)
+# Identify available NDVI data based on continuous 8-day interval
+ndvi.ts <- merge(data.frame(ndvi.ts, 1:length(ndvi.ts)), 
+                 data.frame(dates, 1:length(dates)), by = 1, all.x = TRUE)
 
-# Import raster files
-ndvi.rst <- foreach(i = seq(nrow(ndvi.ts.fls)), .packages = lib) %dopar% {
-  if (is.na(ndvi.ts.fls[i, 2])) {
-    NA
-  } else {
-    raster(ndvi.ts.fls[i, 2])
-  }
-}
+ndvi.rst.wht <- lapply(ndvi.ts[, 3], function(i) {
+  if (is.na(i))
+    return(NA)
+  else
+    return(ndvi.stck.wht[[i]])
+})
 
 
 ## MODIS fire
 
-# Daily data: import raster files and aggregate on 8 days
-aggregate.exe <- T
+# Import 8-day fire files (2001-2013)
+fire.fls <- list.files("data/md14a1/aggregated/", pattern = ".tif$", 
+                       full.names = TRUE)
 
-if (aggregate.exe) {
-  # List files
-  fire.fls <- list.files("data/reclass/md14a1", full.names = TRUE, pattern = ".tif$")
-  
-  # Setup time series
-  fire.dates <- substr(basename(fire.fls), 8, 14)
-  fire.years <- unique(substr(basename(fire.fls), 8, 11))
-  
-  fire.dly.ts <- do.call("c", lapply(fire.years, function(i) { 
-    seq(as.Date(paste(i, "01", "01", sep = "-")), 
-        as.Date(paste(i, "12", "31", sep = "-")), 1)
-  }))
-  
-  # Merge time series with available fire data
-  fire.dly.ts.fls <- merge(data.frame(date = fire.dly.ts), 
-                           data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
-                                      file = fire.fls, stringsAsFactors = F), 
-                           by = "date", all.x = T)
-  
-  fire.rst <- unlist(kifiAggData(
-    data = fire.dly.ts.fls, 
-    years = fire.years, 
-    over.fun = max, 
-    dsn = "G:/ki_modis_ndvi/data/overlay/md14a1_agg/", 
-    out.str = "md14a1", format = "GTiff", overwrite = T, 
-    out.proj = "+init=epsg:32737", n.cores = 4
-  ))
-} 
-
-
-# Aggregated data: list files
-fire.fls <- list.files("data/overlay/md14a1_agg", pattern = "md14a1.*.tif$", full.names = TRUE)
+fire.fls <- fire.fls[grep("2001", fire.fls)[1]:
+                       grep("2013", fire.fls)[length(grep("2013", fire.fls))]]
 
 # Setup time series
-fire.dates <- substr(basename(fire.fls), 8, 14)
-fire.years <- unique(substr(basename(fire.fls), 8, 11))
+fire.dates <- as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j")
 
-fire.ts <- do.call("c", lapply(fire.years, function(i) { 
+fire.ts <- do.call("c", lapply(2001:2013, function(i) { 
   seq(as.Date(paste(i, "01", "01", sep = "-")), 
       as.Date(paste(i, "12", "31", sep = "-")), 8)
 }))
 
-# Merge time series with available fire data
-fire.ts.fls <- merge(data.frame(date = fire.ts), 
-                     data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
-                                file = fire.fls, stringsAsFactors = F), 
-                     by = "date", all.x = T)
-
 # Import aggregated fire data
-if (!exists("fire.rst"))
-fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib) %dopar% {
-  if (is.na(fire.ts.fls[i, 2])) {
-    NA
-  } else {
-    raster(fire.ts.fls[i, 2])
-  }
-}
+fire.stck <- stack(fire.fls)
+
+# Identify available fire data based on continuous 8-day interval
+fire.ts <- merge(data.frame(fire.ts, 1:length(fire.ts)), 
+                 data.frame(fire.dates, 1:length(fire.dates)), 
+                 by = 1, all.x = TRUE)
+
+fire.rst <- lapply(fire.ts[, 3], function(i) {
+  if (is.na(i))
+    return(NA)
+  else
+    return(fire.stck[[i]])
+})
 
 # Identification of fire scenes and fire pixels
 fire.scenes <- foreach(i = fire.rst, .combine = "c", .packages = lib) %dopar% {
@@ -130,32 +117,37 @@ fire.scenes <- foreach(i = fire.rst, .combine = "c", .packages = lib) %dopar% {
 ## Convert fire / NDVI rasters to matrices
 
 fire.mat <- foreach(i = fire.rst, .packages = lib) %dopar% as.matrix(i)
-ndvi.mat <- foreach(i = ndvi.rst, .packages = lib) %dopar% as.matrix(i)
+ndvi.mat <- foreach(i = ndvi.rst.wht, .packages = lib) %dopar% as.matrix(i)
+
+# Deregister parallel backend (already implemented in upcoming functions)
+stopCluster(cl)
 
 
 ## Identify fire cell in NDVI 
 
 burnt.ndvi.cells <- ndviCell(fire.scenes = fire.scenes, 
-                             fire.ts.fls = fire.ts.fls, 
+                             fire.dates = fire.dates, 
                              fire.rst = fire.rst,
-                             ndvi.rst = ndvi.rst,
+                             ndvi.rst = ndvi.rst.wht,
                              fire.mat = fire.mat, 
                              ndvi.mat = ndvi.mat, 
-                             n.cores = 4)
+                             method = "deviation.from.mean",
+                             n.cores = 3)
 
-# write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", row.names = F, quote = F)
+# write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", 
+#           row.names = FALSE, quote = FALSE)
 # burnt.ndvi.cells <- read.csv("out/burnt_ndvi_cells.csv")
 
 
 ### Classification
 
-## Evaluation
+## Evaluation (right now, ctree() is not used for prediction)
 
-# Calculate ctree() for varying bucket sizes
-eval.tree <- evalTree(independ = c(6, 7, 8), 
-                     depend = 4, 
-                     data = burnt.ndvi.cells, 
-                     minbucket = seq(50, 450, 50))
+# # Calculate ctree() for varying bucket sizes
+# eval.tree <- evalTree(independ = c(6, 7, 8), 
+#                       depend = 4, 
+#                       data = burnt.ndvi.cells, 
+#                       minbucket = seq(50, 450, 50))
 
 # # Store output
 # write.csv(eval.tree, "out/ctree_scores.csv", quote = FALSE, row.names = FALSE)
@@ -165,12 +157,12 @@ eval.tree <- evalTree(independ = c(6, 7, 8),
 ## Probability calculation
 
 # Classification tree
-model <- ctree(as.factor(fire) ~ ndvi + ndvi_diff + ndvi_meandev, 
-               data = burnt.ndvi.cells, controls = ctree_control(minbucket = 50))
+model <- randomForest(as.factor(fire) ~ ndvi + ndvi_diff + ndvi_meandev,
+                      data = burnt.ndvi.cells)
 
 # Probability rasters
 prob.rst <- probRst(fire.scenes = fire.scenes, 
-                    fire.ts.fls = fire.ts.fls, 
+                    fire.dates = fire.dates, 
                     fire.rst = fire.rst,
                     ndvi.rst = ndvi.rst,
                     fire.mat = fire.mat, 
@@ -183,15 +175,15 @@ out.names <- paste(gsub("md14a1", "md13q1",
                         sapply(fire.rst[which(fire.scenes)], names)), 
                    "prob.tif", sep = "_")
 
-foreach(i = prob.rst, j = seq(prob.rst), .packages = lib) %dopar% {
+foreach(i = prob.rst, j = seq(prob.rst)) %do% {
   if (!is.null(i))
-    writeRaster(i, filename = paste("out/ndvi_prob", out.names[j], sep = "/"),  
-                format = "GTiff", overwrite = T)
+    writeRaster(i, filename = paste0("out/ndvi_prob/", out.names[j]),  
+                format = "GTiff", overwrite = TRUE)
 }
 
 # Response rasters
 resp.rst <- probRst(fire.scenes = fire.scenes, 
-                    fire.ts.fls = fire.ts.fls, 
+                    fire.dates = fire.dates, 
                     fire.rst = fire.rst,
                     ndvi.rst = ndvi.rst,
                     fire.mat = fire.mat, 
@@ -205,53 +197,81 @@ out.names <- paste(gsub("md14a1", "md13q1",
                         sapply(fire.rst[which(fire.scenes)], names)), 
                    "resp.tif", sep = "_")
 
-foreach(i = resp.rst, j = seq(resp.rst), .packages = lib) %dopar% {
+foreach(i = resp.rst, j = seq(resp.rst)) %do% {
   if (!is.null(i))
-    writeRaster(i, filename = paste("out/ndvi_resp", out.names[j], sep = "/"),  
-                format = "GTiff", overwrite = T)
+    writeRaster(i, filename = paste0("out/ndvi_resp/", out.names[j]),  
+                format = "GTiff", overwrite = TRUE)
 }
 
 
 # ### Plotting stuff
 # 
-# # Individual color scheme
-# my.bw.theme <- trellis.par.get()
-# my.bw.theme$box.rectangle$col = "grey80" 
-# my.bw.theme$box.umbrella$col = "grey80"
-# my.bw.theme$plot.symbol$col = "grey80"
+# ## Fire events per month as time series
 # 
-# # Plot logistic GLM fit including histogram 
-# png("out/glm_ndvi_fire.png", width = 800, height = 600)
-# par(bg = "white")
-# logi.hist.plot(independ, depend, boxp = F, type = "hist", col = "gray", 
-#                xlab = "Temporal change in NDVI")
-# axis(3, seq(-1, 1, .2))
-# for (i in 1:3) myMinorTick(side = i)
+# fire.ts.fls.cc <- fire.ts.fls[complete.cases(fire.ts.fls), ]
+# fire.ts.fls.cc$date <- factor(as.yearmon(fire.ts.fls.cc$date))
+# 
+# fire.rst.cc <- stack(fire.ts.fls.cc[, 2])
+# fire.rst.cc.agg <- stackApply(fire.rst.cc, indices = as.numeric(fire.ts.fls.cc[, 1]), 
+#                               fun = sum, filename = "out/plots/fire_agg_mnth", 
+#                               format = "GTiff", na.rm = TRUE, overwrite = TRUE)
+# 
+# fire.df.cc.agg <- data.frame(date = unique(fire.ts.fls.cc[, 1]), 
+#                              value = sapply(1:nlayers(fire.rst.cc.agg), function(i) {
+#                                sum(fire.rst.cc.agg[[i]][] > 0)
+#                              }))
+# 
+# png("out/plots/fire_agg_mnth.png", units = "mm", width = 300, height = 85, 
+#     res = 300, pointsize = 15)
+# ggplot(aes(x = as.Date(as.yearmon(date)), y = value), data = fire.df.cc.agg) +
+#   geom_histogram(stat = "identity", fill = "black") + 
+#   labs(x = "Time [months]", y = "Number of fire pixels") + 
+#   theme_bw() + 
+#   theme(axis.title.x = element_text(size = rel(1.4)), 
+#         axis.text.x = element_text(size = rel(1.1)), 
+#         axis.title.y = element_text(size = rel(1.4)), 
+#         axis.text.y = element_text(size = rel(1.1)))
 # dev.off()
-# 
-# # Transform information about fire occurence (0/1) to factor
-# tmp.sub$fire <- factor(ifelse(tmp.sub$fire == 0, "no", "yes"))
-# 
-# # Scatterplot with point density distribution and boxplots
-# png("out/fire_ndvi_prepos_mincell.png", width = 800, height = 600)
-# plot(xyplot(fire ~ ndvi_diff, data = tmp.sub,
-#             par.settings = my.bw.theme, 
-#             xlab = "Temporal change in NDVI", ylab = "Fire", panel = function(x, y) {
-#               panel.smoothScatter(x, y, nbin = 500, bandwidth = .1, cuts = 10, nrpoints = 0)
-#               panel.bwplot(x, y, box.ratio = .25, pch = "|", notch = TRUE, 
-#                            par.settings = my.bw.theme)
-#             }))
-# dev.off()
-# 
-# # Densityplot
-# png("out/dens_ndvi.png", width = 800, height = 600)
-# print(ggplot(tmp.sub, aes(x = ndvi_diff, fill = fire)) + 
-#   geom_density(alpha = .5) + 
-#   scale_fill_manual(values = c("no" = "black", "yes" = "red")) + 
-#   guides(fill = guide_legend(title = "Fire" ,
-#                              title.theme = element_text( face="plain", angle=0 ))) + 
-#   ylab("Density") + xlab("Temporal change in NDVI"))
-# dev.off()
-# 
-# # Deregister parallel backend
-# stopCluster(cl)
+
+# Individual color scheme
+my.bw.theme <- trellis.par.get()
+my.bw.theme$box.rectangle$col = "grey80" 
+my.bw.theme$box.rectangle$lwd = 2
+my.bw.theme$box.umbrella$lwd = 2
+my.bw.theme$box.umbrella$col = "grey80"
+my.bw.theme$plot.symbol$col = "grey80"
+
+foreach(i = c("burnt_ndvi_cells.csv", "burnt_ndvi_cells_dev.csv"), 
+        j = c("tmp", "dev")) %do% {
+          
+  # Import data and transform information about fire occurence (0/1) to factor
+  tmp.sub <- read.csv(paste0("out/", i))
+  tmp.sub$fire <- factor(ifelse(burnt.ndvi.cells$fire == 0, "no", "yes"))
+  
+  
+  ## Scatterplot with point density distribution and boxplots
+  
+  png(paste0("out/fire_ndvi_prepos_", j, ".png"), width = 20, height = 15, 
+      units = "cm", pointsize = 16, res = 300)
+  print(xyplot(fire ~ ndvi, data = tmp.sub,
+         par.settings = my.bw.theme, 
+         xlab = "NDVI", ylab = "Fire", panel = function(x, y) {
+           panel.smoothScatter(x, y, nbin = 500, bandwidth = .1, cuts = 10, nrpoints = 0)
+           panel.bwplot(x, y, box.ratio = .25, pch = "|", notch = TRUE, 
+                        par.settings = my.bw.theme)
+         }))
+  dev.off()
+  
+  
+  ## Densityplot
+  
+  png(paste0("out/dens_ndvi_", j, ".png"), width = 24, height = 15, units = "cm", 
+      pointsize = 16, res = 300)
+  print(ggplot(tmp.sub, aes(x = ndvi, fill = fire)) + 
+    geom_density(alpha = .5) + 
+    scale_fill_manual(values = c("no" = "black", "yes" = "red")) + 
+    guides(fill = guide_legend(title = "Fire" ,
+                               title.theme = element_text( face="plain", angle=0 ))) + 
+    labs(x = "NDVI", y = "Density"))
+  dev.off()
+}

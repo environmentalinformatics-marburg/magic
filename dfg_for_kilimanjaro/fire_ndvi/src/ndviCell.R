@@ -5,6 +5,7 @@ ndviCell <- function(fire.scenes,
                      fire.mat, 
                      ndvi.mat, 
                      id = 300,
+                     method = "temporal.change",
                      n.cores = 2, 
                      ...) {
   
@@ -76,29 +77,66 @@ ndviCell <- function(fire.scenes,
       tmp.ndvi <- ndvi.mat[c(i-(gap.before+1)-2-gap.2_before, i-1-gap.before, i+1+gap.after)]
       
       
-      ## Relation between change difference from NDVI before to after the fire
-      
-      # Change from penultimate to ultimate NDVI
-      ndvi.diff1 <- t(tmp.ndvi[[2]] - tmp.ndvi[[1]])[ndvi.cells]
-      # Change from ultimate to subsequent NDVI
-      ndvi.diff2 <- t(tmp.ndvi[[3]] - tmp.ndvi[[2]])[ndvi.cells]
-            
-      # Relative maximum difference between ultimate and subsequent NDVI
-      ndvi.rel_diff <- ndvi.diff2 - ndvi.diff1
-      ndvi.cell <- ndvi.cells[which(ndvi.rel_diff == min(ndvi.rel_diff))]
-      
-      
-      ## Deviation from mean before and after fire
-      
-      # Calculate mean and deviation from mean
-      ndvi.val1 <- t(tmp.ndvi[[2]])[ndvi.cell]
-      ndvi.val2 <- t(tmp.ndvi[[3]])[ndvi.cell]
-      
-      ndvi.mean <- mean(t(tmp.ndvi[[2]])[ndvi.cells])
-      
-      ndvi.dev1 <- ndvi.val1 - ndvi.mean
-      ndvi.dev2 <- ndvi.val2 - ndvi.mean
-      
+#       ## Relation between change difference from NDVI before to after the fire
+#       
+#       # Change from penultimate to ultimate NDVI
+#       ndvi.diff1 <- t(tmp.ndvi[[2]] - tmp.ndvi[[1]])[ndvi.cells]
+#       # Change from ultimate to subsequent NDVI
+#       ndvi.diff2 <- t(tmp.ndvi[[3]] - tmp.ndvi[[2]])[ndvi.cells]
+#             
+#       # Relative maximum difference between ultimate and subsequent NDVI
+#       ndvi.rel_diff <- ndvi.diff2 - ndvi.diff1
+#       ndvi.cell <- ndvi.cells[which(ndvi.rel_diff == min(ndvi.rel_diff))]
+#       
+#       
+#       ## Deviation from mean before and after fire
+#       
+#       # Calculate mean and deviation from mean
+#       ndvi.val1 <- t(tmp.ndvi[[2]])[ndvi.cell]
+#       ndvi.val2 <- t(tmp.ndvi[[3]])[ndvi.cell]
+#       
+#       ndvi.mean <- mean(t(tmp.ndvi[[2]])[ndvi.cells])
+#       
+#       ndvi.dev1 <- ndvi.val1 - ndvi.mean
+#       ndvi.dev2 <- ndvi.val2 - ndvi.mean
+    
+
+## Relation between change difference from NDVI before to after the fire
+
+# Change from penultimate to ultimate NDVI
+ndvi.diff1 <- t(tmp.ndvi[[2]] - tmp.ndvi[[1]])[ndvi.cells]
+# Change from ultimate to subsequent NDVI
+ndvi.diff2 <- t(tmp.ndvi[[3]] - tmp.ndvi[[2]])[ndvi.cells]
+
+# Relative maximum difference between ultimate and subsequent NDVI
+ndvi.rel_diff <- ndvi.diff2 - ndvi.diff1
+
+
+## Deviation from mean before and after fire
+
+# Calculate mean and deviation from mean
+ndvi.val1 <- t(tmp.ndvi[[2]])[ndvi.cells]
+ndvi.val2 <- t(tmp.ndvi[[3]])[ndvi.cells]
+
+ndvi.mean <- mean(t(tmp.ndvi[[2]])[ndvi.cells])
+
+ndvi.dev1 <- ndvi.val1 - ndvi.mean
+ndvi.dev2 <- ndvi.val2 - ndvi.mean
+
+# Relative maximum difference between deviation from mean prior to and after the
+# fire event
+ndvi.dev_diff <- ndvi.dev2 - ndvi.dev1
+
+
+## Identification of fire cell
+
+if (method == "temporal.change") {
+  ndvi.cell <- ndvi.cells[which.min(ndvi.rel_diff)]
+} else if (method == "deviation.from.mean") {
+  ndvi.cell <- ndvi.cells[which.min(ndvi.dev_diff)]
+} else 
+  stop("No valid method for detecting the NDVI fire pixel specified.")
+
       
       ## Output
       
@@ -114,8 +152,9 @@ ndviCell <- function(fire.scenes,
       }
       
       # NDVI deviation from mean
-      ndvi.meandev <- foreach(k = 1:length(ndvi.cell), .combine = "c") %do% {
-        round(c(ndvi.dev1[k], ndvi.dev2[k]) / 10000, digits = 3)
+      ndvi.meandev <- foreach(k = ndvi.cell, .combine = "c") %do% {
+        round(c(ndvi.dev1[which(ndvi.cells == k)], 
+                ndvi.dev2[which(ndvi.cells ==k)]) / 10000, digits = 3)
       }
       
       # Return output

@@ -30,7 +30,7 @@ evalTree <- function(independ = NULL,
   
   # Load required packages and functions
   lib <- c("foreach", "party")
-  sapply(lib, function(...) stopifnot(require(..., character.only = T)))
+  sapply(lib, function(...) stopifnot(require(..., character.only = TRUE)))
   
   source("src/calcScores.R")
   
