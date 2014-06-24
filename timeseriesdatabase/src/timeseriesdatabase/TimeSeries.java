@@ -19,10 +19,10 @@ public class TimeSeries {
 	
 	public String[] parameterNames;	
 	public List<TimeSeriesEntry> entryList;
-	public Long timeinterval; // null if raw data
+	public Integer timeinterval; // null if raw data
 	
 	
-	public TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList,Long timeinterval) {
+	public TimeSeries(String[] parameterNames, List<TimeSeriesEntry> entryList,Integer timeinterval) {
 		this.parameterNames = parameterNames;
 		this.entryList = entryList;
 		this.timeinterval = timeinterval;
@@ -212,6 +212,14 @@ public class TimeSeries {
 				currentTimeStamp = nextTimeStamp;
 		}
 		return new TimeSeries(parameterNames,gapList,timeinterval);
+	}
+	
+	public long getFirstTimestamp() {
+		return this.entryList.get(0).timestamp;
+	}
+	
+	public long getLastTimestamp() {
+		return this.entryList.get(entryList.size()-1).timestamp;
 	}
 
 }

@@ -496,13 +496,36 @@ public class TimeSeriesDatabase {
 	}
 	
 	
-	public TimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {
+	public BaseTimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return null; 				
 		}
-		TimeSeries ___timeseries = station.queryBaseAggregatedDataGapFilled(querySensorNames, start, end);
+		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, null, null);
+
+		long startTimestamp = timeseries.getFirstTimestamp();
+		long endTimestamp = timeseries.getLastTimestamp();
+
+		BaseTimeSeries resultBaseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);
+
+		final int STATION_INTERPOLATION_COUNT = 2;
+
+		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
+		BaseTimeSeries[] interpolationBaseTimeseries = new BaseTimeSeries[STATION_INTERPOLATION_COUNT];
+		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
+			interpolationStations[i] = station.nearestStationList.get(i);
+			TimeSeries interpolationTimeseries = interpolationStations[i].queryBaseAggregatedData(querySensorNames, null, null);
+			interpolationBaseTimeseries[i] = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
+		}
+		
+		
+		
+		return resultBaseTimeSeries;
+		
+		
+		
+		/*
 		
 		TimeSeries gapTimeSeries = ___timeseries.getGapTimeSeries();
 		
@@ -530,7 +553,7 @@ public class TimeSeriesDatabase {
 		
 		
 		
-		return gapTimeSeries;
+		return gapTimeSeries;*/
 	}
 	
 	

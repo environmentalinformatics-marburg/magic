@@ -18,11 +18,11 @@ public class BaseTimeSeries {
 	public String[] parameterNames;
 	
 	long startTimestamp;
-	public long timeStep;
+	public int timeStep;
 	
 	public float[][] data;
 	
-	public BaseTimeSeries(String[] parameterNames, long startTimestamp, long timeStep, float[][] data) {
+	public BaseTimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data) {
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
@@ -33,7 +33,7 @@ public class BaseTimeSeries {
 		if(timeSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
 		}
-		Long timeinterval = timeSeries.timeinterval;
+		Integer timeinterval = timeSeries.timeinterval;
 		List<TimeSeriesEntry> gapList = new ArrayList<TimeSeriesEntry>();
 		
 		Iterator<TimeSeriesEntry> it = timeSeries.entryList.iterator();
@@ -144,7 +144,7 @@ public class BaseTimeSeries {
 						printStream.print(nanText);
 					} else {
 						//s+=Util.floatToString(entry.data[i]);
-						printStream.format(Locale.ENGLISH," %3.3f", value);
+						printStream.format(Locale.ENGLISH,"%3.3f", value);
 					}
 				}
 				printStream.println();
@@ -153,6 +153,15 @@ public class BaseTimeSeries {
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		}
-	}	
+	}
+	
+	public int getParameterNameIndex(String parameterName) {
+		return Util.StringArrayToMap(parameterNames).get(parameterName);
+		
+	}
+	
+	public float[] getValues(String parameterName) {
+		return data[getParameterNameIndex(parameterName)];
+	}
 
 }

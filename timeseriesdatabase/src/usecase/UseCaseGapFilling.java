@@ -27,7 +27,11 @@ public class UseCaseGapFilling {
 		
 		
 		//String[] querySensorNames = null;
+		
+		
 		//TimeSeries timeSeriesGapFilled = timeSeriesDatabase.queryBaseAggregatedDataGapFilled(plotID, querySensorNames , null, null);
+		
+		
 		TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, querySensorNames, startTimestamp,endTimestamp);
 		
 
@@ -38,7 +42,7 @@ public class UseCaseGapFilling {
 		
 		System.out.println(baseTimeSeries);
 		
-		baseTimeSeries.writeToCSV("c:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		baseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		
 		//timeSeriesGapFilled.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);

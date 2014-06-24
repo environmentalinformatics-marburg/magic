@@ -444,11 +444,7 @@ public class Station {
 		return baseAggregationProcessor.process(it);
 	}
 	
-	public TimeSeries queryBaseAggregatedDataGapFilled(String [] querySensorNames, Long start, Long end) {
-		TimeSeries timeseries = queryBaseAggregatedData(querySensorNames, start, end);
-		//TODO		
-		return timeseries;
-	}
+	
 	
 	/**
 	 * Get raw sensor data

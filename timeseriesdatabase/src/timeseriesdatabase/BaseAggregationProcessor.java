@@ -232,7 +232,7 @@ public class BaseAggregationProcessor {
 		}
 		
 		//create resulting TimeSeries Object
-		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList, (long) 60); //TODO
+		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList, 60); //TODO
 		//check and remove empty columns
 		for(int i=0;i<parameterNames.length;i++) {
 			if(columnEntryCounter[i] == 0) {

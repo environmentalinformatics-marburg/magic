@@ -60,8 +60,11 @@ public class Util {
 		return sourcePos;
 	}
 	
-	public static void readTable(String filename) {
-		
+	public static void printArray(double[] a) {
+		for(int i=0;i<a.length;i++) {
+			System.out.format("%.2f  ",a[i]);
+		}
+		System.out.println();
 	}
 
 }
