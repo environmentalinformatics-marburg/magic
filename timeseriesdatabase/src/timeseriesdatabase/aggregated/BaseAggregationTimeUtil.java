@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.aggregated;
 
 public class BaseAggregationTimeUtil {
 	

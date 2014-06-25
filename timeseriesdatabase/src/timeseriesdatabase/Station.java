@@ -20,6 +20,13 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.aggregated.BaseAggregationProcessor;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
+import timeseriesdatabase.raw.RawDataProcessor;
+import timeseriesdatabase.raw.SensorHeader;
+import timeseriesdatabase.raw.TimeSeries;
+import timeseriesdatabase.raw.UDBFTimeSeries;
+import timeseriesdatabase.raw.UniversalDataBinFile;
 import util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -79,6 +86,12 @@ public class Station {
 	 * The greatest time stamp that was inserted so far.
 	 */
 	public long lastInsertTimestamp;
+	
+	/**
+	 * serial number of station: A19557, A2277, ...
+	 * not used currently - station is identified with plotID
+	 */
+	public String serialID = null;
 	
 	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
 		this.lastInsertTimestamp = -1;

@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.raw;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.TimeConverter;
 import util.Util;
 
 public class TimeSeries {

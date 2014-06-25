@@ -1,5 +1,7 @@
 package timeseriesdatabase;
 
+import timeseriesdatabase.aggregated.AggregationType;
+
 /**
  * This class contains metadata that is associated with a sensor.
  * Only sensors that are part of base aggregation are created.
@@ -43,15 +45,13 @@ public class Sensor {
 	
 	/**
 	 * checks if value is in physical range
-	 * @param value
+	 * @param value  value == NaN  ==> false
 	 * @return if false value should not be included in further processing
 	 */
 	public boolean checkPhysicalRange(float value) {
 		if(Float.isNaN(value)) {
 			return false;
 		}
-		return min<=value&&value<=max;
-		
+		return min<=value&&value<=max;		
 	}
-
 }

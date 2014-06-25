@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.aggregated;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -9,6 +9,10 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.raw.TimeSeries;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Util;
 
 public class BaseTimeSeries {
@@ -18,7 +22,7 @@ public class BaseTimeSeries {
 	public String[] parameterNames;
 	
 	long startTimestamp;
-	public int timeStep;
+	public final int timeStep;
 	
 	public float[][] data;
 	
@@ -29,7 +33,14 @@ public class BaseTimeSeries {
 		this.data = data;
 	}
 	
-	public static BaseTimeSeries toBaseTimeSeries(long startTimestamp, long endTimestamp, TimeSeries timeSeries) {
+	public static BaseTimeSeries toBaseTimeSeries(Long startTimestamp, Long endTimestamp, TimeSeries timeSeries) {
+		if(startTimestamp==null) {
+			startTimestamp = timeSeries.getFirstTimestamp();
+		}
+		if(endTimestamp==null) {
+			endTimestamp = timeSeries.getLastTimestamp();
+		}
+		
 		if(timeSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
 		}		
@@ -177,7 +188,16 @@ public class BaseTimeSeries {
 		return data[getParameterNameIndex(parameterName)];
 	}
 	
-	public BaseTimeSeries getClipped(long clipStartTimestamp, long clipEndTimestamp) {
+	/**
+	 * returns time series with time interval exactly from clipStart to clipEnd
+	 * @param clipStart	may be null
+	 * @param clipEnd	may be null
+	 * @return
+	 */
+	public BaseTimeSeries getClipped(Long clipStart, Long clipEnd) {
+		long clipStartTimestamp = clipStart==null?this.startTimestamp:clipStart;
+		long clipEndTimestamp = clipEnd==null?this.startTimestamp+((this.data[0].length-1)*this.timeStep):clipEnd;	
+		
 		if(clipStartTimestamp>clipEndTimestamp) {
 			log.error("wrong data");
 			return null;
@@ -199,6 +219,14 @@ public class BaseTimeSeries {
 			}
 		}
 		return new BaseTimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData);
+	}
+	
+	public long getFirstTimestamp() {
+		return startTimestamp;
+	}
+	
+	public long getLastTimestamp() {
+		return startTimestamp+((data[0].length-1)*timeStep);
 	}
 
 }

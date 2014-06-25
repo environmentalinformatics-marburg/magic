@@ -1,6 +1,8 @@
-package timeseriesdatabase;
+package timeseriesdatabase.raw;
 
 import java.nio.file.Path;
+
+import timeseriesdatabase.TimeConverter;
 
 /**
  * UDBFTimeSeries contains relevant data of a UDBF-File.

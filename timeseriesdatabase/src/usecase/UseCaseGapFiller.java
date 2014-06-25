@@ -2,10 +2,10 @@ package usecase;
 
 import java.time.LocalDateTime;
 
-import timeseriesdatabase.BaseTimeSeries;
 import timeseriesdatabase.CSVTimeType;
-import timeseriesdatabase.GapFiller;
 import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.aggregated.BaseTimeSeries;
+import timeseriesdatabase.aggregated.GapFiller;
 
 public class UseCaseGapFiller {
 	

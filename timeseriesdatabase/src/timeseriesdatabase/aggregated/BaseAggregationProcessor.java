@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.aggregated;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,6 +8,10 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.Sensor;
+import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.raw.TimeSeries;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Util;
 import de.umr.jepc.store.Event;
 
@@ -124,6 +128,7 @@ public class BaseAggregationProcessor {
 			if(aggCnt[i]>0) {// at least one entry has been collected
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
+				case AVERAGE_ZERO:	
 				case AVERAGE_WIND_VELOCITY:	
 					resultData[i] = aggSum[i]/aggCnt[i];
 					validValueCounter++;
@@ -203,6 +208,10 @@ public class BaseAggregationProcessor {
 			//collect values for aggregation
 			for(int i=0;i<parameterNames.length;i++) {
 				float value = (float) payload[eventPos[i]];
+				if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversin of NaN values for aggregate AVERAGE_ZERO
+					System.out.println("NaN...");
+					value = 0;
+				}
 				if(sensors[i].checkPhysicalRange(value)) {
 					aggCnt[i] ++;					
 					aggSum[i] += value;

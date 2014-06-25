@@ -1,13 +1,11 @@
 package usecase;
 
 import java.time.LocalDateTime;
-
-import timeseriesdatabase.BaseTimeSeries;
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeries;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import timeseriesdatabase.aggregated.BaseTimeSeries;
+import timeseriesdatabase.raw.TimeSeries;
 
 public class UseCaseGapFilling {
 
@@ -21,12 +19,15 @@ public class UseCaseGapFilling {
 		System.out.println("start query...");
 		String[] querySensorNames = new String[]{"Ta_200"};
 		
-		LocalDateTime start = LocalDateTime.of(2011,06,01,0,0);
+		LocalDateTime start = LocalDateTime.of(2011,06,01,0,0);		
 		LocalDateTime end = LocalDateTime.of(2012,06,01,0,0);
-		long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
-		long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
-		//Long startTimestamp = null;
-		//Long endTimestamp = null;
+		
+		//LocalDateTime start = LocalDateTime.of(2010,01,01,0,0);
+		//LocalDateTime end = LocalDateTime.of(2012,12,31,23,00);
+		//long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
+		//long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
+		Long startTimestamp = null;
+		Long endTimestamp = null;
 		
 		
 		//String[] querySensorNames = null;
@@ -44,16 +45,19 @@ public class UseCaseGapFilling {
 		
 		
 		System.out.println(baseTimeSeries);
-		
+		System.out.println("timeSeries: "+timeSeries);
 		BaseTimeSeries convertedTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp,endTimestamp,timeSeries);
-		convertedTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
-		baseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result_gapfilled.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		
+		String nanValue = "NaN";
+		
+		convertedTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		baseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		System.out.println(timeSeriesDatabase.stationMap.get(plotID).nearestStationList);
 		String nearPlot = timeSeriesDatabase.stationMap.get(plotID).nearestStationList.get(0).plotID;
 		//String nearPlot = "HEG10";
-		BaseTimeSeries timeSeriesNear = BaseTimeSeries.toBaseTimeSeries(startTimestamp,endTimestamp,timeSeriesDatabase.queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
-		timeSeriesNear.writeToCSV("c:/timeseriesdatabase_output/result_near.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		BaseTimeSeries timeSeriesNear = BaseTimeSeries.toBaseTimeSeries(convertedTimeSeries.getFirstTimestamp(),convertedTimeSeries.getLastTimestamp(),timeSeriesDatabase.queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
+		timeSeriesNear.writeToCSV("c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		
 		

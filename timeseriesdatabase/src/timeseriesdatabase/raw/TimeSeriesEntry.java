@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.raw;
 
 import java.sql.Time;
 

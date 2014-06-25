@@ -3,9 +3,9 @@ package usecase;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import timeseriesdatabase.SensorHeader;
-import timeseriesdatabase.UDBFTimeSeries;
-import timeseriesdatabase.UniversalDataBinFile;
+import timeseriesdatabase.raw.SensorHeader;
+import timeseriesdatabase.raw.UDBFTimeSeries;
+import timeseriesdatabase.raw.UniversalDataBinFile;
 
 public class UseCaseReadMetadata {
 	

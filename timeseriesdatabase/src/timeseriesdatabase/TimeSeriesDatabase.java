@@ -28,6 +28,10 @@ import org.ini4j.BasicMultiMap;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
+import timeseriesdatabase.aggregated.AggregationType;
+import timeseriesdatabase.aggregated.BaseTimeSeries;
+import timeseriesdatabase.aggregated.GapFiller;
+import timeseriesdatabase.raw.TimeSeries;
 import util.Table;
 import util.Util;
 import au.com.bytecode.opencsv.CSVReader;
@@ -46,43 +50,65 @@ public class TimeSeriesDatabase {
 	
 	private static final Logger log = Util.log;
 	
+	/**
+	 * EventStore is the storage of all time series
+	 */
 	public TimeSplitBTreeEventStore store;
 	
+	/**
+	 * station/logger type name	->	LoggerType Object
+	 * 00CEMU, ...
+	 */
 	public Map<String,LoggerType> loggerTypeMap;
 	
+	/**
+	 * plot id	->	Station Object
+	 * HEG01, ...
+	 */
 	public Map<String,Station> stationMap;
 	
+	/**
+	 * general station name	->	GeneralStation Object
+	 * HEG, HEW, ...
+	 */
 	public Map<String,GeneralStation> generalStationMap;
 	
+	/**
+	 * sensor name	->	Sensor Object
+	 * Ta_200, ...
+	 */
 	public Map<String,Sensor> sensorMap;
 	
+	/**
+	 * set of sensor names of input files, that should not be stored in database
+	 */
 	public Set<String> ignoreSensorNameSet;
 	
+	/**
+	 * set of sensor name, that should be included in base aggregation processing
+	 */
 	public Set<String> baseAggregatonSensorNameSet;
 	
-	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {
-		
-		log.trace("create TimeSeriesDatabase");
-		
+	/**
+	 * create a new TimeSeriesDatabase object and connects to stored database files
+	 * @param databasePath
+	 * @param evenstoreConfigFile
+	 */
+	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {		
+		log.trace("create TimeSeriesDatabase");		
 		FileInputStream configStream = null; 
 		try {
 			configStream = new FileInputStream(evenstoreConfigFile);
 		} catch (FileNotFoundException e) {
 			log.error(configStream);
 		}
-		
-		//TimeSplitBTreeEventStore(TimeRepresentation representation, String databasePath, InputStream configStream)
 		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);
-		//store = new TimeSplitBTreeEventStore();
-		
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
 		sensorMap = new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
-		baseAggregatonSensorNameSet = new HashSet<String>(); 
-		
-		
+		baseAggregatonSensorNameSet = new HashSet<String>();		
 		store.open();		
 	}
 	
@@ -92,22 +118,14 @@ public class TimeSeriesDatabase {
 	 * @param configFile
 	 */
 	public void readLoggerSchemaConfig(String configFile) {
-		//System.out.println("begin readLoggerSchemaConfig...");
-
 		try {
-
 			Wini ini = new Wini(new File(configFile));
-
-
-
 			for(String typeName:ini.keySet()) {
-
 				Section section = ini.get(typeName);
 				List<String> names = new ArrayList<String>();			
 				for(String name:section.keySet()) {
 					names.add(name);
 				}
-
 				String[] sensorNames = new String[names.size()];
 				Attribute[] schema = new Attribute[names.size()+1];
 				for(int i=0;i<names.size();i++) {
@@ -115,12 +133,8 @@ public class TimeSeriesDatabase {
 					schema[i] =  new Attribute(names.get(i),DataType.FLOAT);
 				}
 				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
-
-				//System.out.println("create logger type: "+typeName);
 				loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
-
 			}
-
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -135,7 +149,6 @@ public class TimeSeriesDatabase {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("gap_filling");
 			for(String name:section.keySet()) {
-				//System.out.println("gap filling: "+name);
 				Sensor sensor = sensorMap.get(name);
 				if(sensor!=null) {
 					sensor.useGapFilling = true;
@@ -175,14 +188,10 @@ public class TimeSeriesDatabase {
 	private static Map<String,List<Map<String,String>>> readStationConfigInternal(String config_file) {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(config_file));
-			List<String[]> list = reader.readAll();
-			
-			String[] names = list.get(0);
-			
-			final String NAN_TEXT = "NaN";
-			
-			Map<String,Integer> nameMap = new HashMap<String,Integer>();
-			
+			List<String[]> list = reader.readAll();			
+			String[] names = list.get(0);			
+			final String NAN_TEXT = "NaN";			
+			Map<String,Integer> nameMap = new HashMap<String,Integer>();			
 			for(int i=0;i<names.length;i++) {
 				if(!names[i].equals(NAN_TEXT)) {
 					if(nameMap.containsKey(names[i])) {
@@ -192,16 +201,13 @@ public class TimeSeriesDatabase {
 					}
 				}
 			}
-			
-			
+
 			String[][] values = new String[list.size()-1][];
-			
 			for(int i=1;i<list.size();i++) {
 				values[i-1] = list.get(i);
 			}
-			
+
 			Map<String,List<Map<String,String>>> plotidMap = new HashMap<String,List<Map<String,String>>>();
-			
 			int plotidIndex = nameMap.get("PLOTID");
 			for(String[] row:values) {
 				String plotid = row[plotidIndex];
@@ -210,16 +216,16 @@ public class TimeSeriesDatabase {
 					entries = new ArrayList<Map<String,String>>(1);
 					plotidMap.put(plotid, entries);
 				}				
-				
+
 				Map<String,String> valueMap = new HashMap<String, String>();
 				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
-					
+
 					String value = row[mapEntry.getValue()];
 					if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {
 						valueMap.put(mapEntry.getKey(), value);
 					}					
 				}
-				
+
 				entries.add(valueMap);
 			}
 			return plotidMap;			
@@ -227,39 +233,36 @@ public class TimeSeriesDatabase {
 			e.printStackTrace();
 			return null;
 		}
-		
-		
 	}
-	
+
 	/**
-	 * Registers streams for all containing stations (with stream name == plotID)
+	 * registers streams for all containing stations (with stream name == plotID)
 	 */
 	public void registerStreams() {
-		System.out.println("register streams...");
-		
 		for(Station station:stationMap.values()) {
-			//System.out.println(station.getLoggerType().schema+"\t"+station.plotID);
 			store.registerStream(station.plotID, station.getLoggerType().schema);
 		}
-		
-		System.out.println("...end");
 	}
 	
 	/**
-	 * clears all stream data in EventStore
+	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
 		store.clear();
 	}
 	
 	/**
-	 * closed EventStore, all data is written to disk
+	 * close EventStore, all pending stream data is written to disk
 	 */
 	public void close() {
 		store.close();
 	}
 	
-	
+	/**
+	 * loads all files of one exploratory HEG, HEW, ...
+	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
+	 * @param exploratoriyPath
+	 */
 	public void loadDirectoryOfOneExploratory(Path exploratoriyPath) {
 		log.info("load exploratory:\t"+exploratoriyPath);
 		try {
@@ -300,13 +303,16 @@ public class TimeSeriesDatabase {
 		Map<String,String> sensorNameMap = new HashMap<String, String>();
 		for(String key:section.keySet()) {
 			if(!key.equals("NaN")) {
-				//System.out.println(key+" -> "+section.get(key));
 				sensorNameMap.put(key, section.get(key));
 			}
 		}
 		return sensorNameMap;
 	}
 	
+	/**
+	 * read config for sensors: physical minimum and maximum values
+	 * @param configFile
+	 */
 	public void readSensorRangeConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -318,7 +324,6 @@ public class TimeSeriesDatabase {
 					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
 					float min=Float.parseFloat(minString);
 					float max=Float.parseFloat(maxString);
-					//System.out.println("range "+key+"\t"+range+"\t("+min+")\t("+max+")");
 					Sensor sensor = new Sensor(key);
 					sensor.min = min;
 					sensor.max = max;
@@ -330,13 +335,14 @@ public class TimeSeriesDatabase {
 		}
 	}
 	
-	public void readSensorNameTranslationConfig(String configFile) {
-		
-		final String SENSOR_NAME_CONVERSION_HEADER_SUFFIX = "_header_0000";
-		
+	/**
+	 * reads config for translation of input sensor names to database sensor names
+	 * @param configFile
+	 */
+	public void readSensorNameTranslationConfig(String configFile) {		
+		final String SENSOR_NAME_CONVERSION_HEADER_SUFFIX = "_header_0000";		
 		try {
 			Wini ini = new Wini(new File(configFile));
-
 			for(LoggerType loggerType:loggerTypeMap.values()) {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_NAME_CONVERSION_HEADER_SUFFIX);
@@ -346,24 +352,17 @@ public class TimeSeriesDatabase {
 					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
 			}
-
-
-
-			String suffix = "_soil_parameters_header_0000";
-
+			
+			final String NAME_CONVERSION_HEADER_SOIL_SUFFIX = "_soil_parameters_header_0000";
 			for(Section section:ini.values()) {
 				String sectionName = section.getName();
-
-
-				//System.out.println("section: "+sectionName);
-
 				for(GeneralStation generalStation:generalStationMap.values()) {
 					String prefix = "000"+generalStation.name;
 					if(sectionName.startsWith(prefix)) {
-						String general_section = prefix+"xx"+suffix;
+						String general_section = prefix+"xx"+NAME_CONVERSION_HEADER_SOIL_SUFFIX;
 						if(sectionName.equals(general_section)) {
 							generalStation.sensorNameTranlationMap = readSensorNameMap(section);
-						} else if(sectionName.endsWith(suffix)) {
+						} else if(sectionName.endsWith(NAME_CONVERSION_HEADER_SOIL_SUFFIX)) {
 							String plotID = sectionName.substring(3, 8);
 							Station station = stationMap.get(plotID);
 							if(station!=null) {
@@ -381,7 +380,11 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}
 	}
-
+	
+	/**
+	 * reads names of used general stations
+	 * @param configFile
+	 */
 	public void readGeneralStationConfig(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -395,9 +398,11 @@ public class TimeSeriesDatabase {
 		}		
 	}
 
-	public void readIgnoreSensorNameConfig(String configFile) {
-		
-		
+	/**
+	 * reads names of input sensors, that should not be included in database
+	 * @param configFile
+	 */
+	public void readIgnoreSensorNameConfig(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("ignore_sensors");
@@ -407,28 +412,13 @@ public class TimeSeriesDatabase {
 
 		} catch (Exception e) {
 			log.error(e);
-		}
-		
-		/*
-		
-		//System.out.println("readIgnoreSensorNameConfig");
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(configFile));
-			String next = reader.readLine();
-			while(next!=null) {
-				//System.out.println(next);
-				ignoreSensorNameSet.add(next);
-				next = reader.readLine();
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-		}*/
-		
+		}	
 	}
 	
+	/**
+	 * reads sensor config for base aggregation: for each sensor the type of aggregation is read
+	 * @param configFile
+	 */
 	public void readBaseAggregationConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -449,7 +439,8 @@ public class TimeSeriesDatabase {
 							aggregateType = AggregationType.AVERAGE_WIND_DIRECTION;
 						} else if(aggregateTypeText.toLowerCase().equals("average_wind_velocity")) {
 							aggregateType = AggregationType.AVERAGE_WIND_VELOCITY;							
-							
+						} else if(aggregateTypeText.toLowerCase().equals("average_zero")) {
+							aggregateType = AggregationType.AVERAGE_ZERO;							
 						} else {
 							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
 						}
@@ -468,6 +459,11 @@ public class TimeSeriesDatabase {
 		
 	}
 	
+	/**
+	 * loads all files of all exploratories
+	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
+	 * @param exploratoriesPath
+	 */
 	public void loadDirectoryOfAllExploratories(Path exploratoriesPath) {
 		log.info("load exploratories:\t"+exploratoriesPath);
 		try {
@@ -482,12 +478,27 @@ public class TimeSeriesDatabase {
 		
 	}
 
+	/**
+	 * sql query on storage of raw time series
+	 * (not used)
+	 * @param sql
+	 * @return iterator of raw sensor data
+	 */
 	public Iterator<Event> query(String sql) {
 		return store.query(sql);		
 	}
 	
-	public  Iterator<Event> queryTimeSeries(String PlotID, String ParameterName, long startTime, long endTime) {
-		return store.getHistoryRange(PlotID, startTime, endTime);		
+	/**
+	 * query stream of plotID within startTime and endTime
+	 * (not used)
+	 * @param plotID
+	 * @param ParameterName
+	 * @param startTime
+	 * @param endTime
+	 * @return iterator over the stream of plotID with full schema
+	 */
+	public  Iterator<Event> queryTimeSeries(String plotID, long startTime, long endTime) {
+		return store.getHistoryRange(plotID, startTime, endTime);		
 	}
 	
 	/**
@@ -523,12 +534,18 @@ public class TimeSeriesDatabase {
 		return timeseries;
 	}
 	
-	
-	public BaseTimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {
-		
-		final int STATION_INTERPOLATION_COUNT = 15;
-		
-		final int TRAINING_VALUE_COUNT = 24*7*4; // four weeks with one hoer time step
+	/**
+	 * get time series with gap filled data if possible
+	 * @param plotID
+	 * @param querySensorNames
+	 * @param start	may be null
+	 * @param end	may be null
+	 * @return
+	 */
+	public BaseTimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
+		final int STATION_INTERPOLATION_COUNT = 15;		
+		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
+		//final int TIME_STEP = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
 		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -536,21 +553,17 @@ public class TimeSeriesDatabase {
 			return null; 				
 		}
 		
+		TimeSeries timeseries;
 		if(start==null) {
-			start = (long) Integer.MIN_VALUE;
-		}
-		if(end==null) {
-			end = (long) Integer.MAX_VALUE;
+			timeseries = station.queryBaseAggregatedData(querySensorNames, null, end);
+		} else {
+			timeseries = station.queryBaseAggregatedData(querySensorNames, start-TRAINING_TIME_INTERVAL, end);
 		}
 		
-		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start- (TRAINING_VALUE_COUNT*60), end); // TODO
-
 		long startTimestamp = timeseries.getFirstTimestamp();
 		long endTimestamp = timeseries.getLastTimestamp();
 
-		BaseTimeSeries resultBaseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);
-
-		
+		BaseTimeSeries resultBaseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);		
 
 		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
 		BaseTimeSeries[] interpolationBaseTimeseries = new BaseTimeSeries[STATION_INTERPOLATION_COUNT];
@@ -558,19 +571,22 @@ public class TimeSeriesDatabase {
 			interpolationStations[i] = station.nearestStationList.get(i);
 			TimeSeries interpolationTimeseries = interpolationStations[i].queryBaseAggregatedData(querySensorNames, null, null);
 			interpolationBaseTimeseries[i] = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
-		}
-		
+		}		
 		
 		for(String parameterName:querySensorNames) {
 			if(sensorMap.get(parameterName).useGapFilling) {
 				GapFiller.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
 			}
-		}	
-		
+		}		
+	
 		return resultBaseTimeSeries.getClipped(start, end);
 	}
 	
-	
+	/**
+	 * get full time series of one plotid
+	 * @param plotID
+	 * @return
+	 */
 	public TimeSeries queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -580,6 +596,12 @@ public class TimeSeriesDatabase {
 		return station.queryRawData(null,null,null);	
 	}
 	
+	/**
+	 * get full time series of one plotid
+	 * @param plotID
+	 * @param querySensorNames
+	 * @return
+	 */
 	public TimeSeries queryRawData(String plotID, String[] querySensorNames) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -589,6 +611,14 @@ public class TimeSeriesDatabase {
 		return station.queryRawData(querySensorNames,null,null);	
 	}
 	
+	/**
+	 * get time series of one plotid and time interval
+	 * @param plotID
+	 * @param querySensorNames
+	 * @param start
+	 * @param end
+	 * @return
+	 */
 	public TimeSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -598,6 +628,11 @@ public class TimeSeriesDatabase {
 		return station.queryRawData(querySensorNames,start,end);	
 	}
 
+	/**
+	 * get array of Sensor objects with given sensor names
+	 * @param sensorNames
+	 * @return
+	 */
 	public Sensor[] getSensors(String[] sensorNames) {
 		Sensor[] sensors = new Sensor[sensorNames.length];
 		for(int i=0;i<sensorNames.length;i++) {
@@ -610,54 +645,46 @@ public class TimeSeriesDatabase {
 		return sensors;
 	}
 	
+	/**
+	 * read geo config of stations:
+	 * 1. read geo pos of station
+	 * 2. calculate ordered list for each station of stations nearest to current station within same general station
+	 * @param config_file
+	 */
 	public void readStationGeoPositionConfig(String config_file) {
-
-		try{
-		
-		Table table = Table.readCSV(config_file);
-		
-		int plotidIndex = table.getColumnIndex("PlotID");
-		int epplotidIndex = table.getColumnIndex("EP_Plotid");
-		int lonIndex = table.getColumnIndex("Lon");
-		int latIndex = table.getColumnIndex("Lat");
-		
-		
-		for(String[] row:table.rows) {
-			String plotID = row[epplotidIndex];
-			if(!plotID.endsWith("_canceled")) {
-				Station station = stationMap.get(plotID);
-				if(station!=null) {
-					
-					try {
-					
-					double lon = Double.parseDouble(row[lonIndex]);
-					double lat = Double.parseDouble(row[latIndex]);
-					
-					station.geoPoslongitude = lon;
-					station.geoPosLatitude = lat;
-					
-					GeneralStation generalStation = generalStationMap.get(station.generalStationName);
-					if(generalStation!=null) {
-					//System.out.println(station.generalStationName+": "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+		try{		
+			Table table = Table.readCSV(config_file);		
+			int plotidIndex = table.getColumnIndex("PlotID");
+			int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
+			int lonIndex = table.getColumnIndex("Lon");
+			int latIndex = table.getColumnIndex("Lat");			
+			for(String[] row:table.rows) {
+				String plotID = row[epplotidIndex];
+				if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
+					Station station = stationMap.get(plotID);
+					if(station!=null) {					
+						try {					
+							double lon = Double.parseDouble(row[lonIndex]);
+							double lat = Double.parseDouble(row[latIndex]);					
+							station.geoPoslongitude = lon;
+							station.geoPosLatitude = lat;					
+						} catch(Exception e) {
+							log.warn("geo pos not read: "+plotID);
+						}
+						if(plotidIndex>-1) {
+							station.serialID = row[plotidIndex];
+						}
 					} else {
-						log.warn("general station not found: "+station.generalStationName+" in "+plotID);
+						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
 					}
-					
-					} catch(Exception e) {
-						log.warn("geo pos not read: "+plotID);
-					}
-					
-				} else {
-					log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
 				}
+				
 			}
-		}
+			
 		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		calcNearestStations();
-		
+			log.error(e);
+		}		
+		calcNearestStations();		
 	}
 	
 	public void updateGeneralStations() {

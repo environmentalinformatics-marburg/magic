@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.raw;
 
 import java.util.ArrayList;
 import java.util.Iterator;

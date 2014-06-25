@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeries;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import timeseriesdatabase.raw.TimeSeries;
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ProcessingEngine;
@@ -51,7 +51,7 @@ public class UseCaseBaseAggregation {
 		
 		System.out.println("write data to file...");
 
-		timeSeries.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);		
+		timeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);		
 		
 		System.out.println("...end");
 
