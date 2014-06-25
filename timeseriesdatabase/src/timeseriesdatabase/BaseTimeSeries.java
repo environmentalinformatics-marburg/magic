@@ -91,59 +91,6 @@ public class BaseTimeSeries {
 		}
 		
 		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeStep, resultData);
-		
-		
-		
-		/*
-		if(timeSeries.timeinterval==null) {
-			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
-		}
-		Integer timeinterval = timeSeries.timeinterval;
-		List<TimeSeriesEntry> gapList = new ArrayList<TimeSeriesEntry>();
-		
-		Iterator<TimeSeriesEntry> it = timeSeries.entryList.iterator();
-		TimeSeriesEntry nextEntry = null;		
-		if(it.hasNext()) {
-			nextEntry = it.next();			
-		} else {
-		    nextEntry = null;
-		}		
-		
-		for(long timestamp=startTimestamp; timestamp<=endTimestamp; timestamp+=timeinterval) {			
-			if(nextEntry != null&&nextEntry.timestamp==timestamp) {
-				gapList.add(nextEntry);
-				if(it.hasNext()) {
-					nextEntry = it.next();
-				} else {
-					nextEntry = null;
-				}
-			} else if(nextEntry != null&&nextEntry.timestamp<timestamp) {
-				log.error("error");
-			} else {
-				float[] gapData = new float[timeSeries.parameterNames.length];
-				for(int i=0;i<timeSeries.parameterNames.length;i++) {
-					gapData[i] = Float.NaN;
-				}
-				gapList.add(new TimeSeriesEntry(timestamp, gapData));
-			}			
-		}
-		
-		if(it.hasNext()) {
-			log.error("some data left");
-		}
-		
-		float[][] data = new float[timeSeries.parameterNames.length][gapList.size()];
-		for(int offset=0;offset<gapList.size();offset++) {
-			TimeSeriesEntry entry = gapList.get(offset);
-			for(int parameterIndex=0;parameterIndex<timeSeries.parameterNames.length;parameterIndex++) {
-				if(startTimestamp+offset*timeinterval != entry.timestamp) {
-					log.error("timestamp error in BaseTimeSeries");
-				}
-				data[parameterIndex][offset] = entry.data[parameterIndex];				
-			}
-		}
-		
-		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeinterval, data);*/	
 	}
 	
 	public String toString() {

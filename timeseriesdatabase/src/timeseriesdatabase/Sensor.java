@@ -2,13 +2,25 @@ package timeseriesdatabase;
 
 /**
  * This class contains metadata that is associated with a sensor.
+ * Only sensors that are part of base aggregation are created.
  * @author Stephan Wöllauer
  *
  */
 public class Sensor {
 	
+	/**
+	 * parameter name of this sensor
+	 */
 	public String name;
+	
+	/**
+	 * physical minimum
+	 */
 	public float min;
+	
+	/**
+	 * physical maximum
+	 */
 	public float max;
 	
 	/**
@@ -16,11 +28,17 @@ public class Sensor {
 	 */
 	public AggregationType baseAggregationType;
 	
+	/**
+	 * fill gaps in time series of this sensor
+	 */
+	public boolean useGapFilling;
+	
 	public Sensor(String name) {
 		this.name = name;
 		min = -Float.MAX_VALUE;
 		max = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
+		useGapFilling = false;
 	}
 	
 	/**

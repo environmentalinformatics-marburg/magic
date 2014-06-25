@@ -95,39 +95,58 @@ public class TimeSeriesDatabase {
 		//System.out.println("begin readLoggerSchemaConfig...");
 
 		try {
-		
-		Wini ini = new Wini(new File(configFile));
-		
-		
 
-		for(String typeName:ini.keySet()) {
-			
-			Section section = ini.get(typeName);
-			List<String> names = new ArrayList<String>();			
-			for(String name:section.keySet()) {
-				names.add(name);
-			}
-			
-			String[] sensorNames = new String[names.size()];
-			Attribute[] schema = new Attribute[names.size()+1];
-			for(int i=0;i<names.size();i++) {
-				sensorNames[i] = names.get(i);
-				schema[i] =  new Attribute(names.get(i),DataType.FLOAT);
-			}
-			schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
-						
-			//System.out.println("create logger type: "+typeName);
-			loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
-			
-		}
+			Wini ini = new Wini(new File(configFile));
 
-		//System.out.println();
-		
+
+
+			for(String typeName:ini.keySet()) {
+
+				Section section = ini.get(typeName);
+				List<String> names = new ArrayList<String>();			
+				for(String name:section.keySet()) {
+					names.add(name);
+				}
+
+				String[] sensorNames = new String[names.size()];
+				Attribute[] schema = new Attribute[names.size()+1];
+				for(int i=0;i<names.size();i++) {
+					sensorNames[i] = names.get(i);
+					schema[i] =  new Attribute(names.get(i),DataType.FLOAT);
+				}
+				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
+
+				//System.out.println("create logger type: "+typeName);
+				loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
+
+			}
+
 		} catch (Exception e) {
-			System.out.println(e);
+			log.error(e);
 		}
+	}
 
-		//System.out.println("...end");		
+	/**
+	 * read list of sensors that should be included in gap filling processing
+	 * @param configFile
+	 */
+	public void readGapFillingConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("gap_filling");
+			for(String name:section.keySet()) {
+				//System.out.println("gap filling: "+name);
+				Sensor sensor = sensorMap.get(name);
+				if(sensor!=null) {
+					sensor.useGapFilling = true;
+				} else {
+					log.warn("gap filling config: sensor not found: "+name);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error(e);
+		}
 	}
 	
 	/**
@@ -363,26 +382,35 @@ public class TimeSeriesDatabase {
 		}
 	}
 
-	public void readGeneralStationConfig(String configFile) {
-		//System.out.println("readGeneralStationConfig");
+	public void readGeneralStationConfig(String configFile) {		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(configFile));
-			String next = reader.readLine();
-			while(next!=null) {
-				//System.out.println(next);
-				generalStationMap.put(next, new GeneralStation(next));
-				next = reader.readLine();
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("general_stations");
+			for(String name:section.keySet()) {				
+				generalStationMap.put(name, new GeneralStation(name));
 			}
-			reader.close();
-		} catch (FileNotFoundException e) {
+
+		} catch (Exception e) {
 			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-		}
-		
+		}		
 	}
 
 	public void readIgnoreSensorNameConfig(String configFile) {
+		
+		
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("ignore_sensors");
+			for(String name:section.keySet()) {				
+				ignoreSensorNameSet.add(name);
+			}
+
+		} catch (Exception e) {
+			log.error(e);
+		}
+		
+		/*
+		
 		//System.out.println("readIgnoreSensorNameConfig");
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(configFile));
@@ -397,7 +425,7 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		} catch (IOException e) {
 			log.error(e);
-		}
+		}*/
 		
 	}
 	
@@ -534,16 +562,12 @@ public class TimeSeriesDatabase {
 		
 		
 		for(String parameterName:querySensorNames) {
-			GapFiller.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
-		}
-		
-		
+			if(sensorMap.get(parameterName).useGapFilling) {
+				GapFiller.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
+			}
+		}	
 		
 		return resultBaseTimeSeries.getClipped(start, end);
-		
-		
-		
-
 	}
 	
 	
