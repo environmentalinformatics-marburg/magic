@@ -4,9 +4,14 @@ import java.time.LocalDateTime;
 
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.aggregated.BaseTimeSeries;
+import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.GapFiller;
 
+/**
+ * use case of gap filler with synthetic data
+ * @author woellauer
+ *
+ */
 public class UseCaseGapFiller {
 	
 	static float getSyntheticValue(double stationIndex, int valueIndex) {
@@ -51,11 +56,11 @@ public class UseCaseGapFiller {
 		
 		//***
 		
-		BaseTimeSeries[] sourceBaseTimeSeries = new BaseTimeSeries[INTERPOLATION_STATION_COUNT];
+		TimeSeries[] sourceBaseTimeSeries = new TimeSeries[INTERPOLATION_STATION_COUNT];
 		for(int i=0;i<INTERPOLATION_STATION_COUNT;i++) {
-			sourceBaseTimeSeries[i] = new BaseTimeSeries(new String[]{"synthetic"}, sourceStartTimestamp, TIMEINTERVAL, new float[][]{source[i]});
+			sourceBaseTimeSeries[i] = new TimeSeries(new String[]{"synthetic"}, sourceStartTimestamp, TIMEINTERVAL, new float[][]{source[i]});
 		}
-		BaseTimeSeries targetBaseTimeSeries = new BaseTimeSeries(new String[]{"synthetic"}, targetStartTimestamp, TIMEINTERVAL, new float[][]{target});
+		TimeSeries targetBaseTimeSeries = new TimeSeries(new String[]{"synthetic"}, targetStartTimestamp, TIMEINTERVAL, new float[][]{target});
 		
 		
 		//targetBaseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);

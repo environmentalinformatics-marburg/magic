@@ -1,5 +1,10 @@
 package testing;
 
+/**
+ * testing average aggregation of wind direction
+ * @author woellauer
+ *
+ */
 public class TestingWindDirection {
 
 	public static void main(String[] args) {

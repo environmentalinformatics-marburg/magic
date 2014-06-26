@@ -14,7 +14,7 @@ import util.Util;
 
 /**
  * UniversalDataBinFile reads, cleans and structures data of a UDBF-File.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class UniversalDataBinFile {
@@ -231,7 +231,7 @@ public class UniversalDataBinFile {
 		return datarows;
 	}
 	
-	public UDBFTimeSeries getUDBFTimeSeries() {
+	public UDBFTimestampSeries getUDBFTimeSeries() {
 		DataRow[] dataRows = readDataRows();
 		
 		int maxRowID = -1;
@@ -289,6 +289,6 @@ public class UniversalDataBinFile {
 			}
 		}
 		
-		return new UDBFTimeSeries(filename, sensorHeaders, timeConverter, time, data);
+		return new UDBFTimestampSeries(filename, sensorHeaders, timeConverter, time, data);
 	}
 }

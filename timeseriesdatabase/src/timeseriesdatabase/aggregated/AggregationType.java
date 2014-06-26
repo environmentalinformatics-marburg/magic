@@ -2,7 +2,7 @@ package timeseriesdatabase.aggregated;
 
 /**
  * aggregation type of sensor data
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public enum AggregationType {	

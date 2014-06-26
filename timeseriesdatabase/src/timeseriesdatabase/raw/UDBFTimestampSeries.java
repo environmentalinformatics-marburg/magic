@@ -5,11 +5,11 @@ import java.nio.file.Path;
 import timeseriesdatabase.TimeConverter;
 
 /**
- * UDBFTimeSeries contains relevant data of a UDBF-File.
- * @author Stephan Wöllauer
+ * contains relevant data of a UDBF-File.
+ * @author woellauer
  *
  */
-public class UDBFTimeSeries {
+public class UDBFTimestampSeries {
 	
 	public final Path filename;
 	public final SensorHeader[] sensorHeaders;
@@ -17,7 +17,7 @@ public class UDBFTimeSeries {
 	public final long[] time;
 	public final float[][] data;
 
-	public UDBFTimeSeries(Path filename, SensorHeader[] sensorHeaders, TimeConverter timeConverter, long[] time, float[][] data) {
+	public UDBFTimestampSeries(Path filename, SensorHeader[] sensorHeaders, TimeConverter timeConverter, long[] time, float[][] data) {
 		this.filename = filename;
 		this.sensorHeaders = sensorHeaders;
 		this.timeConverter = timeConverter;

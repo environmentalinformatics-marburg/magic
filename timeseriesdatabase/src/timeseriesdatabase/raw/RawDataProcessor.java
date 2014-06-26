@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import util.Util;
 import de.umr.jepc.store.Event;
 
@@ -19,7 +20,7 @@ import de.umr.jepc.store.Event;
  * - remove empty rows (rows that consist of NaN values only)
  * - remove empty columns
  * 
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class RawDataProcessor {
@@ -34,8 +35,11 @@ public class RawDataProcessor {
 		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
 	}
 
-	public TimeSeries process(Iterator<Event> it) {	
-		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
+	public TimestampSeries process(Iterator<Event> it) {	
+		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
+		
+		Long prevTimestamp = null;
+		float[] prevData = null;
 
 		while(it.hasNext()) { // begin of while-loop for raw input-events
 			Event event = it.next();
@@ -54,12 +58,26 @@ public class RawDataProcessor {
 				}
 
 			}
-			if(validColumnCounter>0) {
-				entryList.add(new TimeSeriesEntry(timestamp,data));
+			if(validColumnCounter>0) {				
+				if( prevTimestamp!=null && (timestamp-prevTimestamp) <= BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL) {
+					
+					
+					for(int i=0;i<data.length;i++) {
+						float step = data[i] - prevData[i];
+						//TODO step check
+					}
+					
+					
+				} else {
+					//no step check
+				}
+				entryList.add(new TimestampSeriesEntry(timestamp,data));
 			}
+			prevTimestamp = timestamp;
+			prevData = data;
 		}
 
-		TimeSeries timeSeries = new TimeSeries(parameterNames, entryList, null);
+		TimestampSeries timeSeries = new TimestampSeries(parameterNames, entryList, null);
 		timeSeries.removeEmptyColumns();		
 		return timeSeries;
 	}

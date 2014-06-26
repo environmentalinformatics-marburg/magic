@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 /**
  * This class convertes beween date and time systems and keeps timestamp info from a UDBF-File.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class TimeConverter {

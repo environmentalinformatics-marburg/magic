@@ -9,20 +9,37 @@ import org.apache.logging.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+/**
+ * Helper class to read csv files and get data as a table
+ * @author woellauer
+ *
+ */
 public class Table {
 
 	private static final Logger log = Util.log;
 
+	/**
+	 * header names in csv file
+	 */
 	public String[] names;
+	
+	/**
+	 * header name -> column position
+	 */
 	public Map<String, Integer> nameMap;
+	
+	/**
+	 * table rows of csv file
+	 */
 	public String[][] rows;
 
+	private Table() {}
 
-	private Table() {
-
-	}
-
-
+	/**
+	 * create a Table Object from CSV-File
+	 * @param filename
+	 * @return
+	 */
 	public static Table readCSV(String filename) {
 		try {
 			Table table = new Table();
@@ -59,6 +76,11 @@ public class Table {
 		}
 	}
 	
+	/**
+	 * get column position of one header name
+	 * @param name
+	 * @return if name not found -1
+	 */
 	public int getColumnIndex(String name) {
 		Integer index = nameMap.get(name);
 		if(index==null) {

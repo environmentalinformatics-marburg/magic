@@ -5,7 +5,7 @@ import timeseriesdatabase.aggregated.AggregationType;
 /**
  * This class contains metadata that is associated with a sensor.
  * Only sensors that are part of base aggregation are created.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class Sensor {
@@ -18,12 +18,32 @@ public class Sensor {
 	/**
 	 * physical minimum
 	 */
-	public float min;
+	public float physicalMin;
 	
 	/**
 	 * physical maximum
 	 */
-	public float max;
+	public float physicalMax;
+	
+	/**
+	 * empirical minimum
+	 */
+	public float empiricalMin;
+	
+	/**
+	 * empirical maximum
+	 */
+	public float empiricalMax;
+	
+	/**
+	 * minimal change within a base aggregation time interval
+	 */
+	public float stepMin;
+	
+	/**
+	 * maximum change within a base aggregation time interval
+	 */
+	public float stepMax;
 	
 	/**
 	 * Type of aggregation for base aggregation
@@ -37,8 +57,10 @@ public class Sensor {
 	
 	public Sensor(String name) {
 		this.name = name;
-		min = -Float.MAX_VALUE;
-		max = Float.MAX_VALUE;
+		physicalMin = -Float.MAX_VALUE;
+		physicalMax = Float.MAX_VALUE;
+		empiricalMin = -Float.MAX_VALUE;
+		empiricalMax = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
 		useGapFilling = false;
 	}
@@ -52,6 +74,6 @@ public class Sensor {
 		if(Float.isNaN(value)) {
 			return false;
 		}
-		return min<=value&&value<=max;		
+		return physicalMin<=value&&value<=physicalMax;		
 	}
 }

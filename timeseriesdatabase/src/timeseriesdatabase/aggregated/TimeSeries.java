@@ -11,40 +11,68 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.raw.TimeSeries;
-import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.TimestampSeries;
+import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.Util;
 
-public class BaseTimeSeries {
+/**
+ * time series of aggregated data. time interval between values is constant
+ * @author woellauer
+ *
+ */
+public class TimeSeries {
 	
 	private static final Logger log = Util.log;
 	
+	/**
+	 * sensor names of time series in data
+	 */
 	public String[] parameterNames;
 	
+	/**
+	 * timestamp of first entry in data
+	 */
 	long startTimestamp;
+	
+	/**
+	 * constant time step between entries
+	 */
 	public final int timeStep;
 	
+	/**
+	 * time series data values:
+	 * data [ sensor index ]  [ row index ]
+	 */
 	public float[][] data;
 	
-	public BaseTimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data) {
+	public TimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data) {
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
 		this.data = data;
 	}
 	
-	public static BaseTimeSeries toBaseTimeSeries(Long startTimestamp, Long endTimestamp, TimeSeries timeSeries) {
+	/**
+	 * converts TimestampSeries to TimeSeries
+	 * missing values before and after data in source time series and gaps within source timeseries are filled with NaN-values
+	 * source time series needs to be aggregated already
+	 * @param startTimestamp timestamp of first entry in resulting time series
+	 * @param endTimestamp timestamp of last entry in resulting time series
+	 * @param timestampSeries
+	 * @return null if conversion is not possible
+	 */
+	public static TimeSeries toBaseTimeSeries(Long startTimestamp, Long endTimestamp, TimestampSeries timestampSeries) {
 		if(startTimestamp==null) {
-			startTimestamp = timeSeries.getFirstTimestamp();
+			startTimestamp = timestampSeries.getFirstTimestamp();
 		}
 		if(endTimestamp==null) {
-			endTimestamp = timeSeries.getLastTimestamp();
+			endTimestamp = timestampSeries.getLastTimestamp();
 		}
 		
-		if(timeSeries.timeinterval==null) {
+		if(timestampSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
 		}		
-		int timeStep = timeSeries.timeinterval;
+		int timeStep = timestampSeries.timeinterval;
 		if(endTimestamp<startTimestamp) {
 			log.error("error");
 		}
@@ -52,8 +80,8 @@ public class BaseTimeSeries {
 			log.error("error");
 		}
 		
-		Iterator<TimeSeriesEntry> it = timeSeries.entryList.iterator();
-		TimeSeriesEntry nextEntry;		
+		Iterator<TimestampSeriesEntry> it = timestampSeries.entryList.iterator();
+		TimestampSeriesEntry nextEntry;		
 		if(it.hasNext()) {
 			nextEntry = it.next();
 			if(nextEntry.timestamp%timeStep!=0) {
@@ -74,12 +102,12 @@ public class BaseTimeSeries {
 			}
 		}
 		
-		float[][] resultData = new float[timeSeries.parameterNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
+		float[][] resultData = new float[timestampSeries.parameterNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
 		int dataIndex=0;
 		for(long timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=timeStep) {
 			if(nextEntry!=null&&nextEntry.timestamp==timestamp) {
 				// insert row
-				for(int columnIndex=0;columnIndex<timeSeries.parameterNames.length;columnIndex++) {
+				for(int columnIndex=0;columnIndex<timestampSeries.parameterNames.length;columnIndex++) {
 					resultData[columnIndex][dataIndex] = nextEntry.data[columnIndex];
 					if(it.hasNext()) {
 						nextEntry = it.next();
@@ -94,20 +122,30 @@ public class BaseTimeSeries {
 				log.error("error: nextEntry.timestamp "+nextEntry.timestamp+"\t timestamp"+timestamp);
 			} else {
 				// insert NaN
-				for(int columnIndex=0;columnIndex<timeSeries.parameterNames.length;columnIndex++) {
+				for(int columnIndex=0;columnIndex<timestampSeries.parameterNames.length;columnIndex++) {
 					resultData[columnIndex][dataIndex] = Float.NaN;					
 				}
 			}
 			dataIndex++;
 		}
 		
-		return new BaseTimeSeries(timeSeries.parameterNames, startTimestamp, timeStep, resultData);
+		return new TimeSeries(timestampSeries.parameterNames, startTimestamp, timeStep, resultData);
 	}
 	
+	/**
+	 * some summary data of this time series
+	 */
 	public String toString() {
 		return "BaseTimeSeries: "+startTimestamp+"\t"+timeStep+"\t"+data.length+"\t"+data[0].length;
 	}
 	
+	/**
+	 * write timeseries to CSV-file
+	 * @param filename
+	 * @param separator seperator between values
+	 * @param nanText text output of NaN-values
+	 * @param csvTimeType time columns that should be in resulting file
+	 */
 	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
@@ -141,7 +179,6 @@ public class BaseTimeSeries {
 			printStream.println();
 			for(int rowIndex=0;rowIndex<data[0].length;rowIndex++) {
 				long timestamp = startTimestamp+rowIndex*timeStep;
-			//for(TimeSeriesEntry entry:entryList) {
 				if(time) {
 					switch(csvTimeType) {
 					case TIMESTAMP:
@@ -179,22 +216,32 @@ public class BaseTimeSeries {
 		}
 	}
 	
+	/**
+	 * get position of sensor name in data array
+	 * @param parameterName
+	 * @return
+	 */
 	public int getParameterNameIndex(String parameterName) {
 		return Util.StringArrayToMap(parameterNames).get(parameterName);
 		
 	}
 	
+	/**
+	 * get one data column
+	 * @param parameterName
+	 * @return
+	 */
 	public float[] getValues(String parameterName) {
 		return data[getParameterNameIndex(parameterName)];
 	}
 	
 	/**
 	 * returns time series with time interval exactly from clipStart to clipEnd
-	 * @param clipStart	may be null
-	 * @param clipEnd	may be null
+	 * @param clipStart	may be null if no clipping is needed
+	 * @param clipEnd	may be null if no clipping is needed
 	 * @return
 	 */
-	public BaseTimeSeries getClipped(Long clipStart, Long clipEnd) {
+	public TimeSeries getClipped(Long clipStart, Long clipEnd) {
 		long clipStartTimestamp = clipStart==null?this.startTimestamp:clipStart;
 		long clipEndTimestamp = clipEnd==null?this.startTimestamp+((this.data[0].length-1)*this.timeStep):clipEnd;	
 		
@@ -218,13 +265,21 @@ public class BaseTimeSeries {
 				}
 			}
 		}
-		return new BaseTimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData);
+		return new TimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData);
 	}
 	
+	/**
+	 * get timestamp of first data entry
+	 * @return
+	 */
 	public long getFirstTimestamp() {
 		return startTimestamp;
 	}
 	
+	/**
+	 * get timestamp of last data entry
+	 * @return
+	 */
 	public long getLastTimestamp() {
 		return startTimestamp+((data[0].length-1)*timeStep);
 	}

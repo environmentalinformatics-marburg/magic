@@ -17,6 +17,11 @@ import de.umr.eventstore.storage.Schema;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
+/**
+ * testing
+ * @author woellauer
+ *
+ */
 public class UseCaseQuery1 {
 
 	public static void main(String[] args) {

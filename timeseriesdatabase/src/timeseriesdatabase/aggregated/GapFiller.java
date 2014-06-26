@@ -159,7 +159,7 @@ public class GapFiller {
 	 * @param targetBaseTimeSeries
 	 * @param parameterName the sensor name that should be gap filled
 	 */
-	public static void process(BaseTimeSeries[] sourceBaseTimeSeries, BaseTimeSeries targetBaseTimeSeries, String parameterName) {
+	public static void process(TimeSeries[] sourceBaseTimeSeries, TimeSeries targetBaseTimeSeries, String parameterName) {
 		final int timeStep = targetBaseTimeSeries.timeStep;
 		long sourceStartTimestamp = sourceBaseTimeSeries[0].startTimestamp;
 		float[][] source = new float[sourceBaseTimeSeries.length][];

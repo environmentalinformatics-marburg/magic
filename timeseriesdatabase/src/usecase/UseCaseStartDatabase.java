@@ -24,7 +24,7 @@ import de.umr.jepc.store.Event;
 
 /**
  * UseCaseStartDatabase opens an existing database and processes some queries.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class UseCaseStartDatabase {

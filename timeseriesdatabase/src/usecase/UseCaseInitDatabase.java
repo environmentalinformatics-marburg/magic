@@ -11,7 +11,7 @@ import util.Util;
 
 /**
  * UseCaseInitDatabase loads source data into an emptied database.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class UseCaseInitDatabase {

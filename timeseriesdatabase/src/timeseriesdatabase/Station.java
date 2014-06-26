@@ -24,8 +24,8 @@ import timeseriesdatabase.aggregated.BaseAggregationProcessor;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.raw.RawDataProcessor;
 import timeseriesdatabase.raw.SensorHeader;
-import timeseriesdatabase.raw.TimeSeries;
-import timeseriesdatabase.raw.UDBFTimeSeries;
+import timeseriesdatabase.raw.TimestampSeries;
+import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
 import util.Util;
 import de.umr.jepc.Attribute;
@@ -33,7 +33,7 @@ import de.umr.jepc.store.Event;
 
 /**
  * This class contains metadata that is associated with a station (plotID).
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class Station {
@@ -159,7 +159,7 @@ public class Station {
 			
 			for(Path path:pathList) {
 				try {
-					UDBFTimeSeries timeSeries = readUDBFTimeSeries(path);
+					UDBFTimestampSeries timeSeries = readUDBFTimeSeries(path);
 					List<Event> eventList = translateToEvents(timeSeries);
 					if(eventList!=null) {
 						eventsList.add(eventList);
@@ -325,10 +325,10 @@ public class Station {
 	 * @return
 	 * @throws IOException
 	 */
-	public UDBFTimeSeries readUDBFTimeSeries(Path filename) throws IOException {
+	public UDBFTimestampSeries readUDBFTimeSeries(Path filename) throws IOException {
 		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+plotID);
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
-		UDBFTimeSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
+		UDBFTimestampSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
 		udbFile.close();
 		return udbfTimeSeries;
 	}
@@ -339,7 +339,7 @@ public class Station {
 	 * @param udbfTimeSeries
 	 * @return List of Events, time stamp ordered 
 	 */
-	public List<Event> translateToEvents(UDBFTimeSeries udbfTimeSeries) {
+	public List<Event> translateToEvents(UDBFTimestampSeries udbfTimeSeries) {
 		List<Event> resultList = new ArrayList<Event>(); // result list of events	
 		
 		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
@@ -434,7 +434,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
-	public TimeSeries queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
+	public TimestampSeries queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames);
 		Iterator<Event> it;
@@ -466,7 +466,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
-	public TimeSeries queryRawData(String[] querySensorNames, Long start, Long end) {
+	public TimestampSeries queryRawData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames, querySensorNames);
 		Iterator<Event> it;

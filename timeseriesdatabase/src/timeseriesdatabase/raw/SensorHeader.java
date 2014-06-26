@@ -2,7 +2,7 @@ package timeseriesdatabase.raw;
 
 /**
  * This class contains header data from UDBF-File of one sensor.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class SensorHeader {

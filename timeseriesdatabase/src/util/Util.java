@@ -1,14 +1,23 @@
 package util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ini4j.Wini;
+import org.ini4j.Profile.Section;
+
+import timeseriesdatabase.Sensor;
 
 /**
  * Some utilities
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class Util {
@@ -18,6 +27,11 @@ public class Util {
 	 */
 	public static final Logger log = LogManager.getLogger("general");
 	
+	/**
+	 * convert float to String with two fractional digits
+	 * @param value
+	 * @return
+	 */
 	public static String floatToString(float value) {
 		if(Float.isNaN(value)) {
 			return " --- ";
@@ -25,6 +39,12 @@ public class Util {
 		return String.format("%.2f", value);
 	}
 	
+	/**
+	 * create position map of array of Strings:
+	 * name -> array position
+	 * @param entries
+	 * @return
+	 */
 	public static Map<String,Integer> StringArrayToMap(String[] entries) {
 		Map<String,Integer> map = new HashMap<String,Integer>();
 		if(entries==null) {
@@ -40,10 +60,24 @@ public class Util {
 		return map;
 	}
 	
+	/**
+	 * create an array of positions of entries in resultNames with positions of sourcePosStringArray
+	 * @param resultNames
+	 * @param sourcePosStringArray
+	 * @param warn warn if entry was not found in sourcePosStringArray
+	 * @return
+	 */
 	public static int[] stringArrayToPositionIndexArray(String resultNames[], String[] sourcePosStringArray, boolean warn) {
 		return stringArrayToPositionIndexArray(resultNames,StringArrayToMap(sourcePosStringArray),warn);
 	}
 	
+	/**
+	 * create an array of positions of entries in resultNames with positions of sourcePosStringMap
+	 * @param resultNames
+	 * @param sourcePosStringMap
+	 * @param warn warn if entry was not found in sourcePosStringMap
+	 * @return
+	 */
 	public static int[] stringArrayToPositionIndexArray(String resultNames[], Map<String,Integer> sourcePosStringMap, boolean warn) {
 		int[] sourcePos = new int[resultNames.length];
 		for(int i=0;i<resultNames.length;i++) {
@@ -60,11 +94,56 @@ public class Util {
 		return sourcePos;
 	}
 	
+	/**
+	 * print array of values in one line
+	 * @param a
+	 */
 	public static void printArray(double[] a) {
 		for(int i=0;i<a.length;i++) {
 			System.out.format("%.2f  ",a[i]);
 		}
 		System.out.println();
+	}
+	
+	public static class FloatRange {
+		public final String name;
+		public final float min;
+		public final float max;
+		public FloatRange(String name, float min, float max) {
+			this.name = name;
+			this.min = min;
+			this.max = max;
+		}
+	}
+	
+	public static List<FloatRange> readIniSectionFloatRange(String fileName, String sectionName) {
+		try {
+			Wini ini = new Wini(new File(fileName));
+			Section section = ini.get(sectionName);
+			if(section!=null) {
+				ArrayList<FloatRange> resultList = new ArrayList<FloatRange>();
+				for(Entry<String, String> entry:section.entrySet()) {
+					String name = entry.getKey();
+					String range = entry.getValue();
+					try {
+					String minString = range.substring(range.indexOf('[')+1, range.indexOf(','));
+					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
+					float min=Float.parseFloat(minString);
+					float max=Float.parseFloat(maxString);
+					resultList.add(new FloatRange(name, min, max));
+					} catch (Exception e) {
+						log.warn("error in read: "+name+"\t"+range+"\t"+e);
+					}
+				}
+				return resultList;
+			} else {
+				log.error("ini section not found: "+sectionName);
+				return null;
+			}
+		} catch (Exception e) {
+			log.error("ini file not read "+fileName+"\t"+sectionName+"\t"+e);
+			return null;
+		}
 	}
 
 }

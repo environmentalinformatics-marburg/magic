@@ -7,7 +7,7 @@ import de.umr.jepc.Attribute;
 
 /**
  * This class contains metadata that associated with a logger type (station type).
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class LoggerType {

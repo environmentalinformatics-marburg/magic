@@ -8,7 +8,7 @@ import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.raw.TimeSeries;
+import timeseriesdatabase.raw.TimestampSeries;
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ProcessingEngine;
@@ -19,6 +19,11 @@ import de.umr.eventstore.storage.Schema;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
+/**
+ * use case for base aggregation
+ * @author woellauer
+ *
+ */
 public class UseCaseBaseAggregation {
 
 	public static void main(String[] args) {
@@ -42,7 +47,7 @@ public class UseCaseBaseAggregation {
 		
 		//TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, startTimestamp, endTimestamp);
 		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID, queryParameterNames, startTimestamp, endTimestamp);
-		TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, null, null);
+		TimestampSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, null, null);
 
 		
 		System.out.println("print part of timeseries...");

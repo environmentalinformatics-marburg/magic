@@ -1,5 +1,10 @@
 package timeseriesdatabase.aggregated;
 
+/**
+ * utility to convert raw timestamps and aggregated timestamps
+ * @author woellauer
+ *
+ */
 public class BaseAggregationTimeUtil {
 	
 	public final static int AGGREGATION_TIME_INTERVAL = 60; // time interval of aggregation in minutes 

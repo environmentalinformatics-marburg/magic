@@ -4,10 +4,12 @@ import java.util.Arrays;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
-public class TestingInterpolation {
-
-	
-	
+/**
+ * testing OLSMultipleLinearRegression
+ * @author woellauer
+ *
+ */
+public class TestingInterpolation {	
 	
 	public static void main(String[] args) {
 		

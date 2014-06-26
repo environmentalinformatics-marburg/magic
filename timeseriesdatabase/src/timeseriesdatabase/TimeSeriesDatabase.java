@@ -29,11 +29,12 @@ import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
 import timeseriesdatabase.aggregated.AggregationType;
-import timeseriesdatabase.aggregated.BaseTimeSeries;
+import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.GapFiller;
-import timeseriesdatabase.raw.TimeSeries;
+import timeseriesdatabase.raw.TimestampSeries;
 import util.Table;
 import util.Util;
+import util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
@@ -43,7 +44,7 @@ import de.umr.jepc.util.enums.TimeRepresentation;
 
 /**
  * This is the main class of the timeseries database.
- * @author Stephan Wöllauer
+ * @author woellauer
  *
  */
 public class TimeSeriesDatabase {
@@ -104,9 +105,9 @@ public class TimeSeriesDatabase {
 		}
 		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);
 		loggerTypeMap = new HashMap<String, LoggerType>();
-		stationMap = new HashMap<String,Station>();
+		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
-		sensorMap = new HashMap<String,Sensor>();
+		sensorMap = new TreeMap<String,Sensor>();//new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
 		baseAggregatonSensorNameSet = new HashSet<String>();		
 		store.open();		
@@ -129,8 +130,12 @@ public class TimeSeriesDatabase {
 				String[] sensorNames = new String[names.size()];
 				Attribute[] schema = new Attribute[names.size()+1];
 				for(int i=0;i<names.size();i++) {
-					sensorNames[i] = names.get(i);
-					schema[i] =  new Attribute(names.get(i),DataType.FLOAT);
+					String sensorName = names.get(i);
+					sensorNames[i] = sensorName;
+					schema[i] =  new Attribute(sensorName,DataType.FLOAT);
+					if(!sensorMap.containsKey(sensorName)) {
+						sensorMap.put(sensorName, new Sensor(sensorName));
+					}
 				}
 				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
 				loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
@@ -313,25 +318,48 @@ public class TimeSeriesDatabase {
 	 * read config for sensors: physical minimum and maximum values
 	 * @param configFile
 	 */
-	public void readSensorRangeConfig(String configFile) {
-		try {
-			Wini ini = new Wini(new File(configFile));
-			Section section = ini.get("parameter_range");
-			if(section!=null) {
-				for(String key:section.keySet()) {
-					String range = section.get(key);
-					String minString = range.substring(range.indexOf('[')+1, range.indexOf(','));
-					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
-					float min=Float.parseFloat(minString);
-					float max=Float.parseFloat(maxString);
-					Sensor sensor = new Sensor(key);
-					sensor.min = min;
-					sensor.max = max;
-					sensorMap.put(key, sensor);
+	public void readSensorPhysicalRangeConfig(String configFile) {
+		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_physical_range");
+		if(list!=null) {
+			for(FloatRange entry:list) {
+				Sensor sensor = sensorMap.get(entry.name);
+				if(sensor != null) {
+					sensor.physicalMin = entry.min;
+					sensor.physicalMax = entry.max;
+				} else {
+					log.warn("sensor not found: "+entry.name);
 				}
 			}
-		} catch (IOException e) {
-			log.warn(e);
+		}
+	}
+	
+	public void readSensorEmpiricalRangeConfig(String configFile) {
+		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_empirical_range");
+		if(list!=null) {
+			for(FloatRange entry:list) {
+				Sensor sensor = sensorMap.get(entry.name);
+				if(sensor != null) {
+					sensor.empiricalMin = entry.min;
+					sensor.empiricalMax = entry.max;
+				} else {
+					log.warn("sensor not found: "+entry.name);
+				}
+			}
+		}
+	}
+	
+	public void readSensorStepRangeConfig(String configFile) {
+		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"paramter_step_range");
+		if(list!=null) {
+			for(FloatRange entry:list) {
+				Sensor sensor = sensorMap.get(entry.name);
+				if(sensor != null) {
+					sensor.stepMin = entry.min;
+					sensor.stepMax = entry.max;
+				} else {
+					log.warn("sensor not found: "+entry.name);
+				}
+			}
 		}
 	}
 	
@@ -507,11 +535,11 @@ public class TimeSeriesDatabase {
 	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
 	 * @return
 	 */
-	public TimeSeries queryBaseAggregatedData(String plotID,String[] querySensorNames) {		
+	public TimestampSeries queryBaseAggregatedData(String plotID,String[] querySensorNames) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
 		return station.queryBaseAggregatedData(querySensorNames,null,null);		
 	}
@@ -524,13 +552,13 @@ public class TimeSeriesDatabase {
 	 * @param end
 	 * @return
 	 */
-	public TimeSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
+	public TimestampSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
-		TimeSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start, end);
+		TimestampSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start, end);
 		return timeseries;
 	}
 	
@@ -542,7 +570,7 @@ public class TimeSeriesDatabase {
 	 * @param end	may be null
 	 * @return
 	 */
-	public BaseTimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
+	public TimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
 		final int STATION_INTERPOLATION_COUNT = 15;		
 		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 		//final int TIME_STEP = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
@@ -553,7 +581,7 @@ public class TimeSeriesDatabase {
 			return null; 				
 		}
 		
-		TimeSeries timeseries;
+		TimestampSeries timeseries;
 		if(start==null) {
 			timeseries = station.queryBaseAggregatedData(querySensorNames, null, end);
 		} else {
@@ -563,14 +591,14 @@ public class TimeSeriesDatabase {
 		long startTimestamp = timeseries.getFirstTimestamp();
 		long endTimestamp = timeseries.getLastTimestamp();
 
-		BaseTimeSeries resultBaseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);		
+		TimeSeries resultBaseTimeSeries = TimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);		
 
 		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
-		BaseTimeSeries[] interpolationBaseTimeseries = new BaseTimeSeries[STATION_INTERPOLATION_COUNT];
+		TimeSeries[] interpolationBaseTimeseries = new TimeSeries[STATION_INTERPOLATION_COUNT];
 		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
 			interpolationStations[i] = station.nearestStationList.get(i);
-			TimeSeries interpolationTimeseries = interpolationStations[i].queryBaseAggregatedData(querySensorNames, null, null);
-			interpolationBaseTimeseries[i] = BaseTimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
+			TimestampSeries interpolationTimeseries = interpolationStations[i].queryBaseAggregatedData(querySensorNames, null, null);
+			interpolationBaseTimeseries[i] = TimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
 		}		
 		
 		for(String parameterName:querySensorNames) {
@@ -587,11 +615,11 @@ public class TimeSeriesDatabase {
 	 * @param plotID
 	 * @return
 	 */
-	public TimeSeries queryRawData(String plotID) {
+	public TimestampSeries queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
 		return station.queryRawData(null,null,null);	
 	}
@@ -602,11 +630,11 @@ public class TimeSeriesDatabase {
 	 * @param querySensorNames
 	 * @return
 	 */
-	public TimeSeries queryRawData(String plotID, String[] querySensorNames) {
+	public TimestampSeries queryRawData(String plotID, String[] querySensorNames) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
 		return station.queryRawData(querySensorNames,null,null);	
 	}
@@ -619,11 +647,11 @@ public class TimeSeriesDatabase {
 	 * @param end
 	 * @return
 	 */
-	public TimeSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
+	public TimestampSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
-			return TimeSeries.EMPTY_TIMESERIES; 				
+			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
 		return station.queryRawData(querySensorNames,start,end);	
 	}
