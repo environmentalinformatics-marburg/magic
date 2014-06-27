@@ -32,6 +32,8 @@ import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.GapFiller;
 import timeseriesdatabase.raw.TimestampSeries;
+import timeseriesdatabase.raw.TimestampSeriesEntry;
+import util.SchemaIterator;
 import util.Table;
 import util.Util;
 import util.Util.FloatRange;
@@ -776,5 +778,27 @@ public class TimeSeriesDatabase {
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
 	}
+	
+	
+	public SchemaIterator<TimestampSeriesEntry> queryTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		Station station = stationMap.get(plotID);
+		if(station!=null) {
+			return station.queryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		} else {
+			return null;
+		}
+	}
+	
+	public SchemaIterator<TimestampSeriesEntry> baseAggregatedqueryTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		Station station = stationMap.get(plotID);
+		if(station!=null) {
+			return station.baseAggregatedqueryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		} else {
+			return null;
+		}		
+	}
+
+	
+	
 
 }

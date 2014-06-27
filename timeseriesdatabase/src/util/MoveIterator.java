@@ -27,6 +27,7 @@ public abstract class MoveIterator<T> implements Iterator<T> {
 	public final T next() {
 		hasNext();
 		T result = current;
+		current = null;
 		hasNext();
 		return result;
 	}

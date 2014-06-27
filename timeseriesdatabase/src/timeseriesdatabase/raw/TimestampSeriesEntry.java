@@ -8,8 +8,8 @@ import java.sql.Time;
  *
  */
 public class TimestampSeriesEntry {
-	public long timestamp;
-	public float[] data;
+	public final long timestamp;
+	public final float[] data;
 	public TimestampSeriesEntry(long timestamp,float[] data) {
 		this.timestamp = timestamp;
 		this.data = data;

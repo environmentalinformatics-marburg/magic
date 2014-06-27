@@ -6,8 +6,10 @@ import java.util.List;
 
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeSeriesDatabase;
+import util.MoveIterator;
+import util.SchemaIterator;
 
-public class RawDataQualityCheckProcessor {
+public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> implements SchemaIterator<TimestampSeriesEntry> {
 
 	private static final int MAX_TIME_STEP = 60;
 	
@@ -22,42 +24,28 @@ public class RawDataQualityCheckProcessor {
 	
 	Sensor[] sensors;
 	
-	ArrayList<TimestampSeriesEntry> resultList;
-	
-	TimestampSeries timestampSeries;
+	String[] schema;
 
-
-	RawDataQualityCheckProcessor(TimeSeriesDatabase timeSeriesDatabase, TimestampSeries timestampSeries, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		this.timestampSeries = timestampSeries;
-		
+	public QualityCheckIterator(TimeSeriesDatabase timeSeriesDatabase, SchemaIterator<TimestampSeriesEntry> input_iterator, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		this.checkPhysicalRange = checkPhysicalRange;
 		this.checkEmpiricalRange = checkEmpiricalRange;
 		this.checkStepRange = checkStepRange;
 		
+		this.schema = input_iterator.getOutputSchema();		
+		sensors = timeSeriesDatabase.getSensors(input_iterator.getOutputSchema());
 		
-		sensors = timeSeriesDatabase.getSensors(timestampSeries.parameterNames);
-
-
-
-		columns = timestampSeries.parameterNames.length;
-		resultList = new ArrayList<TimestampSeriesEntry>();
-		input_iterator = timestampSeries.entryList.iterator();
-		long[] prevTimestamps = new long[columns];
-		float[] prevData = new float[columns];
+		columns = schema.length;
+		this.input_iterator = input_iterator;
+		this.prevTimestamps = new long[columns];
+		this.prevData = new float[columns];
 		for(int i=0;i<columns;i++) {
 			prevTimestamps[i] = -1000;
 			prevData[i] = Float.NaN; 
-		}		
-
-
-
+		}
 	}
 
-	public TimestampSeries process() {
-
-
-
-
+	@Override
+	public TimestampSeriesEntry getNext() {
 		while(input_iterator.hasNext()) {
 			TimestampSeriesEntry currEntry = input_iterator.next();
 			long currTimestamp = currEntry.timestamp;
@@ -89,24 +77,14 @@ public class RawDataQualityCheckProcessor {
 				}
 			}
 			if(validColumnCounter>0) {
-				resultList.add(new TimestampSeriesEntry(currTimestamp, currData));
+				return new TimestampSeriesEntry(currTimestamp, resultData);
 			}			
 		}		
-		return new TimestampSeries(timestampSeries.parameterNames, resultList, null);
-
+		return null; // no element left
 	}
 
-
-	public void getNext() {
-
+	@Override
+	public String[] getOutputSchema() {
+		return schema;
 	}
-
-
-
-
-
-
-
-
-
 }

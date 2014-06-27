@@ -20,13 +20,18 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.aggregated.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.BaseAggregationProcessor;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
+import timeseriesdatabase.raw.EventConverterIterator;
+import timeseriesdatabase.raw.QualityCheckIterator;
 import timeseriesdatabase.raw.RawDataProcessor;
 import timeseriesdatabase.raw.SensorHeader;
 import timeseriesdatabase.raw.TimestampSeries;
+import timeseriesdatabase.raw.TimestampSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
+import util.SchemaIterator;
 import util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -493,4 +498,60 @@ public class Station {
 	public String toString() {
 		return plotID;
 	}
+
+	public SchemaIterator<TimestampSeriesEntry> queryTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		String[] inputSchema = getLoggerType().sensorNames;
+		Iterator<Event> inputIterator;
+		if(start!=null) {
+			long startTime = start;
+			if(end!=null) {
+				long endTime = end;
+				inputIterator = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
+			} else {
+				inputIterator = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
+			}
+		} else {
+			if(end!=null) {
+				long endTime = end;
+				inputIterator = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
+			} else {
+				inputIterator = timeSeriesDatabase.store.getHistory(plotID);
+			}
+		}
+		EventConverterIterator eventConverterIterator;
+		if(querySchema==null) {
+			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, inputSchema);
+		} else {
+			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, querySchema);
+		}
+		QualityCheckIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,true,true,true);
+		return qualityCheckIterator;
+	}
+
+	public SchemaIterator<TimestampSeriesEntry> baseAggregatedqueryTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
+		return baseAggregationIterator;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
