@@ -76,4 +76,22 @@ public class Sensor {
 		}
 		return physicalMin<=value&&value<=physicalMax;		
 	}
+
+	public boolean checkEmpiricalRange(float value) {
+		if(Float.isNaN(value)) {
+			return false;
+		}
+		return empiricalMin<=value&&value<=empiricalMax;
+	}
+
+	/**
+	 * precondition: prevValue and value are valid (no NaN values)
+	 * @param prevValue
+	 * @param value
+	 * @return
+	 */
+	public boolean checkStepRange(float prevValue, float value) {
+		float step = Math.abs(value-prevValue);		
+		return stepMin<=step&&step<=stepMax;
+	}
 }

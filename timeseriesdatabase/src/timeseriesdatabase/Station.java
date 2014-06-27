@@ -436,7 +436,7 @@ public class Station {
 	 */
 	public TimestampSeries queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
-		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames);
+		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames, true, true, true);
 		Iterator<Event> it;
 		if(start!=null) {
 			long startTime = BaseAggregationTimeUtil.calcMinRawTimestampOfBaseAggregationTimestamp(start);

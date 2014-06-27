@@ -32,7 +32,7 @@ public class TimeSeries {
 	/**
 	 * timestamp of first entry in data
 	 */
-	long startTimestamp;
+	public long startTimestamp;
 	
 	/**
 	 * constant time step between entries

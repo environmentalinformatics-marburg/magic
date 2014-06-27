@@ -33,7 +33,7 @@ import de.umr.jepc.store.Event;
 public class BaseAggregationProcessor {
 
 	private static final Logger log = Util.log;
-	
+
 	String[] parameterNames;
 	Sensor[] sensors;
 	int[] eventPos;// mapping of input event columns to output data columns
@@ -51,7 +51,14 @@ public class BaseAggregationProcessor {
 	int[] columnEntryCounter;
 	//***
 
-	public BaseAggregationProcessor(TimeSeriesDatabase timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames) {
+	boolean checkPhysicalRange;
+	boolean checkEmpiricalRange;
+	boolean checkStepRange;
+
+	public BaseAggregationProcessor(TimeSeriesDatabase timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		this.checkPhysicalRange = checkPhysicalRange;
+		this.checkEmpiricalRange = checkEmpiricalRange;
+		this.checkStepRange = checkStepRange;
 		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
 		sensors = timeSeriesDatabase.getSensors(parameterNames);		
 		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
@@ -87,7 +94,7 @@ public class BaseAggregationProcessor {
 			}
 		}
 	}
-	
+
 	private static String[] getResultSchema(TimeSeriesDatabase timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames) {
 		if(querySensorNames==null) {// all available sensors are in result schema
 			// create output schema of aggregated data in parameterNames
@@ -115,7 +122,7 @@ public class BaseAggregationProcessor {
 			return (String[]) parameterNameList.toArray(new String[0]);
 		}
 	}
-	
+
 	/**
 	 * process collected data to aggregates
 	 * @return result or null if there are no valid aggregates
@@ -177,12 +184,12 @@ public class BaseAggregationProcessor {
 	}
 
 
-	public TimestampSeries process(Iterator<Event> it) {		
+	public TimestampSeries process(Iterator<Event> it) {
 		initAggregates();
-		
+
 		//timestamp of aggreates of currently collected data
 		long aggregation_timestamp = -1;
-		
+
 		//list of aggregated data entries
 		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
 
@@ -207,17 +214,23 @@ public class BaseAggregationProcessor {
 
 			//collect values for aggregation
 			for(int i=0;i<parameterNames.length;i++) {
+				float prevValue = 0;
 				float value = (float) payload[eventPos[i]];
-				if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversin of NaN values for aggregate AVERAGE_ZERO
+				if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
 					System.out.println("NaN...");
 					value = 0;
 				}
-				if(sensors[i].checkPhysicalRange(value)) {
-					aggCnt[i] ++;					
-					aggSum[i] += value;
-					if(value>aggMax[i]) {
-						aggMax[i] = value;
+				if(!checkPhysicalRange || sensors[i].checkPhysicalRange(value)) {
+					if(!checkEmpiricalRange || sensors[i].checkEmpiricalRange(value)) {
+						if(!checkStepRange || sensors[i].checkStepRange(prevValue, value)) {
+							aggCnt[i] ++;					
+							aggSum[i] += value;
+							if(value>aggMax[i]) {
+								aggMax[i] = value;
+							}
+						}
 					}
+
 				}
 			}			
 			if(aggregate_wind_direction) {
@@ -233,13 +246,13 @@ public class BaseAggregationProcessor {
 				}				
 			}			
 		}  // end of while-loop for raw input-events
-		
+
 		//process last aggregate if there is some collected data left
 		float[] data = aggregateCollectedData();
 		if(data!=null) {
 			entryList.add(new TimestampSeriesEntry(aggregation_timestamp,data));
 		}
-		
+
 		//create resulting TimeSeries Object
 		TimestampSeries timeSeries = new TimestampSeries(parameterNames, entryList, 60); //TODO
 		//check and remove empty columns
@@ -252,7 +265,7 @@ public class BaseAggregationProcessor {
 
 		return timeSeries;
 	}
-	
+
 	private void initAggregates() {
 		aggCnt = new int[parameterNames.length];
 		aggSum = new float[parameterNames.length];
@@ -263,7 +276,7 @@ public class BaseAggregationProcessor {
 		}		
 		resetAggregates();
 	}
-	
+
 	private void resetAggregates() {
 		for(int i=0;i<parameterNames.length;i++) {
 			aggCnt[i] = 0;
