@@ -80,8 +80,11 @@ ndvi.rst.wht <- lapply(ndvi.ts[, 3], function(i) {
 fire.fls <- list.files("data/md14a1/aggregated/", pattern = ".tif$", 
                        full.names = TRUE)
 
-fire.fls <- fire.fls[grep("2001", fire.fls)[1]:
-                       grep("2013", fire.fls)[length(grep("2013", fire.fls))]]
+
+# Limit time window from Terra-MODIS launch to Dec 2013
+st <- grep("2001", fire.fls)[1]
+nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
+fire.fls <- fire.fls[st:nd]
 
 # Setup time series
 fire.dates <- as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j")
@@ -204,34 +207,41 @@ foreach(i = resp.rst, j = seq(resp.rst)) %do% {
 }
 
 
-# ### Plotting stuff
-# 
-# ## Fire events per month as time series
-# 
-# fire.ts.fls.cc <- fire.ts.fls[complete.cases(fire.ts.fls), ]
-# fire.ts.fls.cc$date <- factor(as.yearmon(fire.ts.fls.cc$date))
-# 
-# fire.rst.cc <- stack(fire.ts.fls.cc[, 2])
-# fire.rst.cc.agg <- stackApply(fire.rst.cc, indices = as.numeric(fire.ts.fls.cc[, 1]), 
-#                               fun = sum, filename = "out/plots/fire_agg_mnth", 
-#                               format = "GTiff", na.rm = TRUE, overwrite = TRUE)
-# 
-# fire.df.cc.agg <- data.frame(date = unique(fire.ts.fls.cc[, 1]), 
-#                              value = sapply(1:nlayers(fire.rst.cc.agg), function(i) {
-#                                sum(fire.rst.cc.agg[[i]][] > 0)
-#                              }))
-# 
-# png("out/plots/fire_agg_mnth.png", units = "mm", width = 300, height = 85, 
-#     res = 300, pointsize = 15)
-# ggplot(aes(x = as.Date(as.yearmon(date)), y = value), data = fire.df.cc.agg) +
-#   geom_histogram(stat = "identity", fill = "black") + 
-#   labs(x = "Time [months]", y = "Number of fire pixels") + 
-#   theme_bw() + 
-#   theme(axis.title.x = element_text(size = rel(1.4)), 
-#         axis.text.x = element_text(size = rel(1.1)), 
-#         axis.title.y = element_text(size = rel(1.4)), 
-#         axis.text.y = element_text(size = rel(1.1)))
-# dev.off()
+### Plotting stuff
+
+## Fire events per month as time series
+
+fire.ts.fls <- 
+  merge(data.frame(date = fire.ts[, 1]), 
+        data.frame(date = as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j"), 
+                   file = fire.fls, stringsAsFactors = FALSE), 
+        by = "date", all.x = TRUE)
+
+fire.ts.fls.cc <- fire.ts.fls[complete.cases(fire.ts.fls), ]
+fire.ts.fls.cc$date <- factor(as.yearmon(fire.ts.fls.cc$date))
+
+fire.rst.cc <- stack(fire.ts.fls.cc[, 2])
+fire.rst.cc.agg <- 
+  stackApply(fire.rst.cc, indices = as.numeric(fire.ts.fls.cc[, 1]), 
+             fun = sum, filename = "out/fire_agg/fire_agg_mnth", 
+             format = "GTiff", na.rm = TRUE, overwrite = TRUE)
+
+fire.df.cc.agg <- data.frame(date = unique(fire.ts.fls.cc[, 1]), 
+                             value = sapply(1:nlayers(fire.rst.cc.agg), function(i) {
+                               sum(fire.rst.cc.agg[[i]][] > 0)
+                             }))
+
+png("out/fire_agg/fire_agg_mnth.png", units = "cm", width = 30, height = 9, 
+    res = 300, pointsize = 12)
+ggplot(aes(x = as.Date(as.yearmon(date)), y = value), data = fire.df.cc.agg) +
+  geom_histogram(stat = "identity", fill = "black") + 
+  labs(x = "Time [months]", y = "Number of fire pixels") + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(size = rel(1.2)), 
+        axis.text.x = element_text(size = rel(1)), 
+        axis.title.y = element_text(size = rel(1.2)), 
+        axis.text.y = element_text(size = rel(1)))
+dev.off()
 
 # Individual color scheme
 my.bw.theme <- trellis.par.get()

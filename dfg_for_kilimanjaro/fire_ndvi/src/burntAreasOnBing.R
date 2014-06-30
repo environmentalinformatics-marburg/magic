@@ -5,8 +5,8 @@ rm(list = ls(all = TRUE))
 
 # Working directory
 switch(Sys.info()[["sysname"]], 
-       "Linux" = {path.wd <- "/media/pa_NDown/ki_modis_ndvi/"}, 
-       "Windows" = {path.wd <- "F:/ki_modis_ndvi"})
+       "Linux" = {path.wd <- "/media/fdetsch/XChange/kilimanjaro/ndvi/"}, 
+       "Windows" = {path.wd <- "F:/kilimanjaro/ndvi/"})
 setwd(path.wd)
 
 # Required packages and functions
@@ -66,8 +66,12 @@ if (aggregate.exe) {
 
 
 # Aggregated data: list files
-fire.fls <- list.files("data/overlay/md14a1_agg", pattern = "md14a1.*.tif$", 
+fire.fls <- list.files("data/md14a1/aggregated/", pattern = "md14a1.*.tif$", 
                        full.names = TRUE)
+
+# Limit time window from Terra-MODIS launch to Dec 2013
+nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
+fire.fls <- fire.fls[1:nd]
 
 # Setup time series
 fire.dates <- substr(basename(fire.fls), 8, 14)
@@ -102,15 +106,19 @@ if (!exists("fire.rst"))
 # fire.rst.cc <- stack(fire.rst[!sapply(fire.rst, is.logical)])
 # fire.rst.cc.all <- overlay(fire.rst.cc, fun = function(...) {
 #   if (sum(..., na.rm = TRUE) == 0) return(0) else return(1)
-# }, filename = "out/all_fire_cells", format = "GTiff", overwrite = TRUE)
+# }, filename = "out/all_fire_cells_0013", format = "GTiff", overwrite = TRUE)
 # fire.rst.cc.all[which(fire.rst.cc.all[] == 0)] <- NA
 
-fire.rst.cc.all <- raster("out/all_fire_cells.tif")
+fire.rst.cc.all <- raster("out/all_fire_cells_0013.tif")
 
 # Retrieve BING aerial image
-kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
-                             lowerRight = c(-3.425, 37.72), type = "bing", 
-                             minNumTiles = 40L), projection = "+init=epsg:32737")
+# kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
+#                              lowerRight = c(-3.425, 37.72), type = "bing", 
+#                              minNumTiles = 40L), projection = "+init=epsg:32737")
+# writeRaster(raster(kili.map), filename = "data/kili_bing_aerial", 
+#             bylayer = FALSE, format = "GTiff", overwrite = TRUE)
+
+kili.map <- stack("data/kili_bing_aerial.tif")
 
 # Convert noNA pixels to polygons and extract coordinates
 fire.shp.cc.all <- rasterToPolygons(fire.rst.cc.all)
@@ -119,7 +127,7 @@ fire.df <- data.frame(x = coordinates(fire.shp.cc.all)[, 1],
                       y = coordinates(fire.shp.cc.all)[, 2])
 
 # Plotting
-png("out/plots/kili_topo_fire.png", units = "mm", width = 300, res = 300, 
+png("out/kili_topo_fire_0013.png", units = "cm", width = 30, height = 30, res = 300, 
     pointsize = 14)
 autoplot(kili.map) + 
   geom_tile(aes(x = x, y = y), data = fire.df, 
