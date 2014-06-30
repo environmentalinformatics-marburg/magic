@@ -14,7 +14,7 @@ lib <- c("doParallel", "raster", "rgdal", "randomForest",
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
 fun <- paste0("src/", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
-                        "ndviCell.R", "evalTree.R"))
+                        "ndviCell.R", "evalTree.R", "splitRaster.R"))
 sapply(fun, source)
 
 # Parallelization
@@ -81,10 +81,10 @@ fire.fls <- list.files("data/md14a1/aggregated/", pattern = ".tif$",
                        full.names = TRUE)
 
 
-# Limit time window from Terra-MODIS launch to Dec 2013
-st <- grep("2001", fire.fls)[1]
-nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
-fire.fls <- fire.fls[st:nd]
+# # Limit time window from Terra-MODIS launch to Dec 2013
+# st <- grep("2001", fire.fls)[1]
+# nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
+# fire.fls <- fire.fls[st:nd]
 
 # Setup time series
 fire.dates <- as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j")
