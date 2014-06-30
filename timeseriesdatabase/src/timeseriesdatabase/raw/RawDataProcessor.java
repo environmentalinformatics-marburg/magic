@@ -23,6 +23,8 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
+
+@Deprecated
 public class RawDataProcessor {
 	
 	private static final Logger log = Util.log;

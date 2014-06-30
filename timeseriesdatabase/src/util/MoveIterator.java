@@ -2,10 +2,14 @@ package util;
 
 import java.util.Iterator;
 
-public abstract class MoveIterator<T> implements Iterator<T> {
+public abstract class MoveIterator<T> extends SchemaIterator<T> {
 
 	private T current = null;
 	private boolean closed = false;
+	
+	public MoveIterator(TimeSeriesSchema outputTimeSeriesSchema) {
+		super(outputTimeSeriesSchema);
+	}
 
 	@Override
 	public final boolean hasNext() {

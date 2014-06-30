@@ -13,6 +13,8 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
+import util.SchemaIterator;
+import util.TimeSeriesSchema;
 import util.Util;
 
 /**
@@ -50,6 +52,51 @@ public class TimeSeries {
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
 		this.data = data;
+	}
+	
+	/**
+	 * Converts elements of an iterator in TimeSeries object.
+	 * Elements need to be in ordered in timeStep time intervals
+	 * @param input_iterator
+	 * @param timeStep
+	 * @return
+	 */
+	public static TimeSeries toBaseTimeSeries(SchemaIterator<TimestampSeriesEntry> input_iterator) {
+		TimeSeriesSchema timeSeriesSchema = input_iterator.getOutputTimeSeriesSchema();
+		if(!timeSeriesSchema.constantTimeStep) {
+			log.error("time series needs to have constant aggregated timesteps");
+			return null;
+		}
+		if(!timeSeriesSchema.isContinuous) {
+			log.error("time series needs to have constant timesteps and continuous entries");
+			return null;
+		}
+		String[] schema = timeSeriesSchema.schema;
+		
+		if(!input_iterator.hasNext()) {
+			return null; // not data in input_iterator
+		}
+		
+		ArrayList<TimestampSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
+		long startTimestamp = entryList.get(0).timestamp;		
+		float[][] data = new float[schema.length][entryList.size()];
+		
+		long timestamp=-1;
+		for(int i=0;i<entryList.size();i++) {
+			TimestampSeriesEntry entry = entryList.get(i);
+			if(timestamp==-1||timestamp+timeSeriesSchema.timeStep==entry.timestamp) {
+			for(int column=0;column<schema.length;column++) {
+				data[column][i] = entry.data[column];
+			}
+			} else {
+				log.error("timestamps are not in timestep intervals");
+				return null;
+			}
+			timestamp = entry.timestamp;
+		}
+		
+		return new TimeSeries(schema, startTimestamp, timeSeriesSchema.timeStep, data);
+		
 	}
 	
 	/**

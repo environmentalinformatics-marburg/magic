@@ -499,7 +499,7 @@ public class Station {
 		return plotID;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> queryTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public SchemaIterator<TimestampSeriesEntry> queryRawTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		String[] inputSchema = getLoggerType().sensorNames;
 		Iterator<Event> inputIterator;
 		if(start!=null) {
@@ -528,8 +528,8 @@ public class Station {
 		return qualityCheckIterator;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> baseAggregatedqueryTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		SchemaIterator<TimestampSeriesEntry> it = queryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregatedTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryRawTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
 		return baseAggregationIterator;
 	}

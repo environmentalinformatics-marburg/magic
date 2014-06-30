@@ -5,11 +5,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import timeseriesdatabase.Sensor;
+import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import util.MoveIterator;
 import util.SchemaIterator;
+import util.TimeSeriesSchema;
+import util.Util;
 
-public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> implements SchemaIterator<TimestampSeriesEntry> {
+public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> {
 
 	private static final int MAX_TIME_STEP = 60;
 	
@@ -27,12 +30,13 @@ public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> imp
 	String[] schema;
 
 	public QualityCheckIterator(TimeSeriesDatabase timeSeriesDatabase, SchemaIterator<TimestampSeriesEntry> input_iterator, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema));
 		this.checkPhysicalRange = checkPhysicalRange;
 		this.checkEmpiricalRange = checkEmpiricalRange;
 		this.checkStepRange = checkStepRange;
 		
 		this.schema = input_iterator.getOutputSchema();		
-		sensors = timeSeriesDatabase.getSensors(input_iterator.getOutputSchema());
+		sensors = timeSeriesDatabase.getSensors(input_iterator.getOutputTimeSeriesSchema());
 		
 		columns = schema.length;
 		this.input_iterator = input_iterator;
@@ -54,7 +58,9 @@ public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> imp
 			int validColumnCounter = 0;
 			for(int columnIndex=0;columnIndex<columns;columnIndex++) {
 				float currValue = currData[columnIndex];
-				if(Float.isNaN(currValue)) {
+				if(!Float.isNaN(currValue)) {					
+					if(!checkPhysicalRange||sensors[columnIndex].checkPhysicalRange(currValue)) {					
+					if(!checkEmpiricalRange||sensors[columnIndex].checkEmpiricalRange(currValue)) {					
 					if(currTimestamp<=prevTimestamps[columnIndex]+MAX_TIME_STEP) { // perform step check
 						float prevValue = prevData[columnIndex];
 						if(!checkStepRange||sensors[columnIndex].checkStepRange(prevValue, currValue)) { //step check successful
@@ -63,15 +69,28 @@ public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> imp
 							prevTimestamps[columnIndex] = currTimestamp;
 							prevData[columnIndex] = currValue;
 						} else { // data value out of step range
+							//System.out.println("data value out of step range"+currValue+" in "+schema[columnIndex]+" at "+ TimeConverter.oleMinutesToLocalDateTime(currTimestamp));
 							resultData[columnIndex] = Float.NaN;
 						}
-
 					} else { // "valid" data, not step checked
 						resultData[columnIndex] = currValue;
 						validColumnCounter++;
 						prevTimestamps[columnIndex] = currTimestamp;
 						prevData[columnIndex] = currValue;
 					}
+					
+					} else { // data value out of empirical range
+						//System.out.println("data value out of physical range"+currValue+" in "+schema[columnIndex]+" at "+TimeConverter.oleMinutesToLocalDateTime(currTimestamp));
+						resultData[columnIndex] = Float.NaN;
+					}
+					
+					
+					} else { // data value out of physical range
+						//System.out.println("data value out of physical range: "+currValue+" in "+schema[columnIndex]+" at "+TimeConverter.oleMinutesToLocalDateTime(currTimestamp));
+						resultData[columnIndex] = Float.NaN;
+					}
+					
+					
 				} else { // no data value
 					resultData[columnIndex] = Float.NaN;
 				}

@@ -29,12 +29,15 @@ import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
 import timeseriesdatabase.aggregated.AggregationType;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
+import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.GapFiller;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.SchemaIterator;
 import util.Table;
+import util.TimeSeriesSchema;
 import util.Util;
 import util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
@@ -537,6 +540,7 @@ public class TimeSeriesDatabase {
 	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries queryBaseAggregatedData(String plotID,String[] querySensorNames) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -554,6 +558,7 @@ public class TimeSeriesDatabase {
 	 * @param end
 	 * @return
 	 */
+	@Deprecated	
 	public TimestampSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -572,6 +577,7 @@ public class TimeSeriesDatabase {
 	 * @param end	may be null
 	 * @return
 	 */
+	@Deprecated
 	public TimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
 		final int STATION_INTERPOLATION_COUNT = 15;		
 		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
@@ -617,6 +623,7 @@ public class TimeSeriesDatabase {
 	 * @param plotID
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -632,6 +639,7 @@ public class TimeSeriesDatabase {
 	 * @param querySensorNames
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries queryRawData(String plotID, String[] querySensorNames) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -649,6 +657,7 @@ public class TimeSeriesDatabase {
 	 * @param end
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
@@ -660,16 +669,16 @@ public class TimeSeriesDatabase {
 
 	/**
 	 * get array of Sensor objects with given sensor names
-	 * @param sensorNames
+	 * @param outputTimeSeriesSchema
 	 * @return
 	 */
-	public Sensor[] getSensors(String[] sensorNames) {
-		Sensor[] sensors = new Sensor[sensorNames.length];
-		for(int i=0;i<sensorNames.length;i++) {
-			Sensor sensor = sensorMap.get(sensorNames[i]);
+	public Sensor[] getSensors(TimeSeriesSchema outputTimeSeriesSchema) {
+		Sensor[] sensors = new Sensor[outputTimeSeriesSchema.columns];
+		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			Sensor sensor = sensorMap.get(outputTimeSeriesSchema.schema[i]);
 			sensors[i] = sensor;
 			if(sensor==null) {
-				log.warn("sensor "+sensorNames+" not found");
+				log.warn("sensor "+outputTimeSeriesSchema+" not found");
 			}
 		}
 		return sensors;
@@ -783,22 +792,59 @@ public class TimeSeriesDatabase {
 	public SchemaIterator<TimestampSeriesEntry> queryTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		Station station = stationMap.get(plotID);
 		if(station!=null) {
-			return station.queryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return station.queryRawTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		} else {
 			return null;
 		}
 	}
 	
-	public SchemaIterator<TimestampSeriesEntry> baseAggregatedqueryTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregatedTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		Station station = stationMap.get(plotID);
 		if(station!=null) {
-			return station.baseAggregatedqueryTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return station.queryBaseAggregatedTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		} else {
 			return null;
 		}		
 	}
-
 	
-	
-
+	public TimeSeries queryGapFilledTesting(String plotID, String[] querySchema, Long queryStart, Long queryEnd, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		final int STATION_INTERPOLATION_COUNT = 15;		
+		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
+		
+		Station station = stationMap.get(plotID);
+		if(station==null) {
+			log.warn("plotID not found: "+plotID);
+			return null; 				
+		}
+		
+		Long targetStart = queryStart==null ? null : queryStart-TRAINING_TIME_INTERVAL;
+		Long targetEnd = queryEnd;	
+		
+		SchemaIterator<TimestampSeriesEntry> target_iterator = station.queryBaseAggregatedTesting(querySchema, targetStart, targetEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		target_iterator = new NanGapIterator(this, target_iterator, queryStart, queryEnd);
+		TimeSeries targetTimeSeries = TimeSeries.toBaseTimeSeries(target_iterator);
+		if(targetTimeSeries==null) {
+			return null;
+		}
+		
+		long interpolationStartTimestamp = targetTimeSeries.getFirstTimestamp();
+		long interpolationEndTimestamp = targetTimeSeries.getLastTimestamp();
+		
+		TimeSeries[] sourceTimeseries = new TimeSeries[STATION_INTERPOLATION_COUNT];
+		List<Station> nearestStationList = station.nearestStationList;
+		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
+			Station sourceStation = nearestStationList.get(i);			
+			SchemaIterator<TimestampSeriesEntry> source_iterator = sourceStation.queryBaseAggregatedTesting(querySchema, interpolationStartTimestamp, interpolationEndTimestamp, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			source_iterator = new NanGapIterator(this, source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
+			sourceTimeseries[i] = TimeSeries.toBaseTimeSeries(source_iterator);
+		}
+		
+		for(String sensor:querySchema) {
+			if(sensorMap.get(sensor).useGapFilling) {
+				GapFiller.process(sourceTimeseries, targetTimeSeries, sensor);
+			}
+		}
+		
+		return targetTimeSeries.getClipped(queryStart, queryEnd);	
+	}
 }

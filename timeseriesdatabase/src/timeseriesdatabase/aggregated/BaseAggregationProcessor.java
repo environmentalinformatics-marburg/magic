@@ -12,6 +12,7 @@ import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
+import util.TimeSeriesSchema;
 import util.Util;
 import de.umr.jepc.store.Event;
 
@@ -30,6 +31,7 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
+@Deprecated
 public class BaseAggregationProcessor {
 
 	private static final Logger log = Util.log;
@@ -60,7 +62,7 @@ public class BaseAggregationProcessor {
 		this.checkEmpiricalRange = checkEmpiricalRange;
 		this.checkStepRange = checkStepRange;
 		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
-		sensors = timeSeriesDatabase.getSensors(parameterNames);		
+		sensors = timeSeriesDatabase.getSensors(new TimeSeriesSchema(parameterNames));		
 		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
 		prepareWindDirectionAggregation();		
 	}

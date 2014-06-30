@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -105,6 +106,32 @@ public class Util {
 		System.out.println();
 	}
 	
+	public static void printArray(float[] a) {
+		for(int i=0;i<a.length;i++) {
+			System.out.format("%.2f  ",a[i]);
+		}
+		System.out.println();
+	}
+	
+	public static String arrayToString(float[] a) {
+		String result="";
+		for(int i=0;i<a.length;i++) {
+			result+=floatToString(a[i])+" ";
+		}
+		return result;
+	}
+	
+	/**
+	 * print array of values in one line
+	 * @param a
+	 */
+	public static void printArray(String[] a) {
+		for(int i=0;i<a.length;i++) {
+			System.out.print(a[i]+" ");
+		}
+		System.out.println();
+	}
+	
 	public static class FloatRange {
 		public final String name;
 		public final float min;
@@ -144,6 +171,14 @@ public class Util {
 			log.error("ini file not read "+fileName+"\t"+sectionName+"\t"+e);
 			return null;
 		}
+	}
+	
+	public static <T> ArrayList<T> iteratorToList(Iterator<T> it) {
+		ArrayList<T> resultList = new ArrayList<T>();
+		while(it.hasNext()) {
+			resultList.add(it.next());
+		}
+		return resultList;
 	}
 
 }
