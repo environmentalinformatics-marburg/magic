@@ -14,6 +14,7 @@ import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.MoveIterator;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 import de.umr.jepc.store.Event;
@@ -23,7 +24,7 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
-public class BaseAggregationIterator extends MoveIterator<TimestampSeriesEntry> {
+public class BaseAggregationIterator extends MoveIterator {
 
 	private static final Logger log = Util.log;
 
@@ -48,7 +49,7 @@ public class BaseAggregationIterator extends MoveIterator<TimestampSeriesEntry> 
 	int[] columnEntryCounter;
 	//***
 
-	public BaseAggregationIterator(TimeSeriesDatabase timeSeriesDatabase, SchemaIterator<TimestampSeriesEntry> input_iterator) {
+	public BaseAggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
 		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
 		this.input_iterator = input_iterator;
 		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		

@@ -14,6 +14,7 @@ import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 
@@ -329,6 +330,37 @@ public class TimeSeries {
 	 */
 	public long getLastTimestamp() {
 		return startTimestamp+((data[0].length-1)*timeStep);
+	}
+	
+	public TimeSeriesIterator getIterator() {
+		return new InternalIterator();
+	}
+	
+	private class InternalIterator extends TimeSeriesIterator {
+		
+		private int pos;
+
+		public InternalIterator() {
+			super(new TimeSeriesSchema(parameterNames,timeStep));
+			pos=0;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return pos<data[0].length;
+		}
+
+		@Override
+		public TimestampSeriesEntry next() {
+			float[] resultData = new float[parameterNames.length];
+			for(int columnIndex=0;columnIndex<parameterNames.length;columnIndex++) {
+				resultData[columnIndex] = data[columnIndex][pos];
+			}
+			long timestamp = startTimestamp+(pos*timeStep);
+			pos++;
+			return new TimestampSeriesEntry(timestamp,resultData);
+		}
+		
 	}
 
 }

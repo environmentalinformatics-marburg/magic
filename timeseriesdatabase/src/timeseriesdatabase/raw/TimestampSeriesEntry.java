@@ -24,11 +24,15 @@ public class TimestampSeriesEntry {
 	}
 	
 	public static TimestampSeriesEntry getNaN(long timestamp, int columnCount) {
+		return new TimestampSeriesEntry(timestamp, getNanData(columnCount));
+	}
+	
+	public static float[] getNanData(int columnCount) {
 		float[] data = new float[columnCount];
 		for(int i=0;i<columnCount;i++) {
 			data[i] = Float.NaN;
 		}
-		return new TimestampSeriesEntry(timestamp, data);
+		return data;
 	}
 	
 	@Override

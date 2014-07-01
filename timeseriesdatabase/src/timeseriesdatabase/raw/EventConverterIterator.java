@@ -4,11 +4,12 @@ import java.util.Iterator;
 
 import util.OutputSchema;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 import de.umr.jepc.store.Event;
 
-public class EventConverterIterator extends SchemaIterator<TimestampSeriesEntry> {	
+public class EventConverterIterator extends TimeSeriesIterator {	
 	private String[] inputSchema;
 	private Iterator<Event> inputIterator;
 	private int[] eventPos;

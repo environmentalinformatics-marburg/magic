@@ -9,10 +9,11 @@ import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import util.MoveIterator;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 
-public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> {
+public class QualityCheckIterator extends MoveIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
@@ -29,7 +30,7 @@ public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> {
 	
 	String[] schema;
 
-	public QualityCheckIterator(TimeSeriesDatabase timeSeriesDatabase, SchemaIterator<TimestampSeriesEntry> input_iterator, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public QualityCheckIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema));
 		this.checkPhysicalRange = checkPhysicalRange;
 		this.checkEmpiricalRange = checkEmpiricalRange;

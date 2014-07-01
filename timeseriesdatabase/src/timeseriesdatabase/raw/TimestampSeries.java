@@ -212,7 +212,7 @@ public class TimestampSeries {
 		return gapList;
 	}
 	
-	public TimestampSeries getGapTimeSeries() {
+	/*public TimestampSeries getGapTimeSeries() {
 		List<TimestampSeriesEntry> gapList = new ArrayList<TimestampSeriesEntry>();
 		long currentTimeStamp = -1;
 		for(TimestampSeriesEntry entry:entryList) {
@@ -229,7 +229,7 @@ public class TimestampSeries {
 				currentTimeStamp = nextTimeStamp;
 		}
 		return new TimestampSeries(parameterNames,gapList,timeinterval);
-	}
+	}*/
 	
 	public long getFirstTimestamp() {
 		return this.entryList.get(0).timestamp;

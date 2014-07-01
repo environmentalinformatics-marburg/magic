@@ -43,7 +43,7 @@ public class GapFiller {
 		target_gap_check_loop: for(int targetIndex=0;targetIndex<target.length;targetIndex++) {
 
 			if(Float.isNaN(target[targetIndex])) { // gap in target time series
-				
+
 				float[][] source = new float[inputSource.length][];
 				for(int i=0;i<inputSource.length;i++) {
 					source[i] = inputSource[i];
@@ -125,7 +125,15 @@ public class GapFiller {
 						OLSMultipleLinearRegression reg = new OLSMultipleLinearRegression();
 						reg.newSampleData(trainingTarget, trainingSource);
 
-						double[] a = reg.estimateRegressionParameters();		
+						double[] a;
+
+						try {
+							a = reg.estimateRegressionParameters();
+						} catch(Exception e) {
+							log.warn("interpolation error: "+e);
+							//no interpolation possible; continue with next gap
+							continue target_gap_check_loop;
+						}
 						//Util.printArray(a);
 
 						//*** fill gap ***

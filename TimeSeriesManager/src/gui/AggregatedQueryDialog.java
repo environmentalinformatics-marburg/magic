@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
+import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
@@ -48,7 +49,8 @@ public class AggregatedQueryDialog extends Dialog {
 
 	private static Logger log = Util.log;
 
-	TimeSeriesDatabase timeSeriesDatabase;
+	private TimeSeriesDatabase timeSeriesDatabase;
+	private QueryProcessor qp;
 
 	Canvas canvas;
 
@@ -64,6 +66,8 @@ public class AggregatedQueryDialog extends Dialog {
 	float minValue;
 	float maxValue;
 
+	
+
 	public AggregatedQueryDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX, timeSeriesDatabase);
 
@@ -72,6 +76,7 @@ public class AggregatedQueryDialog extends Dialog {
 	public AggregatedQueryDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.qp = new QueryProcessor(timeSeriesDatabase);
 		setText("Query");
 	}
 
@@ -304,9 +309,9 @@ public class AggregatedQueryDialog extends Dialog {
 		String sensorName = comboSensorName.getText();
 		try {			
 			labelInfo.setText("query...");
-			//queryResult = timeSeriesDatabase.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
-			queryResult = timeSeriesDatabase.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
-			//queryResult = timeSeriesDatabase.queryGapFilledTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			//queryResult = qp.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
+			queryResult = qp.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			//queryResult = qp.queryGapFilledTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
 			updateViewData();
 			updateGUIInfo();
 		} catch(Exception e) {

@@ -6,6 +6,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.MoveIterator;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 
@@ -16,7 +17,7 @@ import util.Util;
  * @author woellauer
  *
  */
-public class NanGapIterator extends MoveIterator<TimestampSeriesEntry> {
+public class NanGapIterator extends MoveIterator {
 	
 	private static final Logger log = Util.log;
 
@@ -27,7 +28,7 @@ public class NanGapIterator extends MoveIterator<TimestampSeriesEntry> {
 	Long endTimestamp;
 	
 	
-	public NanGapIterator(SchemaIterator<TimestampSeriesEntry> input_iterator, Long start, Long end) {
+	public NanGapIterator(TimeSeriesIterator input_iterator, Long start, Long end) {
 		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,input_iterator.getOutputTimeSeriesSchema().timeStep, true));
 		if(!input_iterator.getOutputTimeSeriesSchema().constantTimeStep) {
 			log.error("input iterator needs to have constant time steps");

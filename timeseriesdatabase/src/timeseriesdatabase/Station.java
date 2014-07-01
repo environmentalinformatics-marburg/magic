@@ -34,6 +34,7 @@ import timeseriesdatabase.raw.TimestampSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
 import util.SchemaIterator;
+import util.TimeSeriesIterator;
 import util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -501,7 +502,7 @@ public class Station {
 		return plotID;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> queryRaw(String[] querySchema, Long start, Long end) {
+	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {
 		String[] inputSchema = getLoggerType().sensorNames;
 		Iterator<Event> inputIterator;
 		if(start!=null) {
@@ -520,7 +521,7 @@ public class Station {
 				inputIterator = timeSeriesDatabase.store.getHistory(plotID);
 			}
 		}
-		EventConverterIterator eventConverterIterator;
+		TimeSeriesIterator eventConverterIterator;
 		if(querySchema==null) {
 			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, inputSchema);
 		} else {
@@ -529,22 +530,22 @@ public class Station {
 		return eventConverterIterator;
 	}
 	
-	public SchemaIterator<TimestampSeriesEntry> queryQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		SchemaIterator<TimestampSeriesEntry> eventConverterIterator = queryRaw(querySchema, start, end);
-		QualityCheckIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+	public TimeSeriesIterator queryQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		TimeSeriesIterator eventConverterIterator = queryRaw(querySchema, start, end);
+		TimeSeriesIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		return qualityCheckIterator;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		SchemaIterator<TimestampSeriesEntry> it = queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+	public TimeSeriesIterator queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		TimeSeriesIterator it = queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
 		return baseAggregationIterator;
 	}
 	
 	public TimeSeries queryBaseAggregatedTimeSeries(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		SchemaIterator<TimestampSeriesEntry> it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		NanGapIterator nanGabIt = new NanGapIterator(it, start, end);
-		return TimeSeries.toBaseTimeSeries(nanGabIt);
+		TimeSeriesIterator it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		TimeSeriesIterator nanGapIt = new NanGapIterator(it, start, end);
+		return TimeSeries.toBaseTimeSeries(nanGapIt);
 	}
 }
 
