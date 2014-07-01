@@ -2,9 +2,9 @@ package gui;
 
 public class PrintBox {
 	
-	private Gui gui;
+	private TimeSeriesManager gui;
 	
-	public PrintBox(Gui gui) {
+	public PrintBox(TimeSeriesManager gui) {
 		this.gui = gui;
 	}
 	

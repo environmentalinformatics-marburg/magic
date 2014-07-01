@@ -23,7 +23,7 @@ import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 
-public class Gui {
+public class TimeSeriesManager {
 
 	public TimeSeriesDatabase timeSeriesDatabase;
 	
@@ -33,13 +33,15 @@ public class Gui {
 	public PrintBox printbox;
 
 	public static void main(String[] args) {		
-		Gui gui = new Gui();
-		gui.run();
+		TimeSeriesManager timeSeriesManager = new TimeSeriesManager();
+		timeSeriesManager.run();
 	}	
 
 	public void run() {
 		System.out.println("start...");
-		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		String databaseDirectory = "c:/timeseriesdatabase_database/";
+		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
+		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault(databaseDirectory, configDirectory);
 
 
 		Display display = new Display();		
