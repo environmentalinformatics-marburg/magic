@@ -20,15 +20,13 @@ registerDoParallel(cl <- makeCluster(2))
 
 ## MODIS fire
 
-# Import 8-day fire files (2001-2013)
-fire.fls <- list.files("data/md14a1/aggregated/", pattern = ".tif$", 
-                       full.names = TRUE)
-
-fire.stck <- stack("out/fire_agg/fire_agg_mnth.tif")
+# Import monthly RasterStack (2001-2013)
+fire.stck <- stack("out/fire_agg/fire_agg_mnth_01_13.tif")
 
 # Using monthly aggregated raster data
-fire.st.nd <- foreach(h = c("2013", "2013"), i = c("2001", "2009"), 
-                      j = c("2005", "2013"), .packages = lib) %dopar% {
+fire.st.nd <- foreach(i = c("2001", "2009", "2001", "2008"), 
+                      j = c("2005", "2013", "2006", "2013"), 
+                      .packages = lib) %dopar% {
     
   month.seq <- as.yearmon(seq(as.Date("2001-01-01"), 
                               as.Date("2013-12-31"), by = "month"))
@@ -44,91 +42,62 @@ fire.st.nd <- foreach(h = c("2013", "2013"), i = c("2001", "2009"),
                           st = c(as.numeric(i), 01), nd = c(as.numeric(j), 12)))
   fire.harmonics[fire.harmonics < 0] <- 0
   
-  #   return(data.frame("month" = month.seq[grep(paste("Jan", i), month.seq):
-  #                                           grep(paste("Dez", j), month.seq)], 
-  #                     "nfires" = nfires))
-
   fire.harmonics.df <- data.frame(month = month.abb, nfire = fire.harmonics)
   names(fire.harmonics.df)[2] <- paste("nfire", i, j, sep = "_")
   
   return(fire.harmonics.df)
 }  
-
-# Using 8-day raster data
-fire.st.nd <- foreach(h = c("2013", "2013"), i = c("2001", "2009"), 
-                      j = c("2005", "2013"), .packages = lib) %dopar% {
-                        
-                        # Limit time window from Terra-MODIS launch to Dec 2013
-                        st <- grep(paste0("_", i), fire.fls)[1]
-                        nd <- grep(paste0("_", j), fire.fls)[length(grep(paste0("_", j), fire.fls))]
-                        
-                        tmp.fire.fls <- fire.fls[st:nd]
-                        
-                        # Setup time series
-                        fire.dates <- as.Date(substr(basename(tmp.fire.fls), 8, 14), format = "%Y%j")
-                        
-                        fire.ts <- do.call("c", lapply(i:j, function(k) { 
-                          seq(as.Date(paste(k, "01", "01", sep = "-")), 
-                              as.Date(paste(k, "12", "31", sep = "-")), 8)
-                        }))
-                        
-                        # Identify available fire data based on continuous 8-day interval
-                        tmp.fire.ts <- merge(data.frame(fire.ts, 1:length(fire.ts)), 
-                                             data.frame(fire.dates, 1:length(fire.dates)), 
-                                             by = 1, all.x = TRUE)
-                        
-                        tmp.fire.ts.fls <- 
-                          merge(data.frame(date = tmp.fire.ts[, 1]), 
-                                data.frame(date = as.Date(substr(basename(tmp.fire.fls), 8, 14), format = "%Y%j"), 
-                                           file = tmp.fire.fls, stringsAsFactors = FALSE), 
-                                by = "date", all.x = TRUE)
-                        
-                        tmp.fire.rst <- lapply(tmp.fire.ts.fls[, 2], function(k) {
-                          if (is.na(k))
-                            return(NA)
-                          else
-                            return(raster(k))
-                        })
-                        
-                        tmp.fire.ts.fls$nfire <- sapply(tmp.fire.rst, function(k) {
-                          if (!is.logical(k)) 
-                            sum(k[] > 0)
-                          else
-                            NA
-                        })
-                        
-                        nfires <- aggregate(tmp.fire.ts.fls$nfire, 
-                                            by = list(as.yearmon(tmp.fire.ts.fls$date)), 
-                                            FUN = function(x) sum(x, na.rm = TRUE))
-                        
-                        fire.harmonics <- 
-                          round(vectorHarmonics(nfires[, 2], frq = 12, fun = mean, m = 2, 
-                                                st = c(as.numeric(i), 01), nd = c(as.numeric(j), 12)))
-                        fire.harmonics[fire.harmonics < 0] <- 0
-                        
-                        fire.harmonics.df <- data.frame(month = month.abb, nfire = fire.harmonics)
-                        names(fire.harmonics.df)[2] <- paste("nfire", i, j, sep = "_")
-                        
-                        return(fire.harmonics.df)
-                      }  
-
  
-fire.harmonics <- do.call(function(x, y) melt(merge(x, y, by = 1)), fire.st.nd)
+fire.harmonics <- Reduce(function(...) merge(..., by = 1, sort = FALSE), fire.st.nd)
+fire.harmonics <- melt(fire.harmonics, id.vars = "month")
 fire.harmonics$month <- factor(fire.harmonics$month, levels = month.abb)
+fire.harmonics$variable <- 
+  factor(fire.harmonics$variable, 
+         levels = paste0("nfire_", c("2001_2005", "2001_2006", "2008_2013", "2009_2013")))
 
 
 ### Plotting
 
-label.st <- paste(c(2001, 2005), collapse = "-")
-label.nd <- paste(c(2009, 2013), collapse = "-")
+greys <- brewer.pal(9, "Greys")
+blues <- brewer.pal(9, "Blues")
 
+cols = c("nfire_2001_2005" = greys[3], 
+         "nfire_2009_2013" = greys[9], 
+         "nfire_2001_2006" = blues[3], 
+         "nfire_2008_2013" = blues[9])
+
+label.st.1 <- paste(c(2001, 2005), collapse = "-")
+label.st.2 <- paste(c(2001, 2006), collapse = "-")
+label.nd.1 <- paste(c(2009, 2013), collapse = "-")
+label.nd.2 <- paste(c(2008, 2013), collapse = "-")
+
+# png("out/fire_seasonality_01_0506_0809_13.png", width = 35, height = 20, 
+#     units = "cm", pointsize = 15, res = 300)
+# ggplot(aes(x = month, y = value, colour = variable, group = variable, 
+#            linetype = variable), data = fire.harmonics) + 
+#   geom_line(lwd = 2) + 
+#   scale_colour_manual("", values = cols, 
+#                       labels = c(label.st.1, label.st.2, label.nd.2, label.nd.1)) + 
+#   scale_linetype_manual("", values = c(2, 1, 1, 2), 
+#                         labels = c(label.st.1, label.st.2, label.nd.2, label.nd.1)) + 
+#   labs(list(x = "\nMonth", y = "No. of fire pixels")) + 
+#   theme_bw() + 
+#   theme(legend.key = element_rect(fill = "transparent"), 
+#         panel.grid.major = element_line(size = 1.2), 
+#         panel.grid.minor = element_line(size = 1.1))
+# dev.off()
+
+png("out/fire_seasonality_01_05_09_13.png", width = 35, height = 20, 
+    units = "cm", pointsize = 15, res = 300)
 ggplot(aes(x = month, y = value, colour = variable, group = variable), 
-       data = fire.harmonics) + 
-  geom_line(lwd = 1) + 
-  scale_colour_manual("", values = c("cornflowerblue", "red2"), 
-                      labels = c(label.st, label.nd)) + 
+       data = subset(fire.harmonics, variable %in% c("nfire_2001_2005", "nfire_2009_2013"))) + 
+  geom_line(lwd = 2) + 
+  scale_colour_manual("", values = cols, 
+                      labels = c(label.st.1, label.nd.1)) + 
   labs(list(x = "\nMonth", y = "No. of fire pixels")) + 
   theme_bw() + 
-  theme(legend.key = element_rect(fill = "transparent"), 
-        panel.grid.major = element_line(size = 1.2), 
-        panel.grid.minor = element_line(size = 1.1))
+  theme(text = element_text(size = 15), 
+#         panel.grid.major = element_line(size = 1.1), 
+#         panel.grid.minor = element_line(size = 1), 
+        legend.key = element_rect(fill = "transparent")) 
+dev.off()

@@ -21,9 +21,6 @@ fun <- paste("src", c("kifiAggData.R", "probRst.R", "myMinorTick.R",
                       "ndviCell.R", "evalTree.R", "kifiModisDownload.R"), sep = "/")
 sapply(fun, source)
 
-MODISoptions(localArcPath = paste0(getwd(), "/data/MODIS_ARC/"), 
-             outDirPath = paste0(getwd(), "/data/MODIS_ARC/PROCESSED/"))
-
 # Parallelization
 registerDoParallel(cl <- makeCluster(3))
 
@@ -32,103 +29,40 @@ registerDoParallel(cl <- makeCluster(3))
 
 ## MODIS fire
 
-# Daily data: import raster files and aggregate on 8 days
-aggregate.exe <- FALSE
+# Monthly rasters
+fire.rst <- stack("out/fire_agg/fire_agg_mnth_01_13.tif")
 
-if (aggregate.exe) {
-  # List files
-  fire.fls <- list.files("data/reclass/md14a1", full.names = TRUE, pattern = ".tif$")
-  
-  # Setup time series
-  fire.dates <- substr(basename(fire.fls), 8, 14)
-  fire.years <- unique(substr(basename(fire.fls), 8, 11))
-  
-  fire.dly.ts <- do.call("c", lapply(fire.years, function(i) { 
-    seq(as.Date(paste(i, "01", "01", sep = "-")), 
-        as.Date(paste(i, "12", "31", sep = "-")), 1)
-  }))
-  
-  # Merge time series with available fire data
-  fire.dly.ts.fls <- merge(data.frame(date = fire.dly.ts), 
-                           data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
-                                      file = fire.fls, stringsAsFactors = F), 
-                           by = "date", all.x = T)
-  
-  fire.rst <- unlist(kifiAggData(
-    data = fire.dly.ts.fls, 
-    years = fire.years, 
-    over.fun = function(...) max(..., na.rm = T), 
-    dsn = "data/overlay/md14a1_agg/", 
-    out.str = "md14a1", format = "GTiff", overwrite = T, 
-    out.proj = "+init=epsg:32737", n.cores = 4
-  ))
-} 
+# (Identify and) Import overall burnt pixels
+# fire.rst.all <- overlay(fire.rst, fun = function(...) {
+#   if (sum(..., na.rm = TRUE) == 0) return(NA) else return(1)
+# }, filename = "out/fire_agg/fire_agg_all_01_13", format = "GTiff", overwrite = TRUE)
 
-
-# Aggregated data: list files
-fire.fls <- list.files("data/md14a1/aggregated/", pattern = "md14a1.*.tif$", 
-                       full.names = TRUE)
-
-# Limit time window from Terra-MODIS launch to Dec 2013
-nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
-fire.fls <- fire.fls[1:nd]
-
-# Setup time series
-fire.dates <- substr(basename(fire.fls), 8, 14)
-fire.years <- unique(substr(basename(fire.fls), 8, 11))
-
-fire.ts <- do.call("c", lapply(fire.years, function(i) { 
-  seq(as.Date(paste(i, "01", "01", sep = "-")), 
-      as.Date(paste(i, "12", "31", sep = "-")), 8)
-}))
-
-# Merge time series with available fire data
-fire.ts.fls <- merge(data.frame(date = fire.ts), 
-                     data.frame(date = as.Date(fire.dates, format = "%Y%j"), 
-                                file = fire.fls, stringsAsFactors = FALSE), 
-                     by = "date", all.x = TRUE)
-
-# Import aggregated fire data
-if (!exists("fire.rst"))
-  fire.rst <- foreach(i = seq(nrow(fire.ts.fls)), .packages = lib) %dopar% {
-    if (is.na(fire.ts.fls[i, 2])) {
-      NA
-    } else {
-      raster(fire.ts.fls[i, 2])
-    }
-  }
-
-
-## Plotting each pixel that burnt at least once over a BING aerial image
-## from Mt. Kilimanjaro
-
-# # Overlay single fire layers
-# fire.rst.cc <- stack(fire.rst[!sapply(fire.rst, is.logical)])
-# fire.rst.cc.all <- overlay(fire.rst.cc, fun = function(...) {
-#   if (sum(..., na.rm = TRUE) == 0) return(0) else return(1)
-# }, filename = "out/all_fire_cells_0013", format = "GTiff", overwrite = TRUE)
-# fire.rst.cc.all[which(fire.rst.cc.all[] == 0)] <- NA
-
-fire.rst.cc.all <- raster("out/all_fire_cells_0013.tif")
-
-# Retrieve BING aerial image
-# kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
-#                              lowerRight = c(-3.425, 37.72), type = "bing", 
-#                              minNumTiles = 40L), projection = "+init=epsg:32737")
-# writeRaster(raster(kili.map), filename = "data/kili_bing_aerial", 
-#             bylayer = FALSE, format = "GTiff", overwrite = TRUE)
-
-kili.map <- stack("data/kili_bing_aerial.tif")
+fire.rst.all <- raster("out/all_fire_cells_0013.tif")
 
 # Convert noNA pixels to polygons and extract coordinates
-fire.shp.cc.all <- rasterToPolygons(fire.rst.cc.all)
+fire.shp.all <- rasterToPolygons(fire.rst.all)
 
-fire.df <- data.frame(x = coordinates(fire.shp.cc.all)[, 1], 
-                      y = coordinates(fire.shp.cc.all)[, 2])
+fire.df <- data.frame(x = coordinates(fire.shp.all)[, 1], 
+                      y = coordinates(fire.shp.all)[, 2])
 
-# Plotting
-png("out/kili_topo_fire_0013.png", units = "cm", width = 30, height = 30, res = 300, 
-    pointsize = 14)
+
+## Bing
+
+# (Retrieve, save and) Import BING aerial image
+kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
+                             lowerRight = c(-3.425, 37.72), type = "bing", 
+                             minNumTiles = 40L), projection = "+init=epsg:32737")
+# writeRaster(raster(kili.map), filename = "data/kili_bing_aerial", 
+#             bylayer = FALSE, format = "GTiff", overwrite = TRUE)
+# 
+# kili.map <- stack("data/kili_bing_aerial.tif")
+
+
+## Plotting
+
+# Each pixel that burnt at least once
+png("out/kili_topo_fire_00_13.png", units = "cm", width = 30, height = 30, 
+    res = 300, pointsize = 14)
 autoplot(kili.map) + 
   geom_tile(aes(x = x, y = y), data = fire.df, 
             colour = "red", fill = "transparent", size = 1.1) + 
@@ -138,3 +72,19 @@ autoplot(kili.map) +
         axis.title.y = element_text(size = rel(1.4)), 
         axis.text.y = element_text(size = rel(1.1)))
 dev.off()
+
+
+# Each pixel that burnt at least once, divided into seasons (DJF, MAM, JJA, SON)
+ssn <- rep(month.abb, nlayers(fire.rst)/12)
+ssn[ssn %in% c("Dec", "Jan", "Feb")] <- "DJF"
+ssn[ssn %in% c("Mar", "Apr", "May")] <- "MAM"
+ssn[ssn %in% c("Jun", "Jul", "Aug")] <- "JJA"
+ssn[ssn %in% c("Sep", "Oct", "Nov")] <- "SON"
+ssn <- factor(ssn, levels = c("DJF", "MAM", "JJA", "SON"))
+
+fire.ts.rst.cc.ssn <- 
+  stackApply(fire.rst, 
+             indices = as.numeric(ssn), 
+             fun = function(x, ...) if (sum(x, ...) > 0) return(1) else return(NA),
+             filename = "out/fire_agg/fire_agg_ssn_01_13", format = "GTiff", 
+             overwrite = TRUE)
