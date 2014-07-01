@@ -28,6 +28,7 @@ import org.ini4j.BasicMultiMap;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
+import timeseriesdatabase.aggregated.AggregationIterator;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.NanGapIterator;
@@ -517,7 +518,7 @@ public class TimeSeriesDatabase {
 	 * @param sql
 	 * @return iterator of raw sensor data
 	 */
-	public Iterator<Event> query(String sql) {
+	public Iterator<Event> __OLD_query(String sql) {
 		return store.query(sql);		
 	}
 	
@@ -530,25 +531,11 @@ public class TimeSeriesDatabase {
 	 * @param endTime
 	 * @return iterator over the stream of plotID with full schema
 	 */
-	public  Iterator<Event> queryTimeSeries(String plotID, long startTime, long endTime) {
+	public  Iterator<Event> __OLD_queryTimeSeries(String plotID, long startTime, long endTime) {
 		return store.getHistoryRange(plotID, startTime, endTime);		
 	}
 	
-	/**
-	 * Get base aggregated data
-	 * @param plotID
-	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries queryBaseAggregatedData(String plotID,String[] querySensorNames) {		
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return TimestampSeries.EMPTY_TIMESERIES; 				
-		}
-		return station.queryBaseAggregatedData(querySensorNames,null,null);		
-	}
+
 	
 	/**
 	 * Get base aggregated data
@@ -559,13 +546,13 @@ public class TimeSeriesDatabase {
 	 * @return
 	 */
 	@Deprecated	
-	public TimestampSeries queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
+	public TimestampSeries __OLD_queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
-		TimestampSeries timeseries = station.queryBaseAggregatedData(querySensorNames, start, end);
+		TimestampSeries timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, start, end);
 		return timeseries;
 	}
 	
@@ -578,7 +565,7 @@ public class TimeSeriesDatabase {
 	 * @return
 	 */
 	@Deprecated
-	public TimeSeries queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
+	public TimeSeries __OLD_queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
 		final int STATION_INTERPOLATION_COUNT = 15;		
 		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 		//final int TIME_STEP = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
@@ -591,9 +578,9 @@ public class TimeSeriesDatabase {
 		
 		TimestampSeries timeseries;
 		if(start==null) {
-			timeseries = station.queryBaseAggregatedData(querySensorNames, null, end);
+			timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, null, end);
 		} else {
-			timeseries = station.queryBaseAggregatedData(querySensorNames, start-TRAINING_TIME_INTERVAL, end);
+			timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, start-TRAINING_TIME_INTERVAL, end);
 		}
 		
 		long startTimestamp = timeseries.getFirstTimestamp();
@@ -605,7 +592,7 @@ public class TimeSeriesDatabase {
 		TimeSeries[] interpolationBaseTimeseries = new TimeSeries[STATION_INTERPOLATION_COUNT];
 		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
 			interpolationStations[i] = station.nearestStationList.get(i);
-			TimestampSeries interpolationTimeseries = interpolationStations[i].queryBaseAggregatedData(querySensorNames, null, null);
+			TimestampSeries interpolationTimeseries = interpolationStations[i].__OLD_queryBaseAggregatedData(querySensorNames, null, null);
 			interpolationBaseTimeseries[i] = TimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
 		}		
 		
@@ -624,13 +611,13 @@ public class TimeSeriesDatabase {
 	 * @return
 	 */
 	@Deprecated
-	public TimestampSeries queryRawData(String plotID) {
+	public TimestampSeries __OLD_queryRawData(String plotID) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
-		return station.queryRawData(null,null,null);	
+		return station.__OLD_queryRawData(null,null,null);	
 	}
 	
 	/**
@@ -640,13 +627,13 @@ public class TimeSeriesDatabase {
 	 * @return
 	 */
 	@Deprecated
-	public TimestampSeries queryRawData(String plotID, String[] querySensorNames) {
+	public TimestampSeries __OLD_queryRawData(String plotID, String[] querySensorNames) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
-		return station.queryRawData(querySensorNames,null,null);	
+		return station.__OLD_queryRawData(querySensorNames,null,null);	
 	}
 	
 	/**
@@ -658,13 +645,13 @@ public class TimeSeriesDatabase {
 	 * @return
 	 */
 	@Deprecated
-	public TimestampSeries queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
+	public TimestampSeries __OLD_queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
 		Station station = stationMap.get(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return TimestampSeries.EMPTY_TIMESERIES; 				
 		}
-		return station.queryRawData(querySensorNames,start,end);	
+		return station.__OLD_queryRawData(querySensorNames,start,end);	
 	}
 
 	/**
@@ -789,25 +776,43 @@ public class TimeSeriesDatabase {
 	}
 	
 	
-	public SchemaIterator<TimestampSeriesEntry> queryTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public SchemaIterator<TimestampSeriesEntry> queryRaw(String plotID, String[] querySchema, Long start, Long end) {
 		Station station = stationMap.get(plotID);
 		if(station!=null) {
-			return station.queryRawTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return station.queryRaw(querySchema, start, end);
 		} else {
 			return null;
 		}
 	}
 	
-	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregatedTesting(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public SchemaIterator<TimestampSeriesEntry> queryQualityChecked(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		Station station = stationMap.get(plotID);
 		if(station!=null) {
-			return station.queryBaseAggregatedTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return station.queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		} else {
+			return null;
+		}
+	}
+	
+	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregated(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		Station station = stationMap.get(plotID);
+		if(station!=null) {
+			return station.queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		} else {
 			return null;
 		}		
 	}
 	
-	public TimeSeries queryGapFilledTesting(String plotID, String[] querySchema, Long queryStart, Long queryEnd, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public TimeSeries queryBaseAggregatedTimeSeries(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		Station station = stationMap.get(plotID);
+		if(station!=null) {
+			return station.queryBaseAggregatedTimeSeries(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		} else {
+			return null;
+		}	
+	}
+	
+	public TimeSeries queryGapFilledTimeSeries(String plotID, String[] querySchema, Long queryStart, Long queryEnd, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		final int STATION_INTERPOLATION_COUNT = 15;		
 		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 		
@@ -820,8 +825,8 @@ public class TimeSeriesDatabase {
 		Long targetStart = queryStart==null ? null : queryStart-TRAINING_TIME_INTERVAL;
 		Long targetEnd = queryEnd;	
 		
-		SchemaIterator<TimestampSeriesEntry> target_iterator = station.queryBaseAggregatedTesting(querySchema, targetStart, targetEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		target_iterator = new NanGapIterator(this, target_iterator, queryStart, queryEnd);
+		SchemaIterator<TimestampSeriesEntry> target_iterator = station.queryBaseAggregated(querySchema, targetStart, targetEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		target_iterator = new NanGapIterator(target_iterator, queryStart, queryEnd);
 		TimeSeries targetTimeSeries = TimeSeries.toBaseTimeSeries(target_iterator);
 		if(targetTimeSeries==null) {
 			return null;
@@ -834,8 +839,8 @@ public class TimeSeriesDatabase {
 		List<Station> nearestStationList = station.nearestStationList;
 		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
 			Station sourceStation = nearestStationList.get(i);			
-			SchemaIterator<TimestampSeriesEntry> source_iterator = sourceStation.queryBaseAggregatedTesting(querySchema, interpolationStartTimestamp, interpolationEndTimestamp, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-			source_iterator = new NanGapIterator(this, source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
+			SchemaIterator<TimestampSeriesEntry> source_iterator = sourceStation.queryBaseAggregated(querySchema, interpolationStartTimestamp, interpolationEndTimestamp, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			source_iterator = new NanGapIterator(source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
 			sourceTimeseries[i] = TimeSeries.toBaseTimeSeries(source_iterator);
 		}
 		
@@ -846,5 +851,17 @@ public class TimeSeriesDatabase {
 		}
 		
 		return targetTimeSeries.getClipped(queryStart, queryEnd);	
+	}
+	
+	public SchemaIterator<TimestampSeriesEntry> queryAggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, Object aggregationTime, boolean checkPhysicalRange, boolean checkEmpiricalRange, boolean  checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryBaseAggregated(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		return new AggregationIterator(this, it);
+	}
+	
+	public TimestampSeries queryAggregatedTimeSeries(String plotID, String[] querySchema, Long queryStart, Long queryEnd, Object aggregationTime, boolean checkPhysicalRange, boolean checkEmpiricalRange, boolean  checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryAggregated(plotID, querySchema, queryStart, queryEnd, aggregationTime, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		//NanGapIterator nanGapIt = new NanGapIterator(it, queryStart, queryEnd);
+		//return TimestampSeries.toTimestampSeries(nanGapIt);
+		return TimestampSeries.toTimestampSeries(it);
 	}
 }

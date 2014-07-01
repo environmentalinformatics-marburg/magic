@@ -1,5 +1,8 @@
 package usecase;
 
+import java.util.Iterator;
+
+import de.umr.jepc.store.Event;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
@@ -35,7 +38,10 @@ public class UseCaseStepCheck {
 		
 		*/
 		
-		SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryTesting(plotID,sensorNames,null,null,true,true,true);
+		
+		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryRaw(plotID,sensorNames,null,null);
+		SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryQualityChecked(plotID,sensorNames,null,null,false,false,true);
+		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryBaseAggregated(plotID,sensorNames,null,null,false,false,false);
 		while(it.hasNext()) {
 			TimestampSeriesEntry e = it.next();
 			System.out.println(e);
@@ -43,8 +49,13 @@ public class UseCaseStepCheck {
 			//Util.printArray(e.data);
 		}
 		
+		/*Iterator<Event> it = timeSeriesDatabase.query("SELECT rH_200 FROM HEG01");
+		while(it.hasNext()) {
+			System.out.println(it.next());
+		}*/
 		
-		TimeSeries timeSeries = timeSeriesDatabase.queryGapFilledTesting(plotID,sensorNames,null,null,true,true,true);
+		
+		TimeSeries timeSeries = timeSeriesDatabase.queryGapFilledTimeSeries(plotID,sensorNames,null,null,true,true,true);
 		
 		System.out.println(timeSeries);
 		

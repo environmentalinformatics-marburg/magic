@@ -27,7 +27,7 @@ public class NanGapIterator extends MoveIterator<TimestampSeriesEntry> {
 	Long endTimestamp;
 	
 	
-	public NanGapIterator(TimeSeriesDatabase timeSeriesDatabase, SchemaIterator<TimestampSeriesEntry> input_iterator, Long start, Long end) {
+	public NanGapIterator(SchemaIterator<TimestampSeriesEntry> input_iterator, Long start, Long end) {
 		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,input_iterator.getOutputTimeSeriesSchema().timeStep, true));
 		if(!input_iterator.getOutputTimeSeriesSchema().constantTimeStep) {
 			log.error("input iterator needs to have constant time steps");

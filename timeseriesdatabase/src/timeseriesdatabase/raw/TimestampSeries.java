@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
+import util.SchemaIterator;
 import util.Util;
 
 /**
@@ -33,6 +34,15 @@ public class TimestampSeries {
 		this.parameterNames = parameterNames;
 		this.entryList = entryList;
 		this.timeinterval = timeinterval;
+	}
+	
+	public static TimestampSeries toTimestampSeries(SchemaIterator<TimestampSeriesEntry> input_iterator) {
+		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
+		while(input_iterator.hasNext()) {
+			TimestampSeriesEntry next = input_iterator.next();
+			entryList.add(next);
+		}
+		return new TimestampSeries(input_iterator.getOutputSchema(), entryList, null);
 	}
 	
 	@Override

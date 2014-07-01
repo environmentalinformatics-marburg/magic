@@ -61,6 +61,8 @@ public class Sensor {
 		physicalMax = Float.MAX_VALUE;
 		empiricalMin = -Float.MAX_VALUE;
 		empiricalMax = Float.MAX_VALUE;
+		stepMin = 0.0f;
+		stepMax = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
 		useGapFilling = false;
 	}

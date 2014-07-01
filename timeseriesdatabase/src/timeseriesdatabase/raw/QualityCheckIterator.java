@@ -69,7 +69,7 @@ public class QualityCheckIterator extends MoveIterator<TimestampSeriesEntry> {
 							prevTimestamps[columnIndex] = currTimestamp;
 							prevData[columnIndex] = currValue;
 						} else { // data value out of step range
-							//System.out.println("data value out of step range"+currValue+" in "+schema[columnIndex]+" at "+ TimeConverter.oleMinutesToLocalDateTime(currTimestamp));
+							System.out.println("data value out of step range"+currValue+" in "+schema[columnIndex]+" at "+ TimeConverter.oleMinutesToLocalDateTime(currTimestamp)+"step range: "+sensors[columnIndex].stepMin+" "+sensors[columnIndex].stepMax);
 							resultData[columnIndex] = Float.NaN;
 						}
 					} else { // "valid" data, not step checked

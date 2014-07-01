@@ -47,7 +47,7 @@ public class UseCaseBaseAggregation {
 		
 		//TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, startTimestamp, endTimestamp);
 		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID, queryParameterNames, startTimestamp, endTimestamp);
-		TimestampSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, null, null);
+		TimestampSeries timeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedData(plotID, queryParameterNames, null, null);
 
 		
 		System.out.println("print part of timeseries...");

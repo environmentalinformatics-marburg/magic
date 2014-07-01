@@ -38,7 +38,10 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
+import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
+import timeseriesdatabase.raw.TimestampSeriesEntry;
+import util.SchemaIterator;
 import util.Util;
 
 public class AggregatedQueryDialog extends Dialog {
@@ -301,7 +304,9 @@ public class AggregatedQueryDialog extends Dialog {
 		String sensorName = comboSensorName.getText();
 		try {			
 			labelInfo.setText("query...");
-			queryResult = timeSeriesDatabase.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
+			//queryResult = timeSeriesDatabase.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
+			queryResult = timeSeriesDatabase.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			//queryResult = timeSeriesDatabase.queryGapFilledTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
 			updateViewData();
 			updateGUIInfo();
 		} catch(Exception e) {

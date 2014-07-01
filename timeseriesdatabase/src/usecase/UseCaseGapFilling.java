@@ -37,8 +37,8 @@ public class UseCaseGapFilling {
 		
 		//String[] querySensorNames = null;
 		
-		TimestampSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, querySensorNames , startTimestamp, endTimestamp);
-		TimeSeries baseTimeSeries = timeSeriesDatabase.queryBaseAggregatedDataGapFilled(plotID, querySensorNames , startTimestamp, endTimestamp);
+		TimestampSeries timeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedData(plotID, querySensorNames , startTimestamp, endTimestamp);
+		TimeSeries baseTimeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedDataGapFilled(plotID, querySensorNames , startTimestamp, endTimestamp);
 		
 		
 		//TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, querySensorNames, startTimestamp,endTimestamp);
@@ -61,7 +61,7 @@ public class UseCaseGapFilling {
 		System.out.println(timeSeriesDatabase.stationMap.get(plotID).nearestStationList);
 		String nearPlot = timeSeriesDatabase.stationMap.get(plotID).nearestStationList.get(0).plotID;
 		//String nearPlot = "HEG10";
-		TimeSeries timeSeriesNear = TimeSeries.toBaseTimeSeries(convertedTimeSeries.getFirstTimestamp(),convertedTimeSeries.getLastTimestamp(),timeSeriesDatabase.queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
+		TimeSeries timeSeriesNear = TimeSeries.toBaseTimeSeries(convertedTimeSeries.getFirstTimestamp(),convertedTimeSeries.getLastTimestamp(),timeSeriesDatabase.__OLD_queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
 		timeSeriesNear.writeToCSV("c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		

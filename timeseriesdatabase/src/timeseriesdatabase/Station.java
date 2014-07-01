@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import timeseriesdatabase.aggregated.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.BaseAggregationProcessor;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
+import timeseriesdatabase.aggregated.NanGapIterator;
+import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.EventConverterIterator;
 import timeseriesdatabase.raw.QualityCheckIterator;
 import timeseriesdatabase.raw.RawDataProcessor;
@@ -439,7 +441,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
-	public TimestampSeries queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
+	public TimestampSeries __OLD_queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames, true, true, true);
 		Iterator<Event> it;
@@ -471,7 +473,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
-	public TimestampSeries queryRawData(String[] querySensorNames, Long start, Long end) {
+	public TimestampSeries __OLD_queryRawData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames, querySensorNames);
 		Iterator<Event> it;
@@ -499,7 +501,7 @@ public class Station {
 		return plotID;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> queryRawTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public SchemaIterator<TimestampSeriesEntry> queryRaw(String[] querySchema, Long start, Long end) {
 		String[] inputSchema = getLoggerType().sensorNames;
 		Iterator<Event> inputIterator;
 		if(start!=null) {
@@ -524,14 +526,25 @@ public class Station {
 		} else {
 			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, querySchema);
 		}
-		QualityCheckIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,true,true,true);
+		return eventConverterIterator;
+	}
+	
+	public SchemaIterator<TimestampSeriesEntry> queryQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> eventConverterIterator = queryRaw(querySchema, start, end);
+		QualityCheckIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		return qualityCheckIterator;
 	}
 
-	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregatedTesting(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		SchemaIterator<TimestampSeriesEntry> it = queryRawTesting(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+	public SchemaIterator<TimestampSeriesEntry> queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
 		return baseAggregationIterator;
+	}
+	
+	public TimeSeries queryBaseAggregatedTimeSeries(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+		SchemaIterator<TimestampSeriesEntry> it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		NanGapIterator nanGabIt = new NanGapIterator(it, start, end);
+		return TimeSeries.toBaseTimeSeries(nanGabIt);
 	}
 }
 
