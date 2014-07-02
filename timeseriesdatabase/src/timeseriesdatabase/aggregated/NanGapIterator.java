@@ -13,7 +13,7 @@ import util.Util;
 /**
  * This iterator fills gaps in input_iterator with NaN rows.
  * start and end of resulting iterator are set to the given parameters, and if needed filled with NaN rows.
- * input iterator needs aggregated data of constant time steps (with time gaps in in)
+ * input iterator needs aggregated data of constant time steps (may contain time gaps in it)
  * @author woellauer
  *
  */
@@ -28,6 +28,12 @@ public class NanGapIterator extends MoveIterator {
 	Long endTimestamp;
 	
 	
+	/**
+	 * 
+	 * @param input_iterator
+	 * @param start if null first element is start
+	 * @param end if null last element is end
+	 */
 	public NanGapIterator(TimeSeriesIterator input_iterator, Long start, Long end) {
 		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,input_iterator.getOutputTimeSeriesSchema().timeStep, true));
 		if(!input_iterator.getOutputTimeSeriesSchema().constantTimeStep) {

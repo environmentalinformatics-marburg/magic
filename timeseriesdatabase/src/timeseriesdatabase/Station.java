@@ -138,7 +138,7 @@ public class Station {
 		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		
-		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap because prefix needs to be ordered!
+		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
 		
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(stationPath, x -> x.toString().endsWith(".dat"));
@@ -160,7 +160,7 @@ public class Station {
 
 		
 		for(Entry<String, List<Path>> entry:fileNameMap.entrySet()) {
-			String prefix = entry.getKey();
+			//String prefix = entry.getKey();
 			List<Path> pathList = entry.getValue();	
 			
 			List<List<Event>> eventsList = new ArrayList<List<Event>>();
@@ -530,14 +530,14 @@ public class Station {
 		return eventConverterIterator;
 	}
 	
-	public TimeSeriesIterator queryQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public TimeSeriesIterator queryRawQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		TimeSeriesIterator eventConverterIterator = queryRaw(querySchema, start, end);
 		TimeSeriesIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		return qualityCheckIterator;
 	}
 
 	public TimeSeriesIterator queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		TimeSeriesIterator it = queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+		TimeSeriesIterator it = queryRawQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
 		return baseAggregationIterator;
 	}

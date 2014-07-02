@@ -2,6 +2,8 @@ package gui;
 
 
 
+import java.util.Map.Entry;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -17,39 +19,39 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 
 public class StationsInfoDialog extends Dialog {
-	
+
 	TimeSeriesDatabase timeSeriesDatabase; 
 
 	public StationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
-		
+		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
+
 	}
-	
+
 	public StationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
-	    super(parent, style);
-	    this.timeSeriesDatabase = timeSeriesDatabase;
-	    setText("Station Info");
-	  }
-	
+		super(parent, style);
+		this.timeSeriesDatabase = timeSeriesDatabase;
+		setText("Station Info");
+	}
+
 	public String open() {
-	    // Create the dialog window
-	    Shell shell = new Shell(getParent(), getStyle());
-	    shell.setText(getText());
-	    createContents(shell);
-	    shell.pack();
-	    shell.open();
-	    Display display = getParent().getDisplay();
-	    while (!shell.isDisposed()) {
-	      if (!display.readAndDispatch()) {
-	        display.sleep();
-	      }
-	    }
-	    // Return the entered value, or null
-	    return null;
-	  }
-	
+		// Create the dialog window
+		Shell shell = new Shell(getParent(), getStyle());
+		shell.setText(getText());
+		createContents(shell);
+		shell.pack();
+		shell.open();
+		Display display = getParent().getDisplay();
+		while (!shell.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep();
+			}
+		}
+		// Return the entered value, or null
+		return null;
+	}
+
 	private void createContents(final Shell shell) {
-;
+		;
 		shell.setLayout(new GridLayout());
 		Table table = new Table (shell, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
 		table.setLinesVisible (true);
@@ -57,7 +59,7 @@ public class StationsInfoDialog extends Dialog {
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		data.heightHint = 200;
 		table.setLayoutData(data);
-		String[] titles = {"plotID","longitude","latitude","serialID","general station"};
+		String[] titles = {"plotID","longitude","latitude","serialID","general station", "logger type","properies"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);
@@ -70,15 +72,26 @@ public class StationsInfoDialog extends Dialog {
 			item.setText (2, ""+station.geoPosLatitude);
 			item.setText (3, ""+station.serialID);
 			item.setText (4, station.generalStationName);
+			item.setText (5, station.getLoggerType().typeName);
+
+			String properties="";
+			for(Entry<String, String> entry:station.propertyMap.entrySet()) {
+				String key = entry.getKey();
+				if(!(key.equals("LOGGER")||key.equals("PLOTID"))) {
+					properties+= key+"="+entry.getValue()+"    ";
+				}
+			}
+
+			item.setText (6, properties);
 		}
-		
-		
+
+
 		for (int i=0; i<titles.length; i++) {
 			table.getColumn (i).pack ();
 		}	
 
-	   
-	  }	
+
+	}	
 
 }
 

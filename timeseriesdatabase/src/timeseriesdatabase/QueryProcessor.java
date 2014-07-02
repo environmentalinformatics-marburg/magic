@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationIterator;
-import timeseriesdatabase.aggregated.GapFiller;
+import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
@@ -37,7 +37,7 @@ public class QueryProcessor {
 	public TimeSeriesIterator queryQualityChecked(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		Station station = timeSeriesDatabase.stationMap.get(plotID);
 		if(station!=null) {
-			return station.queryQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return station.queryRawQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		} else {
 			return null;
 		}
@@ -97,10 +97,10 @@ public class QueryProcessor {
 		if(querySchema==null) {
 			interpolationSensorNames = station.getLoggerType().sensorNames;
 		}
-
+		
 		for(String sensor:interpolationSensorNames) {
-			if(timeSeriesDatabase.sensorMap.get(sensor).useGapFilling) {
-				GapFiller.process(sourceTimeseries, targetTimeSeries, sensor);
+			if(timeSeriesDatabase.sensorMap.get(sensor).useInterpolation) {
+				Interpolator.process(sourceTimeseries, targetTimeSeries, sensor);
 			}
 		}
 

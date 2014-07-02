@@ -15,6 +15,12 @@ import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
 
+/**
+ * Aggregates input to high aggregated data values
+ * input elements need to be base aggregated data
+ * @author woellauer
+ *
+ */
 public class AggregationIterator extends MoveIterator {
 
 	private static final Logger log = Util.log;
@@ -43,6 +49,12 @@ public class AggregationIterator extends MoveIterator {
 
 
 
+	/**
+	 * 
+	 * @param timeSeriesDatabase
+	 * @param input_iterator
+	 * @param aggregationInterval interval of time that should be aggregated
+	 */
 	public AggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator, AggregationInterval aggregationInterval) {
 		super(new TimeSeriesSchema(input_iterator.getOutputSchema()));
 		this.input_iterator = input_iterator;
@@ -52,6 +64,9 @@ public class AggregationIterator extends MoveIterator {
 		initAggregates();
 	}		
 
+	/**
+	 * search for sensors of wind direction and wind velocity
+	 */
 	private void prepareWindDirectionAggregation() {
 		wind_direction_pos=-1;
 		wind_velocity_pos=-1;
@@ -82,6 +97,9 @@ public class AggregationIterator extends MoveIterator {
 		}
 	}	
 
+	/**
+	 * create aggregation variables
+	 */
 	private void initAggregates() {
 		aggregation_timestamp = -1;
 		aggCnt = new int[outputTimeSeriesSchema.columns];
@@ -94,6 +112,9 @@ public class AggregationIterator extends MoveIterator {
 		resetAggregates();
 	}
 
+	/**
+	 * set aggregation variables to initial state
+	 */
 	private void resetAggregates() {
 		collectedRowsInCurrentAggregate = 0;
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
@@ -106,9 +127,10 @@ public class AggregationIterator extends MoveIterator {
 		wind_cnt=0;
 	}
 
-
-
-
+	/**
+	 * adds one row of input into aggregation variables
+	 * @param inputData
+	 */
 	private void collectValues(float[] inputData) {
 		//collect values for aggregation
 		collectedRowsInCurrentAggregate++;		
@@ -142,6 +164,11 @@ public class AggregationIterator extends MoveIterator {
 		}					
 	}
 
+	/**
+	 * checks if enough values have been collected for one aggregation unit
+	 * @param collectorCount
+	 * @return
+	 */
 	private boolean isValidAggregate(int collectorCount) {
 		//final int PERCENT = 50;
 		final int PERCENT = 90;

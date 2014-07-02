@@ -34,7 +34,7 @@ public class TimeSeriesDatabaseFactory {
 			timeSeriesDatabase.readSensorStepRangeConfig(configDirectory+"parameter_step_range.ini");
 			timeSeriesDatabase.readBaseAggregationConfig(configDirectory+"base_aggregation.ini");
 			timeSeriesDatabase.readStationGeoPositionConfig(configDirectory+"be_station_master.csv");
-			timeSeriesDatabase.readGapFillingConfig(configDirectory+"gap_filling.ini");		
+			timeSeriesDatabase.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini");		
 			return timeSeriesDatabase;		
 		} catch (Exception e) {
 			log.error("create TimeSeriesDatabase"+e);

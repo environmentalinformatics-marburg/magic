@@ -14,7 +14,7 @@ import util.Util;
  * @author woellauer
  *
  */
-public class GapFiller {
+public class Interpolator {
 
 	private static final Logger log = Util.log;
 

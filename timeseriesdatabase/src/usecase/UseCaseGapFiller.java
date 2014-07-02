@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.aggregated.GapFiller;
+import timeseriesdatabase.aggregated.Interpolator;
 
 /**
  * use case of gap filler with synthetic data
@@ -72,7 +72,7 @@ public class UseCaseGapFiller {
 		System.out.println("start processing gab filling...");
 		
     	//GapFiller.process(sourceStartTimestamp, source, targetStartTimestamp, target, TIMEINTERVAL);
-		GapFiller.process(sourceBaseTimeSeries, targetBaseTimeSeries, "synthetic");
+		Interpolator.process(sourceBaseTimeSeries, targetBaseTimeSeries, "synthetic");
     	
     	System.out.println("write to file...");
     	

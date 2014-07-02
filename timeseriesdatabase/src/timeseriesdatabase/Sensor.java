@@ -53,7 +53,7 @@ public class Sensor {
 	/**
 	 * fill gaps in time series of this sensor
 	 */
-	public boolean useGapFilling;
+	public boolean useInterpolation;
 	
 	public Sensor(String name) {
 		this.name = name;
@@ -64,7 +64,7 @@ public class Sensor {
 		stepMin = 0.0f;
 		stepMax = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
-		useGapFilling = false;
+		useInterpolation = false;
 	}
 	
 	/**

@@ -21,7 +21,7 @@ public class SensorsInfoDialog extends Dialog {
 	TimeSeriesDatabase timeSeriesDatabase; 
 
 	public SensorsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
+		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 		
 	}
 	
@@ -55,9 +55,9 @@ public class SensorsInfoDialog extends Dialog {
 		table.setLinesVisible (true);
 		table.setHeaderVisible (true);
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.heightHint = 200;
+		data.heightHint = 400;
 		table.setLayoutData(data);
-		String[] titles = {"name", "physical min", "physical max", "empirical min", "empirical max", "step min", "step max", "aggregation type"};
+		String[] titles = {"name", "physical min", "physical max", "empirical min", "empirical max", "step min", "step max", "aggregation type", "interpolation"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);
@@ -73,7 +73,6 @@ public class SensorsInfoDialog extends Dialog {
 			item.setText (5, ""+sensor.stepMin);
 			item.setText (6, ""+sensor.stepMax);
 			
-			
 			String agg="";
 			if(sensor.baseAggregationType == AggregationType.NONE) {
 				agg="---";
@@ -82,6 +81,7 @@ public class SensorsInfoDialog extends Dialog {
 			}
 			
 			item.setText (7, agg);
+			item.setText (8, (sensor.useInterpolation?"interpolation":"---"));
 		}
 		
 		

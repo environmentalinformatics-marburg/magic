@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import de.umr.jepc.util.Timer;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
@@ -51,6 +52,7 @@ public class AggregatedQueryDialog extends Dialog {
 
 	private TimeSeriesDatabase timeSeriesDatabase;
 	private QueryProcessor qp;
+	private Timer queryTimer;
 
 	Canvas canvas;
 
@@ -69,7 +71,7 @@ public class AggregatedQueryDialog extends Dialog {
 	
 
 	public AggregatedQueryDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX, timeSeriesDatabase);
+		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 
 	}
 
@@ -207,111 +209,18 @@ public class AggregatedQueryDialog extends Dialog {
 
 	}
 
-	/*
-	private void createContentsOLD(final Shell shell) {
-
-
-
-
-		GridLayout gridLayout = new GridLayout();
-
-		gridLayout.numColumns = 3;
-
-		shell.setLayout(gridLayout);
-
-
-
-		new Label(shell, SWT.NULL).setText("plot ID:");
-
-		Text textPlotID = new Text(shell, SWT.SINGLE | SWT.BORDER);
-		textPlotID.setText("HEG01");
-
-		GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-
-		gridData.horizontalSpan = 2;
-
-		textPlotID.setLayoutData(gridData);
-
-
-
-		new Label(shell, SWT.NULL).setText("sensor name:");
-		Combo comboSensorName = new Combo(shell, SWT.NULL);
-		comboSensorName.setItems(new String [] {"Ta_200", "...", "...", "..."});
-		comboSensorName.setText("Ta_200");
-		comboSensorName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-
-
-
-		Label label = new Label(shell, SWT.NULL);
-
-		label.setText("...");
-
-		label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-
-
-
-		new Label(shell, SWT.NULL).setText("result:");
-
-		canvas = new Canvas(shell, SWT.BORDER);
-
-		gridData = new GridData(GridData.FILL_BOTH);
-
-		gridData.widthHint = 80;
-
-		gridData.heightHint = 80;
-
-		gridData.verticalSpan = 3;
-
-		canvas.setLayoutData(gridData);
-
-		canvas.addPaintListener(new PaintListener() {
-
-			public void paintControl(final PaintEvent event) {
-				paintCanvas(event.gc);
-
-			}
-
-		});
-
-
-
-		Button run = new Button(shell, SWT.PUSH);
-
-		run.setText("query");
-
-		gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_BEGINNING);
-
-		gridData.horizontalIndent = 5;
-
-		run.setLayoutData(gridData);
-
-		run.addSelectionListener(new SelectionAdapter() {
-
-			public void widgetSelected(SelectionEvent event) {
-				run.setEnabled(false);	        	  
-				runQuery();
-				canvas.redraw();	        	  
-				run.setEnabled(true);
-			}
-
-		});
-
-
-
-
-
-	}*/
-
-
 	private void runQuery() {
 		queryResult = null;
 		String plotID = comboPlotID.getText();
 		String sensorName = comboSensorName.getText();
 		try {			
 			labelInfo.setText("query...");
+			queryTimer = new Timer();
+			queryTimer.start("query");
 			//queryResult = qp.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
 			queryResult = qp.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
 			//queryResult = qp.queryGapFilledTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			queryTimer.stop("query");
 			updateViewData();
 			updateGUIInfo();
 		} catch(Exception e) {
@@ -392,14 +301,17 @@ public class AggregatedQueryDialog extends Dialog {
 	}
 
 	void updateGUISensorName() {
-		System.out.println("updateGUISensorName");
 		String stationName = comboPlotID.getText();
+		System.out.println("updateGUISensorName "+stationName);
 		Station station = timeSeriesDatabase.stationMap.get(stationName);
 		if(station!=null) {
 			LoggerType loggerType = station.getLoggerType();
 			ArrayList<String> sensorNames = new ArrayList<String>();
+			System.out.println(timeSeriesDatabase.baseAggregatonSensorNameSet);
 			for(String name:loggerType.sensorNames) {
+				System.out.println("loggerType.sensorNames: "+name);
 				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(name)) {
+					System.out.println("add: "+name);
 					sensorNames.add(name);
 				}
 			}
@@ -441,7 +353,7 @@ public class AggregatedQueryDialog extends Dialog {
 			long endtimestamp = queryResult.getLastTimestamp();
 			LocalDateTime start = TimeConverter.oleMinutesToLocalDateTime(starttimestamp);
 			LocalDateTime end = TimeConverter.oleMinutesToLocalDateTime(endtimestamp);
-			String s = queryResult.data[0].length+" entries \t\t time: "+start+" - "+end+"\t\t value range: "+minValue+" - "+maxValue;
+			String s = queryResult.data[0].length+" entries \t\t time: "+start+" - "+end+"\t\t value range: "+minValue+" - "+maxValue+"\t\tquery time: "+(queryTimer.getTime("query")/1000f)+"s";
 			labelInfo.setText(s);
 		} else {
 			labelInfo.setText("no result");

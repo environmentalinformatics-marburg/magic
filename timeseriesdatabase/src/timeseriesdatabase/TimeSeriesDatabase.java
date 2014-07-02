@@ -33,7 +33,7 @@ import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.aggregated.GapFiller;
+import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.SchemaIterator;
@@ -155,16 +155,16 @@ public class TimeSeriesDatabase {
 	 * read list of sensors that should be included in gap filling processing
 	 * @param configFile
 	 */
-	public void readGapFillingConfig(String configFile) {
+	public void readInterpolationSensorNameConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
-			Section section = ini.get("gap_filling");
+			Section section = ini.get("interpolation_sensors");
 			for(String name:section.keySet()) {
 				Sensor sensor = sensorMap.get(name);
 				if(sensor!=null) {
-					sensor.useGapFilling = true;
+					sensor.useInterpolation = true;
 				} else {
-					log.warn("gap filling config: sensor not found: "+name);
+					log.warn("interpolation config: sensor not found: "+name);
 				}
 			}
 
@@ -597,8 +597,8 @@ public class TimeSeriesDatabase {
 		}		
 		
 		for(String parameterName:querySensorNames) {
-			if(sensorMap.get(parameterName).useGapFilling) {
-				GapFiller.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
+			if(sensorMap.get(parameterName).useInterpolation) {
+				Interpolator.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
 			}
 		}		
 	
