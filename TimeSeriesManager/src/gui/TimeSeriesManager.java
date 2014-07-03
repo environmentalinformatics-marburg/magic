@@ -2,6 +2,7 @@ package gui;
 
 import java.time.LocalDateTime;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -22,8 +23,11 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
+import util.Util;
 
 public class TimeSeriesManager {
+	
+	private static Logger log = Util.log;
 
 	public TimeSeriesDatabase timeSeriesDatabase;
 	
@@ -79,6 +83,10 @@ public class TimeSeriesManager {
 		MenuItem aggregatedQueryItem = new MenuItem(queryMenu, SWT.PUSH);
 		aggregatedQueryItem.setText("aggregated query");
 		aggregatedQueryItem.addSelectionListener(new aggregatedQueryItemListener());
+		
+		MenuItem queryItem = new MenuItem(queryMenu, SWT.PUSH);
+		queryItem.setText("new query");
+		queryItem.addSelectionListener(new queryItemListener());
 
 
 		textBox = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
@@ -134,6 +142,15 @@ public class TimeSeriesManager {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			AggregatedQueryDialog dialog = new AggregatedQueryDialog(shell,timeSeriesDatabase);
+			dialog.open();
+
+		}
+	}
+	
+	class queryItemListener extends SelectionAdapter {
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			QueryDialog dialog = new QueryDialog(shell,timeSeriesDatabase);
 			dialog.open();
 
 		}

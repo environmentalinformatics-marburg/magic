@@ -6,6 +6,7 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.Interpolator;
+import util.CSV;
 
 /**
  * use case of gap filler with synthetic data
@@ -76,7 +77,7 @@ public class UseCaseGapFiller {
     	
     	System.out.println("write to file...");
     	
-    	targetBaseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
+    	CSV.write(targetBaseTimeSeries,"c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
 
     	
     	

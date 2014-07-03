@@ -1,6 +1,9 @@
-package util;
+package util.iterator;
 
 import java.util.Iterator;
+
+import util.OutputSchema;
+import util.TimeSeriesSchema;
 
 public abstract class SchemaIterator<T> implements Iterator<T>, OutputSchema {
 	

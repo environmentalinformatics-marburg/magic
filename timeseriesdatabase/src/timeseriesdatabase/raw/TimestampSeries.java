@@ -3,6 +3,7 @@ package timeseriesdatabase.raw;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -11,15 +12,18 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
-import util.SchemaIterator;
 import util.Util;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesEntryIterator;
+import util.iterator.TimeSeriesIterable;
+import util.iterator.TimeSeriesIterator;
 
 /**
  * time series with individual time stamp for each entry
  * @author woellauer
  *
  */
-public class TimestampSeries {
+public class TimestampSeries implements TimeSeriesIterable {
 	
 	private static final Logger log = Util.log;
 	
@@ -36,7 +40,7 @@ public class TimestampSeries {
 		this.timeinterval = timeinterval;
 	}
 	
-	public static TimestampSeries toTimestampSeries(SchemaIterator<TimestampSeriesEntry> input_iterator) {
+	public static TimestampSeries create(SchemaIterator<TimestampSeriesEntry> input_iterator) {
 		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
 		while(input_iterator.hasNext()) {
 			TimestampSeriesEntry next = input_iterator.next();
@@ -113,7 +117,7 @@ public class TimestampSeries {
 		entryList = newEntryList;
 	}
 	
-	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+	/*public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
@@ -170,7 +174,6 @@ public class TimestampSeries {
 					if(Float.isNaN(data[i])) {
 						printStream.print(nanText);
 					} else {
-						//s+=Util.floatToString(entry.data[i]);
 						printStream.format(Locale.ENGLISH,"%3.3f", entry.data[i]);
 					}
 				}
@@ -180,7 +183,7 @@ public class TimestampSeries {
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		}
-	}
+	}*/
 	
 	public TimestampSeries getTimeInterval(long start, long end) {
 		List<TimestampSeriesEntry> resultList = new ArrayList<TimestampSeriesEntry>();
@@ -210,26 +213,7 @@ public class TimestampSeries {
 			}
 		}
 		return gapList;
-	}
-	
-	/*public TimestampSeries getGapTimeSeries() {
-		List<TimestampSeriesEntry> gapList = new ArrayList<TimestampSeriesEntry>();
-		long currentTimeStamp = -1;
-		for(TimestampSeriesEntry entry:entryList) {
-				long nextTimeStamp = entry.timestamp;
-				while(currentTimeStamp>-1 && currentTimeStamp+timeinterval<nextTimeStamp) {
-					currentTimeStamp += timeinterval;
-					float[] gapData = new float[parameterNames.length];
-					for(int i=0;i<parameterNames.length;i++) {
-						gapData[i] = Float.NaN;
-					}
-					gapList.add(new TimestampSeriesEntry(currentTimeStamp, gapData));
-				}
-				gapList.add(entry);
-				currentTimeStamp = nextTimeStamp;
-		}
-		return new TimestampSeries(parameterNames,gapList,timeinterval);
-	}*/
+	}	
 	
 	public long getFirstTimestamp() {
 		return this.entryList.get(0).timestamp;
@@ -237,6 +221,11 @@ public class TimestampSeries {
 	
 	public long getLastTimestamp() {
 		return this.entryList.get(entryList.size()-1).timestamp;
+	}
+
+	@Override
+	public TimeSeriesIterator timeSeriesIterator() {
+		return new TimeSeriesEntryIterator(entryList.iterator(),parameterNames);
 	}
 
 }

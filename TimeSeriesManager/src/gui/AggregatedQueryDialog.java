@@ -40,11 +40,11 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
-import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
+import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.SchemaIterator;
 import util.Util;
+import util.iterator.SchemaIterator;
 
 public class AggregatedQueryDialog extends Dialog {
 
@@ -217,9 +217,8 @@ public class AggregatedQueryDialog extends Dialog {
 			labelInfo.setText("query...");
 			queryTimer = new Timer();
 			queryTimer.start("query");
-			//queryResult = qp.queryBaseAggregatedDataGapFilled(plotID, new String[]{sensorName}, null, null);
-			queryResult = qp.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
-			//queryResult = qp.queryGapFilledTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			//queryResult = qp.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			queryResult = qp.queryInterpolatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
 			queryTimer.stop("query");
 			updateViewData();
 			updateGUIInfo();

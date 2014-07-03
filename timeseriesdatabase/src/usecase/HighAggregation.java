@@ -8,7 +8,7 @@ import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
-import util.TimeSeriesIterator;
+import util.iterator.TimeSeriesIterator;
 
 public class HighAggregation {
 	

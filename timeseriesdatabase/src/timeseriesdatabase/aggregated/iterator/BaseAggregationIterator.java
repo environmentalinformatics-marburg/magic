@@ -1,72 +1,64 @@
-package timeseriesdatabase.aggregated;
+package timeseriesdatabase.aggregated.iterator;
 
-import java.time.LocalDateTime;
-import java.time.Month;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.Sensor;
-import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.aggregated.AggregationType;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
+import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.MoveIterator;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
+import util.iterator.MoveIterator;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
+import de.umr.jepc.store.Event;
 
 /**
- * Aggregates input to high aggregated data values
- * input elements need to be base aggregated data
+ * BaseAggregationIterator aggregates input elements to aggregated output elements with base aggregation time intervals
  * @author woellauer
  *
  */
-public class AggregationIterator extends MoveIterator {
+public class BaseAggregationIterator extends MoveIterator {
 
 	private static final Logger log = Util.log;
 
-	private SchemaIterator<TimestampSeriesEntry> input_iterator;
-	private AggregationInterval aggregationInterval;
-	private Sensor[] sensors;
+	//String[] schema;
+	SchemaIterator<TimestampSeriesEntry> input_iterator;
 
-	private boolean aggregate_wind_direction;	
-	private int wind_direction_pos;
-	private int wind_velocity_pos;
+	Sensor[] sensors;
+	boolean aggregate_wind_direction;	
+	int wind_direction_pos;
+	int wind_velocity_pos;
 
 	//*** collector variables for aggregation
 	//timestamp of aggreates of currently collected data
-	private long aggregation_timestamp;
+	long aggregation_timestamp;
 
-	private int collectedRowsInCurrentAggregate;
-	private int[] aggCnt;
-	private float[] aggSum;
-	private float[] aggMax;
-	private float wind_u_sum;
-	private float wind_v_sum;
-	private int wind_cnt;
-	private int[] columnEntryCounter;
+	int[] aggCnt;
+	float[] aggSum;
+	float[] aggMax;
+	float wind_u_sum;
+	float wind_v_sum;
+	int wind_cnt;
+	int[] columnEntryCounter;
 	//***
 
-
-
-	/**
-	 * 
-	 * @param timeSeriesDatabase
-	 * @param input_iterator
-	 * @param aggregationInterval interval of time that should be aggregated
-	 */
-	public AggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator, AggregationInterval aggregationInterval) {
-		super(new TimeSeriesSchema(input_iterator.getOutputSchema()));
+	public BaseAggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
+		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
 		this.input_iterator = input_iterator;
-		this.aggregationInterval = aggregationInterval;
 		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		
 		prepareWindDirectionAggregation();
 		initAggregates();
-	}		
+	}
 
-	/**
-	 * search for sensors of wind direction and wind velocity
-	 */
 	private void prepareWindDirectionAggregation() {
 		wind_direction_pos=-1;
 		wind_velocity_pos=-1;
@@ -97,9 +89,6 @@ public class AggregationIterator extends MoveIterator {
 		}
 	}	
 
-	/**
-	 * create aggregation variables
-	 */
 	private void initAggregates() {
 		aggregation_timestamp = -1;
 		aggCnt = new int[outputTimeSeriesSchema.columns];
@@ -112,11 +101,7 @@ public class AggregationIterator extends MoveIterator {
 		resetAggregates();
 	}
 
-	/**
-	 * set aggregation variables to initial state
-	 */
 	private void resetAggregates() {
-		collectedRowsInCurrentAggregate = 0;
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
@@ -127,14 +112,10 @@ public class AggregationIterator extends MoveIterator {
 		wind_cnt=0;
 	}
 
-	/**
-	 * adds one row of input into aggregation variables
-	 * @param inputData
-	 */
 	private void collectValues(float[] inputData) {
 		//collect values for aggregation
-		collectedRowsInCurrentAggregate++;		
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			float prevValue = 0;
 			float value = (float) inputData[i];
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
 				System.out.println("NaN...");
@@ -145,9 +126,9 @@ public class AggregationIterator extends MoveIterator {
 				aggSum[i] += value;
 				if(value>aggMax[i]) {
 					aggMax[i] = value;
-
+	
 				}
-
+	
 			}
 		}			
 		if(aggregate_wind_direction) {
@@ -165,39 +146,6 @@ public class AggregationIterator extends MoveIterator {
 	}
 
 	/**
-	 * checks if enough values have been collected for one aggregation unit
-	 * @param collectorCount
-	 * @return
-	 */
-	private boolean isValidAggregate(int collectorCount) {
-		//final int PERCENT = 50;
-		final int PERCENT = 90;
-		switch(aggregationInterval) {
-		case DAY: {
-			final int MIN_VALUES = (1*24*PERCENT)/100;
-			return MIN_VALUES<=collectorCount; 
-		}
-		case WEEK: {
-			final int MIN_VALUES = (7*24*PERCENT)/100;
-			return MIN_VALUES<=collectorCount; 
-		}
-		case MONTH: {
-			final int MIN_VALUES = (28*24*PERCENT)/100;
-			return MIN_VALUES<=collectorCount; 
-		}
-		case YEAR: {
-			final int MIN_VALUES = (365*24*PERCENT)/100;
-			return MIN_VALUES<=collectorCount; 
-		}
-		default: {
-			log.error("unknown aggregate interval: "+aggregationInterval);
-			return false;
-		}
-		}
-
-	}
-
-	/**
 	 * process collected data to aggregates
 	 * @return result or null if there are no valid aggregates
 	 */
@@ -206,8 +154,7 @@ public class AggregationIterator extends MoveIterator {
 		int validValueCounter=0; //counter of valid aggregates
 
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
-			//if(aggCnt[i]>0) {// at least one entry has been collected
-			if(isValidAggregate(aggCnt[i])) { // a minimum of values need to be collected
+			if(aggCnt[i]>0) {// at least one entry has been collected
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
 				case AVERAGE_ZERO:	
@@ -255,53 +202,9 @@ public class AggregationIterator extends MoveIterator {
 		if(validValueCounter>0) { // if there are some valid aggregates return result data
 			resetAggregates();
 			return resultData;
-		} else { //no aggregates created
+		} else {
 			resetAggregates();
-			return null;
-		}
-	}
-
-	private long calcAggregationTimestamp(long timestamp) {
-		switch(aggregationInterval) {
-		case HOUR: {
-			final int HOUR_INTERVAL = 60;
-			return timestamp - timestamp%HOUR_INTERVAL; // nothing to aggregate
-		} 
-		case DAY: {
-			final int DAY_INTERVAL = 24*60;
-			return timestamp - timestamp%DAY_INTERVAL;
-		}
-		case WEEK: {
-			final int WEEK_INTERVAL = 7*24*60;
-			final int WEEK_DAY_OFFSET = 5*24*60;
-			return timestamp - timestamp%WEEK_INTERVAL - WEEK_DAY_OFFSET;
-		} 
-		case MONTH: {
-			LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(timestamp);
-			int year = datetime.getYear();
-			Month month = datetime.getMonth();
-			int dayOfMonth = 1;
-			int hour = 0;
-			int minute = 0;
-			LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-			System.out.println(aggregationDatetime);
-			return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);
-		}
-		case YEAR:{
-			LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(timestamp);
-			int year = datetime.getYear();
-			Month month = Month.JANUARY;
-			int dayOfMonth = 1;
-			int hour = 0;
-			int minute = 0;
-			LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-			System.out.println(aggregationDatetime);
-			return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);
-		}
-		default:{
-			log.error("unknown AggregationInterval: "+aggregationInterval);
-			return timestamp;
-		}
+			return null; //no aggregates created
 		}
 	}
 
@@ -312,10 +215,9 @@ public class AggregationIterator extends MoveIterator {
 			long timestamp = entry.timestamp;
 			float[] inputData = entry.data;
 
-			long nextAggTimestamp = calcAggregationTimestamp(timestamp);
+			long nextAggTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // aggregate aggregation_timestamp is ready for output
 				if(aggregation_timestamp>-1) { // if not init timestamp
-					boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
 					float[] aggregatedData = aggregateCollectedData();
 					if(aggregatedData!=null) {
 						TimestampSeriesEntry resultElement = new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
@@ -323,15 +225,8 @@ public class AggregationIterator extends MoveIterator {
 						collectValues(inputData);
 						return resultElement;
 					} else {
-						if(!dataInAggregateCollection) {
-							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData);
-						} else {	
-							TimestampSeriesEntry resultElement = TimestampSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
-							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData);
-							return resultElement;
-						}
+						aggregation_timestamp = nextAggTimestamp;
+						collectValues(inputData);
 					}
 				} else {
 					aggregation_timestamp = nextAggTimestamp;
@@ -343,15 +238,11 @@ public class AggregationIterator extends MoveIterator {
 		}  // end of while-loop for raw input-events
 
 		//process last aggregate if there is some collected data left
-		boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
 		float[] aggregatedData = aggregateCollectedData();
 		if(aggregatedData!=null) {
 			return new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
-		} else if(dataInAggregateCollection) { //insert NaN element at end //?? TODO testing
-			return TimestampSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
-		} else {
-			return null; //no elements left
 		}
-
+		return null; //no elements left
 	}
 }
+

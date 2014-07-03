@@ -21,5 +21,6 @@
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/log4j-core-2.0-rc1.jar"/>
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/opencsv-2.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jepc"/>
+	<classpathentry kind="lib" path="swing2swt.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

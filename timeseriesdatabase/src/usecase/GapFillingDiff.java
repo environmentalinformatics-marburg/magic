@@ -5,6 +5,7 @@ import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
+import util.CSV;
 
 public class GapFillingDiff {
 	
@@ -20,12 +21,12 @@ public class GapFillingDiff {
 		Long end = null;
 		
 		
-		TimeSeries timeSeries = qp.queryBaseAggregatedTimeSeries(plotID, querySchema, start, end, true, true, true);
+		TimeSeries timeSeries = TimeSeries.create(qp.queryBaseAggregated(plotID, querySchema, start, end, true, true, true));
 		
-		TimeSeries timeSeriesGapFilled = qp.queryGapFilledTimeSeries(plotID, querySchema, start, end, true, true, true);
+		TimeSeries timeSeriesGapFilled = qp.queryInterpolatedTimeSeries(plotID, querySchema, start, end, true, true, true);
 		
-		timeSeries.writeToCSV("c:/timeseriesdatabase_output/timeseries.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
-		timeSeriesGapFilled.writeToCSV("c:/timeseriesdatabase_output/timeSeriesGapFilled.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(timeSeries,"c:/timeseriesdatabase_output/timeseries.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(timeSeriesGapFilled,"c:/timeseriesdatabase_output/timeSeriesGapFilled.csv", " ", "0", CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		
 		System.out.println("...end");

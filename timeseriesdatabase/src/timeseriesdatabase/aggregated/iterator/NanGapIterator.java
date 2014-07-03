@@ -1,14 +1,14 @@
-package timeseriesdatabase.aggregated;
+package timeseriesdatabase.aggregated.iterator;
 
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.MoveIterator;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
+import util.iterator.MoveIterator;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
 
 /**
  * This iterator fills gaps in input_iterator with NaN rows.

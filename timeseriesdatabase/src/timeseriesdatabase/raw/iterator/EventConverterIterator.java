@@ -1,12 +1,13 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.raw.iterator;
 
 import java.util.Iterator;
 
+import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.OutputSchema;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
 import de.umr.jepc.store.Event;
 
 public class EventConverterIterator extends TimeSeriesIterator {	

@@ -9,10 +9,16 @@ import org.apache.logging.log4j.Logger;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
+import util.iterator.TimeSeriesIterable;
+import util.iterator.TimeSeriesIterator;
 
 public class CSV {
 	
 	private static final Logger log = Util.log;	
+	
+	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+		write(input.timeSeriesIterator(), filename, separator, nanText, csvTimeType);
+	}
 	
 	public static void write(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
@@ -39,7 +45,7 @@ public class CSV {
 				}
 			}
 			
-			String[] sensorNames = it.outputTimeSeriesSchema.schema;
+			String[] sensorNames = it.getOutputSchema();
 			
 			for(int i=0;i<sensorNames.length;i++) {
 				if(time||i>0) {

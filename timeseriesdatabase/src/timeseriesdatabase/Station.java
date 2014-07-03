@@ -20,22 +20,22 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.aggregated.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.BaseAggregationProcessor;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
-import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.raw.EventConverterIterator;
-import timeseriesdatabase.raw.QualityCheckIterator;
+import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
+import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.RawDataProcessor;
 import timeseriesdatabase.raw.SensorHeader;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
+import timeseriesdatabase.raw.iterator.EventConverterIterator;
+import timeseriesdatabase.raw.iterator.QualityCheckIterator;
 import util.Util;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -545,7 +545,7 @@ public class Station {
 	public TimeSeries queryBaseAggregatedTimeSeries(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		TimeSeriesIterator it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		TimeSeriesIterator nanGapIt = new NanGapIterator(it, start, end);
-		return TimeSeries.toBaseTimeSeries(nanGapIt);
+		return TimeSeries.create(nanGapIt);
 	}
 }
 

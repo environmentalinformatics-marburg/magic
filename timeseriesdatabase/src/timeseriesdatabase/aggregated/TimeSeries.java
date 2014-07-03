@@ -13,17 +13,18 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
 import util.TimeSeriesSchema;
 import util.Util;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterable;
+import util.iterator.TimeSeriesIterator;
 
 /**
  * time series of aggregated data. time interval between values is constant
  * @author woellauer
  *
  */
-public class TimeSeries {
+public class TimeSeries implements TimeSeriesIterable {
 	
 	private static final Logger log = Util.log;
 	
@@ -62,7 +63,7 @@ public class TimeSeries {
 	 * @param timeStep
 	 * @return
 	 */
-	public static TimeSeries toBaseTimeSeries(SchemaIterator<TimestampSeriesEntry> input_iterator) {
+	public static TimeSeries create(SchemaIterator<TimestampSeriesEntry> input_iterator) {
 		TimeSeriesSchema timeSeriesSchema = input_iterator.getOutputTimeSeriesSchema();
 		if(!timeSeriesSchema.constantTimeStep) {
 			log.error("time series needs to have constant aggregated timesteps");
@@ -194,7 +195,7 @@ public class TimeSeries {
 	 * @param nanText text output of NaN-values
 	 * @param csvTimeType time columns that should be in resulting file
 	 */
-	public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+	/*public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
@@ -262,7 +263,7 @@ public class TimeSeries {
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		}
-	}
+	}*/
 	
 	/**
 	 * get position of sensor name in data array
@@ -332,9 +333,10 @@ public class TimeSeries {
 		return startTimestamp+((data[0].length-1)*timeStep);
 	}
 	
-	public TimeSeriesIterator getIterator() {
+	@Override
+	public TimeSeriesIterator timeSeriesIterator() {
 		return new InternalIterator();
-	}
+	}	
 	
 	private class InternalIterator extends TimeSeriesIterator {
 		
@@ -359,8 +361,6 @@ public class TimeSeries {
 			long timestamp = startTimestamp+(pos*timeStep);
 			pos++;
 			return new TimestampSeriesEntry(timestamp,resultData);
-		}
-		
+		}		
 	}
-
 }

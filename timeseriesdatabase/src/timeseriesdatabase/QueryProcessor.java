@@ -5,15 +5,15 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.AggregationIterator;
 import timeseriesdatabase.aggregated.Interpolator;
-import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
+import timeseriesdatabase.aggregated.iterator.AggregationIterator;
+import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
 import util.Util;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
 
 public class QueryProcessor {
 
@@ -34,7 +34,7 @@ public class QueryProcessor {
 		}
 	}
 
-	public TimeSeriesIterator queryQualityChecked(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public TimeSeriesIterator queryRawQualityChecked(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		Station station = timeSeriesDatabase.stationMap.get(plotID);
 		if(station!=null) {
 			return station.queryRawQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
@@ -52,16 +52,7 @@ public class QueryProcessor {
 		}		
 	}
 
-	public TimeSeries queryBaseAggregatedTimeSeries(String plotID, String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		Station station = timeSeriesDatabase.stationMap.get(plotID);
-		if(station!=null) {
-			return station.queryBaseAggregatedTimeSeries(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		} else {
-			return null;
-		}	
-	}
-
-	public TimeSeries queryGapFilledTimeSeries(String plotID, String[] querySchema, Long queryStart, Long queryEnd, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public TimeSeries queryInterpolatedTimeSeries(String plotID, String[] querySchema, Long queryStart, Long queryEnd, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		final int STATION_INTERPOLATION_COUNT = 15;		
 		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 
@@ -76,7 +67,7 @@ public class QueryProcessor {
 
 		TimeSeriesIterator target_iterator = station.queryBaseAggregated(querySchema, targetStart, targetEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		target_iterator = new NanGapIterator(target_iterator, queryStart, queryEnd);
-		TimeSeries targetTimeSeries = TimeSeries.toBaseTimeSeries(target_iterator);
+		TimeSeries targetTimeSeries = TimeSeries.create(target_iterator);
 		if(targetTimeSeries==null) {
 			return null;
 		}
@@ -90,7 +81,7 @@ public class QueryProcessor {
 			Station sourceStation = nearestStationList.get(i);			
 			TimeSeriesIterator source_iterator = sourceStation.queryBaseAggregated(querySchema, interpolationStartTimestamp, interpolationEndTimestamp, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 			source_iterator = new NanGapIterator(source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
-			sourceTimeseries[i] = TimeSeries.toBaseTimeSeries(source_iterator);
+			sourceTimeseries[i] = TimeSeries.create(source_iterator);
 		}
 		
 		String[] interpolationSensorNames = querySchema;
@@ -116,8 +107,8 @@ public class QueryProcessor {
 		 */
 		
 		if(useInterpolation) {
-			TimeSeries timeSeries = queryGapFilledTimeSeries(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-			return new AggregationIterator(timeSeriesDatabase, timeSeries.getIterator(), aggregationInterval);
+			TimeSeries timeSeries = queryInterpolatedTimeSeries(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
+			return new AggregationIterator(timeSeriesDatabase, timeSeries.timeSeriesIterator(), aggregationInterval);
 		} else {
 			TimeSeriesIterator it = queryBaseAggregated(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 			it = new NanGapIterator(it, queryStart, queryStart);

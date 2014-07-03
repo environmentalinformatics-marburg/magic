@@ -1,11 +1,13 @@
 package usecase;
 
 import java.time.LocalDateTime;
+
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
+import util.CSV;
 
 /**
  * use case for gap filled data
@@ -55,14 +57,14 @@ public class UseCaseGapFilling {
 		
 		String nanValue = "NaN";
 		
-		convertedTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
-		baseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(convertedTimeSeries,"c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(baseTimeSeries,"c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		System.out.println(timeSeriesDatabase.stationMap.get(plotID).nearestStationList);
 		String nearPlot = timeSeriesDatabase.stationMap.get(plotID).nearestStationList.get(0).plotID;
 		//String nearPlot = "HEG10";
 		TimeSeries timeSeriesNear = TimeSeries.toBaseTimeSeries(convertedTimeSeries.getFirstTimestamp(),convertedTimeSeries.getLastTimestamp(),timeSeriesDatabase.__OLD_queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
-		timeSeriesNear.writeToCSV("c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(timeSeriesNear,"c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		
 		

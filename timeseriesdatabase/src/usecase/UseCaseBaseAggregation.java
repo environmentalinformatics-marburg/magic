@@ -9,6 +9,7 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.raw.TimestampSeries;
+import util.CSV;
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ProcessingEngine;
@@ -56,7 +57,7 @@ public class UseCaseBaseAggregation {
 		
 		System.out.println("write data to file...");
 
-		timeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);		
+		CSV.write(timeSeries,"c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);		
 		
 		System.out.println("...end");
 

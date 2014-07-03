@@ -7,11 +7,12 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.aggregated.NanGapIterator;
 import timeseriesdatabase.aggregated.TimeSeries;
+import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeriesEntry;
-import util.SchemaIterator;
+import util.CSV;
 import util.Util;
+import util.iterator.SchemaIterator;
 
 public class UseCaseStepCheck {
 	
@@ -42,7 +43,7 @@ public class UseCaseStepCheck {
 		
 		
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryRaw(plotID,sensorNames,null,null);
-		SchemaIterator<TimestampSeriesEntry> it = qp.queryQualityChecked(plotID,sensorNames,null,null,false,false,true);
+		SchemaIterator<TimestampSeriesEntry> it = qp.queryRawQualityChecked(plotID,sensorNames,null,null,false,false,true);
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryBaseAggregated(plotID,sensorNames,null,null,false,false,false);
 		while(it.hasNext()) {
 			TimestampSeriesEntry e = it.next();
@@ -57,13 +58,13 @@ public class UseCaseStepCheck {
 		}*/
 		
 		
-		TimeSeries timeSeries = qp.queryGapFilledTimeSeries(plotID,sensorNames,null,null,true,true,true);
+		TimeSeries timeSeries = qp.queryInterpolatedTimeSeries(plotID,sensorNames,null,null,true,true,true);
 		
 		System.out.println(timeSeries);
 		
 		String nanValue = "NaN";
 		
-		timeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(timeSeries,"c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		
 		System.out.println("...end");

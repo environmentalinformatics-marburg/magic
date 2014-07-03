@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.raw.iterator;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,11 +7,12 @@ import java.util.List;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
-import util.MoveIterator;
-import util.SchemaIterator;
-import util.TimeSeriesIterator;
+import timeseriesdatabase.raw.TimestampSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
+import util.iterator.MoveIterator;
+import util.iterator.SchemaIterator;
+import util.iterator.TimeSeriesIterator;
 
 public class QualityCheckIterator extends MoveIterator {
 

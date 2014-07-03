@@ -27,9 +27,6 @@ public class UniqueTimestampConstraint extends Constraint {
 	public boolean evaluate(Object[] event, Schema schema) {		
 		long timestamp = (long) event[event.length-1];		
 		Iterator<Event> it = store.getHistoryPoint(streamName, timestamp);
-		return !it.hasNext();
-		//return timestamp%2==0;
-		//return true;
-		
+		return !it.hasNext();		
 	}
 }
