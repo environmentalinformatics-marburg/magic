@@ -24,6 +24,7 @@ if (any(model=="svm")){
 }
 dev.off()
 ####Tuning study b
+if (tuneThreshold){
 pdf(paste(resultpath,"/TuningStudy_b.pdf",sep=""))
 if (any(model=="rf")&tuneThreshold){
   plot(fit_rf$results$mtry[fit_rf$results$threshold==fit_rf$results$threshold[1]],
@@ -51,15 +52,15 @@ if (any(model=="svm")&tuneThreshold){
        type="l",xlab="#Cost",ylab="AUC",main="SVM")
 }
 dev.off()
-
+}
 
 ###############################################################################################################
 #trade off######
 ###############################################################################################################
 
   library(reshape2)
+if (any(model=="rf")&tuneThreshold){
 pdf(paste(resultpath,"/TuningStudy_Tradeoff_rf.pdf",sep=""))
-  if (any(model=="rf")&tuneThreshold){
     t_mtry=unlist(fit_rf$finalModel$tuneValue[1])
     metrics <- fit_rf$results[fit_rf$results$mtry==t_mtry, c(2, 4:6)]
     metrics <- melt(metrics, id.vars = "threshold",
@@ -70,11 +71,11 @@ pdf(paste(resultpath,"/TuningStudy_Tradeoff_rf.pdf",sep=""))
       geom_line() +
       ylab("") + xlab("Probability Cutoff") +
       theme(legend.position = "top") 
-  }
 dev.off()
-  
+}
+
+if (any(model=="nnet")&tuneThreshold){
 pdf(paste(resultpath,"/TuningStudy_Tradeoff_nnet.pdf",sep=""))
-  if (any(model=="nnet")&tuneThreshold){
     t_size=unlist(fit_nnet$finalModel$tuneValue[1])
     t_decay=unlist(fit_nnet$finalModel$tuneValue[2])
     metrics <- fit_nnet$results[fit_nnet$results$size==t_size&fit_nnet$results$decay==t_decay, c(3, 5:7)]
@@ -86,10 +87,12 @@ pdf(paste(resultpath,"/TuningStudy_Tradeoff_nnet.pdf",sep=""))
       geom_line() +
       ylab("") + xlab("Probability Cutoff") +
       theme(legend.position = "top")
+    dev.off()
   }
-dev.off()
+
+if (any(model=="svm")&tuneThreshold){
 pdf(paste(resultpath,"/TuningStudy_Tradeoff_svm.pdf",sep=""))
-  if (any(model=="svm")&tuneThreshold){
+  
     t_sigma=unlist(fit_svm$finalModel@kernelf@kpar$sigma)
     t_C=unlist(fit_svm$finalModel@param[1])
     metrics <- fit_svm$results[fit_svm$results$sigma==t_sigma&fit_svm$results$C==t_C, c(3, 5:7)]
@@ -100,9 +103,8 @@ pdf(paste(resultpath,"/TuningStudy_Tradeoff_svm.pdf",sep=""))
       geom_line() +
       ylab("") + xlab("Probability Cutoff") +
       theme(legend.position = "top")
-  }
 dev.off()
-
+}
 
   
 

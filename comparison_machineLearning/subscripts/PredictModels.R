@@ -13,7 +13,7 @@ testing_observed<-eval(parse(text=paste("testing$",response,sep="")))
 if (any(model=="rf")){
   load(paste(resultpath,"/fit_rf.RData",sep=""))
   prediction_rf=data.frame("prediction"=predict (fit_rf,testing_predictors))
-  prediction_rf$predicted_prob <- predict (fit_rf,testing_predictors,type="prob")
+  if (type=="classification") prediction_rf$predicted_prob <- predict (fit_rf,testing_predictors,type="prob")
   prediction_rf$observed=testing_observed
   prediction_rf$chDate=testing$chDate
   prediction_rf$x=testing$x
@@ -25,7 +25,7 @@ if (any(model=="rf")){
 if (any(model=="nnet")){
   load(paste(resultpath,"/fit_nnet.RData",sep=""))
   prediction_nnet=data.frame("prediction"=predict (fit_nnet,testing_predictors))
-  prediction_nnet$predicted_prob <- predict (fit_nnet,testing_predictors,type="prob")
+  if (type=="classification") prediction_nnet$predicted_prob <- predict (fit_nnet,testing_predictors,type="prob")
   prediction_nnet$observed=testing_observed
   prediction_nnet$chDate=testing$chDate
   prediction_nnet$x=testing$x
@@ -37,7 +37,7 @@ if (any(model=="nnet")){
 if (any(model=="svm")){
   load(paste(resultpath,"/fit_svm.RData",sep=""))
   prediction_svm=data.frame("prediction"=predict (fit_svm,testing_predictors))
-  prediction_svm$predicted_prob <- predict (fit_svm,testing_predictors,type="prob")
+  if (type=="classification") prediction_svm$predicted_prob <- predict (fit_svm,testing_predictors,type="prob")
   prediction_svm$observed=testing_observed
   prediction_svm$chDate=testing$chDate
   prediction_svm$x=testing$x

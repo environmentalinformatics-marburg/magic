@@ -29,7 +29,8 @@ shortTest=TRUE#if TRUE then learning parameters and data set are set automatical
 #                                          Data adjustments
 ##################################################################################################################
 inputTable="rfInput_vp03_day_om.dat"
-response<-"RInfo" #field name of the response variable
+response<-"RInfo" #field name of the response variable. "Rain" or "RInfo"
+type="classification" #classification or regression?
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
                    #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
@@ -38,9 +39,6 @@ centerscale=TRUE#center and scale the predictor variables?
 ##################################################################################################################
 SizeOfTrainingSet=0.25 #how many percent of scenes will be used for training?
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
-balance=FALSE #use balanced response classes?
-balanceFactor=c(1) #if balance==TRUE: how to balance?number of pixels in max class = 
-#          number of pixels in min class * balance factor
 sampsize=0.02 #how many percent of training scene pixels from the training data should actually be used for training? 
 ##################################################################################################################
 #                                      Choose Predictors (must be included in "inputTable")
@@ -55,9 +53,18 @@ predictorVariables=c("SZen",
 #                                      Learning adjustments
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rf,nnet,svm.
-tuneThreshold=TRUE #should the optimal probability threshold be tuned?
 adaptiveResampling=TRUE #use adaptive crosss validation?
-thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
+
+if (type=="classification"){
+  tuneThreshold=TRUE #should the optimal probability threshold be tuned?  
+  thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
+}
+
+if (type=="regression"){
+  tuneThreshold=FALSE
+}
+
+
 ##### RF Settings:
 ntree=500
 rf_mtry=c(2:length(predictorVariables))
@@ -123,17 +130,7 @@ if (doParallel){
   cl <- makeCluster(detectCores())
   registerDoParallel(cl)
 }
-##################################################################################################################
-#                                          Organise balancing
-##################################################################################################################
-#if several balancing factors are tried, save models in seperate folders:
-tmpresultpath=resultpath
-for (factor in balanceFactor){
-  if (length(balanceFactor)>1){
-    resultpath=tmpresultpath
-    dir.create(paste(resultpath,"/balanceFactor_",factor,sep=""))
-    resultpath=paste(resultpath,"/balanceFactor_",factor,sep="")
-  }
+
 ##################################################################################################################
 ##################################################################################################################
 ##################################################################################################################
@@ -147,24 +144,24 @@ for (factor in balanceFactor){
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-  source("Preprocessing.R",echo=TRUE)
-  #source("VisualizationOfInput.R")
+source("Preprocessing.R",echo=TRUE)
+#source("VisualizationOfInput.R")
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################
-  source("RunClassificationModels.R",echo=TRUE)
-  source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
+source("RunModels.R",echo=TRUE)
+source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
-  source("PredictAndValidateClassificationModel.R",echo=TRUE)
-  source("VisualizationOfModelPrediction.R",echo=TRUE)
-  source("SpatialModelResults.R",echo=TRUE)
+source("PredictModels.R",echo=TRUE)
+if (type=="classification") source("VisualizationOfModelPrediction.R",echo=TRUE)
+source("SpatialModelResults.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
 #                             Stop cluster and clear workspace
 ##################################################################################################################
-}
+
 if (doParallel){
   stopCluster(cl)
 }

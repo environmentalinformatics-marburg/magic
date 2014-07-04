@@ -6,11 +6,14 @@
 ############################################################################################################
 if (tuneThreshold) summaryFunction = "fourStats"
 if (!tuneThreshold) summaryFunction = "twoClassSummary"
+if (type=="regression")summaryFunction ="defaultSummary"
+classProbs=FALSE
+if (type=="classification") classProbs=TRUE
 if (adaptiveResampling){
   ctrl <- trainControl(index=cvSplits,
                        method="adaptive_cv",
                        summaryFunction = eval(parse(text=summaryFunction)),
-                       classProbs = TRUE,
+                       classProbs = classProbs,
                        adaptive = list(min = 5,
                                        alpha = 0.05,
                                        method = "gls",
@@ -21,7 +24,7 @@ if (!adaptiveResampling) {
   ctrl <- trainControl(index=cvSplits,
                        method="cv",
                        summaryFunction = eval(parse(text=summaryFunction)),
-                       classProbs = TRUE)
+                       classProbs = classProbs)
 }
 
 
@@ -30,15 +33,14 @@ if (tuneThreshold){
   maximize = FALSE #when dist is used, then min value is important
 }
 
-if (!tuneThreshold){
+if (!tuneThreshold & type=="classification"){
   metric="ROC" #wenn nicht _thres dann "ROC
   maximize = TRUE #when dist is used, then min value is important
 }
 
-if(!balance) factorprint="no balancing"
-if(balance) factorprint=paste("Balancing= #MinClassPixel * ", factor)
-
-
+if (type=="regression"){
+  metric="RMSE"
+}
 
 
 ############################################################################################################
@@ -62,11 +64,11 @@ if (any(model=="rf")){
                    trControl = ctrl,
                    tuneGrid=tuneGridRF,
                    ntree=ntree,
-                   metric=metric, #wenn nicht _thres dann "ROC
+                   metric=metric,
                    maximize = maximize #when dist is used, then min value is important
                    )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), factorprint, cat("predictor Variables: "),
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"), cat("predictor Variables: "),
                  predictorVariables,print(fit_rf),file=paste(resultpath,"/fit_rf.txt",sep=""))
   save(fit_rf,file=paste(resultpath,"/fit_rf.RData",sep=""))
   rm(fit_rf)
@@ -98,7 +100,7 @@ if (any(model=="nnet")){
                    maximize = maximize #when dist is used, then min value is important
                    )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),
                  predictorVariables,print(fit_nnet),file=paste(resultpath,"/fit_nnet.txt",sep=""))
   save(fit_nnet,file=paste(resultpath,"/fit_nnet.RData",sep=""))
   rm(fit_nnet)
@@ -130,7 +132,7 @@ if (any(model=="svm")){
                   maximize =maximize #when dist is used, then min value is important
                   )
   ptm <- proc.time() - ptm
-  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),factorprint,cat("predictor Variables: "),
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),
                  predictorVariables,print(fit_svm),file=paste(resultpath,"/fit_svm.txt",sep=""))
   save(fit_svm,file=paste(resultpath,"/fit_svm.RData",sep=""))
   rm(fit_svm)

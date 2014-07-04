@@ -37,15 +37,6 @@ training=splittedData$training
 rm(splittedData)
 gc()
 ############################################################################################################
-############################### BALANCE DATA #########################################
-############################################################################################################
-#number of the pixels with higher frequency is reduced to the number of pixels
-#in class with lower frequency
-
-if (balance) {
-  training<-balancing(training,response,seed=useSeeds,factor)
-}
-############################################################################################################
 ############################## Cut to sampsize ##############################
 ############################################################################################################
 #training data are reduced to the defined sampsize with respect to the distribution of the response
