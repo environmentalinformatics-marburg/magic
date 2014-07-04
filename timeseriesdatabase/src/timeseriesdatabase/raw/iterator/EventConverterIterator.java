@@ -2,7 +2,7 @@ package timeseriesdatabase.raw.iterator;
 
 import java.util.Iterator;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.OutputSchema;
 import util.TimeSeriesSchema;
 import util.Util;
@@ -28,13 +28,13 @@ public class EventConverterIterator extends TimeSeriesIterator {
 	}
 
 	@Override
-	public TimestampSeriesEntry next() {
+	public TimeSeriesEntry next() {
 		Event event = inputIterator.next();
 		Object[] payload = event.getPayload();
 		float[] data = new float[outputTimeSeriesSchema.columns];
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
 			data[i] = (float) payload[eventPos[i]];
 		}
-		return new TimestampSeriesEntry(event.getTimestamp(),data);
+		return new TimeSeriesEntry(event.getTimestamp(),data);
 	}
 }

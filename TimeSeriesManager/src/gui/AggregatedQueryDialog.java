@@ -42,7 +42,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Util;
 import util.iterator.SchemaIterator;
 

@@ -5,6 +5,7 @@ import java.sql.Time;
 import org.omg.CORBA.DATA_CONVERSION;
 
 import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.raw.iterator.QualityFlagIterator.DataQualtity;
 import util.Util;
 
 /**
@@ -12,19 +13,26 @@ import util.Util;
  * @author woellauer
  *
  */
-public class TimestampSeriesEntry {
+public class TimeSeriesEntry {
 	
-	public final long timestamp;
-	
+	public final long timestamp;	
 	public final float[] data;
+	public final DataQualtity[] qualityFlag;
 	
-	public TimestampSeriesEntry(long timestamp,float[] data) {
+	public TimeSeriesEntry(long timestamp,float[] data) {
 		this.timestamp = timestamp;
 		this.data = data;
+		this.qualityFlag = null;
 	}
 	
-	public static TimestampSeriesEntry getNaN(long timestamp, int columnCount) {
-		return new TimestampSeriesEntry(timestamp, getNanData(columnCount));
+	public TimeSeriesEntry(long timestamp, float[] data, DataQualtity[] qualityFlag) {
+		this.timestamp = timestamp;
+		this.data = data;
+		this.qualityFlag = qualityFlag;
+	}
+	
+	public static TimeSeriesEntry getNaN(long timestamp, int columnCount) {
+		return new TimeSeriesEntry(timestamp, getNanData(columnCount));
 	}
 	
 	public static float[] getNanData(int columnCount) {

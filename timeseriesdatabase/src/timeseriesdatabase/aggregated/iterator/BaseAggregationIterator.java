@@ -13,7 +13,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -31,7 +31,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	private static final Logger log = Util.log;
 
 	//String[] schema;
-	SchemaIterator<TimestampSeriesEntry> input_iterator;
+	SchemaIterator<TimeSeriesEntry> input_iterator;
 
 	Sensor[] sensors;
 	boolean aggregate_wind_direction;	
@@ -209,9 +209,9 @@ public class BaseAggregationIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimestampSeriesEntry getNext() {
+	protected TimeSeriesEntry getNext() {
 		while(input_iterator.hasNext()) { // begin of while-loop for raw input-events
-			TimestampSeriesEntry entry = input_iterator.next();
+			TimeSeriesEntry entry = input_iterator.next();
 			long timestamp = entry.timestamp;
 			float[] inputData = entry.data;
 
@@ -220,7 +220,7 @@ public class BaseAggregationIterator extends MoveIterator {
 				if(aggregation_timestamp>-1) { // if not init timestamp
 					float[] aggregatedData = aggregateCollectedData();
 					if(aggregatedData!=null) {
-						TimestampSeriesEntry resultElement = new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
+						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
 						aggregation_timestamp = nextAggTimestamp;
 						collectValues(inputData);
 						return resultElement;
@@ -240,7 +240,7 @@ public class BaseAggregationIterator extends MoveIterator {
 		//process last aggregate if there is some collected data left
 		float[] aggregatedData = aggregateCollectedData();
 		if(aggregatedData!=null) {
-			return new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
+			return new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
 		}
 		return null; //no elements left
 	}

@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.iterator.TimeSeriesIterable;
 import util.iterator.TimeSeriesIterator;
 
@@ -57,7 +57,7 @@ public class CSV {
 			
 			while(it.hasNext()) {
 				
-				TimestampSeriesEntry entry = it.next();	
+				TimeSeriesEntry entry = it.next();	
 				long timestamp = entry.timestamp;
 				float[] data = entry.data;
 				

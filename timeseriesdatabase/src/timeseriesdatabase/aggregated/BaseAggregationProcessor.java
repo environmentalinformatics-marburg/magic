@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import de.umr.jepc.store.Event;
@@ -193,7 +193,7 @@ public class BaseAggregationProcessor {
 		long aggregation_timestamp = -1;
 
 		//list of aggregated data entries
-		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
+		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
 
 		while(it.hasNext()) { // begin of while-loop for raw input-events
 			Event event = it.next();
@@ -205,7 +205,7 @@ public class BaseAggregationProcessor {
 				if(aggregation_timestamp>-1) { // if not init timestamp
 					float[] data = aggregateCollectedData();
 					if(data!=null) {
-						entryList.add(new TimestampSeriesEntry(aggregation_timestamp,data));
+						entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
 					}
 				}
 				//reset values for next aggregate
@@ -252,7 +252,7 @@ public class BaseAggregationProcessor {
 		//process last aggregate if there is some collected data left
 		float[] data = aggregateCollectedData();
 		if(data!=null) {
-			entryList.add(new TimestampSeriesEntry(aggregation_timestamp,data));
+			entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
 		}
 
 		//create resulting TimeSeries Object

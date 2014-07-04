@@ -28,7 +28,7 @@ import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.RawDataProcessor;
 import timeseriesdatabase.raw.SensorHeader;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
 import timeseriesdatabase.raw.iterator.EventConverterIterator;

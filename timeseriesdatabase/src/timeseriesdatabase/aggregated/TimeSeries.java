@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.SchemaIterator;
@@ -63,7 +63,7 @@ public class TimeSeries implements TimeSeriesIterable {
 	 * @param timeStep
 	 * @return
 	 */
-	public static TimeSeries create(SchemaIterator<TimestampSeriesEntry> input_iterator) {
+	public static TimeSeries create(SchemaIterator<TimeSeriesEntry> input_iterator) {
 		TimeSeriesSchema timeSeriesSchema = input_iterator.getOutputTimeSeriesSchema();
 		if(!timeSeriesSchema.constantTimeStep) {
 			log.error("time series needs to have constant aggregated timesteps");
@@ -79,13 +79,13 @@ public class TimeSeries implements TimeSeriesIterable {
 			return null; // not data in input_iterator
 		}
 		
-		ArrayList<TimestampSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
+		ArrayList<TimeSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
 		long startTimestamp = entryList.get(0).timestamp;		
 		float[][] data = new float[schema.length][entryList.size()];
 		
 		long timestamp=-1;
 		for(int i=0;i<entryList.size();i++) {
-			TimestampSeriesEntry entry = entryList.get(i);
+			TimeSeriesEntry entry = entryList.get(i);
 			if(timestamp==-1||timestamp+timeSeriesSchema.timeStep==entry.timestamp) {
 			for(int column=0;column<schema.length;column++) {
 				data[column][i] = entry.data[column];
@@ -129,8 +129,8 @@ public class TimeSeries implements TimeSeriesIterable {
 			log.error("error");
 		}
 		
-		Iterator<TimestampSeriesEntry> it = timestampSeries.entryList.iterator();
-		TimestampSeriesEntry nextEntry;		
+		Iterator<TimeSeriesEntry> it = timestampSeries.entryList.iterator();
+		TimeSeriesEntry nextEntry;		
 		if(it.hasNext()) {
 			nextEntry = it.next();
 			if(nextEntry.timestamp%timeStep!=0) {
@@ -353,14 +353,14 @@ public class TimeSeries implements TimeSeriesIterable {
 		}
 
 		@Override
-		public TimestampSeriesEntry next() {
+		public TimeSeriesEntry next() {
 			float[] resultData = new float[parameterNames.length];
 			for(int columnIndex=0;columnIndex<parameterNames.length;columnIndex++) {
 				resultData[columnIndex] = data[columnIndex][pos];
 			}
 			long timestamp = startTimestamp+(pos*timeStep);
 			pos++;
-			return new TimestampSeriesEntry(timestamp,resultData);
+			return new TimeSeriesEntry(timestamp,resultData);
 		}		
 	}
 }

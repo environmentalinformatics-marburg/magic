@@ -10,7 +10,7 @@ import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationType;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -27,7 +27,7 @@ public class AggregationIterator extends MoveIterator {
 
 	private static final Logger log = Util.log;
 
-	private SchemaIterator<TimestampSeriesEntry> input_iterator;
+	private SchemaIterator<TimeSeriesEntry> input_iterator;
 	private AggregationInterval aggregationInterval;
 	private Sensor[] sensors;
 
@@ -175,6 +175,9 @@ public class AggregationIterator extends MoveIterator {
 		//final int PERCENT = 50;
 		final int PERCENT = 90;
 		switch(aggregationInterval) {
+		case HOUR: { // TODO prevent aggregation of one hour in high aggregates
+			return collectorCount>0;
+		}
 		case DAY: {
 			final int MIN_VALUES = (1*24*PERCENT)/100;
 			return MIN_VALUES<=collectorCount; 
@@ -308,9 +311,9 @@ public class AggregationIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimestampSeriesEntry getNext() {
+	protected TimeSeriesEntry getNext() {
 		while(input_iterator.hasNext()) { // begin of while-loop for raw input-events
-			TimestampSeriesEntry entry = input_iterator.next();
+			TimeSeriesEntry entry = input_iterator.next();
 			long timestamp = entry.timestamp;
 			float[] inputData = entry.data;
 
@@ -320,7 +323,7 @@ public class AggregationIterator extends MoveIterator {
 					boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
 					float[] aggregatedData = aggregateCollectedData();
 					if(aggregatedData!=null) {
-						TimestampSeriesEntry resultElement = new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
+						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
 						aggregation_timestamp = nextAggTimestamp;
 						collectValues(inputData);
 						return resultElement;
@@ -329,7 +332,7 @@ public class AggregationIterator extends MoveIterator {
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData);
 						} else {	
-							TimestampSeriesEntry resultElement = TimestampSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+							TimeSeriesEntry resultElement = TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData);
 							return resultElement;
@@ -348,9 +351,9 @@ public class AggregationIterator extends MoveIterator {
 		boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
 		float[] aggregatedData = aggregateCollectedData();
 		if(aggregatedData!=null) {
-			return new TimestampSeriesEntry(aggregation_timestamp,aggregatedData);
+			return new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
 		} else if(dataInAggregateCollection) { //insert NaN element at end //?? TODO testing
-			return TimestampSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+			return TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 		} else {
 			return null; //no elements left
 		}

@@ -2,12 +2,12 @@ package util.iterator;
 
 import java.util.Iterator;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 
 public abstract class MoveIterator extends TimeSeriesIterator {
 
-	private TimestampSeriesEntry current = null;
+	private TimeSeriesEntry current = null;
 	private boolean closed = false;
 	
 	public MoveIterator(TimeSeriesSchema outputTimeSeriesSchema) {
@@ -31,14 +31,14 @@ public abstract class MoveIterator extends TimeSeriesIterator {
 	}
 
 	@Override
-	public final TimestampSeriesEntry next() {
+	public final TimeSeriesEntry next() {
 		hasNext();
-		TimestampSeriesEntry result = current;
+		TimeSeriesEntry result = current;
 		current = null;
 		hasNext();
 		return result;
 	}
 
-	protected abstract TimestampSeriesEntry getNext();
+	protected abstract TimeSeriesEntry getNext();
 
 }

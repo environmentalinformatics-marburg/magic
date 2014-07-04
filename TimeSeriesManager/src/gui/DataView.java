@@ -12,7 +12,7 @@ import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 
 public class DataView {
 
@@ -36,7 +36,7 @@ public class DataView {
 			minValue = Float.MAX_VALUE;
 			maxValue = -Float.MAX_VALUE;
 
-			for(TimestampSeriesEntry entry:resultTimeSeries) {
+			for(TimeSeriesEntry entry:resultTimeSeries) {
 				float value = entry.data[0];
 				if(!Float.isNaN(value)) {
 					if(value<minValue) {
@@ -134,13 +134,13 @@ public class DataView {
 			List<int[]> grayList = new ArrayList<int[]>(resultTimeSeries.entryList.size());
 			List<int[]> blackList = new ArrayList<int[]>(resultTimeSeries.entryList.size());
 
-			for(TimestampSeriesEntry entry:resultTimeSeries) {	
+			for(TimeSeriesEntry entry:resultTimeSeries) {	
 				float value = entry.data[0];
 				if(!Float.isNaN(value)) {				
 					float offset = (entry.timestamp-minTimestamp)*timeFactor;
 					int x0 = (int) (offset+border);
 					int x1 = (int) (offset+timeAggregationSize+border);
-					int y = (int) ((value-minValue)*valueFactor+border);
+					int y = (int) ((height-(value-minValue)*valueFactor)+border);
 					if(prevX!=null) {
 						//gc.setForeground(c1);
 						//gc.drawLine(x0, prevY, x0, y);

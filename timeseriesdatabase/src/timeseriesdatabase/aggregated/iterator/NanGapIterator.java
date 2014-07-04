@@ -3,7 +3,7 @@ package timeseriesdatabase.aggregated.iterator;
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -21,9 +21,9 @@ public class NanGapIterator extends MoveIterator {
 	
 	private static final Logger log = Util.log;
 
-	SchemaIterator<TimestampSeriesEntry> input_iterator;
+	SchemaIterator<TimeSeriesEntry> input_iterator;
 	long currTimestamp;
-	TimestampSeriesEntry nextElement;
+	TimeSeriesEntry nextElement;
 	
 	Long endTimestamp;
 	
@@ -76,13 +76,13 @@ public class NanGapIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimestampSeriesEntry getNext() {
+	protected TimeSeriesEntry getNext() {
 		if(nextElement==null) {
 			if(endTimestamp==null) {
 			return null;
 			} else {
 				if(currTimestamp<=endTimestamp) {
-					TimestampSeriesEntry nanElement = TimestampSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
+					TimeSeriesEntry nanElement = TimeSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
 					currTimestamp += outputTimeSeriesSchema.timeStep;
 					return nanElement;
 				} else {
@@ -90,12 +90,12 @@ public class NanGapIterator extends MoveIterator {
 				}
 			}
 		} else if(currTimestamp<nextElement.timestamp) { // fill stream with NaN elements
-			TimestampSeriesEntry nanElement = TimestampSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
+			TimeSeriesEntry nanElement = TimeSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
 			currTimestamp += outputTimeSeriesSchema.timeStep;
 			return nanElement;
 		} else if(currTimestamp==nextElement.timestamp) { // output current element
 			currTimestamp += outputTimeSeriesSchema.timeStep;
-			TimestampSeriesEntry currElement = nextElement;			
+			TimeSeriesEntry currElement = nextElement;			
 			if(input_iterator.hasNext()) {
 				nextElement = input_iterator.next();
 			} else {

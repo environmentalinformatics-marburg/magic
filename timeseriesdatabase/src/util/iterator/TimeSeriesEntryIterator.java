@@ -2,14 +2,14 @@ package util.iterator;
 
 import java.util.Iterator;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 
 public class TimeSeriesEntryIterator extends TimeSeriesIterator {
 	
-	private Iterator<TimestampSeriesEntry> input_iterator;
+	private Iterator<TimeSeriesEntry> input_iterator;
 
-	public TimeSeriesEntryIterator(Iterator<TimestampSeriesEntry> input_iterator, String[] schema) {
+	public TimeSeriesEntryIterator(Iterator<TimeSeriesEntry> input_iterator, String[] schema) {
 		super(new TimeSeriesSchema(schema));
 		this.input_iterator = input_iterator;
 	}
@@ -20,7 +20,7 @@ public class TimeSeriesEntryIterator extends TimeSeriesIterator {
 	}
 
 	@Override
-	public TimestampSeriesEntry next() {
+	public TimeSeriesEntry next() {
 		return input_iterator.next();
 	}
 

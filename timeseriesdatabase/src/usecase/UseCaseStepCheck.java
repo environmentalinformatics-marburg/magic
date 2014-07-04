@@ -9,7 +9,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.CSV;
 import util.Util;
 import util.iterator.SchemaIterator;
@@ -43,10 +43,10 @@ public class UseCaseStepCheck {
 		
 		
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryRaw(plotID,sensorNames,null,null);
-		SchemaIterator<TimestampSeriesEntry> it = qp.queryRawQualityChecked(plotID,sensorNames,null,null,false,false,true);
+		SchemaIterator<TimeSeriesEntry> it = qp.queryRawQualityChecked(plotID,sensorNames,null,null,false,false,true);
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryBaseAggregated(plotID,sensorNames,null,null,false,false,false);
 		while(it.hasNext()) {
-			TimestampSeriesEntry e = it.next();
+			TimeSeriesEntry e = it.next();
 			System.out.println(e);
 			//System.out.print(e.timestamp+" ");
 			//Util.printArray(e.data);

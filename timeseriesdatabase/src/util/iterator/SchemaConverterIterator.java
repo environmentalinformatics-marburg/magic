@@ -1,6 +1,6 @@
 package util.iterator;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 
@@ -16,9 +16,9 @@ public class SchemaConverterIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimestampSeriesEntry getNext() {
+	protected TimeSeriesEntry getNext() {
 		if(input_iterator.hasNext()) {
-			TimestampSeriesEntry e = input_iterator.next();
+			TimeSeriesEntry e = input_iterator.next();
 			float[] data = new float[inputPos.length];
 			for(int i=0;i<data.length;i++) {
 				int pos = inputPos[i];
@@ -28,7 +28,7 @@ public class SchemaConverterIterator extends MoveIterator {
 					data[i] = e.data[pos];
 				}					
 			}
-			return new TimestampSeriesEntry(e.timestamp,data);
+			return new TimeSeriesEntry(e.timestamp,data);
 		} else {
 			return null;
 		}

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 
 public class TimeSeriesIteratorIterator<T> extends MoveIterator {
@@ -45,7 +45,7 @@ public class TimeSeriesIteratorIterator<T> extends MoveIterator {
 	}
 
 	@Override
-	protected TimestampSeriesEntry getNext() {			
+	protected TimeSeriesEntry getNext() {			
 		if(current_iterator==null) {
 			if(input_iterator.hasNext()) {
 				TimeSeriesIterator next = input_iterator.next();

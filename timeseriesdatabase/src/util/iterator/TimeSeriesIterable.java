@@ -2,12 +2,12 @@ package util.iterator;
 
 import java.util.Iterator;
 
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 
-public interface TimeSeriesIterable extends Iterable<TimestampSeriesEntry> {
+public interface TimeSeriesIterable extends Iterable<TimeSeriesEntry> {
 
 	@Override
-	public default Iterator<TimestampSeriesEntry> iterator() {
+	public default Iterator<TimeSeriesEntry> iterator() {
 		return timeSeriesIterator();
 	}
 	

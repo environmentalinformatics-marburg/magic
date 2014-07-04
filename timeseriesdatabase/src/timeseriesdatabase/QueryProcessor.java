@@ -10,7 +10,7 @@ import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;

@@ -7,7 +7,7 @@ import java.util.List;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.raw.TimestampSeriesEntry;
+import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -18,7 +18,7 @@ public class QualityCheckIterator extends MoveIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
-	Iterator<TimestampSeriesEntry> input_iterator;
+	Iterator<TimeSeriesEntry> input_iterator;
 	int columns;
 	long[] prevTimestamps;
 	float[] prevData;
@@ -51,9 +51,9 @@ public class QualityCheckIterator extends MoveIterator {
 	}
 
 	@Override
-	public TimestampSeriesEntry getNext() {
+	public TimeSeriesEntry getNext() {
 		while(input_iterator.hasNext()) {
-			TimestampSeriesEntry currEntry = input_iterator.next();
+			TimeSeriesEntry currEntry = input_iterator.next();
 			long currTimestamp = currEntry.timestamp;
 			float[] currData = currEntry.data;
 			float[] resultData = new float[columns]; 
@@ -98,7 +98,7 @@ public class QualityCheckIterator extends MoveIterator {
 				}
 			}
 			if(validColumnCounter>0) {
-				return new TimestampSeriesEntry(currTimestamp, resultData);
+				return new TimeSeriesEntry(currTimestamp, resultData);
 			}			
 		}		
 		return null; // no element left

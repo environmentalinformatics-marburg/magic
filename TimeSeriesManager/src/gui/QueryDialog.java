@@ -48,7 +48,7 @@ public class QueryDialog extends Dialog {
 	
 	private TimeSeriesDatabase timeSeriesDatabase;
 	private QueryProcessor qp;
-	private DataView dataView;
+	
 
 	protected Shell shell;
 	
@@ -63,7 +63,11 @@ public class QueryDialog extends Dialog {
 	private Button CheckButtonStep;
 	private Button CheckButtonInterpolated;
 	
-	private Canvas canvasDataView;
+	private Button buttonUpdate;
+	
+	//private Canvas canvasDataView;
+	
+	DataExplorer dataExplorer;
 
 	/**
 	 * Create the dialog.
@@ -75,7 +79,7 @@ public class QueryDialog extends Dialog {
 		setText("SWT Dialog");
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.qp = new QueryProcessor(timeSeriesDatabase);
-		this.dataView = new DataView();		
+		//this.dataView = new DataView();		
 	}
 
 	/**
@@ -87,7 +91,7 @@ public class QueryDialog extends Dialog {
 		shell.open();
 		shell.layout();
 		Display display = getParent().getDisplay();
-		dataView.canvas = canvasDataView;
+		//dataView.canvas = canvasDataView;
 		updateGUI();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -175,7 +179,7 @@ public class QueryDialog extends Dialog {
 		CheckButtonInterpolated.setSelection(true);
 		CheckButtonInterpolated.setText("Interpolated");
 		
-		Button buttonUpdate = new Button(composite, SWT.NONE);
+		buttonUpdate = new Button(composite, SWT.NONE);
 		buttonUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -188,15 +192,17 @@ public class QueryDialog extends Dialog {
 		labelStatus.setLayoutData(BorderLayout.SOUTH);
 		labelStatus.setText("status");
 		
-		canvasDataView = new Canvas(shell, SWT.NONE);
+		/**canvasDataView = new Canvas(shell, SWT.NONE);
 		canvasDataView.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent e) {
 				dataView.updateViewData();
 				dataView.paintCanvas(e.gc);
 			}
 		});
-		canvasDataView.setLayoutData(BorderLayout.CENTER);
-
+		canvasDataView.setLayoutData(BorderLayout.CENTER);*/
+		
+		dataExplorer = new DataExplorer(shell, SWT.NONE);
+		grpQuality.setLayoutData(BorderLayout.CENTER);
 	}
 	
 	private void runQuery() {
@@ -227,9 +233,37 @@ public class QueryDialog extends Dialog {
 		boolean checkStepRange = CheckButtonStep.getSelection();
 		boolean useInterpolation = CheckButtonInterpolated.getSelection();
 		
-		TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, aggregationInterval, checkPhysicalRange, checkEmpiricalRange, checkStepRange, useInterpolation);
-		dataView.aggregationInterval = aggregationInterval;
-		dataView.resultTimeSeries = TimestampSeries.create(result);
+		final AggregationInterval agg = aggregationInterval;
+		
+		buttonUpdate.setEnabled(false);
+		
+		Thread worker = new Thread() {
+			@Override
+			public void run(){
+				
+				TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, checkPhysicalRange, checkEmpiricalRange, checkStepRange, useInterpolation);
+				
+				getParent().getDisplay().asyncExec(new Runnable() {
+					
+					@Override
+					public void run() {
+						//dataView.aggregationInterval = aggregationInterval;
+						//dataView.resultTimeSeries = TimestampSeries.create(result);
+						TimestampSeries resultTimeSeries = TimestampSeries.create(result);
+						dataExplorer.setData(resultTimeSeries,agg);
+						buttonUpdate.setEnabled(true);
+						
+					}
+				});
+				
+				
+				
+			}
+		};
+		
+		worker.start();
+		
+		
 		
 		
 	}

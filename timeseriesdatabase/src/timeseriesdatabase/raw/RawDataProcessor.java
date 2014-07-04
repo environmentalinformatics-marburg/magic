@@ -38,7 +38,7 @@ public class RawDataProcessor {
 	}
 
 	public TimestampSeries process(Iterator<Event> it) {	
-		List<TimestampSeriesEntry> entryList = new ArrayList<TimestampSeriesEntry>();
+		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
 		
 		Long prevTimestamp = null;
 		float[] prevData = null;
@@ -73,7 +73,7 @@ public class RawDataProcessor {
 				} else {
 					//no step check
 				}
-				entryList.add(new TimestampSeriesEntry(timestamp,data));
+				entryList.add(new TimeSeriesEntry(timestamp,data));
 			}
 			prevTimestamp = timestamp;
 			prevData = data;
