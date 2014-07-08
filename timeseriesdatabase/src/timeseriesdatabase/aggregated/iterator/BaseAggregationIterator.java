@@ -1,6 +1,7 @@
 package timeseriesdatabase.aggregated.iterator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.iterator.DataQuality;
+import util.Pair;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -41,6 +44,8 @@ public class BaseAggregationIterator extends MoveIterator {
 	//*** collector variables for aggregation
 	//timestamp of aggreates of currently collected data
 	long aggregation_timestamp;
+
+	DataQuality[] aggQuality;
 
 	int[] aggCnt;
 	float[] aggSum;
@@ -91,6 +96,7 @@ public class BaseAggregationIterator extends MoveIterator {
 
 	private void initAggregates() {
 		aggregation_timestamp = -1;
+		aggQuality = new DataQuality[outputTimeSeriesSchema.columns];
 		aggCnt = new int[outputTimeSeriesSchema.columns];
 		aggSum = new float[outputTimeSeriesSchema.columns];
 		aggMax = new float[outputTimeSeriesSchema.columns];		
@@ -103,6 +109,9 @@ public class BaseAggregationIterator extends MoveIterator {
 
 	private void resetAggregates() {
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			if(aggQuality!=null)  {			
+				aggQuality[i] = DataQuality.Na;
+			}
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
 			aggMax[i] = Float.NEGATIVE_INFINITY;
@@ -112,10 +121,50 @@ public class BaseAggregationIterator extends MoveIterator {
 		wind_cnt=0;
 	}
 
+	private void collectQuality(DataQuality[] inputQuality) {
+		if(inputQuality==null) {
+			//System.out.println("inputQuality==null");
+			aggQuality = null;
+		} else {		
+			for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+				switch(aggQuality[i]) {
+				case Na:
+					aggQuality[i] = inputQuality[i]; // Na, NO, PHYSICAL, STEP, EMPIRICAL 
+					break;
+				case NO: // aggQuality[i] is lowest quality
+					break;
+				case PHYSICAL:
+					if(inputQuality[i] == DataQuality.NO) {
+						aggQuality[i] = DataQuality.NO; 
+					}
+					break;
+				case STEP:
+					if(inputQuality[i] == DataQuality.NO) {
+						aggQuality[i] = DataQuality.NO; 
+					} else if(inputQuality[i] == DataQuality.PHYSICAL) {
+						aggQuality[i] = DataQuality.PHYSICAL;
+					}
+					break;
+				case EMPIRICAL:
+					if(inputQuality[i] == DataQuality.NO) {
+						aggQuality[i] = DataQuality.NO; 
+					} else if(inputQuality[i] == DataQuality.PHYSICAL) {
+						aggQuality[i] = DataQuality.PHYSICAL;
+					} else if(inputQuality[i] == DataQuality.STEP) {
+						aggQuality[i] = DataQuality.STEP;
+					}
+					break;
+				default:
+					log.warn("quality not found");
+				}
+
+			}
+		}
+	}
+
 	private void collectValues(float[] inputData) {
 		//collect values for aggregation
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
-			float prevValue = 0;
 			float value = (float) inputData[i];
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
 				System.out.println("NaN...");
@@ -126,9 +175,9 @@ public class BaseAggregationIterator extends MoveIterator {
 				aggSum[i] += value;
 				if(value>aggMax[i]) {
 					aggMax[i] = value;
-	
+
 				}
-	
+
 			}
 		}			
 		if(aggregate_wind_direction) {
@@ -149,7 +198,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	 * process collected data to aggregates
 	 * @return result or null if there are no valid aggregates
 	 */
-	private float[] aggregateCollectedData() {
+	private Pair<float[],DataQuality[]> aggregateCollectedData() {
 		float[] resultData = new float[outputTimeSeriesSchema.columns];	
 		int validValueCounter=0; //counter of valid aggregates
 
@@ -200,8 +249,12 @@ public class BaseAggregationIterator extends MoveIterator {
 			}
 		}
 		if(validValueCounter>0) { // if there are some valid aggregates return result data
+			DataQuality[] resultQuality = null;
+			if(aggQuality!=null) {
+				resultQuality = Arrays.copyOf(aggQuality, aggQuality.length);
+			} 
 			resetAggregates();
-			return resultData;
+			return new Pair<float[], DataQuality[]>(resultData, resultQuality);
 		} else {
 			resetAggregates();
 			return null; //no aggregates created
@@ -218,29 +271,33 @@ public class BaseAggregationIterator extends MoveIterator {
 			long nextAggTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // aggregate aggregation_timestamp is ready for output
 				if(aggregation_timestamp>-1) { // if not init timestamp
-					float[] aggregatedData = aggregateCollectedData();
-					if(aggregatedData!=null) {
-						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
+					Pair<float[], DataQuality[]> aggregatedPair = aggregateCollectedData();
+					if(aggregatedPair!=null) {
+						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);					
 						aggregation_timestamp = nextAggTimestamp;
+						collectQuality(entry.qualityFlag);
 						collectValues(inputData);
 						return resultElement;
 					} else {
 						aggregation_timestamp = nextAggTimestamp;
+						collectQuality(entry.qualityFlag);
 						collectValues(inputData);
 					}
 				} else {
 					aggregation_timestamp = nextAggTimestamp;
+					collectQuality(entry.qualityFlag);
 					collectValues(inputData);
 				}
 			} else {
+				collectQuality(entry.qualityFlag);
 				collectValues(inputData);
 			}
 		}  // end of while-loop for raw input-events
 
 		//process last aggregate if there is some collected data left
-		float[] aggregatedData = aggregateCollectedData();
-		if(aggregatedData!=null) {
-			return new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
+		Pair<float[], DataQuality[]> aggregatedPair = aggregateCollectedData();
+		if(aggregatedPair!=null) {
+			return new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);
 		}
 		return null; //no elements left
 	}

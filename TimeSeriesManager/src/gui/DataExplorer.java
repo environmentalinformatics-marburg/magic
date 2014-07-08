@@ -15,6 +15,7 @@ import timeseriesdatabase.raw.TimestampSeries;
 
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class DataExplorer extends Composite {
 	
@@ -32,6 +33,7 @@ public class DataExplorer extends Composite {
 		setLayout(new BorderLayout(0, 0));
 		
 		canvas = new Canvas(this, SWT.NONE);
+		canvas.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		canvas.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent e) {
 				dataView.paintCanvas(e.gc);
@@ -60,6 +62,10 @@ public class DataExplorer extends Composite {
 		dataView = new DataView();
 		dataView.canvas = canvas; 
 
+	}
+	
+	public TimestampSeries getData() {
+		return dataView.resultTimeSeries;
 	}
 
 	@Override

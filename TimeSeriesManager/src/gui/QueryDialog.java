@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import swing2swt.layout.BorderLayout;
+import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
@@ -18,6 +20,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
+import util.CSV;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
@@ -41,33 +44,39 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class QueryDialog extends Dialog {
-	
+
 	private static Logger log = Util.log;
-	
+
 	private TimeSeriesDatabase timeSeriesDatabase;
 	private QueryProcessor qp;
-	
+
 
 	protected Shell shell;
-	
+
 	private Combo comboGeneralStation;
 	private Combo comboPlotID;
 	private Combo comboSensorName;
 	private Combo comboAggregation;
 	private Text text;
-	
-	private Button CheckButtonPhysical;
+
+	/*private Button CheckButtonPhysical;
 	private Button CheckButtonEmpirical;
 	private Button CheckButtonStep;
-	private Button CheckButtonInterpolated;
-	
+	private Button CheckButtonInterpolated;*/
+
 	private Button buttonUpdate;
-	
+
 	//private Canvas canvasDataView;
-	
+
 	DataExplorer dataExplorer;
+
+	private Group grpTestgroup;
+	private Combo comboQuality;
+	private Button checkButtonInterpolated2;
+	private Button btnSaveInCsv;
 
 	/**
 	 * Create the dialog.
@@ -109,15 +118,15 @@ public class QueryDialog extends Dialog {
 		shell.setSize(1157, 300);
 		shell.setText(getText());
 		shell.setLayout(new BorderLayout(0, 0));
-		
+
 		Composite composite = new Composite(shell, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
 		composite.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
+
 		Group grpGeneral = new Group(composite, SWT.NONE);
 		grpGeneral.setText("General");
 		grpGeneral.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		comboGeneralStation = new Combo(grpGeneral, SWT.NONE);
 		comboGeneralStation.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -126,11 +135,11 @@ public class QueryDialog extends Dialog {
 				updateGUISensorName();
 			}
 		});
-		
+
 		Group grpPlot = new Group(composite, SWT.NONE);
 		grpPlot.setText("Plot");
 		grpPlot.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		comboPlotID = new Combo(grpPlot, SWT.NONE);
 		comboPlotID.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -138,60 +147,88 @@ public class QueryDialog extends Dialog {
 				updateGUISensorName();
 			}
 		});
-		
+
 		Group grpSensor = new Group(composite, SWT.NONE);
 		grpSensor.setText("Sensor");
 		grpSensor.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		comboSensorName = new Combo(grpSensor, SWT.NONE);
-		
+
 		Group grpTime = new Group(composite, SWT.NONE);
 		grpTime.setText("Time");
 		grpTime.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		text = new Text(grpTime, SWT.BORDER);
-		
+
 		Group grpAggregation = new Group(composite, SWT.NONE);
 		grpAggregation.setText("Aggregation");
 		grpAggregation.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		comboAggregation = new Combo(grpAggregation, SWT.NONE);
-		
+
+		//**************************
+		grpTestgroup = new Group(composite, SWT.NONE);
+		grpTestgroup.setText("Quality");
+		grpTestgroup.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		comboQuality = new Combo(grpTestgroup, SWT.NONE);
+		comboQuality.setItems(new String[] {"no check", "physical range", "physical range + step range", "physical range + step range + empirical range"});
+		comboQuality.setBounds(0, 10, 91, 23);
+		comboQuality.select(3);
+
+		checkButtonInterpolated2 = new Button(grpTestgroup, SWT.CHECK);
+		checkButtonInterpolated2.setText("Interpolated");
+		checkButtonInterpolated2.setSelection(true);
+		checkButtonInterpolated2.setBounds(0, 33, 85, 16);
+
+		//******************************
+		/*
 		Group grpQuality = new Group(composite, SWT.NONE);
 		grpQuality.setText("Quality");
 		grpQuality.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
 
-		
+
+
 		CheckButtonPhysical = new Button(grpQuality, SWT.CHECK);
 		CheckButtonPhysical.setSelection(true);
 		CheckButtonPhysical.setText("Physical Check");
-		
+
 		CheckButtonEmpirical = new Button(grpQuality, SWT.CHECK);
 		CheckButtonEmpirical.setSelection(true);
 		CheckButtonEmpirical.setText("Empirical Check");
-		
+
 		CheckButtonStep = new Button(grpQuality, SWT.CHECK);
 		CheckButtonStep.setSelection(true);
 		CheckButtonStep.setText("Step Check");
-		
+
 		CheckButtonInterpolated = new Button(grpQuality, SWT.CHECK);
 		CheckButtonInterpolated.setSelection(true);
 		CheckButtonInterpolated.setText("Interpolated");
-		
+		 */
+		//***************************************************
+
 		buttonUpdate = new Button(composite, SWT.NONE);
 		buttonUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				 runQuery();
+				runQuery();
 			}
 		});
 		buttonUpdate.setText("update");
-		
+
+		btnSaveInCsv = new Button(composite, SWT.NONE);
+		btnSaveInCsv.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveInCSV();
+			}
+		});
+		btnSaveInCsv.setText("export to CSV file");
+
 		Label labelStatus = new Label(shell, SWT.NONE);
 		labelStatus.setLayoutData(BorderLayout.SOUTH);
 		labelStatus.setText("status");
-		
+
 		/**canvasDataView = new Canvas(shell, SWT.NONE);
 		canvasDataView.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent e) {
@@ -200,13 +237,18 @@ public class QueryDialog extends Dialog {
 			}
 		});
 		canvasDataView.setLayoutData(BorderLayout.CENTER);*/
-		
+
 		dataExplorer = new DataExplorer(shell, SWT.NONE);
-		grpQuality.setLayoutData(BorderLayout.CENTER);
+		dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+		//grpQuality.setLayoutData(BorderLayout.CENTER);
+
+
 	}
-	
+
+
+
 	private void runQuery() {
-		
+
 		String plotID = comboPlotID.getText();
 		String[] querySchema = new String[]{comboSensorName.getText()};
 		Long queryStart = null;
@@ -228,47 +270,87 @@ public class QueryDialog extends Dialog {
 			log.warn("GUI AggregationInterval not found");
 		}		
 
-		boolean checkPhysicalRange = CheckButtonPhysical.getSelection();
-		boolean checkEmpiricalRange = CheckButtonEmpirical.getSelection();
-		boolean checkStepRange = CheckButtonStep.getSelection();
-		boolean useInterpolation = CheckButtonInterpolated.getSelection();
-		
+		boolean checkPhysicalRange = false;
+		boolean checkStepRange = false;
+		boolean checkEmpiricalRange = false;
+		boolean useInterpolation = checkButtonInterpolated2.getSelection();
+
+		//0:"no check", 1:"physical range", 2:"physical range + step range", 3:"physical range + step range + empirical range"
+		int qualitySelectionIndex = comboQuality.getSelectionIndex();
+		switch(qualitySelectionIndex) {
+		case 0:
+			break;
+		case 1:
+			checkPhysicalRange = true;
+			break;
+		case 2:
+			checkPhysicalRange = true;
+			checkStepRange = true;
+			break;
+		case 3:
+			checkPhysicalRange = true;
+			checkStepRange = true;
+			checkEmpiricalRange = true;
+			break;
+		default:
+			log.warn("comboQuality error");
+		}
+
+
+
 		final AggregationInterval agg = aggregationInterval;
-		
+		final boolean cPhysicalRange = checkPhysicalRange;
+		final boolean cStepRange = checkStepRange;
+		final boolean cEmpiricalRange = checkEmpiricalRange;
+
 		buttonUpdate.setEnabled(false);
-		
+
 		Thread worker = new Thread() {
 			@Override
 			public void run(){
+
+				System.out.println(cPhysicalRange+" "+cEmpiricalRange+" "+cStepRange+" "+useInterpolation);
 				
-				TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, checkPhysicalRange, checkEmpiricalRange, checkStepRange, useInterpolation);
+				TimestampSeries resultTimeSeries = null;
+				try{				
+					TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, cPhysicalRange, cEmpiricalRange, cStepRange, useInterpolation);
+					if(result!=null) {
+						resultTimeSeries = TimestampSeries.create(result);
+					}
+				} catch (Exception e) {
+
+					e.printStackTrace();
+
+				}
+				
+				final TimestampSeries finalResultTimeSeries = resultTimeSeries;
+
 				
 				getParent().getDisplay().asyncExec(new Runnable() {
-					
+
 					@Override
 					public void run() {
-						//dataView.aggregationInterval = aggregationInterval;
-						//dataView.resultTimeSeries = TimestampSeries.create(result);
-						TimestampSeries resultTimeSeries = TimestampSeries.create(result);
-						dataExplorer.setData(resultTimeSeries,agg);
+						if(finalResultTimeSeries!=null) {
+							dataExplorer.setData(finalResultTimeSeries,agg);
+						}
 						buttonUpdate.setEnabled(true);
-						
+
 					}
 				});
-				
-				
-				
+
+
+
 			}
 		};
-		
+
 		worker.start();
-		
-		
-		
-		
+
+
+
+
 	}
-	
-	
+
+
 	void updateGUI() {
 		updateGUIgeneralstations();
 		updateGUIplotID();
@@ -324,7 +406,7 @@ public class QueryDialog extends Dialog {
 		}
 
 	}
-	
+
 	void updateGUIAggregation() {
 		//String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
 		//TODO: just for testing!
@@ -332,11 +414,11 @@ public class QueryDialog extends Dialog {
 		comboAggregation.setItems(aggregationNames);
 		comboAggregation.setText("day");
 	}
-	
+
 	void updateViewData() {
 		/*if(queryResult!=null) {
 			float[] data = queryResult.data[0];
-		
+
 			minValue = Float.MAX_VALUE;
 			maxValue = -Float.MAX_VALUE;
 
@@ -368,5 +450,25 @@ public class QueryDialog extends Dialog {
 		} else {
 			labelInfo.setText("no result");
 		}*/
+	}
+
+	protected void saveInCSV() {
+		TimestampSeries result = dataExplorer.getData();
+		if(result!=null) {
+
+			System.out.println("save in CSV file");
+
+			FileDialog filedialog = new FileDialog(shell, SWT.SAVE);
+			filedialog.setFilterNames(new String[] { "CSV Files", "All Files (*.*)" });
+			filedialog.setFilterExtensions(new String[] { "*.csv", "*.*" });
+			filedialog.setFilterPath("c:/timeseriesdatabase_output/");
+			filedialog.setFileName("result.csv");
+			String filename = filedialog.open();
+			if(filename!=null) {
+				System.out.println("Save to: " + filename);
+				CSV.write(result, filename, ",", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
+			}
+		}
+
 	}
 }

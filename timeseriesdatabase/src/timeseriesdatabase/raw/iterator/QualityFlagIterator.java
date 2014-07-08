@@ -9,6 +9,11 @@ import util.TimeSeriesSchema;
 import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * Processes all data checks and writes result in output quality flag.
+ * @author woellauer
+ *
+ */
 public class QualityFlagIterator extends MoveIterator {
 
 	private static final int MAX_TIME_STEP = 60;
@@ -39,34 +44,33 @@ public class QualityFlagIterator extends MoveIterator {
 		}
 	}
 	
-	public enum DataQualtity { NO, PHYSICAL, STEP, EMPIRICAL};
-	
 	@Override
 	public TimeSeriesEntry getNext() {
 		if(input_iterator.hasNext()) {
 			TimeSeriesEntry currEntry = input_iterator.next();
 			long currTimestamp = currEntry.timestamp;
 			float[] currData = currEntry.data;
-			DataQualtity[] flags = new DataQualtity[columns];
+			DataQuality[] flags = new DataQuality[columns];
 			for(int columnIndex=0;columnIndex<columns;columnIndex++) {
 				float currValue = currData[columnIndex];
 				Sensor sensor = sensors[columnIndex];
-				DataQualtity currQuality = DataQualtity.NO;
+				DataQuality currQuality = DataQuality.Na;
 				if(!Float.isNaN(currValue)) {
+					currQuality = DataQuality.NO;
 					if(sensor.checkPhysicalRange(currValue)) {
-						currQuality = DataQualtity.PHYSICAL;
+						currQuality = DataQuality.PHYSICAL;
 						long timewindow = prevTimestamps[columnIndex]+MAX_TIME_STEP;
 						if( (!(currTimestamp<=timewindow))||sensor.checkStepRange(prevData[columnIndex], currValue)) {//step check
-							currQuality = DataQualtity.STEP;
+							currQuality = DataQuality.STEP;
 							if(sensor.checkEmpiricalRange(currValue)) {
-								currQuality = DataQualtity.EMPIRICAL;
+								currQuality = DataQuality.EMPIRICAL;
 							}
 						} 					
 					}
 					//if value is not NaN store element in prev
 					prevTimestamps[columnIndex] = currTimestamp;
 					prevData[columnIndex] = currValue;
-				}
+				} 
 				flags[columnIndex] = currQuality;
 			}
 			return new TimeSeriesEntry(currTimestamp, currData, flags);

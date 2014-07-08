@@ -46,7 +46,7 @@ public class TestingUniqueConstraint {
 		
 		
 		Constraint constraint = new UniqueTimestampConstraint(store, STREAM1_NAME);		
-		stream1.getSchema().addConstraint(constraint);
+		//stream1.getSchema().addConstraint(constraint);
 		
 		
 		/*

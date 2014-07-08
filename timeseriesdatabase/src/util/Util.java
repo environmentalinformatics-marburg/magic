@@ -132,6 +132,11 @@ public class Util {
 		System.out.println();
 	}
 	
+	/**
+	 * named range of float values
+	 * @author woellauer
+	 *
+	 */
 	public static class FloatRange {
 		public final String name;
 		public final float min;
@@ -143,6 +148,12 @@ public class Util {
 		}
 	}
 	
+	/**
+	 * Reads a list of range float values from ini-file section
+	 * @param fileName
+	 * @param sectionName
+	 * @return
+	 */
 	public static List<FloatRange> readIniSectionFloatRange(String fileName, String sectionName) {
 		try {
 			Wini ini = new Wini(new File(fileName));

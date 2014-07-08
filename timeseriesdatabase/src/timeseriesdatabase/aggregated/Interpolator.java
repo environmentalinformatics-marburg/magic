@@ -29,9 +29,10 @@ public class Interpolator {
 	 * @param inputSource array of time series for interpolation training
 	 * @param targetStartTimestamp start time stamp of target
 	 * @param target target time series for interpolation
+	 * @param targetInterpolationFlags 
 	 * @param timeStep for all time series time difference between data values
 	 */
-	public static void process(long sourceStartTimestamp, float[][] inputSource, long targetStartTimestamp, float[] target, int timeStep) {
+	public static void process(long sourceStartTimestamp, float[][] inputSource, long targetStartTimestamp, float[] target, boolean[] targetInterpolationFlags, int timeStep) {
 
 		int interpolatedgapCount = 0;
 
@@ -147,6 +148,7 @@ public class Interpolator {
 						//System.out.println(targetIndex+" gapValue: "+gapValue+"\t"+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+(targetIndex*timeStep))+ " in "+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp)+" - "+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+(target.length*timeStep)));
 
 						target[targetIndex] = (float) gapValue;
+						targetInterpolationFlags[targetIndex] = true;
 						interpolatedgapCount++;
 
 						//***
@@ -184,8 +186,9 @@ public class Interpolator {
 		}
 		long targetStartTimestamp = targetBaseTimeSeries.startTimestamp;
 		float[] target = targetBaseTimeSeries.getValues(parameterName);
+		boolean[] targetInterpolationFlags = targetBaseTimeSeries.getInterpolationFlags(parameterName);
 
-		process(sourceStartTimestamp, source, targetStartTimestamp, target, timeStep);
+		process(sourceStartTimestamp, source, targetStartTimestamp, target, targetInterpolationFlags, timeStep);
 	}
 
 

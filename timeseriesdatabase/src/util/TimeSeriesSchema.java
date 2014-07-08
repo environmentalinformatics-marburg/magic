@@ -16,6 +16,11 @@ public class TimeSeriesSchema {
 	public final int columns;
 	
 	public final boolean isContinuous;
+	
+	//TODO special meta data
+	//public final boolean hasQualityFlags;
+	//public final boolean hasInterpolatedFlags;
+	//public final boolean hasQualityCounters;
 
 	
 	public TimeSeriesSchema(String[] schema) {

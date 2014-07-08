@@ -2,6 +2,7 @@ package timeseriesdatabase.aggregated.iterator;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 
@@ -11,6 +12,8 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.iterator.DataQuality;
+import util.Pair;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -27,6 +30,14 @@ public class AggregationIterator extends MoveIterator {
 
 	private static final Logger log = Util.log;
 
+	private static final int QUALITY_COUNTERS = 5;
+	
+	private static final int QUALITY_NO_POS = 0;
+	private static final int QUALITY_PHYSICAL_POS = 1;
+	private static final int QUALITY_STEP_POS = 2;
+	private static final int QUALITY_EMPIRICAL_POS = 3;
+	private static final int QUALITY_INTERPOLATED_POS = 4;	
+
 	private SchemaIterator<TimeSeriesEntry> input_iterator;
 	private AggregationInterval aggregationInterval;
 	private Sensor[] sensors;
@@ -38,6 +49,8 @@ public class AggregationIterator extends MoveIterator {
 	//*** collector variables for aggregation
 	//timestamp of aggreates of currently collected data
 	private long aggregation_timestamp;
+
+	private int[][] aggQualityCounter;
 
 	private int collectedRowsInCurrentAggregate;
 	private int[] aggCnt;
@@ -104,6 +117,7 @@ public class AggregationIterator extends MoveIterator {
 	 */
 	private void initAggregates() {
 		aggregation_timestamp = -1;
+		aggQualityCounter = new int[outputTimeSeriesSchema.columns][QUALITY_COUNTERS];
 		aggCnt = new int[outputTimeSeriesSchema.columns];
 		aggSum = new float[outputTimeSeriesSchema.columns];
 		aggMax = new float[outputTimeSeriesSchema.columns];		
@@ -120,6 +134,11 @@ public class AggregationIterator extends MoveIterator {
 	private void resetAggregates() {
 		collectedRowsInCurrentAggregate = 0;
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			if(aggQualityCounter!=null) {
+				for(int q=0;q<QUALITY_COUNTERS;q++) {
+					aggQualityCounter[i][q] = 0;
+				}
+			}
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
 			aggMax[i] = Float.NEGATIVE_INFINITY;
@@ -132,8 +151,9 @@ public class AggregationIterator extends MoveIterator {
 	/**
 	 * adds one row of input into aggregation variables
 	 * @param inputData
+	 * @param inputInterpolated 
 	 */
-	private void collectValues(float[] inputData) {
+	private void collectValues(float[] inputData, DataQuality[] quality, boolean[] inputInterpolated) {
 		//collect values for aggregation
 		collectedRowsInCurrentAggregate++;		
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
@@ -150,6 +170,32 @@ public class AggregationIterator extends MoveIterator {
 
 				}
 
+			}
+			
+		
+			
+			if(quality!=null) {
+				
+				if(inputInterpolated!=null&&inputInterpolated[i]) {
+					aggQualityCounter[i][QUALITY_INTERPOLATED_POS]++;
+				}
+				
+				switch(quality[i]) {
+				case Na:
+					break; // nothing to count
+				case NO:
+					aggQualityCounter[i][QUALITY_NO_POS]++;
+					break;
+				case PHYSICAL:
+					aggQualityCounter[i][QUALITY_PHYSICAL_POS]++;
+					break;
+				case STEP:
+					aggQualityCounter[i][QUALITY_STEP_POS]++;
+				case EMPIRICAL:
+					aggQualityCounter[i][QUALITY_EMPIRICAL_POS]++;
+				}
+			} else {
+				aggQualityCounter = null;
 			}
 		}			
 		if(aggregate_wind_direction) {
@@ -206,7 +252,7 @@ public class AggregationIterator extends MoveIterator {
 	 * process collected data to aggregates
 	 * @return result or null if there are no valid aggregates
 	 */
-	private float[] aggregateCollectedData() {
+	private Pair<float[],int[][]> aggregateCollectedData() {
 		float[] resultData = new float[outputTimeSeriesSchema.columns];	
 		int validValueCounter=0; //counter of valid aggregates
 
@@ -258,8 +304,17 @@ public class AggregationIterator extends MoveIterator {
 			}
 		}
 		if(validValueCounter>0) { // if there are some valid aggregates return result data
+			int[][] resultQualityCounter = null;
+			if(aggQualityCounter!=null) {
+				resultQualityCounter = new int[outputTimeSeriesSchema.columns][QUALITY_COUNTERS]; 
+				for(int c=0;c<outputTimeSeriesSchema.columns;c++) {
+					for(int q=0;q<QUALITY_COUNTERS;q++) {
+						resultQualityCounter[c][q] = aggQualityCounter[c][q];
+					}
+				}
+			}
 			resetAggregates();
-			return resultData;
+			return new Pair<float[],int[][]>(resultData,resultQualityCounter);
 		} else { //no aggregates created
 			resetAggregates();
 			return null;
@@ -316,42 +371,44 @@ public class AggregationIterator extends MoveIterator {
 			TimeSeriesEntry entry = input_iterator.next();
 			long timestamp = entry.timestamp;
 			float[] inputData = entry.data;
+			DataQuality[] inputQuality = entry.qualityFlag;
+			boolean[] inputInterpolated = entry.interpolated;
 
 			long nextAggTimestamp = calcAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // aggregate aggregation_timestamp is ready for output
 				if(aggregation_timestamp>-1) { // if not init timestamp
 					boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
-					float[] aggregatedData = aggregateCollectedData();
-					if(aggregatedData!=null) {
-						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
+					Pair<float[], int[][]> aggregatedPair = aggregateCollectedData();
+					if(aggregatedPair!=null) {
+						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,null,aggregatedPair);
 						aggregation_timestamp = nextAggTimestamp;
-						collectValues(inputData);
+						collectValues(inputData, inputQuality, inputInterpolated);
 						return resultElement;
 					} else {
 						if(!dataInAggregateCollection) {
 							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData);
+							collectValues(inputData, inputQuality, inputInterpolated);
 						} else {	
 							TimeSeriesEntry resultElement = TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData);
+							collectValues(inputData, inputQuality, inputInterpolated);
 							return resultElement;
 						}
 					}
 				} else {
 					aggregation_timestamp = nextAggTimestamp;
-					collectValues(inputData);
+					collectValues(inputData, inputQuality, inputInterpolated);
 				}
 			} else {
-				collectValues(inputData);
+				collectValues(inputData, inputQuality, inputInterpolated);
 			}
 		}  // end of while-loop for raw input-events
 
 		//process last aggregate if there is some collected data left
 		boolean dataInAggregateCollection = collectedRowsInCurrentAggregate>0;
-		float[] aggregatedData = aggregateCollectedData();
-		if(aggregatedData!=null) {
-			return new TimeSeriesEntry(aggregation_timestamp,aggregatedData);
+		Pair<float[], int[][]> aggregatedPair = aggregateCollectedData();
+		if(aggregatedPair!=null) {
+			return new TimeSeriesEntry(aggregation_timestamp, null, aggregatedPair);
 		} else if(dataInAggregateCollection) { //insert NaN element at end //?? TODO testing
 			return TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 		} else {

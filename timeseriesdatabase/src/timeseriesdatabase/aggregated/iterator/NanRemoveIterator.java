@@ -5,6 +5,11 @@ import util.TimeSeriesSchema;
 import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * Sends only input elements that have at least one not NaN-value.
+ * @author woellauer
+ *
+ */
 public class NanRemoveIterator extends MoveIterator{
 	
 	TimeSeriesIterator input_iterator;

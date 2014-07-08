@@ -13,6 +13,7 @@ import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.iterator.DataQuality;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.SchemaIterator;
@@ -49,11 +50,16 @@ public class TimeSeries implements TimeSeriesIterable {
 	 */
 	public float[][] data;
 	
-	public TimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data) {
+	public DataQuality[][] dataQuality;
+	public boolean[][] dataInterpolated;
+	
+	public TimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
 		this.data = data;
+		this.dataQuality = dataQuality;
+		this.dataInterpolated = dataInterpolated;
 	}
 	
 	/**
@@ -80,8 +86,10 @@ public class TimeSeries implements TimeSeriesIterable {
 		}
 		
 		ArrayList<TimeSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
-		long startTimestamp = entryList.get(0).timestamp;		
+		long startTimestamp = entryList.get(0).timestamp;
 		float[][] data = new float[schema.length][entryList.size()];
+		DataQuality[][] dataQuality = new DataQuality[schema.length][entryList.size()];
+		boolean[][] dataInterpolated = new boolean[schema.length][entryList.size()];
 		
 		long timestamp=-1;
 		for(int i=0;i<entryList.size();i++) {
@@ -95,9 +103,18 @@ public class TimeSeries implements TimeSeriesIterable {
 				return null;
 			}
 			timestamp = entry.timestamp;
+			if(entry.qualityFlag!=null) {
+				for(int column=0;column<schema.length;column++) {
+					dataQuality[column][i] = entry.qualityFlag[column];
+				}
+			} else {
+				for(int column=0;column<schema.length;column++) {
+					dataQuality[column][i] = DataQuality.Na;
+				}				
+			}
 		}
 		
-		return new TimeSeries(schema, startTimestamp, timeSeriesSchema.timeStep, data);
+		return new TimeSeries(schema, startTimestamp, timeSeriesSchema.timeStep, data, dataQuality, dataInterpolated);
 		
 	}
 	
@@ -178,7 +195,7 @@ public class TimeSeries implements TimeSeriesIterable {
 			dataIndex++;
 		}
 		
-		return new TimeSeries(timestampSeries.parameterNames, startTimestamp, timeStep, resultData);
+		return new TimeSeries(timestampSeries.parameterNames, startTimestamp, timeStep, resultData, null, null);
 	}
 	
 	/**
@@ -284,6 +301,11 @@ public class TimeSeries implements TimeSeriesIterable {
 		return data[getParameterNameIndex(parameterName)];
 	}
 	
+	public boolean[] getInterpolationFlags(String parameterName) {
+		return dataInterpolated[getParameterNameIndex(parameterName)];
+	}
+	
+	
 	/**
 	 * returns time series with time interval exactly from clipStart to clipEnd
 	 * @param clipStart	may be null if no clipping is needed
@@ -303,18 +325,24 @@ public class TimeSeries implements TimeSeriesIterable {
 			return null;			
 		}
 		float[][] resultData = new float[parameterNames.length][(int) (((clipEndTimestamp-clipStartTimestamp)/timeStep)+1)];
+		DataQuality[][] resultQuality = new DataQuality[parameterNames.length][(int) (((clipEndTimestamp-clipStartTimestamp)/timeStep)+1)];
+		boolean[][] resultInterpolated = new boolean[parameterNames.length][(int) (((clipEndTimestamp-clipStartTimestamp)/timeStep)+1)];
 		for(long timestamp=clipStartTimestamp;timestamp<=clipEndTimestamp;timestamp+=timeStep) {
 			if(timestamp<startTimestamp || timestamp>startTimestamp+(this.data[0].length*timeStep)) {
 				for(int i=0; i<parameterNames.length; i++) {
 					resultData[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = Float.NaN;
+					resultQuality[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = DataQuality.Na;
+					// resultInterpolated[..][..]  == false
 				}
 			} else {
 				for(int i=0; i<parameterNames.length; i++) {
 					resultData[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = this.data[i][(int) ((timestamp-startTimestamp)/timeStep)];
+					resultQuality[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = this.dataQuality[i][(int) ((timestamp-startTimestamp)/timeStep)];
+					resultInterpolated[i][(int) ((timestamp-clipStartTimestamp)/timeStep)] = this.dataInterpolated[i][(int) ((timestamp-startTimestamp)/timeStep)];
 				}
 			}
 		}
-		return new TimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData);
+		return new TimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData, resultQuality, resultInterpolated);
 	}
 	
 	/**
@@ -355,12 +383,16 @@ public class TimeSeries implements TimeSeriesIterable {
 		@Override
 		public TimeSeriesEntry next() {
 			float[] resultData = new float[parameterNames.length];
+			DataQuality[] resultQuality = new DataQuality[parameterNames.length];
+			boolean[] resultInterpolated = new boolean[parameterNames.length];
 			for(int columnIndex=0;columnIndex<parameterNames.length;columnIndex++) {
 				resultData[columnIndex] = data[columnIndex][pos];
+				resultQuality[columnIndex] = dataQuality[columnIndex][pos];
+				resultInterpolated[columnIndex] = dataInterpolated[columnIndex][pos];
 			}
 			long timestamp = startTimestamp+(pos*timeStep);
 			pos++;
-			return new TimeSeriesEntry(timestamp,resultData);
+			return new TimeSeriesEntry(timestamp,resultData,resultQuality,null,resultInterpolated);
 		}		
 	}
 }
