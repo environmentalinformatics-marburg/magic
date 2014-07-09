@@ -40,6 +40,7 @@ if (!tuneThreshold & type=="classification"){
 
 if (type=="regression"){
   metric="RMSE"
+  maximize=FALSE
 }
 
 
