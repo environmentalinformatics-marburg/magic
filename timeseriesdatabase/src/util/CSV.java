@@ -21,6 +21,11 @@ public class CSV {
 
 	private static final Logger log = Util.log;	
 
+	public static void writeNoHeader(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+		write(it, false, filename, separator, nanText, csvTimeType, false, false);
+	}
+
+
 	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(input, filename, separator, nanText, csvTimeType, false);
 	}
@@ -34,51 +39,60 @@ public class CSV {
 	}
 
 	public static void write(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
+		write(it, true, filename, separator, nanText, csvTimeType, qualityFlag, qualityCounter);
+	}
+
+	public static void write(TimeSeriesIterator it, boolean header, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
 		}
 		try {
 			PrintStream printStream = new PrintStream(filename);
-			if(time) {
-				switch(csvTimeType) {
-				case TIMESTAMP:
-					printStream.print("timestamp");
-					break;
-				case DATETIME:
-					printStream.print("datetime");
-					break;
-				case TIMESTAMP_AND_DATETIME:
-					printStream.print("timestamp");
-					printStream.print(separator);
-					printStream.print("datetime");
-					break;
-				default:
-					printStream.print("???");
+
+			if(header) {
+
+				if(time) {
+					switch(csvTimeType) {
+					case TIMESTAMP:
+						printStream.print("timestamp");
+						break;
+					case DATETIME:
+						printStream.print("datetime");
+						break;
+					case TIMESTAMP_AND_DATETIME:
+						printStream.print("timestamp");
+						printStream.print(separator);
+						printStream.print("datetime");
+						break;
+					default:
+						printStream.print("???");
+					}
 				}
-			}
 
-			String[] sensorNames = it.getOutputSchema();
+				String[] sensorNames = it.getOutputSchema();
 
-			for(int i=0;i<sensorNames.length;i++) {
-				if(time||i>0) {
-					printStream.print(separator);
+				for(int i=0;i<sensorNames.length;i++) {
+					if(time||i>0) {
+						printStream.print(separator);
+					}
+					printStream.print(sensorNames[i]);				
 				}
-				printStream.print(sensorNames[i]);				
-			}
 
-			if(qualityFlag) {
-				printStream.print(separator);
-				printStream.print("qualityflag");	
-			}
-			
-			if(qualityCounter) {
-				printStream.print(separator);
-				printStream.print("qualityCounter");	
-			}
+				if(qualityFlag) {
+					printStream.print(separator);
+					printStream.print("qualityflag");	
+				}
+
+				if(qualityCounter) {
+					printStream.print(separator);
+					printStream.print("qualityCounter");	
+				}
 
 
-			printStream.println();
+				printStream.println();
+
+			}
 
 			while(it.hasNext()) {
 
@@ -149,7 +163,7 @@ public class CSV {
 
 
 				}
-				
+
 				if(qualityCounter) {
 					printStream.print(separator);
 					if(entry.qualityCounter==null) {
@@ -167,10 +181,10 @@ public class CSV {
 								printStream.print(counter[c][q]);
 							}
 						}
-						
+
 					}
-						
-					
+
+
 				}
 
 				printStream.println();

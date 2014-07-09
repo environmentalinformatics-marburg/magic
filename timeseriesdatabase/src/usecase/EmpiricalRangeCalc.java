@@ -27,8 +27,9 @@ public class EmpiricalRangeCalc {
 
 		//String plotID = "HEG01";
 		//String plotID = "HEG20";
-		String plotID = "HEW12";
-		String[] querySchema = new String[]{"Ta_200"};
+		//String plotID = "HEW12";
+		//String[] querySchema = new String[]{"Ta_200"};
+		String[] querySchema = new String[]{"Ta_200","rH_200","Ta_10","Ts_5","Ts_10","Ts_20","Ts_50","SM_10","SM_15","SM_20"};
 		//String[] querySchema = null;
 		Long queryStart = null;
 		Long queryEnd = null;
@@ -50,7 +51,7 @@ public class EmpiricalRangeCalc {
 			//TimeSeriesIterator it = qp.queryRaw(plotID, querySchema, queryStart, queryEnd);		
 			//TimeSeriesIterator it = qp.queryQualityChecked(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 			//TimeSeriesIterator it = qp.queryAggregated(plotID, querySchema, start, end, AggregationInterval.DAY, false, false, false, false);
-			CSV.write(it, "c:/timeseriesdatabase_output/empirical_range_"+generalStationName+".csv", " ", "NaN", CSVTimeType.TIMESTAMP);
+			CSV.writeNoHeader(it, "c:/timeseriesdatabase_output/empirical_range_"+generalStationName+".csv", ",", "?", CSVTimeType.TIMESTAMP);
 
 
 		}

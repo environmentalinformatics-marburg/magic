@@ -18,119 +18,167 @@ import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Util;
 
-public class DataView {
+public class TimeSeriesView {
 
-	public AggregationInterval aggregationInterval;
-	public TimestampSeries resultTimeSeries;
+	private Canvas canvas;
 
-	private long minTimestamp;
-	private long maxTimestamp;
-	private float minValue;
-	private float maxValue;
+	private TimestampSeries timeSeries;
+	private AggregationInterval aggregationInterval;	
+
+	//*** range of time series data
+	private double dataMinTimestamp;
+	private double dataMaxTimestamp;
+	private double dataTimestampRange;
+	private double dataMinValue;
+	private double dataMaxValue;
+	private double dataValueRange;
+
+	//*** range of time series data in output view
+	private double minTimestamp;
+	private double maxTimestamp;
+	private double timestampRange;
+	private double minValue;
+	private double maxValue;
+	private double valueRange;
 
 
+	static final float border = 40;
 
-	public Canvas canvas;
+	//*** range of output window
+	int xStart;
+	int xEnd;
+	int xRange;
+	
+	int yStart;
+	int yEnd;
+	int yRange;
 
+	//*** conversion values
+	double valueOffset;
+	double valueFactor;
+	double timeOffset;
+	double timeFactor;
 
+	//*** colors
 	Color color_black;
 	Color color_grey;
 	Color color_light;
 
-	float border = 40;
-
-	int xStart;
-	int xEnd;
-	int yStart;
-	int yEnd;	
-	float width;
-	float height;
-	float valueFactor;
-	float valueOffset;
-	
-	float timeFactor;
 
 
-
-
-	public DataView() {
-
+	public TimeSeriesView() { 
+		this.timeSeries = null;
+		this.aggregationInterval = AggregationInterval.HOUR;
 	}
 
-	void allign() {
+	public void setCanvas(Canvas canvas) {
+		this.canvas = canvas;
+	}
 
-		double scale = (int) (Math.log((maxValue-minValue))/Math.log(10));
+	public TimestampSeries getTimeSeries() {
+		return timeSeries;
+	}
+
+	void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval) {
+
+		this.timeSeries = timeSeries;
+		this.aggregationInterval = aggregationInterval;
+
+		if(timeSeries!=null) {
+			updateRangeOfTimeSeriesData();
+			updateRangeOfOutputView();
+		}	
+	}
+
+	void updateRangeOfTimeSeriesData() {
+		dataMinValue = Float.MAX_VALUE;
+		dataMaxValue = -Float.MAX_VALUE;
+
+		for(TimeSeriesEntry entry:timeSeries) {
+			float value = entry.data[0];
+			if(!Float.isNaN(value)) {
+				if(value<dataMinValue) {
+					dataMinValue = value;						
+				}
+				if(value>dataMaxValue) {
+					dataMaxValue = value;						
+				}
+			}
+		}
+		
+		dataValueRange = dataMaxValue-dataMinValue;
+
+		dataMinTimestamp = timeSeries.getFirstTimestamp();
+		dataMaxTimestamp = timeSeries.getLastTimestamp();
+		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;		
+	}
+	
+	void updateRangeOfOutputView() {
+
+		double scale = (int) (Math.log((dataMaxValue-dataMinValue))/Math.log(10));
 		System.out.println("scale"+scale+" -> "+Math.pow(10, scale));
 		float grid = (float) Math.pow(10, scale);
 
-		System.out.println(";"+minValue+" "+maxValue+" "+Math.abs(minValue%grid)+" "+Math.abs(maxValue%grid));
+		System.out.println(";"+dataMinValue+" "+dataMaxValue+" "+Math.abs(dataMinValue%grid)+" "+Math.abs(dataMaxValue%grid));
 
-		float absRestMin = Math.abs(minValue%grid);
-		if(minValue>0) {
-			minValue = minValue-absRestMin;
+		double absRestMin = Math.abs(dataMinValue%grid);
+		if(dataMinValue>0) {
+			dataMinValue = dataMinValue-absRestMin;
 		} else {
 			if(absRestMin>0) {
-				minValue = minValue-(grid-absRestMin);
+				dataMinValue = dataMinValue-(grid-absRestMin);
 			}
 		}
 
-		float absRestMax = Math.abs(maxValue%grid);
+		double absRestMax = Math.abs(dataMaxValue%grid);
 		if(absRestMax>0) {
-		if(absRestMax>0) {
-			maxValue = maxValue+(grid-absRestMax);
-		}
-		} else {
-			maxValue = maxValue+absRestMax;
-		}
-
-		System.out.println(":"+minValue+" "+maxValue);
-
-	}
-
-	void updateViewData() {
-		if(resultTimeSeries!=null) {
-
-			minValue = Float.MAX_VALUE;
-			maxValue = -Float.MAX_VALUE;
-
-			for(TimeSeriesEntry entry:resultTimeSeries) {
-				float value = entry.data[0];
-				if(!Float.isNaN(value)) {
-					if(value<minValue) {
-						minValue = value;						
-					}
-					if(value>maxValue) {
-						maxValue = value;						
-					}
-				}
+			if(absRestMax>0) {
+				dataMaxValue = dataMaxValue+(grid-absRestMax);
 			}
-
-			allign();
-
-			minTimestamp = resultTimeSeries.getFirstTimestamp();
-			maxTimestamp = resultTimeSeries.getLastTimestamp();
-
 		} else {
-
-			minTimestamp = -1;
-			maxTimestamp = -1;
-
-			minValue = Float.NaN;
-			maxValue = -Float.NaN;
+			dataMaxValue = dataMaxValue+absRestMax;
 		}
+		
+		timestampRange = dataMaxTimestamp-dataMinTimestamp;
+		valueRange = dataMaxValue-dataMinValue;
+
+		System.out.println(":"+dataMinValue+" "+dataMaxValue);
+
 	}
+	
+	void updateRangeOfOutputWindow() {
+		xStart = (int) border;
+		xEnd = (int)(canvas.getSize().x-border);
+		yStart = (int) (canvas.getSize().y-border);
+		yEnd = (int) border;
+
+		xRange = xEnd-xStart;
+		yRange = yStart-yEnd; //!!		
+	}
+	
+	void updateDataWindowConversionValues() {
+		valueFactor = yRange/(dataMaxValue-dataMinValue);
+		valueOffset = -dataMinValue;
+		timeFactor = xRange/(dataTimestampRange+1); //???		
+	}
+
+
+
+	
+
+
 
 	private void drawGrid(GC gc) {
 
 		gc.setForeground(color_light);
 
-		float graphYDiff = yStart-yEnd;
-		float valueDiff = maxValue-minValue;
+		double graphYDiff = yStart-yEnd;
+		double valueDiff = dataMaxValue-dataMinValue;
 
 		int maxLines = (int) (graphYDiff/17);
 
 
-		float lineStep = valueDiff/maxLines;
+		double lineStep = valueDiff/maxLines;
 
 		System.out.println("lineStep "+lineStep);
 
@@ -148,45 +196,45 @@ public class DataView {
 			lineStep=500;
 		}
 
-		float firstLine = minValue-minValue%lineStep;
-		maxLines =  (int) ((maxValue-firstLine)/lineStep);
+		double firstLine = dataMinValue-dataMinValue%lineStep;
+		maxLines =  (int) ((dataMaxValue-firstLine)/lineStep);
 
 
 		for(int line=0;line<maxLines;line++) {
-			float value = firstLine+line*lineStep;
+			double value = firstLine+line*lineStep;
 			int y = valueToGraph(value);
-			
+
 			gc.setForeground(color_light);
 			gc.drawLine(xStart , y, xEnd, y);
-			
-					
+
+
 			//gc.setForeground(color_grey);
 			gc.setForeground(color_black);
-			gc.drawText(Util.floatToString(value), 3, y-10);
-			
+			gc.drawText(Util.doubleToString(value), 3, y-10);
+
 		}
 
 
-		LocalDateTime minDateTime = TimeConverter.oleMinutesToLocalDateTime(minTimestamp);
-		LocalDateTime maxDateTime = TimeConverter.oleMinutesToLocalDateTime(maxTimestamp);
-		
+		LocalDateTime minDateTime = timestampToDataTime(dataMinTimestamp);
+		LocalDateTime maxDateTime = timestampToDataTime(dataMaxTimestamp);
+
 		int minYear = minDateTime.getYear();
 		int maxYear = maxDateTime.getYear();
-		
+
 		for(int y=minYear;y<=maxYear;y++) {
 			long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(y, 1, 1, 0, 0));
-			if(timestamp>=minTimestamp) {
-				int x = (int) (xStart+(timestamp-minTimestamp)*timeFactor);
-				
+			if(timestamp>=dataMinTimestamp) {
+				int x = (int) (xStart+(timestamp-dataMinTimestamp)*timeFactor);
+
 				gc.setForeground(color_light);
 				gc.drawLine(x , yStart, x, yEnd);
-				
+
 				gc.setForeground(color_black);
 				gc.drawText(""+y, x, yStart+20);
 			}
 			System.out.println(timestamp);
 		}
-		
+
 
 	}
 
@@ -195,8 +243,12 @@ public class DataView {
 		return -1;
 	}
 
-	private int valueToGraph(float value) {
+	private int valueToGraph(double value) {
 		return (int) (yStart-((valueOffset+value)*valueFactor));
+	}
+	
+	private static LocalDateTime timestampToDataTime(double timestamp) {
+		return TimeConverter.oleMinutesToLocalDateTime((long)timestamp);
 	}
 
 
@@ -204,8 +256,8 @@ public class DataView {
 
 		gc.setForeground(color_black);
 
-		gc.drawText(""+TimeConverter.oleMinutesToLocalDateTime(minTimestamp), xStart, yStart+2);
-		gc.drawText(""+TimeConverter.oleMinutesToLocalDateTime(maxTimestamp), xEnd-70, yStart+2);
+		gc.drawText(""+timestampToDataTime(dataMinTimestamp), xStart, yStart+2);
+		gc.drawText(""+timestampToDataTime(dataMaxTimestamp), xEnd-70, yStart+2);
 
 		//gc.drawText(Util.floatToString(minValue), 3, yStart-10);
 		//gc.drawText(Util.floatToString(maxValue), 3, yEnd-10);
@@ -230,9 +282,9 @@ public class DataView {
 		//(max-min)
 
 
-		int y = (int) ((height-(/*0f-*/minValue)*valueFactor)+border);
+		int y = (int) ((yRange-(/*0f-*/dataMinValue)*valueFactor)+border);
 
-		int zero_y = (int) ((int) height-(height*(/*0-*/minValue)/(maxValue-minValue))+border);
+		int zero_y = (int) ((int) yRange-(yRange*(/*0-*/dataMinValue)/(dataMaxValue-dataMinValue))+border);
 		gc.drawLine(xStart , zero_y, xEnd, zero_y);
 
 		System.out.println(yStart+" "+zero_y+" "+y+" "+yEnd);
@@ -245,29 +297,17 @@ public class DataView {
 
 
 	public void paintCanvas(GC gc) {
-		if(resultTimeSeries!=null) {
+		if(timeSeries!=null) {
 
 			color_black = new Color(canvas.getDisplay(),0,0,0);
 			color_grey = new Color(canvas.getDisplay(),190,190,190);
 			color_light = new Color(canvas.getDisplay(),220,220,220);
+			
+			updateRangeOfOutputWindow();
 
-			xStart = (int) border;
-			xEnd = (int)(canvas.getSize().x-border);
-			yStart = (int) (canvas.getSize().y-border);
-			yEnd = (int) border;
+			updateDataWindowConversionValues();
 
-			width = xEnd-xStart;
-			height = yStart-yEnd; //!!
-
-			valueFactor = height/(maxValue-minValue);
-
-			valueOffset = -minValue;
-
-
-
-
-
-			timeFactor = width/(maxTimestamp-minTimestamp+1); //???
+			
 
 
 
@@ -299,7 +339,7 @@ public class DataView {
 			}
 
 
-			float timeAggregationSize = agg*timeFactor;
+			double timeAggregationSize = agg*timeFactor;
 
 
 			System.out.println("valueFactor: "+valueFactor);
@@ -335,16 +375,16 @@ public class DataView {
 			Integer prevX = null;
 			Integer prevY = null;
 
-			List<int[]> grayList = new ArrayList<int[]>(resultTimeSeries.entryList.size());
-			List<int[]> blackList = new ArrayList<int[]>(resultTimeSeries.entryList.size());
+			List<int[]> grayList = new ArrayList<int[]>(timeSeries.entryList.size());
+			List<int[]> blackList = new ArrayList<int[]>(timeSeries.entryList.size());
 
-			for(TimeSeriesEntry entry:resultTimeSeries) {	
+			for(TimeSeriesEntry entry:timeSeries) {	
 				float value = entry.data[0];
 				if(!Float.isNaN(value)) {				
-					float offset = (entry.timestamp-minTimestamp)*timeFactor;
+					double offset = (entry.timestamp-dataMinTimestamp)*timeFactor;
 					int x0 = (int) (offset+border);
 					int x1 = (int) (offset+timeAggregationSize+border);
-					int y = (int) ((height-(value-minValue)*valueFactor)+border);
+					int y = (int) ((yRange-(value-dataMinValue)*valueFactor)+border);
 					if(prevX!=null) {
 						//gc.setForeground(c1);
 						//gc.drawLine(x0, prevY, x0, y);
@@ -383,7 +423,7 @@ public class DataView {
 			//*** end drawing
 
 
-			System.out.println("data length: "+resultTimeSeries.entryList.size());
+			System.out.println("data length: "+timeSeries.entryList.size());
 		}
 
 	}

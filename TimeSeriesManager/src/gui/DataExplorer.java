@@ -21,7 +21,7 @@ public class DataExplorer extends Composite {
 	
 	private Canvas canvas;
 	
-	private DataView dataView;
+	private TimeSeriesView dataView;
 
 	/**
 	 * Create the composite.
@@ -59,13 +59,13 @@ public class DataExplorer extends Composite {
 		Label lblNewLabel_1 = new Label(grpStatus, SWT.NONE);
 		lblNewLabel_1.setText("New Label");*/
 		
-		dataView = new DataView();
-		dataView.canvas = canvas; 
+		dataView = new TimeSeriesView();
+		dataView.setCanvas(canvas); 
 
 	}
 	
-	public TimestampSeries getData() {
-		return dataView.resultTimeSeries;
+	public TimestampSeries getTimeSeries() {
+		return dataView.getTimeSeries();
 	}
 
 	@Override
@@ -74,9 +74,7 @@ public class DataExplorer extends Composite {
 	}
 	
 	public void setData(TimestampSeries resultTimeSeries, AggregationInterval aggregationInterval) {
-		dataView.resultTimeSeries = resultTimeSeries;
-		dataView.aggregationInterval = aggregationInterval;
-		dataView.updateViewData();
+		dataView.updateViewData(resultTimeSeries, aggregationInterval);
 		canvas.redraw();
 		
 	}

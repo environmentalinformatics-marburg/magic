@@ -40,6 +40,13 @@ public class Util {
 		return String.format("%.2f", value);
 	}
 	
+	public static String doubleToString(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.2f", value);
+	}
+	
 	/**
 	 * create position map of array of Strings:
 	 * name -> array position

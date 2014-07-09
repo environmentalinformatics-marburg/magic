@@ -453,7 +453,7 @@ public class QueryDialog extends Dialog {
 	}
 
 	protected void saveInCSV() {
-		TimestampSeries result = dataExplorer.getData();
+		TimestampSeries result = dataExplorer.getTimeSeries();
 		if(result!=null) {
 
 			System.out.println("save in CSV file");
