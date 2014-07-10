@@ -109,5 +109,3 @@ if (any(model=="svm")&tuneThreshold){
 if (any(model=="svm")&tuneThreshold){
   dev.off()
 }
-
-
