@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -21,6 +22,7 @@ import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
+import util.Pair;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
@@ -54,13 +56,12 @@ public class QueryDialog extends Dialog {
 	private QueryProcessor qp;
 
 
-	protected Shell shell;
+	protected Shell shlAggregatedQuery;
 
 	private Combo comboGeneralStation;
 	private Combo comboPlotID;
 	private Combo comboSensorName;
 	private Combo comboAggregation;
-	private Text text;
 
 	/*private Button CheckButtonPhysical;
 	private Button CheckButtonEmpirical;
@@ -77,6 +78,8 @@ public class QueryDialog extends Dialog {
 	private Combo comboQuality;
 	private Button checkButtonInterpolated2;
 	private Button btnSaveInCsv;
+	private Label label;
+	private Button button;
 
 	/**
 	 * Create the dialog.
@@ -97,12 +100,12 @@ public class QueryDialog extends Dialog {
 	 */
 	public Object open() {
 		createContents();
-		shell.open();
-		shell.layout();
+		shlAggregatedQuery.open();
+		shlAggregatedQuery.layout();
 		Display display = getParent().getDisplay();
 		//dataView.canvas = canvasDataView;
 		updateGUI();
-		while (!shell.isDisposed()) {
+		while (!shlAggregatedQuery.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
 			}
@@ -114,12 +117,12 @@ public class QueryDialog extends Dialog {
 	 * Create contents of the dialog.
 	 */
 	private void createContents() {
-		shell = new Shell(getParent(), getStyle());
-		shell.setSize(1157, 300);
-		shell.setText(getText());
-		shell.setLayout(new BorderLayout(0, 0));
+		shlAggregatedQuery = new Shell(getParent(), getStyle());
+		shlAggregatedQuery.setSize(1264, 300);
+		shlAggregatedQuery.setText("Aggregated Query");
+		shlAggregatedQuery.setLayout(new BorderLayout(0, 0));
 
-		Composite composite = new Composite(shell, SWT.NONE);
+		Composite composite = new Composite(shlAggregatedQuery, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
 		composite.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
@@ -157,8 +160,24 @@ public class QueryDialog extends Dialog {
 		Group grpTime = new Group(composite, SWT.NONE);
 		grpTime.setText("Time");
 		grpTime.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-		text = new Text(grpTime, SWT.BORDER);
+		
+		label = new Label(grpTime, SWT.NONE);
+		label.setText("________________________________________");
+		
+		button = new Button(grpTime, SWT.NONE);
+		button.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				BeginEndDateTimeDialog dialog = new BeginEndDateTimeDialog(shlAggregatedQuery);
+				Pair<LocalDateTime, LocalDateTime> result = dialog.open();
+				if(result!=null) {
+					String begin = result.a.toString();
+					String end = result.b.toString();
+				label.setText(begin+" - "+end);
+				}
+			}
+		});
+		button.setText("...");
 
 		Group grpAggregation = new Group(composite, SWT.NONE);
 		grpAggregation.setText("Aggregation");
@@ -225,7 +244,7 @@ public class QueryDialog extends Dialog {
 		});
 		btnSaveInCsv.setText("export to CSV file");
 
-		Label labelStatus = new Label(shell, SWT.NONE);
+		Label labelStatus = new Label(shlAggregatedQuery, SWT.NONE);
 		labelStatus.setLayoutData(BorderLayout.SOUTH);
 		labelStatus.setText("status");
 
@@ -238,7 +257,7 @@ public class QueryDialog extends Dialog {
 		});
 		canvasDataView.setLayoutData(BorderLayout.CENTER);*/
 
-		dataExplorer = new DataExplorer(shell, SWT.NONE);
+		dataExplorer = new DataExplorer(shlAggregatedQuery, SWT.NONE);
 		dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		//grpQuality.setLayoutData(BorderLayout.CENTER);
 
@@ -458,7 +477,7 @@ public class QueryDialog extends Dialog {
 
 			System.out.println("save in CSV file");
 
-			FileDialog filedialog = new FileDialog(shell, SWT.SAVE);
+			FileDialog filedialog = new FileDialog(shlAggregatedQuery, SWT.SAVE);
 			filedialog.setFilterNames(new String[] { "CSV Files", "All Files (*.*)" });
 			filedialog.setFilterExtensions(new String[] { "*.csv", "*.*" });
 			filedialog.setFilterPath("c:/timeseriesdatabase_output/");

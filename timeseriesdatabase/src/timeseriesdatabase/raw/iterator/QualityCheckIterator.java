@@ -8,17 +8,19 @@ import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
 
+@Deprecated
 public class QualityCheckIterator extends MoveIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
-	Iterator<TimeSeriesEntry> input_iterator;
+	TimeSeriesIterator input_iterator;
 	int columns;
 	long[] prevTimestamps;
 	float[] prevData;
@@ -107,5 +109,17 @@ public class QualityCheckIterator extends MoveIterator {
 	@Override
 	public String[] getOutputSchema() {
 		return schema;
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "QualityCheckIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 }

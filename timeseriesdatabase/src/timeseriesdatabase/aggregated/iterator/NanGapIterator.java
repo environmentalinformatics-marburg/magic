@@ -1,9 +1,12 @@
 package timeseriesdatabase.aggregated.iterator;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -27,6 +30,20 @@ public class NanGapIterator extends MoveIterator {
 	
 	Long endTimestamp;
 	
+	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
+		String[] schema = input_schema.schema;
+		if(!input_schema.constantTimeStep) {
+			throw new RuntimeException("input iterator needs to have constant time steps");
+		}
+		boolean constantTimeStep = true;
+		int timeStep = input_schema.timeStep;
+		boolean isContinuous = true;		
+		boolean hasQualityFlags = input_schema.hasQualityFlags;
+		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
+		boolean hasQualityCounters = input_schema.hasQualityCounters;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	}
+	
 	
 	/**
 	 * 
@@ -35,10 +52,7 @@ public class NanGapIterator extends MoveIterator {
 	 * @param end if null last element is end
 	 */
 	public NanGapIterator(TimeSeriesIterator input_iterator, Long start, Long end) {
-		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,input_iterator.getOutputTimeSeriesSchema().timeStep, true));
-		if(!input_iterator.getOutputTimeSeriesSchema().constantTimeStep) {
-			log.error("input iterator needs to have constant time steps");
-		}
+		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
 		this.endTimestamp = end;
 		this.input_iterator = input_iterator;		
 		if(input_iterator.hasNext()) {
@@ -112,5 +126,17 @@ public class NanGapIterator extends MoveIterator {
 	@Override
 	public String[] getOutputSchema() {
 		return input_iterator.getOutputSchema();
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "NanGapIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 }

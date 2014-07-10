@@ -1,6 +1,9 @@
 package timeseriesdatabase.aggregated.iterator;
 
+import java.util.List;
+
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
@@ -34,6 +37,18 @@ public class NanRemoveIterator extends MoveIterator{
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "NanGapIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 
 }

@@ -12,7 +12,6 @@ import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.iterator.DataQuality;
 import timeseriesdatabase.raw.iterator.QualityFlagIterator;
 import timeseriesdatabase.raw.iterator.QualityToNanIterator;
 import util.Util;
@@ -200,7 +199,11 @@ public class QueryProcessor {
 			}
 		}
 
-		return targetTimeSeries.getClipped(queryStart, queryEnd).timeSeriesIterator();	
+		targetTimeSeries.hasDataInterpolatedFlag = true;
+		
+		//return targetTimeSeries.getClipped(queryStart, queryEnd).timeSeriesIterator();
+		
+		return targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
 		
 		
 		
@@ -212,6 +215,14 @@ public class QueryProcessor {
 		TimeSeriesIterator input_iterator = TestingInterpolatedBaseAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality);
 			
 		return new AggregationIterator(timeSeriesDatabase, input_iterator, aggregationInterval);		
+	}
+	
+	public TimeSeriesIterator TestingAggregatadQualityQuery(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
+		if(interpolated) {
+			return TestingInterpolatedAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
+		} else {
+			return TestingAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
+		}
 	}
 	
 	

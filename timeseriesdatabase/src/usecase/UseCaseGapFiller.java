@@ -59,9 +59,9 @@ public class UseCaseGapFiller {
 		
 		TimeSeries[] sourceBaseTimeSeries = new TimeSeries[INTERPOLATION_STATION_COUNT];
 		for(int i=0;i<INTERPOLATION_STATION_COUNT;i++) {
-			sourceBaseTimeSeries[i] = new TimeSeries(new String[]{"synthetic"}, sourceStartTimestamp, TIMEINTERVAL, new float[][]{source[i]}, null, null);
+			sourceBaseTimeSeries[i] = new TimeSeries(null, new String[]{"synthetic"}, sourceStartTimestamp, TIMEINTERVAL, new float[][]{source[i]}, null, null);
 		}
-		TimeSeries targetBaseTimeSeries = new TimeSeries(new String[]{"synthetic"}, targetStartTimestamp, TIMEINTERVAL, new float[][]{target}, null, null);
+		TimeSeries targetBaseTimeSeries = new TimeSeries(null, new String[]{"synthetic"}, targetStartTimestamp, TIMEINTERVAL, new float[][]{target}, null, null);
 		
 		
 		//targetBaseTimeSeries.writeToCSV("c:/timeseriesdatabase_output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);

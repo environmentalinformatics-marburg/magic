@@ -1,10 +1,13 @@
 package timeseriesdatabase.raw.iterator;
 
 import java.util.Iterator;
+import java.util.List;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
@@ -18,7 +21,7 @@ public class QualityFlagIterator extends MoveIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
-	Iterator<TimeSeriesEntry> input_iterator;
+	TimeSeriesIterator input_iterator;
 	int columns;
 	long[] prevTimestamps;
 	float[] prevData;
@@ -28,7 +31,8 @@ public class QualityFlagIterator extends MoveIterator {
 	String[] schema;
 
 	public QualityFlagIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
-		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema));
+		//super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema));
+		super(TimeSeriesSchema.createWithQualityFlags(input_iterator.getOutputTimeSeriesSchema()));
 
 		
 		this.schema = input_iterator.getOutputSchema();		
@@ -83,5 +87,19 @@ public class QualityFlagIterator extends MoveIterator {
 	public String[] getOutputSchema() {
 		return schema;
 	}
+
+	@Override
+	public String getIteratorName() {
+		return "QualityFlagIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
+	}
+	
+	
 }
 

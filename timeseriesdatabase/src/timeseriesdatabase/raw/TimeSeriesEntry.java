@@ -4,8 +4,8 @@ import java.sql.Time;
 
 import org.omg.CORBA.DATA_CONVERSION;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.raw.iterator.DataQuality;
 import util.Pair;
 import util.Util;
 

@@ -22,12 +22,12 @@ import timeseriesdatabase.Sensor;
  *
  */
 public class Util {
-	
+
 	/**
 	 * Default logger
 	 */
 	public static final Logger log = LogManager.getLogger("general");
-	
+
 	/**
 	 * convert float to String with two fractional digits
 	 * @param value
@@ -39,14 +39,14 @@ public class Util {
 		}
 		return String.format("%.2f", value);
 	}
-	
+
 	public static String doubleToString(double value) {
 		if(Double.isNaN(value)) {
 			return " --- ";
 		}
 		return String.format("%.2f", value);
 	}
-	
+
 	/**
 	 * create position map of array of Strings:
 	 * name -> array position
@@ -67,7 +67,7 @@ public class Util {
 		}
 		return map;
 	}
-	
+
 	/**
 	 * create an array of positions of entries in resultNames with positions of sourcePosStringArray
 	 * @param resultNames
@@ -78,7 +78,7 @@ public class Util {
 	public static int[] stringArrayToPositionIndexArray(String resultNames[], String[] sourcePosStringArray, boolean warn) {
 		return stringArrayToPositionIndexArray(resultNames,StringArrayToMap(sourcePosStringArray),warn);
 	}
-	
+
 	/**
 	 * create an array of positions of entries in resultNames with positions of sourcePosStringMap
 	 * @param resultNames
@@ -101,7 +101,7 @@ public class Util {
 		}
 		return sourcePos;
 	}
-	
+
 	/**
 	 * print array of values in one line
 	 * @param a
@@ -112,14 +112,14 @@ public class Util {
 		}
 		System.out.println();
 	}
-	
+
 	public static void printArray(float[] a) {
 		for(int i=0;i<a.length;i++) {
 			System.out.format("%.2f  ",a[i]);
 		}
 		System.out.println();
 	}
-	
+
 	public static String arrayToString(float[] a) {
 		String result="";
 		for(int i=0;i<a.length;i++) {
@@ -127,7 +127,7 @@ public class Util {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * print array of values in one line
 	 * @param a
@@ -138,7 +138,7 @@ public class Util {
 		}
 		System.out.println();
 	}
-	
+
 	/**
 	 * named range of float values
 	 * @author woellauer
@@ -154,7 +154,7 @@ public class Util {
 			this.max = max;
 		}
 	}
-	
+
 	/**
 	 * Reads a list of range float values from ini-file section
 	 * @param fileName
@@ -171,11 +171,11 @@ public class Util {
 					String name = entry.getKey();
 					String range = entry.getValue();
 					try {
-					String minString = range.substring(range.indexOf('[')+1, range.indexOf(','));
-					String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
-					float min=Float.parseFloat(minString);
-					float max=Float.parseFloat(maxString);
-					resultList.add(new FloatRange(name, min, max));
+						String minString = range.substring(range.indexOf('[')+1, range.indexOf(','));
+						String maxString = range.substring(range.indexOf(',')+2, range.indexOf(']'));
+						float min=Float.parseFloat(minString);
+						float max=Float.parseFloat(maxString);
+						resultList.add(new FloatRange(name, min, max));
 					} catch (Exception e) {
 						log.warn("error in read: "+name+"\t"+range+"\t"+e);
 					}
@@ -190,13 +190,20 @@ public class Util {
 			return null;
 		}
 	}
-	
+
 	public static <T> ArrayList<T> iteratorToList(Iterator<T> it) {
 		ArrayList<T> resultList = new ArrayList<T>();
 		while(it.hasNext()) {
 			resultList.add(it.next());
 		}
 		return resultList;
+	}
+
+	public static <T> List<T> createList(List<T> list, T e) {
+		ArrayList<T> result = new ArrayList<T>(list.size()+1);
+		result.addAll(list);
+		result.add(e);
+		return result;
 	}
 
 }

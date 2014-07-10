@@ -3,17 +3,19 @@ package timeseriesdatabase.aggregated.iterator;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.iterator.DataQuality;
 import util.Pair;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -50,6 +52,7 @@ public class AggregationIterator extends MoveIterator {
 	//timestamp of aggreates of currently collected data
 	private long aggregation_timestamp;
 
+	private boolean inputHasQualityFlags;
 	private int[][] aggQualityCounter;
 
 	private int collectedRowsInCurrentAggregate;
@@ -61,6 +64,29 @@ public class AggregationIterator extends MoveIterator {
 	private int wind_cnt;
 	private int[] columnEntryCounter;
 	//***
+	
+	
+	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
+		System.out.println("input_schema: "+input_schema);
+		String[] schema = input_schema.schema;
+		if(!input_schema.constantTimeStep) {
+			throw new RuntimeException("no constant time step");
+		}
+		if(!input_schema.isContinuous) {
+			throw new RuntimeException("not continuous");
+		}
+		if(input_schema.hasQualityCounters) {
+			throw new RuntimeException("quality counters are not usable as input");
+		}
+		boolean constantTimeStep = false;
+		int timeStep = TimeSeriesSchema.NO_CONSTANT_TIMESTEP;
+		boolean isContinuous = false; //??		
+		boolean hasQualityFlags = false;
+		boolean hasInterpolatedFlags = false; //??
+		boolean hasQualityCounters = input_schema.hasQualityFlags;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		
+	}
 
 
 
@@ -71,7 +97,8 @@ public class AggregationIterator extends MoveIterator {
 	 * @param aggregationInterval interval of time that should be aggregated
 	 */
 	public AggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator, AggregationInterval aggregationInterval) {
-		super(new TimeSeriesSchema(input_iterator.getOutputSchema()));
+		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+		this.inputHasQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
 		this.input_iterator = input_iterator;
 		this.aggregationInterval = aggregationInterval;
 		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		
@@ -159,7 +186,7 @@ public class AggregationIterator extends MoveIterator {
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
 			float value = (float) inputData[i];
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
-				System.out.println("NaN...");
+				//System.out.println("NaN...");
 				value = 0;
 			}
 			if(!Float.isNaN(value)){
@@ -344,7 +371,7 @@ public class AggregationIterator extends MoveIterator {
 			int hour = 0;
 			int minute = 0;
 			LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-			System.out.println(aggregationDatetime);
+			//System.out.println(aggregationDatetime);
 			return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);
 		}
 		case YEAR:{
@@ -355,7 +382,7 @@ public class AggregationIterator extends MoveIterator {
 			int hour = 0;
 			int minute = 0;
 			LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,dayOfMonth,hour,minute);
-			System.out.println(aggregationDatetime);
+			//System.out.println(aggregationDatetime);
 			return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);
 		}
 		default:{
@@ -415,5 +442,17 @@ public class AggregationIterator extends MoveIterator {
 			return null; //no elements left
 		}
 
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "AggregationIterator";
+	}
+
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 }

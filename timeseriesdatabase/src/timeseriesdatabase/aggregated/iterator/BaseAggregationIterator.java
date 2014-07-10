@@ -9,14 +9,15 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.iterator.DataQuality;
 import util.Pair;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -45,6 +46,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	//timestamp of aggreates of currently collected data
 	long aggregation_timestamp;
 
+	boolean useQualityFlags;
 	DataQuality[] aggQuality;
 
 	int[] aggCnt;
@@ -55,9 +57,21 @@ public class BaseAggregationIterator extends MoveIterator {
 	int wind_cnt;
 	int[] columnEntryCounter;
 	//***
+	
+	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema, int timeStep) {
+		String[] schema = input_schema.schema;
+		boolean constantTimeStep = true;
+		boolean isContinuous = input_schema.isContinuous;		
+		boolean hasQualityFlags = input_schema.hasQualityFlags;
+		boolean hasInterpolatedFlags = false;
+		boolean hasQualityCounters = false;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		
+	}
 
 	public BaseAggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
-		super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema,BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
+		super(createSchema(input_iterator.getOutputTimeSeriesSchema(), BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
+		this.useQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags; 
 		this.input_iterator = input_iterator;
 		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		
 		prepareWindDirectionAggregation();
@@ -300,6 +314,18 @@ public class BaseAggregationIterator extends MoveIterator {
 			return new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);
 		}
 		return null; //no elements left
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "BaseAggregationIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 }
 

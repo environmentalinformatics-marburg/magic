@@ -1,8 +1,12 @@
 package timeseriesdatabase.raw.iterator;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.MoveIterator;
@@ -26,7 +30,10 @@ public class QualityToNanIterator extends TimeSeriesIterator {
 	 * @param dataQuality lowest acceptable quality
 	 */
 	public QualityToNanIterator(TimeSeriesIterator input_iterator, DataQuality dataQuality) {
-		super(new TimeSeriesSchema(input_iterator.getOutputSchema()));
+		super(TimeSeriesSchema.copy(input_iterator.getOutputTimeSeriesSchema()));
+		if(!input_iterator.getOutputTimeSeriesSchema().hasQualityFlags) {
+			throw new RuntimeException("no quality flags in schema");
+		}
 		this.input_iterator = input_iterator;
 		this.targetDataQuality = dataQuality;
 	}
@@ -73,5 +80,17 @@ public class QualityToNanIterator extends TimeSeriesIterator {
 			}
 		}
 		return new TimeSeriesEntry(next.timestamp,resultData,qualityFlag);
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "QualityToNanIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 }

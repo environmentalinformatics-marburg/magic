@@ -10,10 +10,12 @@ import java.util.Locale;
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.iterator.DataQuality;
+import util.ProcessingChainEntry;
+import util.ProcessingChainTitle;
 import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.SchemaIterator;
@@ -26,42 +28,51 @@ import util.iterator.TimeSeriesIterator;
  *
  */
 public class TimeSeries implements TimeSeriesIterable {
-	
+
 	private static final Logger log = Util.log;
-	
+
+	//used for metadata, may be null
+	private final List<ProcessingChainEntry> processingChain;
+
 	/**
 	 * sensor names of time series in data
 	 */
 	public String[] parameterNames;
-	
+
 	/**
 	 * timestamp of first entry in data
 	 */
 	public long startTimestamp;
-	
+
 	/**
 	 * constant time step between entries
 	 */
 	public final int timeStep;
-	
+
 	/**
 	 * time series data values:
 	 * data [ sensor index ]  [ row index ]
 	 */
 	public float[][] data;
-	
+
+	public boolean hasDataQualityFlag;
+	public boolean hasDataInterpolatedFlag;
+
 	public DataQuality[][] dataQuality;
 	public boolean[][] dataInterpolated;
-	
-	public TimeSeries(String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
+
+	public TimeSeries(List<ProcessingChainEntry> processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
+		this.processingChain = Util.createList(processingChain,new ProcessingChainTitle("TimeSeries"));
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
 		this.data = data;
 		this.dataQuality = dataQuality;
 		this.dataInterpolated = dataInterpolated;
+		this.hasDataQualityFlag = false;
+		this.hasDataInterpolatedFlag = false;
 	}
-	
+
 	/**
 	 * Converts elements of an iterator in TimeSeries object.
 	 * Elements need to be in ordered in timeStep time intervals
@@ -69,7 +80,7 @@ public class TimeSeries implements TimeSeriesIterable {
 	 * @param timeStep
 	 * @return
 	 */
-	public static TimeSeries create(SchemaIterator<TimeSeriesEntry> input_iterator) {
+	public static TimeSeries create(TimeSeriesIterator input_iterator) {
 		TimeSeriesSchema timeSeriesSchema = input_iterator.getOutputTimeSeriesSchema();
 		if(!timeSeriesSchema.constantTimeStep) {
 			log.error("time series needs to have constant aggregated timesteps");
@@ -80,24 +91,24 @@ public class TimeSeries implements TimeSeriesIterable {
 			return null;
 		}
 		String[] schema = timeSeriesSchema.schema;
-		
+
 		if(!input_iterator.hasNext()) {
 			return null; // not data in input_iterator
 		}
-		
+
 		ArrayList<TimeSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
 		long startTimestamp = entryList.get(0).timestamp;
 		float[][] data = new float[schema.length][entryList.size()];
 		DataQuality[][] dataQuality = new DataQuality[schema.length][entryList.size()];
 		boolean[][] dataInterpolated = new boolean[schema.length][entryList.size()];
-		
+
 		long timestamp=-1;
 		for(int i=0;i<entryList.size();i++) {
 			TimeSeriesEntry entry = entryList.get(i);
 			if(timestamp==-1||timestamp+timeSeriesSchema.timeStep==entry.timestamp) {
-			for(int column=0;column<schema.length;column++) {
-				data[column][i] = entry.data[column];
-			}
+				for(int column=0;column<schema.length;column++) {
+					data[column][i] = entry.data[column];
+				}
 			} else {
 				log.error("timestamps are not in timestep intervals");
 				return null;
@@ -113,11 +124,16 @@ public class TimeSeries implements TimeSeriesIterable {
 				}				
 			}
 		}
-		
-		return new TimeSeries(schema, startTimestamp, timeSeriesSchema.timeStep, data, dataQuality, dataInterpolated);
-		
+
+		TimeSeries result = new TimeSeries(input_iterator.getProcessingChain(),schema, startTimestamp, timeSeriesSchema.timeStep, data, dataQuality, dataInterpolated);
+
+		result.hasDataQualityFlag = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
+		result.hasDataInterpolatedFlag = false; //TODO
+
+		return result;
+
 	}
-	
+
 	/**
 	 * converts TimestampSeries to TimeSeries
 	 * missing values before and after data in source time series and gaps within source timeseries are filled with NaN-values
@@ -134,7 +150,7 @@ public class TimeSeries implements TimeSeriesIterable {
 		if(endTimestamp==null) {
 			endTimestamp = timestampSeries.getLastTimestamp();
 		}
-		
+
 		if(timestampSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
 		}		
@@ -145,7 +161,7 @@ public class TimeSeries implements TimeSeriesIterable {
 		if((endTimestamp-startTimestamp)%timeStep!=0) {
 			log.error("error");
 		}
-		
+
 		Iterator<TimeSeriesEntry> it = timestampSeries.entryList.iterator();
 		TimeSeriesEntry nextEntry;		
 		if(it.hasNext()) {
@@ -154,9 +170,9 @@ public class TimeSeries implements TimeSeriesIterable {
 				log.error("wrong data");
 			}
 		} else {
-		    nextEntry = null;
+			nextEntry = null;
 		}
-		
+
 		while(nextEntry!=null&&nextEntry.timestamp<startTimestamp) {
 			if(it.hasNext()) {
 				nextEntry = it.next();
@@ -164,10 +180,10 @@ public class TimeSeries implements TimeSeriesIterable {
 					log.error("wrong data");
 				}
 			} else {
-			    nextEntry = null;
+				nextEntry = null;
 			}
 		}
-		
+
 		float[][] resultData = new float[timestampSeries.parameterNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
 		int dataIndex=0;
 		for(long timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=timeStep) {
@@ -181,7 +197,7 @@ public class TimeSeries implements TimeSeriesIterable {
 							log.error("wrong data");
 						}
 					} else {
-					    nextEntry = null;
+						nextEntry = null;
 					}
 				}
 			} else if(nextEntry!=null&&nextEntry.timestamp<timestamp) {
@@ -194,94 +210,17 @@ public class TimeSeries implements TimeSeriesIterable {
 			}
 			dataIndex++;
 		}
-		
-		return new TimeSeries(timestampSeries.parameterNames, startTimestamp, timeStep, resultData, null, null);
+
+		return new TimeSeries(null,timestampSeries.parameterNames, startTimestamp, timeStep, resultData, null, null);
 	}
-	
+
 	/**
 	 * some summary data of this time series
 	 */
 	public String toString() {
 		return "BaseTimeSeries: "+startTimestamp+"\t"+timeStep+"\t"+data.length+"\t"+data[0].length;
 	}
-	
-	/**
-	 * write timeseries to CSV-file
-	 * @param filename
-	 * @param separator seperator between values
-	 * @param nanText text output of NaN-values
-	 * @param csvTimeType time columns that should be in resulting file
-	 */
-	/*public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
-		boolean time=false;
-		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
-			time=true;
-		}
-		try {
-			PrintStream printStream = new PrintStream(filename);
-			if(time) {
-				switch(csvTimeType) {
-				case TIMESTAMP:
-					printStream.print("timestamp");
-					break;
-				case DATETIME:
-					printStream.print("datetime");
-					break;
-				case TIMESTAMP_AND_DATETIME:
-					printStream.print("timestamp");
-					printStream.print(separator);
-					printStream.print("datetime");
-					break;
-				default:
-					printStream.print("???");
-				}
-			}
-			for(int i=0;i<parameterNames.length;i++) {
-				if(time||i>0) {
-					printStream.print(separator);
-				}
-				printStream.print(parameterNames[i]);				
-			}
-			printStream.println();
-			for(int rowIndex=0;rowIndex<data[0].length;rowIndex++) {
-				long timestamp = startTimestamp+rowIndex*timeStep;
-				if(time) {
-					switch(csvTimeType) {
-					case TIMESTAMP:
-						printStream.print(timestamp);
-						break;
-					case DATETIME:
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(timestamp));
-						break;
-					case TIMESTAMP_AND_DATETIME:
-						printStream.print(timestamp);
-						printStream.print(separator);
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(timestamp));
-						break;
-					default:
-						printStream.print("---");
-					}
-				}
-				for(int columnIndex=0;columnIndex<data.length;columnIndex++) {
-					float value = data[columnIndex][rowIndex];
-					if(time||columnIndex>0) {
-						printStream.print(separator);
-					}
-					if(Float.isNaN(value)) {
-						printStream.print(nanText);
-					} else {
-						//s+=Util.floatToString(entry.data[i]);
-						printStream.format(Locale.ENGLISH,"%3.3f", value);
-					}
-				}
-				printStream.println();
-			}
-			printStream.close();
-		} catch (FileNotFoundException e) {
-			log.error(e);
-		}
-	}*/
-	
+
 	/**
 	 * get position of sensor name in data array
 	 * @param parameterName
@@ -289,9 +228,9 @@ public class TimeSeries implements TimeSeriesIterable {
 	 */
 	public int getParameterNameIndex(String parameterName) {
 		return Util.StringArrayToMap(parameterNames).get(parameterName);
-		
+
 	}
-	
+
 	/**
 	 * get one data column
 	 * @param parameterName
@@ -300,22 +239,24 @@ public class TimeSeries implements TimeSeriesIterable {
 	public float[] getValues(String parameterName) {
 		return data[getParameterNameIndex(parameterName)];
 	}
-	
+
 	public boolean[] getInterpolationFlags(String parameterName) {
+		System.out.println("parameterName "+parameterName);
 		return dataInterpolated[getParameterNameIndex(parameterName)];
 	}
-	
-	
+
+
 	/**
 	 * returns time series with time interval exactly from clipStart to clipEnd
 	 * @param clipStart	may be null if no clipping is needed
 	 * @param clipEnd	may be null if no clipping is needed
 	 * @return
 	 */
+	@Deprecated	
 	public TimeSeries getClipped(Long clipStart, Long clipEnd) {
 		long clipStartTimestamp = clipStart==null?this.startTimestamp:clipStart;
 		long clipEndTimestamp = clipEnd==null?this.startTimestamp+((this.data[0].length-1)*this.timeStep):clipEnd;	
-		
+
 		if(clipStartTimestamp>clipEndTimestamp) {
 			log.error("wrong data");
 			return null;
@@ -342,9 +283,10 @@ public class TimeSeries implements TimeSeriesIterable {
 				}
 			}
 		}
-		return new TimeSeries(this.parameterNames, clipStartTimestamp, timeStep, resultData, resultQuality, resultInterpolated);
+
+		return new TimeSeries(Util.createList(processingChain,new ProcessingChainTitle("clip")),this.parameterNames, clipStartTimestamp, timeStep, resultData, resultQuality, resultInterpolated);
 	}
-	
+
 	/**
 	 * get timestamp of first data entry
 	 * @return
@@ -352,7 +294,7 @@ public class TimeSeries implements TimeSeriesIterable {
 	public long getFirstTimestamp() {
 		return startTimestamp;
 	}
-	
+
 	/**
 	 * get timestamp of last data entry
 	 * @return
@@ -360,18 +302,35 @@ public class TimeSeries implements TimeSeriesIterable {
 	public long getLastTimestamp() {
 		return startTimestamp+((data[0].length-1)*timeStep);
 	}
-	
+
 	@Override
 	public TimeSeriesIterator timeSeriesIterator() {
-		return new InternalIterator();
-	}	
+		return new InternalClipIterator(null, null);
+	}
 	
+	public TimeSeriesIterator timeSeriesIteratorCLIP(Long clipStart, Long clipEnd) {
+		return new InternalClipIterator(clipStart, clipEnd);
+	}
+
+	public TimeSeriesSchema createSchema() {
+		String[] schema = parameterNames;
+		boolean constantTimeStep = true;
+		boolean isContinuous = true;		
+		boolean hasQualityFlags = hasDataQualityFlag; //TODO
+		boolean hasInterpolatedFlags = hasDataInterpolatedFlag; //TODO
+		boolean hasQualityCounters = false; //TODO
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+
+	}
+
+	/*
+	@Deprecated
 	private class InternalIterator extends TimeSeriesIterator {
-		
-		private int pos;
+
+		private int pos;		
 
 		public InternalIterator() {
-			super(new TimeSeriesSchema(parameterNames,timeStep));
+			super(createSchema());
 			pos=0;
 		}
 
@@ -393,6 +352,94 @@ public class TimeSeries implements TimeSeriesIterable {
 			long timestamp = startTimestamp+(pos*timeStep);
 			pos++;
 			return new TimeSeriesEntry(timestamp,resultData,resultQuality,null,resultInterpolated);
+		}
+
+		@Override
+		public String getIteratorName() {
+			return "TimeSeries.InternalIterator";
+		}
+
+		@Override
+		public List<ProcessingChainEntry> getProcessingChain() {
+			List<ProcessingChainEntry> result = null;
+			if(processingChain==null) {
+				result = new ArrayList<ProcessingChainEntry>();
+			} else {
+				result = processingChain;	
+			}
+			result.add(this);
+			return result;
 		}		
+	}*/
+
+
+	private class InternalClipIterator extends TimeSeriesIterator {
+
+		private int pos;
+		private final int endPos;
+
+		public InternalClipIterator(Long clipStart, Long clipEnd) {
+			super(createSchema());
+
+			long clipStartTimestamp = clipStart==null?getFirstTimestamp():clipStart;
+			long clipEndTimestamp = clipEnd==null?getLastTimestamp():clipEnd;	
+
+			if(clipStartTimestamp>clipEndTimestamp) {
+				throw new RuntimeException("wrong data");
+			}
+			if(clipStartTimestamp%timeStep!=0||clipEndTimestamp%timeStep!=0) {
+				throw new RuntimeException("timeststamps not alligned");
+			}
+
+			pos = (int) ((clipStartTimestamp-getFirstTimestamp())/timeStep);
+			endPos = (int) ((clipEndTimestamp-getFirstTimestamp())/timeStep);
+		}
+
+		@Override
+		public boolean hasNext() {			
+			return pos<=endPos;
+		}
+
+		@Override
+		public TimeSeriesEntry next() {
+			if(hasNext()) {
+				if(pos>=0 && pos<data[0].length) {					
+					float[] resultData = new float[parameterNames.length];
+					DataQuality[] resultQuality = new DataQuality[parameterNames.length];
+					boolean[] resultInterpolated = new boolean[parameterNames.length];
+					for(int columnIndex=0;columnIndex<parameterNames.length;columnIndex++) {
+						resultData[columnIndex] = data[columnIndex][pos];
+						resultQuality[columnIndex] = dataQuality[columnIndex][pos];
+						resultInterpolated[columnIndex] = dataInterpolated[columnIndex][pos];
+					}
+					long timestamp = startTimestamp+(pos*timeStep);
+					pos++;
+					return new TimeSeriesEntry(timestamp,resultData,resultQuality,null,resultInterpolated);					
+				} else {
+					long timestamp = startTimestamp+(pos*timeStep);
+					pos++;
+					return TimeSeriesEntry.getNaN(timestamp, parameterNames.length);
+				}
+			} else {
+				throw new RuntimeException("iterator out of range");
+			}
+		}
+
+		@Override
+		public List<ProcessingChainEntry> getProcessingChain() {
+			List<ProcessingChainEntry> result = null;
+			if(processingChain==null) {
+				result = new ArrayList<ProcessingChainEntry>();
+			} else {
+				result = processingChain;	
+			}
+			result.add(this);
+			return result;
+		}	
+
+		@Override
+		public String getIteratorName() {
+			return "InternalClipIterator";
+		}
 	}
 }

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 
 public class TimeSeriesIteratorIterator<T> extends MoveIterator {
@@ -61,5 +62,18 @@ public class TimeSeriesIteratorIterator<T> extends MoveIterator {
 			current_iterator = null;
 			return getNext();
 		}
-	}		
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "TimeSeriesIteratorIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		ArrayList<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
+		result.add(this);
+		return result;
+	}	
+	
 }

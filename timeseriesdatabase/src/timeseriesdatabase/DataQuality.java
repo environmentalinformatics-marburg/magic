@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw.iterator;
+package timeseriesdatabase;
 
 /**
  * for data values: highest passed quality check

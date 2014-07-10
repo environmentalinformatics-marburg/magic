@@ -48,7 +48,7 @@ public class TimeSeriesView {
 	int xStart;
 	int xEnd;
 	int xRange;
-	
+
 	int yStart;
 	int yEnd;
 	int yRange;
@@ -56,8 +56,8 @@ public class TimeSeriesView {
 	//*** conversion values
 	double valueOffset;
 	double valueFactor;
-	double timeOffset;
-	double timeFactor;
+	double timestampOffset;
+	double timestampFactor;
 
 	//*** colors
 	Color color_black;
@@ -73,6 +73,10 @@ public class TimeSeriesView {
 
 	public void setCanvas(Canvas canvas) {
 		this.canvas = canvas;
+
+		color_black = new Color(canvas.getDisplay(),0,0,0);
+		color_grey = new Color(canvas.getDisplay(),190,190,190);
+		color_light = new Color(canvas.getDisplay(),220,220,220);
 	}
 
 	public TimestampSeries getTimeSeries() {
@@ -105,17 +109,25 @@ public class TimeSeriesView {
 				}
 			}
 		}
-		
+
 		dataValueRange = dataMaxValue-dataMinValue;
 
 		dataMinTimestamp = timeSeries.getFirstTimestamp();
 		dataMaxTimestamp = timeSeries.getLastTimestamp();
 		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;		
 	}
-	
+
 	void updateRangeOfOutputView() {
 
-		double scale = (int) (Math.log((dataMaxValue-dataMinValue))/Math.log(10));
+		minTimestamp = dataMinTimestamp;
+		maxTimestamp = dataMaxTimestamp;
+		timestampRange = maxTimestamp-minTimestamp;
+
+		minValue = dataMinValue;
+		maxValue = dataMaxValue;
+		valueRange = maxValue-minValue;
+
+		double scale = (int) (Math.log((dataValueRange))/Math.log(10));
 		System.out.println("scale"+scale+" -> "+Math.pow(10, scale));
 		float grid = (float) Math.pow(10, scale);
 
@@ -123,29 +135,29 @@ public class TimeSeriesView {
 
 		double absRestMin = Math.abs(dataMinValue%grid);
 		if(dataMinValue>0) {
-			dataMinValue = dataMinValue-absRestMin;
+			minValue = dataMinValue-absRestMin;
 		} else {
 			if(absRestMin>0) {
-				dataMinValue = dataMinValue-(grid-absRestMin);
+				minValue = dataMinValue-(grid-absRestMin);
 			}
 		}
 
 		double absRestMax = Math.abs(dataMaxValue%grid);
 		if(absRestMax>0) {
 			if(absRestMax>0) {
-				dataMaxValue = dataMaxValue+(grid-absRestMax);
+				maxValue = dataMaxValue+(grid-absRestMax);
 			}
 		} else {
-			dataMaxValue = dataMaxValue+absRestMax;
+			maxValue = dataMaxValue+absRestMax;
 		}
-		
-		timestampRange = dataMaxTimestamp-dataMinTimestamp;
-		valueRange = dataMaxValue-dataMinValue;
 
-		System.out.println(":"+dataMinValue+" "+dataMaxValue);
+
+		valueRange = maxValue-minValue;
+
+		System.out.println(":"+minValue+" "+maxValue);
 
 	}
-	
+
 	void updateRangeOfOutputWindow() {
 		xStart = (int) border;
 		xEnd = (int)(canvas.getSize().x-border);
@@ -155,30 +167,47 @@ public class TimeSeriesView {
 		xRange = xEnd-xStart;
 		yRange = yStart-yEnd; //!!		
 	}
-	
+
 	void updateDataWindowConversionValues() {
-		valueFactor = yRange/(dataMaxValue-dataMinValue);
-		valueOffset = -dataMinValue;
-		timeFactor = xRange/(dataTimestampRange+1); //???		
+		valueOffset = -minValue;
+		valueFactor = yRange/valueRange;
+		timestampOffset = -minTimestamp;
+		timestampFactor = xRange/(timestampRange+1); //???		
 	}
 
 
+	private void drawGrid(GC gc, double lineStep) {
 
-	
+		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
+
+		double firstLine = minValue-minValue%lineStep;
+		double maxLines =  (int) ((maxValue-firstLine)/lineStep);
 
 
+		for(int line=0;line<maxLines;line++) {
+			double value = firstLine+line*lineStep;
+			int y = valueToGraph(value);
+
+			gc.setForeground(color_light_blue);
+			gc.drawLine(xStart , y, xEnd, y);
+
+
+			//gc.setForeground(color_grey);
+			gc.setForeground(color_black);
+			gc.drawText(Util.doubleToString(value), 3, y-10);
+
+		}
+	}
 
 	private void drawGrid(GC gc) {
 
-		gc.setForeground(color_light);
-
-		double graphYDiff = yStart-yEnd;
-		double valueDiff = dataMaxValue-dataMinValue;
-
-		int maxLines = (int) (graphYDiff/17);
+		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
 
 
-		double lineStep = valueDiff/maxLines;
+
+		int maxLines = (int) (yRange/17);
+
+		double lineStep = valueRange/maxLines;
 
 		System.out.println("lineStep "+lineStep);
 
@@ -196,23 +225,29 @@ public class TimeSeriesView {
 			lineStep=500;
 		}
 
-		double firstLine = dataMinValue-dataMinValue%lineStep;
-		maxLines =  (int) ((dataMaxValue-firstLine)/lineStep);
+		//drawGrid(gc,lineStep);
+
+		/*final double minLineInterval=17;
+		double factor = yRange/valueRange;
+		System.out.println("factor: "+factor);
+		if(factor>20) {
+			lineStep=1;
+		} else if(factor>15) {
+			lineStep=2;
+		} else if(factor>10) {
+			lineStep=5;
+		} else if(factor>2) {
+			lineStep=10;		
+		}*/
+		
+		/*final double minLineInterval=20;
+		double minLineValueRange = valueRange/(yRange/minLineInterval);
+		System.out.println("valueRange: "+valueRange+"minLineValueRange: "+minLineValueRange);*/
 
 
-		for(int line=0;line<maxLines;line++) {
-			double value = firstLine+line*lineStep;
-			int y = valueToGraph(value);
-
-			gc.setForeground(color_light);
-			gc.drawLine(xStart , y, xEnd, y);
+		drawGrid(gc,lineStep);
 
 
-			//gc.setForeground(color_grey);
-			gc.setForeground(color_black);
-			gc.drawText(Util.doubleToString(value), 3, y-10);
-
-		}
 
 
 		LocalDateTime minDateTime = timestampToDataTime(dataMinTimestamp);
@@ -223,10 +258,10 @@ public class TimeSeriesView {
 
 		for(int y=minYear;y<=maxYear;y++) {
 			long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(y, 1, 1, 0, 0));
-			if(timestamp>=dataMinTimestamp) {
-				int x = (int) (xStart+(timestamp-dataMinTimestamp)*timeFactor);
+			if(timestamp>=minTimestamp) {
+				int x = (int) (xStart+(timestamp-minTimestamp)*timestampFactor);
 
-				gc.setForeground(color_light);
+				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 
 				gc.setForeground(color_black);
@@ -238,15 +273,18 @@ public class TimeSeriesView {
 
 	}
 
-	private int timestampToGraph(long timestamp) {
+	private int timestampToGraph(double timestamp) {
 		//return (int) (xStart+(x*valueFactor));
-		return -1;
+		//return -1;
+		//(int) (offset+border);
+		//double offset = (entry.timestamp-minTimestamp)*timestampFactor;
+		return (int) (xStart+(timestampOffset+timestamp)*timestampFactor);
 	}
 
 	private int valueToGraph(double value) {
 		return (int) (yStart-((valueOffset+value)*valueFactor));
 	}
-	
+
 	private static LocalDateTime timestampToDataTime(double timestamp) {
 		return TimeConverter.oleMinutesToLocalDateTime((long)timestamp);
 	}
@@ -282,117 +320,62 @@ public class TimeSeriesView {
 		//(max-min)
 
 
-		int y = (int) ((yRange-(/*0f-*/dataMinValue)*valueFactor)+border);
+		int y = (int) ((yRange-(/*0f-*/minValue)*valueFactor)+border);
 
-		int zero_y = (int) ((int) yRange-(yRange*(/*0-*/dataMinValue)/(dataMaxValue-dataMinValue))+border);
+		int zero_y = (int) ((int) yRange-(yRange*(/*0-*/minValue)/(maxValue-minValue))+border);
 		gc.drawLine(xStart , zero_y, xEnd, zero_y);
 
 		System.out.println(yStart+" "+zero_y+" "+y+" "+yEnd);
-
-
-
-
-
 	}
 
 
 	public void paintCanvas(GC gc) {
 		if(timeSeries!=null) {
 
-			color_black = new Color(canvas.getDisplay(),0,0,0);
-			color_grey = new Color(canvas.getDisplay(),190,190,190);
-			color_light = new Color(canvas.getDisplay(),220,220,220);
-			
+
+
 			updateRangeOfOutputWindow();
 
 			updateDataWindowConversionValues();
 
-			
-
-
-
-
-
-
-
-
-
-			int agg = 60;
+			int aggregationTimeInterval = 60;
 			switch(aggregationInterval) {
 			case HOUR:
-				agg=60;
+				aggregationTimeInterval=60;
 				break;
 			case DAY:
-				agg=1*24*60;
+				aggregationTimeInterval=1*24*60;
 				break;
 			case WEEK:
-				agg=7*24*60;
+				aggregationTimeInterval=7*24*60;
 				break;
 			case MONTH:
-				agg=28*24*60;
+				aggregationTimeInterval=28*24*60;
 				break;
 			case YEAR:
-				agg=365*24*60;
+				aggregationTimeInterval=365*24*60;
 				break;
 			default:
 				System.out.println("error in agg");
 			}
 
-
-			double timeAggregationSize = agg*timeFactor;
-
-
-			System.out.println("valueFactor: "+valueFactor);
-			System.out.println("valueOffset: "+valueOffset);
-
-			Float prevValue = null;
-
-			//for(int offset=0;offset<data.length;offset++) {
-			/*for(TimestampSeriesEntry entry:resultTimeSeries) {	
-				float value = entry.data[0];
-				long offset = entry.timestamp-minTimestamp;
-				if(!Float.isNaN(value)) {
-					int x = (int) (offset*timeFactor);
-					int y = (int)(height-((value+valueOffset)*valueFactor));
-					if(prevValue!=null) {
-						int xprev = (int) ((offset-1)*timeFactor);
-						int yprev = (int)(height-((prevValue+valueOffset)*valueFactor));
-						gc.drawLine(xprev, yprev, x, y);
-					} else {
-						gc.drawLine(x, y, x, y);
-					}
-					prevValue = value;
-				} else {
-					prevValue = null;
-				}
-			}*/
-
-			//Color white = display.getSystemColor(SWT.COLOR_WHITE);
-			//Color black = display.getSystemColor(SWT.COLOR_BLACK);
-
-
-
 			Integer prevX = null;
 			Integer prevY = null;
 
-			List<int[]> grayList = new ArrayList<int[]>(timeSeries.entryList.size());
-			List<int[]> blackList = new ArrayList<int[]>(timeSeries.entryList.size());
+			List<int[]> connectLineList = new ArrayList<int[]>(timeSeries.entryList.size());
+			List<int[]> valueLineList = new ArrayList<int[]>(timeSeries.entryList.size());
 
 			for(TimeSeriesEntry entry:timeSeries) {	
 				float value = entry.data[0];
+				double timestamp = entry.timestamp;
 				if(!Float.isNaN(value)) {				
-					double offset = (entry.timestamp-dataMinTimestamp)*timeFactor;
-					int x0 = (int) (offset+border);
-					int x1 = (int) (offset+timeAggregationSize+border);
-					int y = (int) ((yRange-(value-dataMinValue)*valueFactor)+border);
+					int x0 = timestampToGraph(timestamp);
+					int x1 = timestampToGraph(timestamp+aggregationTimeInterval);
+					int y = valueToGraph(value);
 					if(prevX!=null) {
-						//gc.setForeground(c1);
-						//gc.drawLine(x0, prevY, x0, y);
-						grayList.add(new int[]{x0, prevY, x0, y});
+						connectLineList.add(new int[]{x0, prevY, x0, y});
 					}
-					//gc.setForeground(c0);
-					//gc.drawLine(x0, y, x1, y);
-					blackList.add(new int[]{x0, y, x1, y});
+					valueLineList.add(new int[]{x0, y, x1, y});
 					prevX = x1;
 					prevY = y;
 				} else {
@@ -410,12 +393,12 @@ public class TimeSeriesView {
 
 
 			gc.setForeground(color_grey);
-			for(int[] e:grayList) {
+			for(int[] e:connectLineList) {
 				gc.drawLine(e[0], e[1], e[2], e[3]);
 			}
 
 			gc.setForeground(color_black);
-			for(int[] e:blackList) {
+			for(int[] e:valueLineList) {
 				gc.drawLine(e[0], e[1], e[2], e[3]);
 			}
 

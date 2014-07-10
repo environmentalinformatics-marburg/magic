@@ -1,8 +1,11 @@
 package util.iterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 
 public class TimeSeriesEntryIterator extends TimeSeriesIterator {
@@ -22,6 +25,18 @@ public class TimeSeriesEntryIterator extends TimeSeriesIterator {
 	@Override
 	public TimeSeriesEntry next() {
 		return input_iterator.next();
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "TimeSeriesEntryIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
+		result.add(this);
+		return result;
 	}
 
 }

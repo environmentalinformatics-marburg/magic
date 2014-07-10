@@ -1,6 +1,9 @@
 package util.iterator;
 
+import java.util.List;
+
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 import util.Util;
 
@@ -32,6 +35,18 @@ public class SchemaConverterIterator extends MoveIterator {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public String getIteratorName() {
+		return "SchemaConverterIterator";
+	}
+	
+	@Override
+	public List<ProcessingChainEntry> getProcessingChain() {
+		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+		result.add(this);
+		return result;
 	}
 
 }
