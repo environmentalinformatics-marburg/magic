@@ -80,19 +80,25 @@ public class TimeSeriesManager {
 		Menu queryMenu = new Menu(shell, SWT.DROP_DOWN);
 		queryMenuHeader.setMenu(queryMenu);
 		
-		MenuItem aggregatedQueryItem = new MenuItem(queryMenu, SWT.PUSH);
-		aggregatedQueryItem.setText("aggregated query");
-		aggregatedQueryItem.addSelectionListener(new aggregatedQueryItemListener());
-		
 		MenuItem queryItem = new MenuItem(queryMenu, SWT.PUSH);
-		queryItem.setText("new query");
+		queryItem.setText("query");
 		queryItem.addSelectionListener(new queryItemListener());
+		
+		MenuItem statisticsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		statisticsMenuHeader.setText("Statistics");
+		Menu statisticsMenu = new Menu(shell, SWT.DROP_DOWN);
+		statisticsMenuHeader.setMenu(statisticsMenu);
+		
+		MenuItem statisticsItem = new MenuItem(statisticsMenu, SWT.PUSH);
+		statisticsItem.setText("statistics");
+		statisticsItem.addSelectionListener(new statisticsItemListener());
 
 
 		textBox = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 
 		textBox.append("start");
 
+		textBox.setEditable(false);
 		
 		
 		
@@ -151,6 +157,15 @@ public class TimeSeriesManager {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			QueryDialog dialog = new QueryDialog(shell,timeSeriesDatabase);
+			dialog.open();
+
+		}
+	}
+	
+	class statisticsItemListener extends SelectionAdapter {
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			StatisticsDialog dialog = new StatisticsDialog(shell,timeSeriesDatabase);
 			dialog.open();
 
 		}

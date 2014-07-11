@@ -144,11 +144,15 @@ public class BeginEndDateTimeDialog extends Dialog {
 	}
 	
 	private void buttonOK() {
-		
-		LocalDateTime begin = LocalDateTime.of(dateBegin.getYear(),dateBegin.getMonth(),dateBegin.getDay(),timeBegin.getHours(),timeBegin.getMinutes());
-		LocalDateTime end = LocalDateTime.of(dateEnd.getYear(),dateEnd.getMonth(),dateEnd.getDay(),timeEnd.getHours(),timeEnd.getMinutes());
-		result = new Pair<LocalDateTime, LocalDateTime>(begin, end); 
-		
+		LocalDateTime begin = null;
+		LocalDateTime end = null;
+		if(!btnBeginOfData.getSelection()) {
+		begin = LocalDateTime.of(dateBegin.getYear(),dateBegin.getMonth(),dateBegin.getDay(),timeBegin.getHours(),timeBegin.getMinutes());
+		}
+		if(!btnEndDateOf.getSelection()) {
+		end = LocalDateTime.of(dateEnd.getYear(),dateEnd.getMonth(),dateEnd.getDay(),timeEnd.getHours(),timeEnd.getMinutes());
+		}
+		result = new Pair<LocalDateTime, LocalDateTime>(begin, end);		
 		shlQueryTimeInterval.close();
 	}
 

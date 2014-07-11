@@ -17,7 +17,7 @@ import util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class QualityToNanIterator extends TimeSeriesIterator {
+public class BadQualityToNanIterator extends TimeSeriesIterator {
 
 	private static final Logger log = Util.log;
 
@@ -29,7 +29,7 @@ public class QualityToNanIterator extends TimeSeriesIterator {
 	 * @param input_iterator
 	 * @param dataQuality lowest acceptable quality
 	 */
-	public QualityToNanIterator(TimeSeriesIterator input_iterator, DataQuality dataQuality) {
+	public BadQualityToNanIterator(TimeSeriesIterator input_iterator, DataQuality dataQuality) {
 		super(TimeSeriesSchema.copy(input_iterator.getOutputTimeSeriesSchema()));
 		if(!input_iterator.getOutputTimeSeriesSchema().hasQualityFlags) {
 			throw new RuntimeException("no quality flags in schema");

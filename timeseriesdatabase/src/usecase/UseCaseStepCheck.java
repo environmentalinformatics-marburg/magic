@@ -5,6 +5,7 @@ import java.util.Iterator;
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
@@ -19,7 +20,7 @@ public class UseCaseStepCheck {
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
-		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
+		QueryProcessorOLD qp = new QueryProcessorOLD(timeSeriesDatabase);
 		
 		String plotID = "HEG01";
 		//String[] sensorNames = new String[]{"Ta_200"};

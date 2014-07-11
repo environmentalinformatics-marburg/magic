@@ -30,7 +30,7 @@ public class QualityFlag {
 		//TimeSeriesIterator result_iterator = qp.TestingQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingBaseAggregatadQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingAggregatadQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality,aggregationInterval);
-		TimeSeriesIterator result_iterator = qp.TestingInterpolatedBaseAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TimeSeriesIterator result_iterator = qp.query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingInterpolatedAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality,aggregationInterval);
 		
 		//CSV.write(result_iterator, "c:/timeseriesdatabase_output/qualty_flag.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME, true, false);

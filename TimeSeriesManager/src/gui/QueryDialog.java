@@ -12,13 +12,16 @@ import org.eclipse.swt.widgets.Shell;
 
 import swing2swt.layout.BorderLayout;
 import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
@@ -53,6 +56,7 @@ public class QueryDialog extends Dialog {
 	private static Logger log = Util.log;
 
 	private TimeSeriesDatabase timeSeriesDatabase;
+	//private QueryProcessorOLD qp;
 	private QueryProcessor qp;
 
 
@@ -80,6 +84,9 @@ public class QueryDialog extends Dialog {
 	private Button btnSaveInCsv;
 	private Label label;
 	private Button button;
+	
+	private LocalDateTime beginDateTime;
+	private LocalDateTime endDateTime;
 
 	/**
 	 * Create the dialog.
@@ -88,6 +95,8 @@ public class QueryDialog extends Dialog {
 	 */
 	public QueryDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
+		beginDateTime = null;
+		endDateTime = null;
 		setText("SWT Dialog");
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.qp = new QueryProcessor(timeSeriesDatabase);
@@ -171,8 +180,10 @@ public class QueryDialog extends Dialog {
 				BeginEndDateTimeDialog dialog = new BeginEndDateTimeDialog(shlAggregatedQuery);
 				Pair<LocalDateTime, LocalDateTime> result = dialog.open();
 				if(result!=null) {
-					String begin = result.a.toString();
-					String end = result.b.toString();
+					beginDateTime = result.a;
+					endDateTime = result.b;
+					String begin = beginDateTime==null?"---":beginDateTime.toString();
+					String end = endDateTime==null?"---":endDateTime.toString();
 				label.setText(begin+" - "+end);
 				}
 			}
@@ -270,8 +281,8 @@ public class QueryDialog extends Dialog {
 
 		String plotID = comboPlotID.getText();
 		String[] querySchema = new String[]{comboSensorName.getText()};
-		Long queryStart = null;
-		Long queryEnd = null;
+		Long queryStart = Util.ifnull(beginDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
+		Long queryEnd = Util.ifnull(endDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
 		//{"hour","day","week","month","year"};
 		String aggText = comboAggregation.getText();
@@ -295,18 +306,23 @@ public class QueryDialog extends Dialog {
 		boolean useInterpolation = checkButtonInterpolated2.getSelection();
 
 		//0:"no check", 1:"physical range", 2:"physical range + step range", 3:"physical range + step range + empirical range"
+		DataQuality dq = DataQuality.NO;
 		int qualitySelectionIndex = comboQuality.getSelectionIndex();
 		switch(qualitySelectionIndex) {
 		case 0:
+			dq = DataQuality.NO;
 			break;
 		case 1:
+			dq = DataQuality.PHYSICAL;
 			checkPhysicalRange = true;
 			break;
 		case 2:
+			dq = DataQuality.STEP;
 			checkPhysicalRange = true;
 			checkStepRange = true;
 			break;
 		case 3:
+			dq = DataQuality.EMPIRICAL;
 			checkPhysicalRange = true;
 			checkStepRange = true;
 			checkEmpiricalRange = true;
@@ -320,10 +336,12 @@ public class QueryDialog extends Dialog {
 		final AggregationInterval agg = aggregationInterval;
 		final boolean cPhysicalRange = checkPhysicalRange;
 		final boolean cStepRange = checkStepRange;
-		final boolean cEmpiricalRange = checkEmpiricalRange;
+		final boolean cEmpiricalRange = checkEmpiricalRange;		
+		final DataQuality dataQuality = dq;
 
 		buttonUpdate.setEnabled(false);
 
+		
 		Thread worker = new Thread() {
 			@Override
 			public void run(){
@@ -332,10 +350,11 @@ public class QueryDialog extends Dialog {
 				
 				TimestampSeries resultTimeSeries = null;
 				try{				
-					TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, cPhysicalRange, cEmpiricalRange, cStepRange, useInterpolation);
-					if(result!=null) {
-						resultTimeSeries = TimestampSeries.create(result);
-					}
+					
+					//TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, cPhysicalRange, cEmpiricalRange, cStepRange, useInterpolation);
+					TimeSeriesIterator result = qp.TestingAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
+					
+					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));
 				} catch (Exception e) {
 
 					e.printStackTrace();
@@ -349,9 +368,9 @@ public class QueryDialog extends Dialog {
 
 					@Override
 					public void run() {
-						if(finalResultTimeSeries!=null) {
+						//if(finalResultTimeSeries!=null) {
 							dataExplorer.setData(finalResultTimeSeries,agg);
-						}
+						//}
 						buttonUpdate.setEnabled(true);
 
 					}

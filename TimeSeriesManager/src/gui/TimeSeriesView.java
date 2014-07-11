@@ -34,6 +34,9 @@ public class TimeSeriesView {
 	private double dataValueRange;
 
 	//*** range of time series data in output view
+	private double viewZoomFactor;
+	private double viewOffset;
+	
 	private double minTimestamp;
 	private double maxTimestamp;
 	private double timestampRange;
@@ -69,6 +72,26 @@ public class TimeSeriesView {
 	public TimeSeriesView() { 
 		this.timeSeries = null;
 		this.aggregationInterval = AggregationInterval.HOUR;
+		this.viewZoomFactor = 1;
+		this.viewOffset = 0;
+	}
+	
+	public double getZoomFactor() {
+		return viewZoomFactor;
+	}
+	
+	public void setZoomFactor(double zoomFactor) {
+		this.viewZoomFactor = zoomFactor;
+		updateRangeOfOutputView();
+	}
+	
+	public double getViewOffset() {
+		return viewOffset;
+	}
+	
+	public void setViewOffset(double viewOffset) {
+		this.viewOffset = viewOffset;
+		updateRangeOfOutputView();
 	}
 
 	public void setCanvas(Canvas canvas) {
@@ -119,8 +142,8 @@ public class TimeSeriesView {
 
 	void updateRangeOfOutputView() {
 
-		minTimestamp = dataMinTimestamp;
-		maxTimestamp = dataMaxTimestamp;
+		minTimestamp = viewOffset+dataMinTimestamp;
+		maxTimestamp = viewOffset+dataMinTimestamp+(dataTimestampRange/viewZoomFactor);
 		timestampRange = maxTimestamp-minTimestamp;
 
 		minValue = dataMinValue;

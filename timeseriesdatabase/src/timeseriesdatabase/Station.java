@@ -442,6 +442,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries __OLD_queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames, true, true, true);
@@ -474,6 +475,7 @@ public class Station {
 	 * @param end end time stamp, if null get data up to newest data
 	 * @return
 	 */
+	@Deprecated
 	public TimestampSeries __OLD_queryRawData(String[] querySensorNames, Long start, Long end) {
 		String[] schemaSensorNames = getLoggerType().sensorNames;
 		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames, querySensorNames);
@@ -501,47 +503,54 @@ public class Station {
 	public String toString() {
 		return plotID;
 	}
-
-	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {
-		String[] inputSchema = getLoggerType().sensorNames;
-		Iterator<Event> inputIterator;
+	
+	public Iterator<Event> queryRawEvents(String[] querySchema, Long start, Long end) {
 		if(start!=null) {
 			long startTime = start;
 			if(end!=null) {
 				long endTime = end;
-				inputIterator = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
+				return timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
 			} else {
-				inputIterator = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
+				return timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
 			}
 		} else {
 			if(end!=null) {
 				long endTime = end;
-				inputIterator = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
+				return timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
 			} else {
-				inputIterator = timeSeriesDatabase.store.getHistory(plotID);
+				return timeSeriesDatabase.store.getHistory(plotID);
 			}
 		}
-		TimeSeriesIterator eventConverterIterator;
+	}
+
+	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
+		Iterator<Event> rawEventIterator = queryRawEvents(querySchema,start,end);
+		if(rawEventIterator==null) {
+			return null;
+		}		
+		String[] inputSchema = getLoggerType().sensorNames;		
 		if(querySchema==null) {
-			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, inputSchema);
+			return new EventConverterIterator(inputSchema, rawEventIterator, inputSchema);
 		} else {
-			eventConverterIterator = new EventConverterIterator(inputSchema, inputIterator, querySchema);
+			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
 		}
-		return eventConverterIterator;
 	}
 	
+	@Deprecated
 	public TimeSeriesIterator queryRawQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		TimeSeriesIterator eventConverterIterator = queryRaw(querySchema, start, end);
 		TimeSeriesIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		return qualityCheckIterator;
 	}
 
+	@Deprecated
 	public TimeSeriesIterator queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		TimeSeriesIterator it = queryRawQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
 		return baseAggregationIterator;
 	}
 	
+	@Deprecated
 	public TimeSeries queryBaseAggregatedTimeSeries(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
 		TimeSeriesIterator it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
 		TimeSeriesIterator nanGapIt = new NanGapIterator(it, start, end);

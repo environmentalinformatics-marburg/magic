@@ -35,6 +35,7 @@ import de.umr.jepc.util.Timer;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
@@ -51,7 +52,7 @@ public class AggregatedQueryDialog extends Dialog {
 	private static Logger log = Util.log;
 
 	private TimeSeriesDatabase timeSeriesDatabase;
-	private QueryProcessor qp;
+	private QueryProcessorOLD qp;
 	private Timer queryTimer;
 
 	Canvas canvas;
@@ -78,7 +79,7 @@ public class AggregatedQueryDialog extends Dialog {
 	public AggregatedQueryDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		this.qp = new QueryProcessor(timeSeriesDatabase);
+		this.qp = new QueryProcessorOLD(timeSeriesDatabase);
 		setText("Query");
 	}
 
