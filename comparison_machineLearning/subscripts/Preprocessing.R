@@ -8,8 +8,6 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
                    header=T,
                    row.names=NULL,
                    na.strings="-99.000000")
-tmpDateField=dateField
-dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 
 ############################################################################################################
 ################################## Scale and center predictor Variables ####################################
@@ -21,9 +19,23 @@ if (centerscale){
 }
 
 data=data[(rowSums(is.na(data[,which(names(data) %in% predictorVariables)])))==0,]#rm rows with na in predictors
+
+
+############################################################################################################
+###################### If resonse==Rain: Consider only raining pixels ######################################
+############################################################################################################
+if (response=="Rain"){
+  data=data[data$RInfo=="rain",] 
+}
+
+
 ############################################################################################################
 ################################## SPLIT DATA #######################################
 ############################################################################################################
+tmpDateField=dateField
+dateField<-eval(parse(text=paste("data$",dateField,sep="")))
+
+
 #create partition by choosing randomly SizeOfTrainingSet% of the scenes. 
 #These are used for training, the rest is used for testing
 splittedData<-splitData(data,dateField,SizeOfTrainingSet,seed=useSeeds)

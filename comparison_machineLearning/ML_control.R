@@ -28,18 +28,17 @@ shortTest=TRUE#if TRUE then learning parameters and data set are set automatical
 ##################################################################################################################
 #                                          Data adjustments
 ##################################################################################################################
-inputTable="rfInput_vp03_day_om.dat"
-response<-"RInfo" #field name of the response variable. "Rain" or "RInfo"
-type="classification" #classification or regression?
+inputTable="rfInput_vp03_day_as.dat"
+response<-"Rain" #field name of the response variable. "Rain" or "RInfo"
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
-                   #important to split the data. must be unique per scene. format: yyyymmddhhmm
+#important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
-SizeOfTrainingSet=0.25 #how many percent of scenes will be used for training?
+SizeOfTrainingSet=0.33 #how many percent of scenes will be used for training?
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
-sampsize=0.02 #how many percent of training scene pixels from the training data should actually be used for training? 
+sampsize=0.05 #how many percent of training scene pixels from the training data should actually be used for training? 
 ##################################################################################################################
 #                                      Choose Predictors (must be included in "inputTable")
 ##################################################################################################################
@@ -53,16 +52,11 @@ predictorVariables=c("SZen",
 #                                      Learning adjustments
 ##################################################################################################################
 model=c("rf","nnet","svm") # supported: rf,nnet,svm.
-adaptiveResampling=TRUE #use adaptive crosss validation?
+adaptiveResampling=FALSE #use adaptive crosss validation?
 
-if (type=="classification"){
-  tuneThreshold=TRUE #should the optimal probability threshold be tuned?  
-  thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
-}
-
-if (type=="regression"){
-  tuneThreshold=FALSE
-}
+###only for classification:
+tuneThreshold=TRUE #should the optimal probability threshold be tuned?  
+thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
 
 
 ##### RF Settings:
@@ -83,13 +77,20 @@ svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
 #                                      2. Organization (no adjustments required)
 ##################################################################################################################
 ##################################################################################################################
+type="classification"
+if (response=="Rain"){
+  type="regression" #classification or regression?
+}
+if (type=="regression"){
+  tuneThreshold=FALSE
+}
 ##################################################################################################################
 #                                   Initialize "shortTest"
 ##################################################################################################################
 if(shortTest){
   inputTable="rfInput_vp03_day_om.dat"
-  sampsize=0.03
-  thresholds=seq(0.0, 1.0, 0.2)
+  sampsize=0.002
+  if (tuneThreshold) thresholds=seq(0.0, 1.0, 0.2)
   rf_mtry=c(2:5)
   ##### NNET Settings:
   nnet_decay=c(0.005, 0.01, 0.05)
@@ -98,22 +99,28 @@ if(shortTest){
   svm_sigma="sigest(as.matrix(predictors))[2]" #analyticaly solved with sigest. vector is also allowed
   svm_cost=c(0.25, 2.00, 4.00, 32.00)
 }
+
+  
+
 ##################################################################################################################
 #                                    Set data paths according to "profil"
 ##################################################################################################################
+
+
 if (profil=="hanna"){
   datapath="/media/hanna/ubt_kdata_0005/pub_rapidminer/input"
-  resultpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/Results"
+  resultpath<-paste("/media/hanna/ubt_kdata_0005/pub_rapidminer/Results/",response, "_", substr(inputTable,1,nchar(inputTable)-4),sep="")
   scriptpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/subscripts/"
   additionalFunctionPath="/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/functions"
 }
 if(profil=="ui183"){
   datapath="/media/memory18201/casestudies/ML_comp/Input_Data"
-  resultpath<-"/media/memory18201/casestudies/ML_comp/Results"
+  resultpath<-paste("/media/memory18201/casestudies/ML_comp/Results/",response, "_", substr(inputTable,1,nchar(inputTable)-4),sep="")
   scriptpath="/home/hmeyer/ML_comp_scripts/subscripts"
   additionalFunctionPath="/home/hmeyer/ML_comp_scripts/functions"
 }
 setwd(scriptpath)
+dir.create(resultpath)
 ##################################################################################################################
 #                                          Load functions
 ##################################################################################################################
@@ -140,7 +147,7 @@ if (doParallel){
 #                                      3. Run subscripts (no adjustments required)
 ##################################################################################################################
 ##################################################################################################################  
-  
+
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
@@ -151,7 +158,7 @@ source("Preprocessing.R",echo=TRUE)
 ##################################################################################################################
 source("RunModels.R",echo=TRUE)
 source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
-source("plotROCWithConfidence.R",echo=TRUE)
+if (type=="classification") source("plotROCWithConfidence.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################

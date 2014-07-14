@@ -9,6 +9,7 @@ library(rgdal)
 library(RColorBrewer)
 library(lattice)
 
+dir.create (paste(resultpath,"/Spatial_comp",sep=""))
 
 #####load predictions!!!!!!!!!
 if (any(model=="rf")){
