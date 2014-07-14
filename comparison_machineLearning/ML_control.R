@@ -164,7 +164,7 @@ if (type=="classification") source("plotROCWithConfidence.R",echo=TRUE)
 ##################################################################################################################
 source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("VisualizationOfModelPrediction.R",echo=TRUE)
-source("SpatialModelResults.R",echo=TRUE)
+if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
 #                             Stop cluster and clear workspace
