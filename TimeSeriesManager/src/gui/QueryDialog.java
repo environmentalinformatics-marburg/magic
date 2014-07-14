@@ -11,12 +11,10 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import swing2swt.layout.BorderLayout;
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
@@ -25,6 +23,7 @@ import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
+import util.CSVTimeType;
 import util.Pair;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
@@ -350,9 +349,9 @@ public class QueryDialog extends Dialog {
 				
 				TimestampSeries resultTimeSeries = null;
 				try{				
-					
-					//TimeSeriesIterator result = qp.queryAggregated(plotID, querySchema, queryStart, queryEnd, agg, cPhysicalRange, cEmpiricalRange, cStepRange, useInterpolation);
-					TimeSeriesIterator result = qp.TestingAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
+					System.out.println("query dataQuality: "+dataQuality);
+					TimeSeriesIterator result = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
+					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 					
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));
 				} catch (Exception e) {
@@ -437,10 +436,17 @@ public class QueryDialog extends Dialog {
 					sensorNames.add(name);
 				}
 			}
-			comboSensorName.setItems(sensorNames.toArray(new String[0]));
-			comboSensorName.setText(sensorNames.get(0));
+			String[] sensorNameArray = sensorNames.toArray(new String[0]);
+			String oldName = comboSensorName.getText();
+			int indexPos = Util.getIndexInArray(oldName, sensorNameArray);
+			if(indexPos<0) {
+				indexPos = 0;
+			}
+			comboSensorName.setItems(sensorNameArray);
+			comboSensorName.setText(sensorNames.get(indexPos));
 		} else {
 			comboSensorName.setItems(new String[]{});
+			comboSensorName.setText("");
 		}
 
 	}

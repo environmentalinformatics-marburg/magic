@@ -63,7 +63,7 @@ public class BaseAggregationProcessor {
 		this.checkStepRange = checkStepRange;
 		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
 		sensors = timeSeriesDatabase.getSensors(new TimeSeriesSchema(parameterNames));		
-		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
+		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true, false);
 		prepareWindDirectionAggregation();		
 	}
 

@@ -9,11 +9,11 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.CSVTimeType;
 import util.ProcessingChainEntry;
 import util.ProcessingChainTitle;
 import util.TimeSeriesSchema;

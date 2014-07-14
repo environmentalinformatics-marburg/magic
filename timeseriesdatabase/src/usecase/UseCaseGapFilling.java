@@ -2,12 +2,16 @@ package usecase;
 
 import java.time.LocalDateTime;
 
-import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
+import util.CSVTimeType;
+import util.iterator.TimeSeriesIterator;
 
 /**
  * use case for gap filled data
@@ -17,10 +21,14 @@ import util.CSV;
 public class UseCaseGapFilling {
 
 	public static void main(String[] args) {
+		
+		//String nanValue = "0";
+		String nanValue = "NaN";
+		
 		System.out.println("start...");
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
-		//String plotID = "HEG25";
 		String plotID = "HEW01";
 		
 		System.out.println("start query...");
@@ -28,47 +36,31 @@ public class UseCaseGapFilling {
 		
 		LocalDateTime start = LocalDateTime.of(2011,06,01,0,0);		
 		LocalDateTime end = LocalDateTime.of(2012,06,01,0,0);
+		long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
+		long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
+		//Long startTimestamp = null;
+		//Long endTimestamp = null;
 		
-		//LocalDateTime start = LocalDateTime.of(2010,01,01,0,0);
-		//LocalDateTime end = LocalDateTime.of(2012,12,31,23,00);
-		//long startTimestamp = TimeConverter.DateTimeToOleMinutes(start);
-		//long endTimestamp = TimeConverter.DateTimeToOleMinutes(end);
-		Long startTimestamp = null;
-		Long endTimestamp = null;
-		
-		
-		//String[] querySensorNames = null;
-		
-		TimestampSeries timeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedData(plotID, querySensorNames , startTimestamp, endTimestamp);
-		TimeSeries baseTimeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedDataGapFilled(plotID, querySensorNames , startTimestamp, endTimestamp);
+		DataQuality dataQuality = DataQuality.EMPIRICAL;
 		
 		
-		//TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, querySensorNames, startTimestamp,endTimestamp);
+		TimeSeries result = TimeSeries.create(qp.query_continuous_base_aggregated(plotID, querySensorNames, startTimestamp, endTimestamp, dataQuality));
+		TimeSeriesIterator result_interpolated = qp.query_base_aggregated_interpolated(plotID, querySensorNames, startTimestamp, endTimestamp, dataQuality);
 		
-
-		//BaseTimeSeries baseTimeSeries = BaseTimeSeries.toBaseTimeSeries(startTimestamp,endTimestamp,timeSeries);
-				
-		System.out.println("...end query");
+		System.out.println(result);
+		System.out.println(result_interpolated);	
 		
-		
-		System.out.println(baseTimeSeries);
-		System.out.println("timeSeries: "+timeSeries);
-		TimeSeries convertedTimeSeries = TimeSeries.toBaseTimeSeries(startTimestamp,endTimestamp,timeSeries);
-		
-		String nanValue = "NaN";
-		
-		CSV.write(convertedTimeSeries,"c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
-		CSV.write(baseTimeSeries,"c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(result,"c:/timeseriesdatabase_output/result.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(result_interpolated,"c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		System.out.println(timeSeriesDatabase.stationMap.get(plotID).nearestStationList);
 		String nearPlot = timeSeriesDatabase.stationMap.get(plotID).nearestStationList.get(0).plotID;
-		//String nearPlot = "HEG10";
-		TimeSeries timeSeriesNear = TimeSeries.toBaseTimeSeries(convertedTimeSeries.getFirstTimestamp(),convertedTimeSeries.getLastTimestamp(),timeSeriesDatabase.__OLD_queryBaseAggregatedData(nearPlot, querySensorNames , startTimestamp, endTimestamp));
-		CSV.write(timeSeriesNear,"c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+		TimeSeriesIterator near = qp.query_base_aggregated_interpolated(nearPlot, querySensorNames, result.getFirstTimestamp(), result.getLastTimestamp(), dataQuality);
 		
+		System.out.println(near);
 		
-		
-		//timeSeriesGapFilled.writeToCSV("k:/output/result.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
+		CSV.write(near,"c:/timeseriesdatabase_output/result_near.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
+
 		System.out.println("...end");
 	}
 

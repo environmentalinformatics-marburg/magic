@@ -60,7 +60,8 @@ public class TimeSeriesDatabase {
 	/**
 	 * EventStore is the storage of all time series
 	 */
-	public TimeSplitBTreeEventStore store;
+	//public TimeSplitBTreeEventStore store;
+	public StreamStorage streamStorage;
 	
 	/**
 	 * station/logger type name	->	LoggerType Object
@@ -103,20 +104,21 @@ public class TimeSeriesDatabase {
 	 */
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {		
 		log.trace("create TimeSeriesDatabase");		
-		FileInputStream configStream = null; 
+		/*FileInputStream configStream = null; 
 		try {
 			configStream = new FileInputStream(evenstoreConfigFile);
 		} catch (FileNotFoundException e) {
 			log.error(configStream);
 		}
-		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);
+		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);*/
+		this.streamStorage = new StreamStorage(databasePath, evenstoreConfigFile);
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
 		sensorMap = new TreeMap<String,Sensor>();//new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
 		baseAggregatonSensorNameSet = new HashSet<String>();		
-		store.open();		
+		//store.open();		
 	}
 	
 	/**
@@ -251,7 +253,8 @@ public class TimeSeriesDatabase {
 	 */
 	public void registerStreams() {
 		for(Station station:stationMap.values()) {
-			store.registerStream(station.plotID, station.getLoggerType().schema);
+			streamStorage.registerStream(station.plotID, station.getLoggerType().schema);
+			//store.registerStream(station.plotID, station.getLoggerType().schema);
 		}
 	}
 	
@@ -259,14 +262,16 @@ public class TimeSeriesDatabase {
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
-		store.clear();
+		streamStorage.clear();
+		//store.clear();
 	}
 	
 	/**
 	 * close EventStore, all pending stream data is written to disk
 	 */
 	public void close() {
-		store.close();
+		streamStorage.close();
+		//store.close();
 	}
 	
 	/**
@@ -518,9 +523,9 @@ public class TimeSeriesDatabase {
 	 * @param sql
 	 * @return iterator of raw sensor data
 	 */
-	public Iterator<Event> __OLD_query(String sql) {
+	/*public Iterator<Event> __OLD_query(String sql) {
 		return store.query(sql);		
-	}
+	}*/
 	
 	/**
 	 * query stream of plotID within startTime and endTime
@@ -531,128 +536,9 @@ public class TimeSeriesDatabase {
 	 * @param endTime
 	 * @return iterator over the stream of plotID with full schema
 	 */
-	public  Iterator<Event> __OLD_queryTimeSeries(String plotID, long startTime, long endTime) {
+	/*public  Iterator<Event> __OLD_queryTimeSeries(String plotID, long startTime, long endTime) {
 		return store.getHistoryRange(plotID, startTime, endTime);		
-	}
-	
-
-	
-	/**
-	 * Get base aggregated data
-	 * @param plotID
-	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	@Deprecated	
-	public TimestampSeries __OLD_queryBaseAggregatedData(String plotID, String[] querySensorNames, Long start, Long end) {		
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return TimestampSeries.EMPTY_TIMESERIES; 				
-		}
-		TimestampSeries timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, start, end);
-		return timeseries;
-	}
-	
-	/**
-	 * get time series with gap filled data if possible
-	 * @param plotID
-	 * @param querySensorNames
-	 * @param start	may be null
-	 * @param end	may be null
-	 * @return
-	 */
-	@Deprecated
-	public TimeSeries __OLD_queryBaseAggregatedDataGapFilled(String plotID, String [] querySensorNames, Long start, Long end) {		
-		final int STATION_INTERPOLATION_COUNT = 15;		
-		final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
-		//final int TIME_STEP = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
-		
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return null; 				
-		}
-		
-		TimestampSeries timeseries;
-		if(start==null) {
-			timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, null, end);
-		} else {
-			timeseries = station.__OLD_queryBaseAggregatedData(querySensorNames, start-TRAINING_TIME_INTERVAL, end);
-		}
-		
-		long startTimestamp = timeseries.getFirstTimestamp();
-		long endTimestamp = timeseries.getLastTimestamp();
-
-		TimeSeries resultBaseTimeSeries = TimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, timeseries);		
-
-		Station[] interpolationStations = new Station[STATION_INTERPOLATION_COUNT];
-		TimeSeries[] interpolationBaseTimeseries = new TimeSeries[STATION_INTERPOLATION_COUNT];
-		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
-			interpolationStations[i] = station.nearestStationList.get(i);
-			TimestampSeries interpolationTimeseries = interpolationStations[i].__OLD_queryBaseAggregatedData(querySensorNames, null, null);
-			interpolationBaseTimeseries[i] = TimeSeries.toBaseTimeSeries(startTimestamp, endTimestamp, interpolationTimeseries);
-		}		
-		
-		for(String parameterName:querySensorNames) {
-			if(sensorMap.get(parameterName).useInterpolation) {
-				Interpolator.process(interpolationBaseTimeseries, resultBaseTimeSeries, parameterName);
-			}
-		}		
-	
-		return resultBaseTimeSeries.getClipped(start, end);
-	}
-	
-	/**
-	 * get full time series of one plotid
-	 * @param plotID
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries __OLD_queryRawData(String plotID) {
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return TimestampSeries.EMPTY_TIMESERIES; 				
-		}
-		return station.__OLD_queryRawData(null,null,null);	
-	}
-	
-	/**
-	 * get full time series of one plotid
-	 * @param plotID
-	 * @param querySensorNames
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries __OLD_queryRawData(String plotID, String[] querySensorNames) {
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return TimestampSeries.EMPTY_TIMESERIES; 				
-		}
-		return station.__OLD_queryRawData(querySensorNames,null,null);	
-	}
-	
-	/**
-	 * get time series of one plotid and time interval
-	 * @param plotID
-	 * @param querySensorNames
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries __OLD_queryRawData(String plotID, String[] querySensorNames, Long start,Long end) {
-		Station station = stationMap.get(plotID);
-		if(station==null) {
-			log.warn("plotID not found: "+plotID);
-			return TimestampSeries.EMPTY_TIMESERIES; 				
-		}
-		return station.__OLD_queryRawData(querySensorNames,start,end);	
-	}
+	}*/	
 
 	/**
 	 * get array of Sensor objects with given sensor names
@@ -773,5 +659,9 @@ public class TimeSeriesDatabase {
 	
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
+	}
+	
+	public Station getStation(String plotID) {
+		return stationMap.get(plotID);		
 	}
 }

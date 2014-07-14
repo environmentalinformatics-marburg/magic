@@ -32,7 +32,6 @@ import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
 import timeseriesdatabase.raw.iterator.EventConverterIterator;
-import timeseriesdatabase.raw.iterator.QualityCheckIterator;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
@@ -45,24 +44,24 @@ import de.umr.jepc.store.Event;
  *
  */
 public class Station {
-	
+
 	private static final Logger log = Util.log;
-	
+
 	public TimeSeriesDatabase timeSeriesDatabase;
-	
+
 	/**
 	 * Stream name of this station
 	 */
 	public String plotID;
-	
+
 	public double geoPoslongitude;
 	public double geoPosLatitude;
-	
+
 	/**
 	 * general properties like logger type
 	 */
 	public Map<String, String> propertyMap;
-	
+
 	/**
 	 * translation map: input sensor name -> database sensor name
 	 * This map contains only entries that are specific for this Station (or plotID)
@@ -74,51 +73,35 @@ public class Station {
 	 * This name belongs to a GeneralStation Object
 	 */
 	public String generalStationName;
-	
+
 	/**
 	 * list of stations of same general station id ordered by position difference to this station
 	 */
 	public List<Station> nearestStationList;
-	
-	/**
-	 * This set contains all time stamps of inserted events.
-	 */
-	public Set<Long> insertedTimestampSet = null;
-	
-	/**
-	 * workaround for not ordered timestamps
-	 */
-	public Map<Long,Event> eventMap = null;
-	
-	/**
-	 * The greatest time stamp that was inserted so far.
-	 */
-	public long lastInsertTimestamp;
-	
+
 	/**
 	 * serial number of station: A19557, A2277, ...
 	 * not used currently - station is identified with plotID
 	 */
 	public String serialID = null;
-	
+
 	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
-		this.lastInsertTimestamp = -1;
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.propertyMap = propertyMap;
 		this.geoPoslongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
-		
+
 		sensorNameTranlationMap = new HashMap<String, String>();
 
-		
+
 		if(!plotID.equals(propertyMap.get("PLOTID"))) {
 			log.error("wrong plotID");
 		}
-		
+
 	}
-	
+
 	public LoggerType getLoggerType() {
 		LoggerType loggerType = timeSeriesDatabase.loggerTypeMap.get(propertyMap.get("LOGGER")); 
 		if(loggerType==null) {
@@ -133,19 +116,17 @@ public class Station {
 	 * @param stationPath
 	 */
 	public void loadDirectoryOfOneStation(Path stationPath) {
-		insertedTimestampSet = new HashSet<Long>(); // *** duplicate workaround
-		eventMap = new TreeMap<Long,Event>(); // *** workaround for not ordered timestamps
 		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
 		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
-		
+
 		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
-		
+
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(stationPath, x -> x.toString().endsWith(".dat"));
 			for(Path path:stream) {				
 				String fileName = path.getFileName().toString();
 				String prefix = fileName.substring(0,fileName.indexOf('_'));
-				
+
 				List<Path> list = fileNameMap.get(prefix);
 				if(list==null) {
 					list = new ArrayList<Path>();
@@ -156,15 +137,15 @@ public class Station {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 
-		
+		TreeMap<Long,Event> eventMap = new TreeMap<Long,Event>();
+
 		for(Entry<String, List<Path>> entry:fileNameMap.entrySet()) {
 			//String prefix = entry.getKey();
 			List<Path> pathList = entry.getValue();	
-			
+
 			List<List<Event>> eventsList = new ArrayList<List<Event>>();
-			
+
 			for(Path path:pathList) {
 				try {
 					UDBFTimestampSeries timeSeries = readUDBFTimeSeries(path);
@@ -172,31 +153,32 @@ public class Station {
 					if(eventList!=null) {
 						eventsList.add(eventList);
 					}
-					} catch (Exception e) {
-						log.error("file not read: "+path+"\t"+e);
-					}
+				} catch (Exception e) {
+					log.error("file not read: "+path+"\t"+e);
+				}
 			}
-			
+
 			@SuppressWarnings("unchecked")
 			Iterator<Event>[] iterators = new Iterator[eventsList.size()];
-			
+
 			for(int i=0;i<eventsList.size();i++) {
 				iterators[i]=eventsList.get(i).iterator();
 			}
-			
+
 			Event[] currentEvent = new Event[iterators.length];
-			
+
 			for(int i=0;i<iterators.length;i++) {
 				if(iterators[i].hasNext()) {
 					currentEvent[i] = iterators[i].next();
 				}				
 			}
-			
+
+
 			long currentTimestamp = -1;
 			Event collectorEvent = null;
-			
+
 			while(true) {
-				
+
 				int minIndex=-1;
 				long minTimeStamp = Long.MAX_VALUE;
 				for(int i=0;i<iterators.length;i++) {
@@ -207,14 +189,18 @@ public class Station {
 						}
 					}
 				}
-				
+
 				if(minIndex<0) {
 					break;
 				}
-				
+
 				if(currentTimestamp<currentEvent[minIndex].getTimestamp()) {
 					if(collectorEvent!=null) {
-						pushCheckedEvent(collectorEvent);
+						if(eventMap.containsKey(collectorEvent.getTimestamp())) {
+							//log.warn("event already inserted");
+						} else {
+							eventMap.put(collectorEvent.getTimestamp(), collectorEvent);
+						}
 					}
 					currentTimestamp = currentEvent[minIndex].getTimestamp();
 					collectorEvent = null;
@@ -230,69 +216,30 @@ public class Station {
 						}
 					}
 				}
-				
+
 				if(iterators[minIndex].hasNext()) {
 					currentEvent[minIndex] = iterators[minIndex].next();
 				} else {
 					currentEvent[minIndex] = null;
 				}
-				
+
 			}
-			
+
 			if(collectorEvent!=null) {
-				pushCheckedEvent(collectorEvent);
+				if(eventMap.containsKey(collectorEvent.getTimestamp())) {
+					//log.warn("event already inserted");
+				} else {
+					eventMap.put(collectorEvent.getTimestamp(), collectorEvent);
+				}
 			}			
-		}		
-		
-		insertedTimestampSet = null; // *** duplicate workaround
-		
-		// *** workaround for not ordered timestamps
-		for(Event event:eventMap.values()) {
-			//System.out.println(event.getTimestamp());
-			pushEvent(event.getPayload(),event.getTimestamp());
 		}	
-		eventMap = null; 
-		
-		timeSeriesDatabase.store.flushStream(plotID);
+
+		timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);
 	}
-	
-	/**
-	 * pushs event into database if there has not been inserted a same time stamp before.
-	 * @param event
-	 */
-	private void pushCheckedEvent(Event event) {
-		Object[] payload = event.getPayload();
-		long timestamp = event.getTimestamp();						
-		
-		if(insertedTimestampSet!=null) {
-			if(!insertedTimestampSet.contains(timestamp)) {
-				//pushEvent(payload,timestamp);
-				// *** workaround for not ordered timestamps
-				eventMap.put(event.getTimestamp(), event);
-				insertedTimestampSet.add(timestamp);
-			}
-		} else {			
-			//pushEvent(payload,timestamp);
-			// *** workaround for not ordered timestamps
-			eventMap.put(event.getTimestamp(), event);
-		}
-	}
-	
-	/**
-	 * psuh event into data base and updates lastInsertTimestamp.
-	 * @param payload
-	 * @param timestamp
-	 */
-	private void pushEvent(Object[] payload, long timestamp) {
-		timeSeriesDatabase.store.pushEvent(plotID, payload,timestamp);
-		if(lastInsertTimestamp>timestamp) {
-			log.warn("insert outdated timestemp: "+timestamp+" newest is "+lastInsertTimestamp+"\t"+plotID);
-		} else {
-			lastInsertTimestamp = timestamp;
-		}
-	}
-	
-	
+
+
+
+
 	/**
 	 * This method determines the database sensor name out of an input sensor name.
 	 * Steps:
@@ -325,8 +272,8 @@ public class Station {
 		}
 		return null;
 	}
-	
-	
+
+
 	/**
 	 * Reads an UDBF-File and return structured data as UDBFTimeSeries Object.
 	 * @param filename
@@ -340,8 +287,8 @@ public class Station {
 		udbFile.close();
 		return udbfTimeSeries;
 	}
-	
-	
+
+
 	/**
 	 * Convertes rows of input file data into events with matching schema of the event stream of this plotID 
 	 * @param udbfTimeSeries
@@ -349,15 +296,15 @@ public class Station {
 	 */
 	public List<Event> translateToEvents(UDBFTimestampSeries udbfTimeSeries) {
 		List<Event> resultList = new ArrayList<Event>(); // result list of events	
-		
+
 		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
 		int[] eventPos = new int[udbfTimeSeries.sensorHeaders.length];  
-		
+
 		LoggerType loggerType = getLoggerType();
-		
+
 		//sensor names contained in event stream schema
 		String[] sensorNames = getLoggerType().sensorNames;
-		
+
 
 		//creates mapping eventPos   (  udbf pos -> event pos )
 		for(int sensorIndex=0; sensorIndex<udbfTimeSeries.sensorHeaders.length; sensorIndex++) {
@@ -384,8 +331,7 @@ public class Station {
 				}
 			}
 		}
-		
-		
+
 		//mapping event index position -> sensor index position 
 		int[] sensorPos = new int[sensorNames.length];
 		for(int i=0;i<sensorPos.length;i++) {
@@ -398,13 +344,12 @@ public class Station {
 				sensorPos[eventPos[i]] = i;
 			}
 		}
-		
-		
+
 		if(validSensorCount<1) {
 			log.trace("no fitting sensors in "+udbfTimeSeries.filename);
 			return null; //all event columns are empty
 		}
-		
+
 		//create events
 		Object[] payload = new Object[loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
@@ -413,7 +358,7 @@ public class Station {
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
 			// one input row
 			float[] row = udbfTimeSeries.data[rowIndex];
-			
+
 			//fill event columns with input data values
 			for(int attrNr=0;attrNr<sensorNames.length;attrNr++) {
 				if(sensorPos[attrNr]<0) { // no input column
@@ -431,72 +376,8 @@ public class Station {
 			long timestamp = udbfTimeSeries.time[rowIndex];
 			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
 		}
-		
-		return resultList;
-	}
 
-	/**
-	 * Get base aggregated data
-	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
-	 * @param start start time stamp, if null start from oldest data
-	 * @param end end time stamp, if null get data up to newest data
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries __OLD_queryBaseAggregatedData(String[] querySensorNames, Long start, Long end) {
-		String[] schemaSensorNames = getLoggerType().sensorNames;
-		BaseAggregationProcessor baseAggregationProcessor = new BaseAggregationProcessor(timeSeriesDatabase,schemaSensorNames,querySensorNames, true, true, true);
-		Iterator<Event> it;
-		if(start!=null) {
-			long startTime = BaseAggregationTimeUtil.calcMinRawTimestampOfBaseAggregationTimestamp(start);
-			if(end!=null) {
-				long endTime = BaseAggregationTimeUtil.calcMaxRawTimestampOfBaseAggregationTimestamp(end);
-				it = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
-			} else {
-				it = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
-			}
-		} else {
-			if(end!=null) {
-				long endTime = BaseAggregationTimeUtil.calcMaxRawTimestampOfBaseAggregationTimestamp(end);
-				it = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
-			} else {
-				it = timeSeriesDatabase.store.getHistory(plotID);
-			}
-		}		
-		return baseAggregationProcessor.process(it);
-	}
-	
-	
-	
-	/**
-	 * Get raw sensor data
-	 * @param querySensorNames sensors in the result schema; if null all available sensors are in the result schema
-	 * @param start start time stamp, if null start from oldest data
-	 * @param end end time stamp, if null get data up to newest data
-	 * @return
-	 */
-	@Deprecated
-	public TimestampSeries __OLD_queryRawData(String[] querySensorNames, Long start, Long end) {
-		String[] schemaSensorNames = getLoggerType().sensorNames;
-		RawDataProcessor rawDataProcessor = new RawDataProcessor(getLoggerType().sensorNames, querySensorNames);
-		Iterator<Event> it;
-		if(start!=null) {
-			long startTime = start;
-			if(end!=null) {
-				long endTime = end;
-				it = timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
-			} else {
-				it = timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
-			}
-		} else {
-			if(end!=null) {
-				long endTime = end;
-				it = timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
-			} else {
-				it = timeSeriesDatabase.store.getHistory(plotID);
-			}
-		}		
-		return rawDataProcessor.process(it);
+		return resultList;
 	}
 	
 	@Override
@@ -504,27 +385,8 @@ public class Station {
 		return plotID;
 	}
 	
-	public Iterator<Event> queryRawEvents(String[] querySchema, Long start, Long end) {
-		if(start!=null) {
-			long startTime = start;
-			if(end!=null) {
-				long endTime = end;
-				return timeSeriesDatabase.store.getHistoryRange(plotID, startTime, endTime);
-			} else {
-				return timeSeriesDatabase.store.getFreshestHistory(plotID, startTime);
-			}
-		} else {
-			if(end!=null) {
-				long endTime = end;
-				return timeSeriesDatabase.store.getHistoryRange(plotID, Long.MIN_VALUE, endTime);
-			} else {
-				return timeSeriesDatabase.store.getHistory(plotID);
-			}
-		}
-	}
-
 	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
-		Iterator<Event> rawEventIterator = queryRawEvents(querySchema,start,end);
+		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(plotID,start,end);
 		if(rawEventIterator==null) {
 			return null;
 		}		
@@ -534,27 +396,6 @@ public class Station {
 		} else {
 			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
 		}
-	}
-	
-	@Deprecated
-	public TimeSeriesIterator queryRawQualityChecked(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		TimeSeriesIterator eventConverterIterator = queryRaw(querySchema, start, end);
-		TimeSeriesIterator qualityCheckIterator = new QualityCheckIterator(timeSeriesDatabase,eventConverterIterator,checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		return qualityCheckIterator;
-	}
-
-	@Deprecated
-	public TimeSeriesIterator queryBaseAggregated(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		TimeSeriesIterator it = queryRawQualityChecked(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		BaseAggregationIterator baseAggregationIterator = new BaseAggregationIterator(timeSeriesDatabase,it);
-		return baseAggregationIterator;
-	}
-	
-	@Deprecated
-	public TimeSeries queryBaseAggregatedTimeSeries(String[] querySchema, Long start, Long end, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
-		TimeSeriesIterator it = queryBaseAggregated(querySchema, start, end, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-		TimeSeriesIterator nanGapIt = new NanGapIterator(it, start, end);
-		return TimeSeries.create(nanGapIt);
 	}
 }
 

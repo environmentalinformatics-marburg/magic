@@ -25,7 +25,7 @@ import de.umr.jepc.store.Event;
 public class UseCaseQuery1 {
 
 	public static void main(String[] args) {
-		System.out.println("begin...");
+		/*System.out.println("begin...");
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		
@@ -85,7 +85,7 @@ public class UseCaseQuery1 {
 
 		
 		
-		System.out.println("...end");
+		System.out.println("...end");*/
 
 	}
 

@@ -13,7 +13,7 @@ import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
 
 /**
- * Processes all data checks and writes result in output quality flag.
+ * adds Quality flags to input data
  * @author woellauer
  *
  */

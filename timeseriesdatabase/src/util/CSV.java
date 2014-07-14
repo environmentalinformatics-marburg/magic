@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.iterator.TimeSeriesIterable;

@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package util;
 
 /**
  * time columns in CSV output files

@@ -10,8 +10,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
+import util.CSVTimeType;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesEntryIterator;

@@ -6,11 +6,9 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
@@ -18,6 +16,7 @@ import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.iterator.NanRemoveIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.CSV;
+import util.CSVTimeType;
 import util.iterator.TimeSeriesIterator;
 import util.iterator.TimeSeriesIteratorIterator;
 

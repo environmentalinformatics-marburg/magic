@@ -2,11 +2,11 @@ package usecase;
 
 import java.time.LocalDateTime;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.Interpolator;
 import util.CSV;
+import util.CSVTimeType;
 
 /**
  * use case of gap filler with synthetic data

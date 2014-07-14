@@ -24,7 +24,7 @@ import util.iterator.TimeSeriesIterator;
 
 /**
  * Aggregates input to high aggregated data values
- * input elements need to be base aggregated data
+ * input elements need to be in base aggregated data
  * @author woellauer
  *
  */

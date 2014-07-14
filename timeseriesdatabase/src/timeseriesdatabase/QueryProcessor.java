@@ -8,6 +8,7 @@ import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
+import timeseriesdatabase.aggregated.iterator.BadInterpolatedRemoveIterator;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeries;
@@ -51,27 +52,32 @@ public class QueryProcessor {
 		return Util.ifnull(qualityRemoveIterator, x->new BaseAggregationIterator(timeSeriesDatabase,x));
 	}
 	
+	public TimeSeriesIterator query_continuous_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
+		TimeSeriesIterator input_iterator = query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		return Util.ifnull(input_iterator, x->new NanGapIterator(input_iterator, queryStart, queryEnd));
+	}
+	
 	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
-		TimeSeriesIterator baseAggregatedQualityIterator = query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TimeSeriesIterator baseAggregatedQualityIterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		return Util.ifnull(baseAggregatedQualityIterator, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
 	}
 	
 	public TimeSeriesIterator query_base_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
-
-
-		Station station = timeSeriesDatabase.stationMap.get(plotID);
+		Station station = timeSeriesDatabase.getStation(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return null; 				
 		}
 
-		Long targetStart = queryStart==null ? null : queryStart-TRAINING_TIME_INTERVAL;
+		Long targetStart =  Util.ifnull(queryStart, x->x-TRAINING_TIME_INTERVAL);
 		Long targetEnd = queryEnd;	
 
-		TimeSeriesIterator target_iterator = query_base_aggregated(plotID, querySchema, targetStart, targetEnd, dataQuality);
-			
+		TimeSeriesIterator target_iterator =  query_continuous_base_aggregated(plotID, querySchema, targetStart, targetEnd, dataQuality);			
+		//target_iterator = new NanGapIterator(target_iterator, queryStart, queryEnd);
+		if(target_iterator==null) {
+			return null;
+		}
 		
-		target_iterator = new NanGapIterator(target_iterator, queryStart, queryEnd);
 		TimeSeries targetTimeSeries = TimeSeries.create(target_iterator);
 		if(targetTimeSeries==null) {
 			return null;
@@ -85,9 +91,8 @@ public class QueryProcessor {
 		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
 			Station sourceStation = nearestStationList.get(i);			
 		
-			TimeSeriesIterator source_iterator = query_base_aggregated(sourceStation.plotID, querySchema, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);
-			
-			source_iterator = new NanGapIterator(source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
+			TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.plotID, querySchema, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
+			//source_iterator = new NanGapIterator(source_iterator, interpolationStartTimestamp, interpolationEndTimestamp);			
 			sourceTimeseries[i] = TimeSeries.create(source_iterator);
 		}
 		
@@ -96,27 +101,29 @@ public class QueryProcessor {
 			interpolationSensorNames = station.getLoggerType().sensorNames;
 		}
 		
+		int interpolatedCount = 0;
 		for(String sensor:interpolationSensorNames) {
 			if(timeSeriesDatabase.sensorMap.get(sensor).useInterpolation) {
-				Interpolator.process(sourceTimeseries, targetTimeSeries, sensor);
+				interpolatedCount += Interpolator.process(sourceTimeseries, targetTimeSeries, sensor);
 			}
 		}
-
-		targetTimeSeries.hasDataInterpolatedFlag = true;
 		
-		return targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);		
+		if(interpolatedCount>0) { // Quality check interpolated values
+			
+		}
+
+		targetTimeSeries.hasDataInterpolatedFlag = true;		
+		TimeSeriesIterator clipIterator = targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
+		return new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
 	}
 	
 	
 	public TimeSeriesIterator query_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
-		TimeSeriesIterator input_iterator = query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		if(input_iterator==null) {
-			return null;
-		}
-		return new AggregationIterator(timeSeriesDatabase, input_iterator, aggregationInterval);		
+		TimeSeriesIterator input_iterator = query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);		
+		return Util.ifnull(input_iterator,x->new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
 	}
 	
-	public TimeSeriesIterator TestingAggregatadQualityQuery(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
+	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
 		if(interpolated) {
 			return query_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
 		} else {

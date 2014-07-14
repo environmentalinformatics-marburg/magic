@@ -3,6 +3,7 @@ package timeseriesdatabase.aggregated;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.logging.log4j.Logger;
 
@@ -22,6 +23,104 @@ public class Interpolator {
 	 * count of values for training to fill one gap
 	 */
 	public static final int TRAINING_VALUE_COUNT = 4*7*24; // four weeks with one hour time interval
+	
+	/**
+	 * maximum count of previous interpolated values in target training values
+	 */
+	//public static final int MAX_INTERPOLATED_IN_TRAINING_COUNT = 7*24;
+	public static final int MAX_INTERPOLATED_IN_TRAINING_COUNT = TRAINING_VALUE_COUNT; //!! TODO
+	
+	/**
+	 * minimum of different sources to interpolate from
+	 */
+	public static final int MIN_TRAINING_SOURCES = 2;
+
+	private static double[] createTargetTrainingArray(int gapPos, float[] data, boolean[] targetInterpolationFlags) {
+		double[] result = new double[TRAINING_VALUE_COUNT];
+		int startPos = gapPos-TRAINING_VALUE_COUNT;
+		int interpolatedCounter = 0;
+		for(int i=startPos;i<gapPos;i++) {
+			if(Float.isNaN(data[i])) {
+				return null;
+			} else {
+				if(targetInterpolationFlags[i]) {
+					interpolatedCounter++;
+					if(interpolatedCounter>MAX_INTERPOLATED_IN_TRAINING_COUNT) { // to much interpolated values in target
+						return null;
+					}
+				}				
+				result[i-startPos] = data[i];
+			}
+		}
+		return result;
+	}
+
+	private static double[] createSourceTrainingArray(int gapPos, float[] data) {
+		double[] result = new double[TRAINING_VALUE_COUNT+1];
+		int startPos = gapPos-TRAINING_VALUE_COUNT;		
+		for(int i=startPos;i<=gapPos;i++) {
+			if(Float.isNaN(data[i])) {
+				return null;
+			} else {
+				result[i-startPos] = data[i];
+			}
+		}
+		return result;
+	}
+
+	private static double[][] createTrainingMatrix(List<double[]> trainingSourceList) {		
+		double[][] trainingMatrix = new double[TRAINING_VALUE_COUNT][trainingSourceList.size()];
+
+		for(int sourceNr=0; sourceNr<trainingSourceList.size();sourceNr++) {
+			double[] source = trainingSourceList.get(sourceNr);
+			for(int rowNr=0;rowNr<TRAINING_VALUE_COUNT;rowNr++) {
+				trainingMatrix[rowNr][sourceNr] = source[rowNr];
+			}
+		}		
+
+		return trainingMatrix;
+	}
+
+
+	private static int processNew(float[][] inputSource, float[] target, boolean[] targetInterpolationFlags) {
+		int interpolatedgapCount = 0;
+		for(int gapPos=TRAINING_VALUE_COUNT;gapPos<target.length;gapPos++) {
+			if(Float.isNaN(target[gapPos])) { // gap found at gapPos
+				double[] trainingTarget = createTargetTrainingArray(gapPos,target, targetInterpolationFlags);
+				if(trainingTarget!= null) { // valid training target
+					ArrayList<double[]> trainingSourceList = new ArrayList<double[]>(inputSource.length);
+					for(int sourceNr=0;sourceNr<inputSource.length;sourceNr++) {
+						double[] trainingSource = createSourceTrainingArray(gapPos, inputSource[sourceNr]);
+						if(trainingSource!=null) {
+							trainingSourceList.add(trainingSource);
+						}
+					}
+					if(trainingSourceList.size()>=MIN_TRAINING_SOURCES) { // enough training sources
+						try {
+						double[][] trainingMatrix = createTrainingMatrix(trainingSourceList);
+						OLSMultipleLinearRegression olsMultipleLinearRegression = new OLSMultipleLinearRegression();
+						olsMultipleLinearRegression.newSampleData(trainingTarget, trainingMatrix);
+						double[] regressionParameters = olsMultipleLinearRegression.estimateRegressionParameters();
+						//*** fill gap
+						double gapValue = regressionParameters[0];
+						for(int sourceIndex=0; sourceIndex<trainingSourceList.size(); sourceIndex++) {							
+							gapValue += trainingSourceList.get(sourceIndex)[TRAINING_VALUE_COUNT]*regressionParameters[sourceIndex+1];							
+						}
+						target[gapPos] = (float) gapValue;
+						targetInterpolationFlags[gapPos] = true;						
+						interpolatedgapCount++;
+						//***
+						} catch(SingularMatrixException e) {
+							log.warn("interpolation not possible: "+e.toString()+" at "+gapPos);
+						}
+					}
+				}
+			}
+		}
+		return interpolatedgapCount;
+	}
+
+
 
 	/**
 	 * process gap filling of one target time series
@@ -32,7 +131,7 @@ public class Interpolator {
 	 * @param targetInterpolationFlags 
 	 * @param timeStep for all time series time difference between data values
 	 */
-	public static void process(long sourceStartTimestamp, float[][] inputSource, long targetStartTimestamp, float[] target, boolean[] targetInterpolationFlags, int timeStep) {
+	/*private static void process(long sourceStartTimestamp, float[][] inputSource, long targetStartTimestamp, float[] target, boolean[] targetInterpolationFlags, int timeStep) {
 
 		int interpolatedgapCount = 0;
 
@@ -161,34 +260,42 @@ public class Interpolator {
 
 		System.out.println("interpolatedgapCount: "+interpolatedgapCount);
 
-	}
+	}*/
 
 	/**
 	 * process gap filling of one target time series
-	 * @param sourceBaseTimeSeries
-	 * @param targetBaseTimeSeries
+	 * @param sourceTimeSeries
+	 * @param targetTimeSeries
 	 * @param parameterName the sensor name that should be gap filled
 	 */
-	public static void process(TimeSeries[] sourceBaseTimeSeries, TimeSeries targetBaseTimeSeries, String parameterName) {
-		final int timeStep = targetBaseTimeSeries.timeStep;
-		long sourceStartTimestamp = sourceBaseTimeSeries[0].startTimestamp;
-		float[][] source = new float[sourceBaseTimeSeries.length][];
-		for(int i=0;i<sourceBaseTimeSeries.length;i++) {
-			if(sourceStartTimestamp!=sourceBaseTimeSeries[i].startTimestamp) {
-				log.error("all sources need to have same startTimestamp");
-				return;
-			}
-			if(timeStep!=sourceBaseTimeSeries[i].timeStep) {
-				log.error("all sources need to have same time step");
-				return;
-			}
-			source[i] = sourceBaseTimeSeries[i].getValues(parameterName);
-		}
-		long targetStartTimestamp = targetBaseTimeSeries.startTimestamp;
-		float[] target = targetBaseTimeSeries.getValues(parameterName);
-		boolean[] targetInterpolationFlags = targetBaseTimeSeries.getInterpolationFlags(parameterName);
+	public static int process(TimeSeries[] sourceTimeSeries, TimeSeries targetTimeSeries, String parameterName) {
+		final int timeStep = targetTimeSeries.timeStep;
+		long startTimestamp = targetTimeSeries.getFirstTimestamp();
+		long endTimestamp = targetTimeSeries.getLastTimestamp();
+		float[] target = targetTimeSeries.getValues(parameterName);
+		boolean[] targetInterpolationFlags = targetTimeSeries.getInterpolationFlags(parameterName);
 
-		process(sourceStartTimestamp, source, targetStartTimestamp, target, targetInterpolationFlags, timeStep);
+		float[][] source = new float[sourceTimeSeries.length][];
+		for(int i=0;i<sourceTimeSeries.length;i++) {
+			if(startTimestamp!=sourceTimeSeries[i].getFirstTimestamp()) {
+				log.error("all sources need to have same startTimestamp");
+				return 0;
+			}
+			if(endTimestamp!=sourceTimeSeries[i].getLastTimestamp()) {
+				log.error("all sources need to have same endTimestamp");
+				return 0;
+			}
+			if(timeStep!=sourceTimeSeries[i].timeStep) {
+				log.error("all sources need to have same time step");
+				return 0;
+			}
+			source[i] = sourceTimeSeries[i].getValues(parameterName);
+		}
+
+		//process(startTimestamp, source, startTimestamp, target, targetInterpolationFlags, timeStep);
+		int interpolatedCount = processNew(source,target,targetInterpolationFlags);
+		System.out.println("interpolated in "+parameterName+": "+interpolatedCount);
+		return interpolatedCount;
 	}
 
 

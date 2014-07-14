@@ -34,7 +34,7 @@ public class RawDataProcessor {
 
 	public RawDataProcessor(String[] schemaSensorNames, String[] querySensorNames) {
 		parameterNames = getResultSchema(schemaSensorNames, querySensorNames);
-		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true);
+		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true, false);
 	}
 
 	public TimestampSeries process(Iterator<Event> it) {	

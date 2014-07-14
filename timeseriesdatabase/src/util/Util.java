@@ -80,8 +80,8 @@ public class Util {
 	 * @param warn warn if entry was not found in sourcePosStringArray
 	 * @return
 	 */
-	public static int[] stringArrayToPositionIndexArray(String resultNames[], String[] sourcePosStringArray, boolean warn) {
-		return stringArrayToPositionIndexArray(resultNames,StringArrayToMap(sourcePosStringArray),warn);
+	public static int[] stringArrayToPositionIndexArray(String resultNames[], String[] sourcePosStringArray, boolean warn, boolean exception) {
+		return stringArrayToPositionIndexArray(resultNames,StringArrayToMap(sourcePosStringArray), warn, exception);
 	}
 
 	/**
@@ -91,13 +91,16 @@ public class Util {
 	 * @param warn warn if entry was not found in sourcePosStringMap
 	 * @return
 	 */
-	public static int[] stringArrayToPositionIndexArray(String resultNames[], Map<String,Integer> sourcePosStringMap, boolean warn) {
+	public static int[] stringArrayToPositionIndexArray(String resultNames[], Map<String,Integer> sourcePosStringMap, boolean warn, boolean exception) {
 		int[] sourcePos = new int[resultNames.length];
 		for(int i=0;i<resultNames.length;i++) {
 			Integer pos = sourcePosStringMap.get(resultNames[i]);
 			if(pos==null) {
 				if(warn) {
 					log.warn("stringArrayToPositionIndexArray: "+resultNames[i]+" not in "+sourcePosStringMap);
+				}
+				if(exception) {
+					throw new RuntimeException("stringArrayToPositionIndexArray: "+resultNames[i]+" not in "+sourcePosStringMap);
 				}
 				sourcePos[i] = -1;
 			} else {
@@ -234,6 +237,15 @@ public class Util {
 		df.setGroupingSize(3);
 		df.setDecimalFormatSymbols(formatSymbols);
 		return df.format(n);
+	}
+	
+	public static int getIndexInArray(String text, String array[]) {
+		for(int i=0;i<array.length;i++) {
+			if(array[i].equals(text)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 }

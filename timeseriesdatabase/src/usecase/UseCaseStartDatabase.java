@@ -32,7 +32,7 @@ public class UseCaseStartDatabase {
 	private static final Logger log = Util.log;
 
 	public static void main(String[] args) {
-		System.out.println("begin...");
+		/*System.out.println("begin...");
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
 		
@@ -94,10 +94,10 @@ public class UseCaseStartDatabase {
         
         
         /* Create an SQL query */
-        Query query = new SQLQuery(sql);
+        //Query query = new SQLQuery(sql);
 
         /* Query the stream with the processing engine */
-        engine.processQuery(query);
+        //engine.processQuery(query);
 		
 		
 		
@@ -111,9 +111,9 @@ public class UseCaseStartDatabase {
 		
 		
 		
-		timeSeriesDatabase.close();
+		/*timeSeriesDatabase.close();
 		System.out.println("...end");
-		System.exit(0);
+		System.exit(0);*/
 
 	}
 

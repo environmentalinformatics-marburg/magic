@@ -23,7 +23,7 @@ import de.umr.jepc.store.Event;
  */
 public class UseCaseQueryOneTimeSeries {
 	public static void main(String[] args) {
-		
+		/*
 		
 		//String sql = "SELECT * FROM HEG01 WHERE tstart>="+timeStart+" AND tstart<="+timeEnd;
 		//String plotID = "HEG25";
@@ -87,7 +87,7 @@ public class UseCaseQueryOneTimeSeries {
 
 		
 		
-		System.out.println("...end");
+		System.out.println("...end");*/
 
 	}
 }

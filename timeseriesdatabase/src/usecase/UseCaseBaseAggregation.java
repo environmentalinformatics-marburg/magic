@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
+import util.CSVTimeType;
 import de.umr.eventstore.Stream;
 import de.umr.eventstore.processors.CSVProcessor;
 import de.umr.eventstore.processors.ProcessingEngine;
@@ -33,6 +35,7 @@ public class UseCaseBaseAggregation {
 		System.out.println("start database...");
 
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		System.out.println("query data...");
 		
@@ -46,9 +49,8 @@ public class UseCaseBaseAggregation {
 		//String[] queryParameterNames = new String[] {"Ta_200"};
 		String[] queryParameterNames = null;
 		
-		//TimeSeries timeSeries = timeSeriesDatabase.queryBaseAggregatedData(plotID, queryParameterNames, startTimestamp, endTimestamp);
-		//TimeSeries timeSeries = timeSeriesDatabase.queryRawData(plotID, queryParameterNames, startTimestamp, endTimestamp);
-		TimestampSeries timeSeries = timeSeriesDatabase.__OLD_queryBaseAggregatedData(plotID, queryParameterNames, null, null);
+		TimestampSeries timeSeries = TimestampSeries.create(qp.query_base_aggregated(plotID, queryParameterNames, null, null, DataQuality.NO));
+
 
 		
 		System.out.println("print part of timeseries...");

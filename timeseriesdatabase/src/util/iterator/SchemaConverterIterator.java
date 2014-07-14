@@ -15,7 +15,7 @@ public class SchemaConverterIterator extends MoveIterator {
 	public SchemaConverterIterator(TimeSeriesIterator input_iterator, String[] outputSchema, boolean fillWithNaN) {
 		super(new TimeSeriesSchema(outputSchema));
 		this.input_iterator = input_iterator;
-		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getOutputSchema(), !fillWithNaN);
+		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getOutputSchema(), !fillWithNaN, false);
 	}
 
 	@Override

@@ -2,13 +2,13 @@ package usecase;
 
 import java.util.List;
 
-import timeseriesdatabase.CSVTimeType;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import util.CSV;
+import util.CSVTimeType;
 import util.ProcessingChainEntry;
 import util.iterator.TimeSeriesIterator;
 

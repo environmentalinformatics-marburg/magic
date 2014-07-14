@@ -6,14 +6,14 @@ import java.util.function.Consumer;
 
 import javax.xml.ws.spi.Invoker;
 
-import timeseriesdatabase.CSVTimeType;
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.QueryProcessorOLD;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import util.CSV;
+import util.CSVTimeType;
 import util.iterator.TimeSeriesIterator;
 import util.iterator.TimeSeriesIteratorIterator;
 import timeseriesdatabase.aggregated.iterator.NanRemoveIterator;
@@ -23,7 +23,7 @@ public class EmpiricalRangeCalc {
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
-		QueryProcessorOLD qp = new QueryProcessorOLD(timeSeriesDatabase);
+		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 
 		//String plotID = "HEG01";
@@ -34,9 +34,6 @@ public class EmpiricalRangeCalc {
 		//String[] querySchema = null;
 		Long queryStart = null;
 		Long queryEnd = null;
-		boolean checkPhysicalRange = true;
-		boolean checkEmpiricalRange = false;
-		boolean checkStepRange = true;
 
 
 		String[] generalStationNames = new String[]{"HEG","HEW"};
@@ -46,8 +43,8 @@ public class EmpiricalRangeCalc {
 			GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
 			List<Station> stationList = generalStation.stationList;
 			
-			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.queryRawQualityChecked(station.plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange)));
-			
+			//TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.queryRawQualityChecked(station.plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange)));
+			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.plotID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
 			
 			//TimeSeriesIterator it = qp.queryRaw(plotID, querySchema, queryStart, queryEnd);		
 			//TimeSeriesIterator it = qp.queryQualityChecked(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);

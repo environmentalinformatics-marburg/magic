@@ -14,6 +14,11 @@ import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
 import de.umr.jepc.store.Event;
 
+/**
+ * Converts input events from EventStrore to TimeSeriesEntries 
+ * @author woellauer
+ *
+ */
 public class EventConverterIterator extends TimeSeriesIterator {	
 	private Iterator<Event> inputIterator;
 	private int[] eventPos;
@@ -21,7 +26,7 @@ public class EventConverterIterator extends TimeSeriesIterator {
 	public EventConverterIterator(String[] inputSchema, Iterator<Event> inputIterator, String[] outputSchema) {
 		super(TimeSeriesSchema.createJustSchema(outputSchema));
 		this.inputIterator = inputIterator;
-		eventPos = Util.stringArrayToPositionIndexArray(outputSchema, inputSchema, true);
+		eventPos = Util.stringArrayToPositionIndexArray(outputSchema, inputSchema, true, true);		
 	}
 
 	@Override

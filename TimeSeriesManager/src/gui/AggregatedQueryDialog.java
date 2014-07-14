@@ -32,10 +32,11 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import de.umr.jepc.util.Timer;
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.QueryProcessorOLD;
+
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
@@ -52,7 +53,7 @@ public class AggregatedQueryDialog extends Dialog {
 	private static Logger log = Util.log;
 
 	private TimeSeriesDatabase timeSeriesDatabase;
-	private QueryProcessorOLD qp;
+	private QueryProcessor qp;
 	private Timer queryTimer;
 
 	Canvas canvas;
@@ -79,7 +80,7 @@ public class AggregatedQueryDialog extends Dialog {
 	public AggregatedQueryDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		this.qp = new QueryProcessorOLD(timeSeriesDatabase);
+		this.qp = new QueryProcessor(timeSeriesDatabase);
 		setText("Query");
 	}
 
@@ -219,7 +220,8 @@ public class AggregatedQueryDialog extends Dialog {
 			queryTimer = new Timer();
 			queryTimer.start("query");
 			//queryResult = qp.queryBaseAggregatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
-			queryResult = qp.queryInterpolatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			//queryResult = qp.queryInterpolatedTimeSeries(plotID, new String[]{sensorName}, null, null, true, true, true);
+			queryResult = TimeSeries.create(qp.query_base_aggregated_interpolated(plotID, new String[]{sensorName}, null, null, DataQuality.EMPIRICAL));
 			queryTimer.stop("query");
 			updateViewData();
 			updateGUIInfo();
