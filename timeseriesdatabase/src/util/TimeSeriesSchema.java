@@ -71,37 +71,37 @@ public class TimeSeriesSchema {
 
 	}
 	
-	public boolean checkConsistency() {
+	public String checkConsistency() {
 		if(schema==null) {
-			return false;
-		}
-		if(schema.length<1) {
-			return false;
+			return "schema==null";
+		}		
+		if(schema.length==0) {
+			return "schema with no attributes";
 		}
 		if(schema.length!=columns) {
-			return false;
+			return "schema.length!=columns";
 		}
 		Set<String> set = new HashSet<String>();
 		for(int i=0;i<schema.length;i++) {
-			if(schema[i]==null&&schema[i].isEmpty()) {
-				return false;
+			if(schema[i]==null || schema[i].isEmpty()) {
+				return "empty attribute: "+i;
 			}
 			if(set.contains(schema[i])) {
-				return false;
+				return schema[i]+" duplicate attributes";
 			}
 			set.add(schema[i]);
 		}
 		if(constantTimeStep) {
 			if(timeStep<1) {
-				return false;
+				return "timeStep<1";
 			}
 		} else if(timeStep!=NO_CONSTANT_TIMESTEP){
-			return false;
+			return "!constantTimeStep && timeStep!=NO_CONSTANT_TIMESTEP";
 		}
 		if(isContinuous&&!constantTimeStep) {
-			return false;
+			return "isContinuous&&!constantTimeStep";
 		}
-		return true;
+		return null;
 	}
 
 	
@@ -114,8 +114,9 @@ public class TimeSeriesSchema {
 		this.hasQualityFlags = false;
 		this.hasInterpolatedFlags = false;
 		this.hasQualityCounters = false;
-		if(!checkConsistency()) {
-			throw new RuntimeException("schema not consistent");
+		String ret = checkConsistency();
+		if(ret!=null) {
+			throw new RuntimeException("schema not consistent: "+ret);
 		}
 	}
 	
@@ -128,8 +129,9 @@ public class TimeSeriesSchema {
 		this.hasQualityFlags = false;
 		this.hasInterpolatedFlags = false;
 		this.hasQualityCounters = false;
-		if(!checkConsistency()) {
-			throw new RuntimeException("schema not consistent");
+		String ret = checkConsistency();
+		if(ret!=null) {
+			throw new RuntimeException("schema not consistent: "+ret);
 		}
 	}
 	
@@ -142,8 +144,9 @@ public class TimeSeriesSchema {
 		this.hasQualityFlags = false;
 		this.hasInterpolatedFlags = false;
 		this.hasQualityCounters = false;
-		if(!checkConsistency()) {
-			throw new RuntimeException("schema not consistent");
+		String ret = checkConsistency();
+		if(ret!=null) {
+			throw new RuntimeException("schema not consistent: "+ret);
 		}
 	}
 	
@@ -156,8 +159,9 @@ public class TimeSeriesSchema {
 		this.hasQualityFlags = hasQualityFlags;
 		this.hasInterpolatedFlags = hasInterpolatedFlags;
 		this.hasQualityCounters = hasQualityCounters;
-		if(!checkConsistency()) {
-			throw new RuntimeException("schema not consistent");
+		String ret = checkConsistency();
+		if(ret!=null) {
+			throw new RuntimeException("schema not consistent: "+ret);
 		}
 	}
 	

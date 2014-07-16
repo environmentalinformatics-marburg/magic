@@ -230,6 +230,10 @@ public class TimeSeries implements TimeSeriesIterable {
 		return Util.StringArrayToMap(parameterNames).get(parameterName);
 
 	}
+	
+	public boolean containsParamterName(String parameterName) {
+		return Util.StringArrayToMap(parameterNames).containsKey(parameterName);
+	}
 
 	/**
 	 * get one data column

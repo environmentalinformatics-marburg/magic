@@ -479,7 +479,9 @@ public class TimeSeriesDatabase {
 						} else if(aggregateTypeText.toLowerCase().equals("average_wind_velocity")) {
 							aggregateType = AggregationType.AVERAGE_WIND_VELOCITY;							
 						} else if(aggregateTypeText.toLowerCase().equals("average_zero")) {
-							aggregateType = AggregationType.AVERAGE_ZERO;							
+							aggregateType = AggregationType.AVERAGE_ZERO;
+						} else if(aggregateTypeText.toLowerCase().equals("average_albedo")) {
+							aggregateType = AggregationType.AVERAGE_ALBEDO;	
 						} else {
 							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
 						}

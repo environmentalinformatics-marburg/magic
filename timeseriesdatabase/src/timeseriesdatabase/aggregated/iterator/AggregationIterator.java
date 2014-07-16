@@ -242,11 +242,15 @@ public class AggregationIterator extends MoveIterator {
 	/**
 	 * checks if enough values have been collected for one aggregation unit
 	 * @param collectorCount
+	 * @param aggregationType 
 	 * @return
 	 */
-	private boolean isValidAggregate(int collectorCount) {
+	private boolean isValidAggregate(int collectorCount, AggregationType aggregationType) {
 		//final int PERCENT = 50;
-		final int PERCENT = 90;
+		int PERCENT = 90;
+		if(aggregationType == AggregationType.AVERAGE_ALBEDO) {
+			PERCENT = (PERCENT*6)/24;
+		}
 		switch(aggregationInterval) {
 		case HOUR: { // TODO prevent aggregation of one hour in high aggregates
 			return collectorCount>0;
@@ -285,11 +289,12 @@ public class AggregationIterator extends MoveIterator {
 
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
 			//if(aggCnt[i]>0) {// at least one entry has been collected
-			if(isValidAggregate(aggCnt[i])) { // a minimum of values need to be collected
+			if(isValidAggregate(aggCnt[i], sensors[i].baseAggregationType)) { // a minimum of values need to be collected
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
 				case AVERAGE_ZERO:	
-				case AVERAGE_WIND_VELOCITY:	
+				case AVERAGE_WIND_VELOCITY:
+				case AVERAGE_ALBEDO:
 					resultData[i] = aggSum[i]/aggCnt[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;

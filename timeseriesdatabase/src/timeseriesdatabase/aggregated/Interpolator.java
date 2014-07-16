@@ -275,25 +275,28 @@ public class Interpolator {
 		float[] target = targetTimeSeries.getValues(parameterName);
 		boolean[] targetInterpolationFlags = targetTimeSeries.getInterpolationFlags(parameterName);
 
-		float[][] source = new float[sourceTimeSeries.length][];
+		//float[][] source = new float[sourceTimeSeries.length][];
+		ArrayList<float[]> sourceList = new ArrayList<float[]>(sourceTimeSeries.length);
 		for(int i=0;i<sourceTimeSeries.length;i++) {
-			if(startTimestamp!=sourceTimeSeries[i].getFirstTimestamp()) {
-				log.error("all sources need to have same startTimestamp");
-				return 0;
+			if(sourceTimeSeries[i]!=null && sourceTimeSeries[i].containsParamterName(parameterName)) {
+				if(startTimestamp!=sourceTimeSeries[i].getFirstTimestamp()) {
+					log.error("all sources need to have same startTimestamp");
+					return 0;
+				}
+				if(endTimestamp!=sourceTimeSeries[i].getLastTimestamp()) {
+					log.error("all sources need to have same endTimestamp");
+					return 0;
+				}
+				if(timeStep!=sourceTimeSeries[i].timeStep) {
+					log.error("all sources need to have same time step");
+					return 0;
+				}
+				sourceList.add(sourceTimeSeries[i].getValues(parameterName));
 			}
-			if(endTimestamp!=sourceTimeSeries[i].getLastTimestamp()) {
-				log.error("all sources need to have same endTimestamp");
-				return 0;
-			}
-			if(timeStep!=sourceTimeSeries[i].timeStep) {
-				log.error("all sources need to have same time step");
-				return 0;
-			}
-			source[i] = sourceTimeSeries[i].getValues(parameterName);
 		}
 
 		//process(startTimestamp, source, startTimestamp, target, targetInterpolationFlags, timeStep);
-		int interpolatedCount = processNew(source,target,targetInterpolationFlags);
+		int interpolatedCount = processNew(sourceList.toArray(new float[0][]),target,targetInterpolationFlags);
 		System.out.println("interpolated in "+parameterName+": "+interpolatedCount);
 		return interpolatedCount;
 	}

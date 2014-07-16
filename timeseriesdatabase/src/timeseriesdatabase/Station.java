@@ -393,9 +393,23 @@ public class Station {
 		String[] inputSchema = getLoggerType().sensorNames;		
 		if(querySchema==null) {
 			return new EventConverterIterator(inputSchema, rawEventIterator, inputSchema);
-		} else {
+		} else {			
 			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
 		}
+	}
+	
+	public String[] getValidSchemaEntries(String[] querySchema) {
+		Map<String, Integer> schemaMap = Util.StringArrayToMap(getLoggerType().sensorNames);
+		ArrayList<String> resultList = new ArrayList<String>();
+		for(String sensorName:querySchema) {
+			if(schemaMap.containsKey(sensorName)) {
+			resultList.add(sensorName);
+			}
+		}
+		if(resultList.size()==0) {
+			return null;
+		}
+		return resultList.toArray(new String[0]);
 	}
 }
 

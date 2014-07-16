@@ -15,6 +15,7 @@ import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
@@ -164,6 +165,12 @@ public class QueryDialog extends Dialog {
 		grpSensor.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		comboSensorName = new Combo(grpSensor, SWT.NONE);
+		comboSensorName.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateGUIinterpolated();
+			}
+		});
 
 		Group grpTime = new Group(composite, SWT.NONE);
 		grpTime.setText("Time");
@@ -274,8 +281,6 @@ public class QueryDialog extends Dialog {
 
 	}
 
-
-
 	private void runQuery() {
 
 		String plotID = comboPlotID.getText();
@@ -302,7 +307,12 @@ public class QueryDialog extends Dialog {
 		boolean checkPhysicalRange = false;
 		boolean checkStepRange = false;
 		boolean checkEmpiricalRange = false;
-		boolean useInterpolation = checkButtonInterpolated2.getSelection();
+		boolean useInterpolation;
+		if(checkButtonInterpolated2.isEnabled()) {
+			useInterpolation = checkButtonInterpolated2.getSelection();
+		} else {
+			useInterpolation = false;
+		}
 
 		//0:"no check", 1:"physical range", 2:"physical range + step range", 3:"physical range + step range + empirical range"
 		DataQuality dq = DataQuality.NO;
@@ -448,7 +458,19 @@ public class QueryDialog extends Dialog {
 			comboSensorName.setItems(new String[]{});
 			comboSensorName.setText("");
 		}
-
+		updateGUIinterpolated(); 
+	}
+	
+	protected void updateGUIinterpolated() {
+		String sensorName = comboSensorName.getText();
+		if(sensorName!=null && !sensorName.isEmpty()) {
+			Sensor sensor = timeSeriesDatabase.sensorMap.get(sensorName);
+			if(sensor != null) {
+				checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
+				return;
+			}
+		}
+		checkButtonInterpolated2.setEnabled(false);
 	}
 
 	void updateGUIAggregation() {

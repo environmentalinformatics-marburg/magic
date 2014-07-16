@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Sensor;
+import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
@@ -57,7 +58,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	int wind_cnt;
 	int[] columnEntryCounter;
 	//***
-	
+
 	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema, int timeStep) {
 		String[] schema = input_schema.schema;
 		boolean constantTimeStep = true;
@@ -66,7 +67,7 @@ public class BaseAggregationIterator extends MoveIterator {
 		boolean hasInterpolatedFlags = false;
 		boolean hasQualityCounters = false;
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
-		
+
 	}
 
 	public BaseAggregationIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
@@ -176,22 +177,42 @@ public class BaseAggregationIterator extends MoveIterator {
 		}
 	}
 
-	private void collectValues(float[] inputData) {
+	private void collectValues(float[] inputData, long timestamp) {
 		//collect values for aggregation
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
 			float value = (float) inputData[i];
-			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
-				System.out.println("NaN...");
-				value = 0;
-			}
-			if(!Float.isNaN(value)){
-				aggCnt[i] ++;					
-				aggSum[i] += value;
-				if(value>aggMax[i]) {
-					aggMax[i] = value;
 
+			switch(sensors[i].baseAggregationType) {
+			case AVERAGE_ALBEDO:
+				double hourTimestamp = timestamp/60d;
+				double hour = (hourTimestamp%24)+0;
+				if(10d<=hour && hour<=15d) {
+					System.out.println("albedo: "+TimeConverter.oleMinutesToLocalDateTime(timestamp));
+					if(!Float.isNaN(value)){
+						aggCnt[i] ++;					
+						aggSum[i] += value;
+						if(value>aggMax[i]) {
+							aggMax[i] = value;
+
+						}
+					}					
+				} else {
+					//aggCnt[i] ++; // !! compensate missing values at night
 				}
+				break;
+			default:
+				if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
+					System.out.println("NaN...");
+					value = 0;
+				}				
+				if(!Float.isNaN(value)){
+					aggCnt[i] ++;					
+					aggSum[i] += value;
+					if(value>aggMax[i]) {
+						aggMax[i] = value;
 
+					}
+				}				
 			}
 		}			
 		if(aggregate_wind_direction) {
@@ -221,7 +242,8 @@ public class BaseAggregationIterator extends MoveIterator {
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
 				case AVERAGE_ZERO:	
-				case AVERAGE_WIND_VELOCITY:	
+				case AVERAGE_WIND_VELOCITY:
+				case AVERAGE_ALBEDO:
 					resultData[i] = aggSum[i]/aggCnt[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
@@ -290,21 +312,21 @@ public class BaseAggregationIterator extends MoveIterator {
 						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);					
 						aggregation_timestamp = nextAggTimestamp;
 						collectQuality(entry.qualityFlag);
-						collectValues(inputData);
+						collectValues(inputData, timestamp);
 						return resultElement;
 					} else {
 						aggregation_timestamp = nextAggTimestamp;
 						collectQuality(entry.qualityFlag);
-						collectValues(inputData);
+						collectValues(inputData, timestamp);
 					}
 				} else {
 					aggregation_timestamp = nextAggTimestamp;
 					collectQuality(entry.qualityFlag);
-					collectValues(inputData);
+					collectValues(inputData, timestamp);
 				}
 			} else {
 				collectQuality(entry.qualityFlag);
-				collectValues(inputData);
+				collectValues(inputData, timestamp);
 			}
 		}  // end of while-loop for raw input-events
 
@@ -320,7 +342,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	public String getIteratorName() {
 		return "BaseAggregationIterator";
 	}
-	
+
 	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
