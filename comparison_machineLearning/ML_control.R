@@ -164,6 +164,7 @@ if (type=="classification") source("plotROCWithConfidence.R",echo=TRUE)
 ##################################################################################################################
 source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("VisualizationOfModelPrediction.R",echo=TRUE)
+if (type=="regression") source("RMSE_comp.R",echo=TRUE)
 if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
 if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
 ##################################################################################################################
