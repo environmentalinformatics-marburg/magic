@@ -100,7 +100,7 @@ if(shortTest){
   svm_cost=c(0.25, 2.00, 4.00, 32.00)
 }
 
-  
+
 
 ##################################################################################################################
 #                                    Set data paths according to "profil"
@@ -165,6 +165,7 @@ if (type=="classification") source("plotROCWithConfidence.R",echo=TRUE)
 source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("VisualizationOfModelPrediction.R",echo=TRUE)
 if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
+if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
 ##################################################################################################################
 ##################################################################################################################
 #                             Stop cluster and clear workspace

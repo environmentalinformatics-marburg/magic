@@ -129,16 +129,12 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
                                 y = list(at = yat, labels = ylabs))
                )
 
-#    datp[[i]]=update(datp[[i]],par.settings=list(superpose.polygon=list(col=c("palegreen3"," darkgreen","darkorange","red"))),
-#         auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,columns=4,rectangles=TRUE),
-#         strip = strip.custom(bg = "grey20", 
-#                            factor.levels =model[i],
-#                            par.strip.text = list(
-#                              col = "white", font = 2, cex = 1))
-#        )
 
-tmpdate=paste(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene])
-datp[[1]]=update(datp[[1]],par.settings=list(superpose.polygon=list(col=c("palegreen3"," darkgreen","darkorange","red"))),
+
+  }
+
+  tmpdate=paste(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene])
+  datp[[1]]=update(datp[[1]],par.settings=list(superpose.polygon=list(col=c("palegreen3"," darkgreen","darkorange","red"))),
                  auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,space="right",rectangles=TRUE), #columns=4
                  strip = strip.custom(bg = "grey20", 
                                       factor.levels =c("rf","nnet","svm"),
@@ -146,10 +142,9 @@ datp[[1]]=update(datp[[1]],par.settings=list(superpose.polygon=list(col=c("paleg
                                         col = "white", font = 2, cex = 1)),
                  main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
                             substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
-)
+  )
 
 
-  }
   comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
             datp[[2]]+ as.layer(lmplot, under = T),
             datp[[3]]+ as.layer(lmplot, under = T), 
