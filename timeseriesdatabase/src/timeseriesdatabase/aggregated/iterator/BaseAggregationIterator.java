@@ -187,7 +187,7 @@ public class BaseAggregationIterator extends MoveIterator {
 				double hourTimestamp = timestamp/60d;
 				double hour = (hourTimestamp%24)+0;
 				if(10d<=hour && hour<=15d) {
-					System.out.println("albedo: "+TimeConverter.oleMinutesToLocalDateTime(timestamp));
+					//System.out.println("albedo: "+TimeConverter.oleMinutesToLocalDateTime(timestamp));
 					if(!Float.isNaN(value)){
 						aggCnt[i] ++;					
 						aggSum[i] += value;

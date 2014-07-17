@@ -411,6 +411,19 @@ public class Station {
 		}
 		return resultList.toArray(new String[0]);
 	}
+	
+	public List<Station> getNearestStationsWithSensor(String sensorName) {
+		ArrayList<Station> result = new ArrayList<Station>();
+		for(Station station:nearestStationList) {
+			for(String name:station.getLoggerType().sensorNames) {
+				if(sensorName.equals(name)) {
+					result.add(station);
+					break;
+				}				
+			}
+		}
+		return result;
+	}
 }
 
 

@@ -33,36 +33,83 @@ public class QueryProcessor {
 		this.timeSeriesDatabase = timeSeriesDatabase;
 	}
 
+	/**
+	 * Query one unprocessed time series
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @return
+	 */
 	public TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		Station station = timeSeriesDatabase.stationMap.get(plotID);
 		return Util.ifnull(station,x->x.queryRaw(querySchema, queryStart, queryEnd),()->{log.warn("plotID not found: "+plotID);return null;});
 	}	
 
+	/**
+	 * Query one unprocessed time series with added quality flags
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @return
+	 */
 	public TimeSeriesIterator query_raw_with_quality_flags(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		TimeSeriesIterator input_iterator = query_raw(plotID, querySchema, queryStart, queryEnd);
 		return Util.ifnull(input_iterator, x->new QualityFlagIterator(timeSeriesDatabase,x));		
 	}
 
+	/**
+	 * Query one not aggregated time series with data values with low quality removed
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @return
+	 */
 	public TimeSeriesIterator query_raw_with_bad_quality_removed(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator qualityFlagIterator = query_raw_with_quality_flags(plotID, querySchema, queryStart, queryEnd);
 		return Util.ifnull(dataQuality, x->new BadQualityToNanIterator(qualityFlagIterator,x));		
 	}
 
+	/**
+	 * Query one base aggregated time series
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @return
+	 */
 	public TimeSeriesIterator query_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator qualityRemoveIterator = query_raw_with_bad_quality_removed(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		return Util.ifnull(qualityRemoveIterator, x->new BaseAggregationIterator(timeSeriesDatabase,x));
 	}
 
+	/**
+	 * Query one base aggregated time series with added nan-elements in data gaps in time
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @return
+	 */
 	public TimeSeriesIterator query_continuous_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator input_iterator = query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		return Util.ifnull(input_iterator, x->new NanGapIterator(input_iterator, queryStart, queryEnd));
 	}
 
-	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
-		TimeSeriesIterator baseAggregatedQualityIterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		return Util.ifnull(baseAggregatedQualityIterator, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
-	}
-
+	/**
+	 * Query one base aggregated time series with added interpolated or nan-elements for data gaps in time
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @return
+	 */
 	public TimeSeriesIterator query_base_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		Station station = timeSeriesDatabase.getStation(plotID);
 		if(station==null) {
@@ -126,13 +173,49 @@ public class QueryProcessor {
 		TimeSeriesIterator clipIterator = targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
 		return new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
 	}
+	
+	/**
+	 * Query one high aggregated time series without interpolation
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @param aggregationInterval
+	 * @return
+	 */
+	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
+		TimeSeriesIterator baseAggregatedQualityIterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		return Util.ifnull(baseAggregatedQualityIterator, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
+	}
 
 
+	/**
+	 * Query one high aggregated time series with interpolation
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @param aggregationInterval
+	 * @return
+	 */
 	public TimeSeriesIterator query_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
 		TimeSeriesIterator input_iterator = query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);		
 		return Util.ifnull(input_iterator,x->new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
 	}
 
+	/**
+	 * Query one high aggregated time series with or without interpolation
+	 * @param plotID
+	 * @param querySchema
+	 * @param queryStart
+	 * @param queryEnd
+	 * @param dataQuality
+	 * @param aggregationInterval
+	 * @param interpolated
+	 * @return
+	 */
 	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
 		if(interpolated) {
 			return query_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);

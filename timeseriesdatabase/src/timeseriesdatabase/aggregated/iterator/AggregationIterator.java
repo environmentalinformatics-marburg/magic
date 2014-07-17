@@ -421,7 +421,7 @@ public class AggregationIterator extends MoveIterator {
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData, inputQuality, inputInterpolated);
 						} else {	
-							TimeSeriesEntry resultElement = TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+							TimeSeriesEntry resultElement = TimeSeriesEntry.createNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData, inputQuality, inputInterpolated);
 							return resultElement;
@@ -442,7 +442,7 @@ public class AggregationIterator extends MoveIterator {
 		if(aggregatedPair!=null) {
 			return new TimeSeriesEntry(aggregation_timestamp, null, aggregatedPair);
 		} else if(dataInAggregateCollection) { //insert NaN element at end //?? TODO testing
-			return TimeSeriesEntry.getNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+			return TimeSeriesEntry.createNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
 		} else {
 			return null; //no elements left
 		}

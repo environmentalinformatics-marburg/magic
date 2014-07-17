@@ -422,7 +422,7 @@ public class TimeSeries implements TimeSeriesIterable {
 				} else {
 					long timestamp = startTimestamp+(pos*timeStep);
 					pos++;
-					return TimeSeriesEntry.getNaN(timestamp, parameterNames.length);
+					return TimeSeriesEntry.createNaN(timestamp, parameterNames.length);
 				}
 			} else {
 				throw new RuntimeException("iterator out of range");

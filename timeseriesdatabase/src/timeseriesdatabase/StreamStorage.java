@@ -15,6 +15,11 @@ import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
 import de.umr.jepc.util.enums.TimeRepresentation;
 
+/**
+ * This class encapsulates EventStore and provides basic methods store and query time series data. 
+ * @author woellauer
+ *
+ */
 public class StreamStorage {
 
 	private static final Logger log = Util.log;
@@ -37,14 +42,25 @@ public class StreamStorage {
 
 	}
 
+	/**
+	 * deletes all time series.
+	 */
 	public void clear() {
 		store.clear();		
 	}
 
+	/**
+	 * closes all open files and flushes pending data to disk.
+	 */
 	public void close() {
 		store.close();		
 	}
 
+	/**
+	 * Saves new data on disk. If some timestamps exist already in database, no data is overwritten.
+	 * @param streamName
+	 * @param eventMap
+	 */
 	public void insertData(String streamName, TreeMap<Long,Event> eventMap) {
 
 		long startTimestamp = eventMap.firstKey();
@@ -73,6 +89,13 @@ public class StreamStorage {
 		store.flushStream(streamName);
 	}
 
+	/**
+	 * Basic method for all queries
+	 * @param streamName
+	 * @param start may be null
+	 * @param end may be null
+	 * @return iterator of events
+	 */
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
 		if(start!=null) {
 			long startTime = start;

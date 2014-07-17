@@ -25,6 +25,9 @@ public class NanGapIterator extends MoveIterator {
 	private static final Logger log = Util.log;
 
 	SchemaIterator<TimeSeriesEntry> input_iterator;
+	/**
+	 * timestamp of next Element to output
+	 */
 	long currTimestamp;
 	TimeSeriesEntry nextElement;
 	
@@ -91,30 +94,37 @@ public class NanGapIterator extends MoveIterator {
 
 	@Override
 	protected TimeSeriesEntry getNext() {
+		//System.out.println(this.getClass()+"  getNext()");
 		if(nextElement==null) {
 			if(endTimestamp==null) {
 			return null;
 			} else {
 				if(currTimestamp<=endTimestamp) {
-					TimeSeriesEntry nanElement = TimeSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
+					TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
 					currTimestamp += outputTimeSeriesSchema.timeStep;
+					//System.out.println(this.getClass()+" "+currTimestamp+" "+nanElement);
 					return nanElement;
 				} else {
 					return null;
 				}
 			}
 		} else if(currTimestamp<nextElement.timestamp) { // fill stream with NaN elements
-			TimeSeriesEntry nanElement = TimeSeriesEntry.getNaN(currTimestamp, input_iterator.getOutputSchema().length);
+			TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
 			currTimestamp += outputTimeSeriesSchema.timeStep;
 			return nanElement;
 		} else if(currTimestamp==nextElement.timestamp) { // output current element
 			currTimestamp += outputTimeSeriesSchema.timeStep;
 			TimeSeriesEntry currElement = nextElement;			
 			if(input_iterator.hasNext()) {
-				nextElement = input_iterator.next();
+				TimeSeriesEntry temp = input_iterator.next();
+				if(temp.timestamp<=nextElement.timestamp) {
+					log.error("timestamp error in input iterator");
+				}
+				nextElement = temp;
 			} else {
 				nextElement=null;
-			}			
+			}
+			//System.out.println(this.getClass()+" "+currTimestamp+" "+currElement);
 			return currElement;
 		} else {
 			log.error("timestamp error in NanGapIterator");

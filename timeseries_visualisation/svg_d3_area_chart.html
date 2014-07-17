@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>svg d3 area chart</title>
+        <script type="text/javascript" src="d3.js"></script>
+		<style type="text/css">
+		
+		.axis path,
+		.axis line {
+					fill: none;
+					stroke: black;
+					shape-rendering: crispEdges;
+					}
+					
+		.axis text {
+					font-family: sans-serif;
+					font-size: 11px;
+					}
+			
+		</style>
+    </head>
+    <body>
+        <script type="text/javascript">
+		
+		var w = window.innerWidth-60;
+		var h = window.innerHeight-20;
+		
+		var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
+		
+							
+		
+		
+		
+		
+		
+		var padding = 40;
+		
+		var parseDate = d3.time.format.utc("%Y-%m-%dT%H:%M").parse;
+		
+		var csvDataFunc = function(error, rows) {
+		
+		var dataset = rows
+
+		var xScale = d3.time.scale()
+					  .domain(d3.extent(dataset, function(d) {return d[0];}))
+					  .range([padding,w-padding]);		
+					 
+		var yScale = d3.scale.linear()
+					 .domain([d3.min(dataset, function(d) {return d[1];}),
+					          d3.max(dataset, function(d) {return d[1];})
+							  ])
+					 .range([h-padding,padding])
+					 .nice();
+
+		var xAxis = d3.svg.axis()
+						  .scale(xScale)
+						  .orient("bottom");
+						  
+		var yAxis = d3.svg.axis()
+					      .scale(yScale)
+						  .orient("left");
+			
+		
+		
+		
+		
+		   
+		/*
+		svg.append("path")
+      .datum(data)
+      .attr("class", "area")
+      .attr("d", area);
+		*/
+
+
+		var area = d3.svg.area()
+							.x(function(d) { return xScale(d[0]); })
+							.y0(function(d) { if(isNaN(d[1])) return h-padding; else return yScale(d[1]); })
+							//.y1(function(d) { return yScale(0); });
+							.y1(h-padding);
+							
+		//var dataset = [[10,10],[20,5],[30,15],[40,10],[50,15]];					
+							
+		svg.append("path")
+		   .datum(dataset)
+		   .attr("d", area)
+		   .attr("fill","rgb(230,230,230)");	
+
+
+		svg.selectAll("circle").data(dataset).enter().append("circle")
+		   .attr("cx", function(d) {return xScale(d[0]);})
+		   .attr("cy", function(d) {return yScale(d[1]);})
+		   .attr("r", 0.5)
+		   .attr("fill", "rgb(0,0,0)");		   
+
+		/*var area = d3.svg.area()
+							.x(function(d) { return xScale(d[0]); })
+							.y0(function(d) { return yScale(d[1])-20; })
+							.y1(function(d) { return yScale(d[1]); });*/			
+		   
+		/*svg.selectAll("path").data(dataset).enter().append("path")
+			.attr("d",area)
+			.attr("fill","steelblue")*/
+			
+		/*svg.append("path")
+		   .datum(dataset)
+		   .attr("d", area)
+		   .attr("fill","steelblue");*/	 
+			
+		
+
+		//<path d="M150 0 L75 200 L225 200 Z" />
+		//svg.append("path").attr("d","M150 0 L75 200 L225 200 Z")
+		//svg.append("path").attr("d",d3.svg.area([1,2,3]));
+		   
+		svg.append("g").attr("class", "axis")
+					   .attr("transform", "translate(0,"+ (h-padding)+")")
+					   .call(xAxis);
+
+
+					   
+		svg.append("g").attr("class", "axis")
+					   .attr("transform", "translate("+padding+",0)")
+					   .call(yAxis);
+					   
+		}
+
+		/*var a = d3.csv("timeseries_Ta_200.csv")
+		          .row(function(d) {if(isNaN(d.Ta_200)) return [parseDate(d.datetime), 0]; else return [parseDate(d.datetime), +d.Ta_200];})
+				  .get(csvDataFunc);*/
+		
+		d3.csv("timeseries_Ta_200.csv")
+		          .row(function(d) {return [parseDate(d.datetime), +d.Ta_200];})
+				  .get(csvDataFunc);					  
+		
+
+        </script>		
+    </body>
+</html> 

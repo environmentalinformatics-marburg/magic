@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -238,7 +239,7 @@ public class Util {
 		df.setDecimalFormatSymbols(formatSymbols);
 		return df.format(n);
 	}
-	
+
 	public static int getIndexInArray(String text, String array[]) {
 		for(int i=0;i<array.length;i++) {
 			if(array[i].equals(text)) {
@@ -246,6 +247,40 @@ public class Util {
 			}
 		}
 		return -1;
+	}
+
+	public static <S, T> int fillArray(Collection<S> collection, T[] array, Function<S,T> transform) {
+		return fillArray(collection.iterator(),array,transform);
+	}
+	
+	public static <S, T> int fillArray(Iterator<S> input_iterator, T[] array, Function<S,T> transform) {
+		Iterator<T> it = new Iterator<T>(){
+			@Override
+			public boolean hasNext() {
+				return input_iterator.hasNext();
+			}
+			@Override
+			public T next() {
+				return transform.apply(input_iterator.next());
+			}
+		};
+		return fillArray(it,array);
+	}
+
+	public static <T> int fillArray(Collection<T> collection, T[] array) {
+		return fillArray(collection.iterator(),array);
+	}
+
+	public static <T> int fillArray(Iterator<T> input_iterator, T[] array) {
+		int counter=0;
+		while(input_iterator.hasNext()) {
+			if(counter>=array.length) {
+				return counter;
+			}
+			array[counter]=input_iterator.next();
+			counter++;
+		}
+		return counter;
 	}
 
 }

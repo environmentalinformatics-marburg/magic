@@ -53,7 +53,7 @@ public class TimeSeriesEntry {
 		}
 	}
 
-	public static TimeSeriesEntry getNaN(long timestamp, int columnCount) {
+	public static TimeSeriesEntry createNaN(long timestamp, int columnCount) {
 		return new TimeSeriesEntry(timestamp, getNanData(columnCount), getNanQuality(columnCount));
 	}
 
