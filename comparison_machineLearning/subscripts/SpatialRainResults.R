@@ -176,7 +176,7 @@ datp[[1]]=update(datp[[1]],strip = strip.custom(bg = "grey20",
 
 
 diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20", 
-                                                  factor.levels =c("rf [mm/1h]","nnet[mm/1h]","svm[mm/1h]"),
+                                                  factor.levels =c("rf[mm/1h]","nnet[mm/1h]","svm[mm/1h]"),
                                                   par.strip.text = list(
                                                     col = "white", font = 2, cex = 1)),
                   main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
