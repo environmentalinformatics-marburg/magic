@@ -152,18 +152,16 @@ if (doParallel){
 #                                           Preprocessing
 ##################################################################################################################
 source("Preprocessing.R",echo=TRUE)
-#source("VisualizationOfInput.R")
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################
 source("RunModels.R",echo=TRUE)
 source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
-if (type=="classification") source("plotROCWithConfidence.R",echo=TRUE)
 ##################################################################################################################
 #                             Prediction and Validation
 ##################################################################################################################
 source("PredictModels.R",echo=TRUE)
-if (type=="classification") source("VisualizationOfModelPrediction.R",echo=TRUE)
+if (type=="classification") source("ROC_comp.R",echo=TRUE)
 if (type=="regression") source("RMSE_comp.R",echo=TRUE)
 if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
 if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
