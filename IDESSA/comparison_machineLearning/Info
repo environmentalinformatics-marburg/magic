@@ -1,0 +1,8 @@
+####
+# INPUT DATA
+###
+Raster of X coordinates with name: 000000000000_00000_ml02danb1_na001_1000_rg01de_003000.rst
+Raster of Y Coordinates with name: 000000000000_00000_ml01danb1_na001_1000_rg01de_003000.rst
+Base Raster with name: baseRaster_de.tiff
+Input table with "dat" ending
+Land sea mask with name: europe_landsea_mask.rst
