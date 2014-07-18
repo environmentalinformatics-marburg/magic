@@ -59,6 +59,40 @@ if (response=="RInfo"){
     legend("bottomright",col=color,lty=c(1),legend=c(legendnames, "Random 0.5"),bty="n")
   dev.off()
 }
+
+##################################################################################################################
+#                                                 ROC per scene With Conficence
+##################################################################################################################
+pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
+  col=c("black","red","blue","darkgreen","red")
+  auc=c()
+  aucvals=list()
+  for (i in 1:length(model)){
+    modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
+    predframe=list()
+    obsframe=list()
+    for (scene in 1:length(unique(eval(parse(text=paste("modeldata$",dateField,sep="")))))){
+      predframe[[scene]]=modeldata$predicted_prob$rain[eval(parse(text=paste("modeldata$",dateField,sep="")))==
+                                                 unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))[scene]]
+      obsframe[[scene]]=modeldata$observed[eval(parse(text=paste("modeldata$",dateField,sep="")))==
+                                     unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))[scene]]
+    }
+
+    pred <- prediction(predframe,obsframe)
+
+    perf <- performance(pred, "tpr", "fpr") 
+    aucvals[[i]]=unlist(performance(pred, measure="auc")@y.values)
+    auc[i]=mean(unlist(performance(pred, measure="auc")@y.values))
+    if (i==1) plot(perf,avg="vertical",spread.estimate="stderror",col=col[i],spread.scale=2)
+    if (i>1) plot(perf,avg="vertical",spread.estimate="stderror",add=TRUE,col=col[i],spread.scale=2)
+    }
+  legend("bottomright",legend=paste(model,round(auc,3)),col=col[1:length(model)],lwd=1,bty="n")
+dev.off()
+
+
+
+
+
 ##################################################################################################################
 #                                                 CROSSTABS
 ##################################################################################################################

@@ -23,7 +23,7 @@ if (any(model=="svm")){
 }
 
 ######Land sea mask
-lm <- raster("/home/hanna/Documents/Projects/IDESSA/Precipitation/skrips/figure_seviri2latlon_rinfo/europe_landsea_mask.rst"
+lm <- raster(paste(datapath,"/europe_landsea_mask.rst",sep=""))
              , native = T, crs = "+proj=longlat +datum=WGS84")
 
 ext <- extent(c(4, 17, 47.0, 54.45))
@@ -48,9 +48,9 @@ xlabs = ifelse(xat < 0, paste(xat, "°W", sep = ""),
 #get x and y coordinates 
 #######################
 
-y=raster("/home/hanna/Documents/Projects/IDESSA/Precipitation/skrips/meteosat_de/000000000000_00000_ml01danb1_na001_1000_rg01de_003000.rst", 
+y=raster(paste(datapath,"/000000000000_00000_ml01danb1_na001_1000_rg01de_003000.rst",sep=""), 
          native = T, crs = "+proj=longlat +datum=WGS84")
-x=raster("/home/hanna/Documents/Projects/IDESSA/Precipitation/skrips/meteosat_de/000000000000_00000_ml02danb1_na001_1000_rg01de_003000.rst", 
+x=raster(paste(datapath,"/000000000000_00000_ml02danb1_na001_1000_rg01de_003000.rst", sep=""),
          native = T, crs = "+proj=longlat +datum=WGS84")
 
 #load rastervorlage von sagaraster

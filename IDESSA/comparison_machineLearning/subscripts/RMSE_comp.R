@@ -18,12 +18,9 @@ load(paste(resultpath,"/testing.RData",sep=""))
 RMSE=list()
 for (i in 1:length(model)){
   modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
-  RMSE[[i]]=matrix(nrow=length(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))),ncol=2)
-  for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep="")))))){
-    RMSE[[i]][,1]=unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))
-    RMSE[[i]][scene,2]=rmse(modeldata$observed[modeldata$chDate==unique(modeldata$chDate)[scene]],modeldata$prediction[modeldata$chDate==unique(modeldata$chDate)[scene]])
-  }
+  RMSE[[i]]=rmsePerScene(modeldata,dateField)
 }
+
 
 ######BOXPLOTS#################################################
 RMSE_all=RMSE[[1]][,2]
