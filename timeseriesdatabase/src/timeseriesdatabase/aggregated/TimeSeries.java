@@ -256,7 +256,7 @@ public class TimeSeries implements TimeSeriesIterable {
 	 * @param clipEnd	may be null if no clipping is needed
 	 * @return
 	 */
-	@Deprecated	
+	/*@Deprecated	
 	public TimeSeries getClipped(Long clipStart, Long clipEnd) {
 		long clipStartTimestamp = clipStart==null?this.startTimestamp:clipStart;
 		long clipEndTimestamp = clipEnd==null?this.startTimestamp+((this.data[0].length-1)*this.timeStep):clipEnd;	
@@ -289,7 +289,7 @@ public class TimeSeries implements TimeSeriesIterable {
 		}
 
 		return new TimeSeries(Util.createList(processingChain,new ProcessingChainTitle("clip")),this.parameterNames, clipStartTimestamp, timeStep, resultData, resultQuality, resultInterpolated);
-	}
+	}*/
 
 	/**
 	 * get timestamp of first data entry

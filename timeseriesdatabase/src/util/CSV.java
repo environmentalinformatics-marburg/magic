@@ -28,6 +28,10 @@ public class CSV {
 	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(input, filename, separator, nanText, csvTimeType, false);
 	}
+	
+	public static void write(TimeSeriesIterable input, String filename) {
+		write(input, filename, ",", "NA", CSVTimeType.TIMESTAMP_AND_DATETIME);
+	}
 
 	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag) {
 		write(input.timeSeriesIterator(), filename, separator, nanText, csvTimeType, qualityFlag, false);

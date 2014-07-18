@@ -12,6 +12,11 @@ import util.TimeSeriesSchema;
 import util.iterator.MoveIterator;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * Processed all interpolated values and removes all values that are of low quality.
+ * @author woellauer
+ *
+ */
 public class BadInterpolatedRemoveIterator extends MoveIterator {
 	
 	private TimeSeriesIterator input_iterator;

@@ -35,6 +35,13 @@ public class Interpolator {
 	 */
 	public static final int MIN_TRAINING_SOURCES = 2;
 
+	/**
+	 * Creates an array with size of TRAINING_VALUE_COUNT and checks count of previous interpolated data values
+	 * @param gapPos
+	 * @param data
+	 * @param targetInterpolationFlags
+	 * @return
+	 */
 	private static double[] createTargetTrainingArray(int gapPos, float[] data, boolean[] targetInterpolationFlags) {
 		double[] result = new double[TRAINING_VALUE_COUNT];
 		int startPos = gapPos-TRAINING_VALUE_COUNT;
@@ -55,6 +62,12 @@ public class Interpolator {
 		return result;
 	}
 
+	/**
+	 * Creates an array with size of TRAINING_VALUE_COUNT + 1 of training data plus values for interpolation value calculation.
+	 * @param gapPos
+	 * @param data
+	 * @return
+	 */
 	private static double[] createSourceTrainingArray(int gapPos, float[] data) {
 		double[] result = new double[TRAINING_VALUE_COUNT+1];
 		int startPos = gapPos-TRAINING_VALUE_COUNT;		
@@ -68,6 +81,11 @@ public class Interpolator {
 		return result;
 	}
 
+	/**
+	 * Creates a matrix of all training arrays as input for OLSMultipleLinearRegression.
+	 * @param trainingSourceList
+	 * @return
+	 */
 	private static double[][] createTrainingMatrix(List<double[]> trainingSourceList) {		
 		double[][] trainingMatrix = new double[TRAINING_VALUE_COUNT][trainingSourceList.size()];
 
@@ -82,6 +100,13 @@ public class Interpolator {
 	}
 
 
+	/**
+	 * Tries to interpolate all nan-Values in target and sets for interpolated values flags in targetInterpolationFlags.
+	 * @param inputSource
+	 * @param target
+	 * @param targetInterpolationFlags
+	 * @return
+	 */
 	private static int processNew(float[][] inputSource, float[] target, boolean[] targetInterpolationFlags) {
 		int interpolatedgapCount = 0;
 		for(int gapPos=TRAINING_VALUE_COUNT;gapPos<target.length;gapPos++) {
@@ -97,19 +122,19 @@ public class Interpolator {
 					}
 					if(trainingSourceList.size()>=MIN_TRAINING_SOURCES) { // enough training sources
 						try {
-						double[][] trainingMatrix = createTrainingMatrix(trainingSourceList);
-						OLSMultipleLinearRegression olsMultipleLinearRegression = new OLSMultipleLinearRegression();
-						olsMultipleLinearRegression.newSampleData(trainingTarget, trainingMatrix);
-						double[] regressionParameters = olsMultipleLinearRegression.estimateRegressionParameters();
-						//*** fill gap
-						double gapValue = regressionParameters[0];
-						for(int sourceIndex=0; sourceIndex<trainingSourceList.size(); sourceIndex++) {							
-							gapValue += trainingSourceList.get(sourceIndex)[TRAINING_VALUE_COUNT]*regressionParameters[sourceIndex+1];							
-						}
-						target[gapPos] = (float) gapValue;
-						targetInterpolationFlags[gapPos] = true;						
-						interpolatedgapCount++;
-						//***
+							double[][] trainingMatrix = createTrainingMatrix(trainingSourceList);
+							OLSMultipleLinearRegression olsMultipleLinearRegression = new OLSMultipleLinearRegression();
+							olsMultipleLinearRegression.newSampleData(trainingTarget, trainingMatrix);
+							double[] regressionParameters = olsMultipleLinearRegression.estimateRegressionParameters();
+							//*** fill gap
+							double gapValue = regressionParameters[0];
+							for(int sourceIndex=0; sourceIndex<trainingSourceList.size(); sourceIndex++) {							
+								gapValue += trainingSourceList.get(sourceIndex)[TRAINING_VALUE_COUNT]*regressionParameters[sourceIndex+1];							
+							}
+							target[gapPos] = (float) gapValue;
+							targetInterpolationFlags[gapPos] = true;						
+							interpolatedgapCount++;
+							//***
 						} catch(SingularMatrixException e) {
 							log.warn("interpolation not possible: "+e.toString()+" at "+gapPos);
 						}
@@ -263,7 +288,8 @@ public class Interpolator {
 	}*/
 
 	/**
-	 * process gap filling of one target time series
+	 * Process gap filling of one target time series and one parameter. Some data in source time series is allowed to be
+	 * left out.
 	 * @param sourceTimeSeries
 	 * @param targetTimeSeries
 	 * @param parameterName the sensor name that should be gap filled

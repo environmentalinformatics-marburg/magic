@@ -20,6 +20,12 @@ import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * QueryProcessor processes raw elements from storage and provides methods for typical queries. Date is returned
+ * as TimeSeriesIterator object.
+ * @author woellauer
+ *
+ */
 public class QueryProcessor {
 
 	final int STATION_INTERPOLATION_COUNT = 15;		

@@ -2,6 +2,7 @@ package timeseriesdatabase.raw;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,7 @@ import util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class TimestampSeries implements TimeSeriesIterable {
+public class TimestampSeries implements TimeSeriesIterable, Serializable {
 	
 	private static final Logger log = Util.log;
 	

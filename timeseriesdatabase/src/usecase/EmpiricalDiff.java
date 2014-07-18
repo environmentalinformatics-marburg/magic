@@ -1,6 +1,8 @@
 package usecase;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.management.RuntimeErrorException;
 
@@ -17,10 +19,15 @@ import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * Testing quality checks for empirical quality checks.
+ * @author woellauer
+ *
+ */
 public class EmpiricalDiff {
 
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
-	private static final int NEAR_STATIONS = 15;//10;
+	private static final int NEAR_STATIONS = 3;//10;
 
 	public static void main(String[] args) {
 		System.out.println("start...");
@@ -28,20 +35,25 @@ public class EmpiricalDiff {
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 
-		String basePlotID = "HEG14";
+		String basePlotID = "HEW08";
+		String sensorName = "Ts_5";
 		//String sensorName = "Ta_200";
 		//String sensorName = "Ts_50";
 		//String sensorName = "Albedo";
-		String sensorName = "Ts_20";
+		//String sensorName = "Ts_20";
 		String[] querySchema = new String[]{sensorName};
 		Long queryStart = 56936340l;
 		Long queryEnd = 59809800l;
-		DataQuality dataQuality = DataQuality.STEP;
+		DataQuality dataQuality = DataQuality.PHYSICAL;
 		TimeSeriesIterator itBase = qp.query_continuous_base_aggregated(basePlotID, querySchema, queryStart, queryEnd, dataQuality);
 
 
 
 		List<Station> nearList = timeSeriesDatabase.getStation(basePlotID).getNearestStationsWithSensor(sensorName);
+		
+		Stream<Station> stream = nearList.stream();
+		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.plotID, querySchema, queryStart, queryEnd, dataQuality));
+		Iterator<TimeSeriesIterator> it = stream1.iterator();
 
 		TimeSeriesIterator[] itNear = new TimeSeriesIterator[NEAR_STATIONS];
 		int c = Util.fillArray(nearList, itNear, x->qp.query_continuous_base_aggregated(x.plotID, querySchema, queryStart, queryEnd, dataQuality));
@@ -57,41 +69,15 @@ public class EmpiricalDiff {
 		}
 		 */
 
-		TimeSeriesIterator itDiff = new TimeSeriesIterator(new TimeSeriesSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg"})) {
+		TimeSeriesIterator itDiff = new TimeSeriesIterator(new TimeSeriesSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg","step"})) {
+			private float prevValue = Float.NaN;
+			
 			@Override
 			public boolean hasNext() {
 				return itBase.hasNext();
 			}
 			@Override
 			public TimeSeriesEntry next() {
-				/*TimeSeriesEntry base = itBase.next();
-				float baseValue = base.data[0];
-				long baseTimestamp = base.timestamp;
-				//System.out.println("baseTimestamp:"+baseTimestamp);
-				float minDiff = Float.MAX_VALUE;
-				if(!Float.isNaN(baseValue)) {
-					for(int i=0;i<NEAR_STATIONS;i++) {
-						if(!itNear[i].hasNext()) {
-							throw new RuntimeException("no elements left");
-						}
-						TimeSeriesEntry entry = itNear[i].next();
-						if(baseTimestamp!=entry.timestamp) {
-							throw new RuntimeException("wrong timestamp: "+baseTimestamp+" "+entry.timestamp+" "+TimeConverter.oleMinutesToLocalDateTime(baseTimestamp)+" "+TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
-						}
-						float value = entry.data[0];
-						if(!Float.isNaN(value)) {
-							float diff = Math.abs(value - baseValue);
-							if(diff<minDiff) {
-								minDiff = diff;
-							}
-						}
-					}
-				}
-				if(minDiff == Float.MAX_VALUE) {
-					minDiff = Float.NaN;
-				}
-				System.out.println("baseTimestamp:"+baseTimestamp+" baseValue: "+baseValue+" minDiff: "+minDiff);				
-				return new TimeSeriesEntry(baseTimestamp, new float[]{baseValue,minDiff});*/
 				TimeSeriesEntry base = itBase.next();
 				if(!Float.isNaN(base.data[0])) {
 					float avgCnt = 0;
@@ -117,17 +103,25 @@ public class EmpiricalDiff {
 					}
 					float valid_min_Value = base.data[0];
 					float valid_avg_Value = base.data[0];
-					if(minDiff>2) {
+					if(minDiff>0.7) {
 						valid_min_Value = Float.NaN; 
 					}
-					if(avgSum/avgCnt>2) {
+					if(avgSum/avgCnt>1.5) {
 						valid_avg_Value = Float.NaN; 
 					}
-					return new TimeSeriesEntry(base.timestamp, new float[]{base.data[0],minDiff,avgSum/avgCnt,valid_min_Value,valid_avg_Value});
+					float stepValue;
+					if(!Float.isNaN(prevValue)) {
+						stepValue = base.data[0]-prevValue;
+					} else {
+						stepValue = Float.NaN;
+					}
+					prevValue = base.data[0];
+					return new TimeSeriesEntry(base.timestamp, new float[]{base.data[0],minDiff,avgSum/avgCnt,valid_min_Value,valid_avg_Value,stepValue});
 				} else {
 					for(int i=0;i<NEAR_STATIONS;i++) {
 						itNear[i].next();						
 					}
+					prevValue = Float.NaN;
 					return new TimeSeriesEntry(base.timestamp, new float[]{base.data[0],Float.NaN,Float.NaN,Float.NaN});
 				}
 			}

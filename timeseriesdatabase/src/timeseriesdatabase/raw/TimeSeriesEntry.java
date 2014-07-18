@@ -1,5 +1,6 @@
 package timeseriesdatabase.raw;
 
+import java.io.Serializable;
 import java.sql.Time;
 
 import org.omg.CORBA.DATA_CONVERSION;
@@ -14,7 +15,7 @@ import util.Util;
  * @author woellauer
  *
  */
-public class TimeSeriesEntry {
+public class TimeSeriesEntry implements Serializable {
 
 	public final long timestamp;	
 	public final float[] data;
