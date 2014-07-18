@@ -66,6 +66,7 @@ if (response=="RInfo"){
 pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
   col=c("black","red","blue","darkgreen","red")
   auc=c()
+  aucvals=list()
   for (i in 1:length(model)){
     modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
     predframe=list()
@@ -80,6 +81,7 @@ pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
     pred <- prediction(predframe,obsframe)
 
     perf <- performance(pred, "tpr", "fpr") 
+    aucvals[[i]]=unlist(performance(pred, measure="auc")@y.values)
     auc[i]=mean(unlist(performance(pred, measure="auc")@y.values))
     if (i==1) plot(perf,avg="vertical",spread.estimate="stderror",col=col[i],spread.scale=2)
     if (i>1) plot(perf,avg="vertical",spread.estimate="stderror",add=TRUE,col=col[i],spread.scale=2)
