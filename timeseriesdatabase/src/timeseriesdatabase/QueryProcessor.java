@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.aggregated.AggregationInterval;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
@@ -76,7 +77,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_raw_with_bad_quality_removed(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator qualityFlagIterator = query_raw_with_quality_flags(plotID, querySchema, queryStart, queryEnd);
-		return Util.ifnull(dataQuality, x->new BadQualityToNanIterator(qualityFlagIterator,x));		
+		return Util.ifnull(qualityFlagIterator, x->new BadQualityToNanIterator(x,dataQuality));		
 	}
 
 	/**
@@ -104,7 +105,9 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_continuous_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator input_iterator = query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		return Util.ifnull(input_iterator, x->new NanGapIterator(input_iterator, queryStart, queryEnd));
+		Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
+		Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
+		return Util.ifnull(input_iterator, x->new NanGapIterator(input_iterator, start, end));
 	}
 
 	/**

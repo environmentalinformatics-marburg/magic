@@ -127,7 +127,7 @@ public class NanGapIterator extends MoveIterator {
 			//System.out.println(this.getClass()+" "+currTimestamp+" "+currElement);
 			return currElement;
 		} else {
-			log.error("timestamp error in NanGapIterator");
+			log.error("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp);
 			return null;
 		}
 	}

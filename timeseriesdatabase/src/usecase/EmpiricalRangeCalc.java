@@ -19,6 +19,8 @@ import util.iterator.TimeSeriesIteratorIterator;
 import timeseriesdatabase.aggregated.iterator.NanRemoveIterator;
 
 public class EmpiricalRangeCalc {
+	
+	private static final int NEAR_STATIONS = 3;
 
 	public static void main(String[] args) {
 		System.out.println("start...");

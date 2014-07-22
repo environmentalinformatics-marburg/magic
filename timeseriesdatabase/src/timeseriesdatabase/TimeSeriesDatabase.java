@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -97,28 +98,33 @@ public class TimeSeriesDatabase {
 	 */
 	public Set<String> baseAggregatonSensorNameSet;
 	
+	public CacheStorage cacheStorage;
+	
 	/**
 	 * create a new TimeSeriesDatabase object and connects to stored database files
 	 * @param databasePath
 	 * @param evenstoreConfigFile
 	 */
-	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile) {		
+	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile, String cachePath) {		
 		log.trace("create TimeSeriesDatabase");		
-		/*FileInputStream configStream = null; 
-		try {
-			configStream = new FileInputStream(evenstoreConfigFile);
-		} catch (FileNotFoundException e) {
-			log.error(configStream);
-		}
-		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);*/
+
 		this.streamStorage = new StreamStorage(databasePath, evenstoreConfigFile);
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
 		sensorMap = new TreeMap<String,Sensor>();//new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
-		baseAggregatonSensorNameSet = new HashSet<String>();		
-		//store.open();		
+		baseAggregatonSensorNameSet = new HashSet<String>();
+		
+		this.cacheStorage = new CacheStorage(cachePath);
+	}
+	
+	public Attribute[] createAttributes(String[] names) {
+		Attribute[] result = new Attribute[names.length];
+		for(int i=0;i<names.length;i++) {
+			result[i] = new Attribute(names[i],DataType.FLOAT);
+		}
+		return result;
 	}
 	
 	/**
@@ -279,7 +285,7 @@ public class TimeSeriesDatabase {
 	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
 	 * @param exploratoriyPath
 	 */
-	public void loadDirectoryOfOneExploratory(Path exploratoriyPath) {
+	public void loadDirectoryOfOneExploratory_structure_one(Path exploratoriyPath) {
 		log.info("load exploratory:\t"+exploratoriyPath);
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriyPath);
@@ -500,18 +506,43 @@ public class TimeSeriesDatabase {
 		
 	}
 	
+	
+	public void loadDirectory_with_stations_structure_two(Path rootPath) {
+		log.info("loadDirectory_with_stations_structure_two:\t"+rootPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath);
+			for(Path stationPath:stream) {
+				System.out.println(stationPath+"\t");
+				String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();				
+				if(!stationMap.containsKey(stationID)) {
+					log.error("station does not exist in database:\t"+stationID);
+				} else {				
+					Station station = stationMap.get(stationID);
+					Path newPath = Paths.get(stationPath.toString(),"backup");
+					if(Files.exists(newPath)) {
+						station.loadDirectoryOfOneStation(newPath);
+					}
+				}
+			}
+		} catch (IOException e) {
+			log.error(e);
+		}		
+	}
+	
+	
+	
 	/**
 	 * loads all files of all exploratories
 	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
 	 * @param exploratoriesPath
 	 */
-	public void loadDirectoryOfAllExploratories(Path exploratoriesPath) {
-		log.info("load exploratories:\t"+exploratoriesPath);
+	public void loadDirectoryOfAllExploratories_structure_one(Path exploratoriesPath) {
+		log.info("loadDirectoryOfAllExploratories_structure_one:\t"+exploratoriesPath);
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriesPath);
 			for(Path path:stream) {
 				System.out.println(path);
-				loadDirectoryOfOneExploratory(path);
+				loadDirectoryOfOneExploratory_structure_one(path);
 			}
 		} catch (IOException e) {
 			log.error(e);

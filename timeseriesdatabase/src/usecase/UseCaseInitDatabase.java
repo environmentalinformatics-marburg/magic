@@ -1,5 +1,6 @@
 package usecase;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,8 +36,8 @@ public class UseCaseInitDatabase {
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		
 		timeSeriesDatabase.registerStreams();
-		//timeSeriesDatabase.loadDirectoryOfOneExploratory(Paths.get("K:/HEG_short"));
-		timeSeriesDatabase.loadDirectoryOfAllExploratories(Paths.get("c:/timeseriesdatabase_data_source"));
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get("c:/timeseriesdatabase_data_source_structure_one"));
+		timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get("c:/timeseriesdatabase_data_source_structure_two"));
 
 
 		timeSeriesDatabase.close();

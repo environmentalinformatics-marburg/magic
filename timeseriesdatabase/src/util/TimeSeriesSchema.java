@@ -1,11 +1,17 @@
 package util;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TimeSeriesSchema {
+public class TimeSeriesSchema implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1280659814458690806L;
+
 	/**
 	 * sensor names in order of columns in data rows
 	 */

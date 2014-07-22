@@ -18,12 +18,13 @@ public class TimeSeriesDatabaseFactory {
 	public static TimeSeriesDatabase createDefault() {
 		final String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
 		final String CONFIG_DIRECTORY = "config/";
-		return createDefault(DATABASE_DIRECTORY,CONFIG_DIRECTORY);
+		final String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
+		return createDefault(DATABASE_DIRECTORY,CONFIG_DIRECTORY,CACHE_DIRECTORY);
 	}
 	
-	public static TimeSeriesDatabase createDefault(String databaseDirectory,String configDirectory) {		
+	public static TimeSeriesDatabase createDefault(String databaseDirectory,String configDirectory, String cacheDirectory) {		
 		try {
-			TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase(databaseDirectory,configDirectory+"eventstore_config.properties");
+			TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory);
 			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations.ini");
 			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema.ini");
 			timeSeriesDatabase.readStationConfig(configDirectory+"be_config_station_inventory.cnf");

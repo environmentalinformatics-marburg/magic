@@ -409,7 +409,7 @@ public class QueryDialog extends Dialog {
 	void updateGUIgeneralstations() {
 		//String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
 		//TODO: just for testing!
-		String[] generalStations = new String[]{"HEG","HEW"};
+		String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
 		comboGeneralStation.setItems(generalStations);
 		comboGeneralStation.setText(generalStations[0]);
 	}

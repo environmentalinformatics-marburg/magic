@@ -234,7 +234,11 @@ public class Station {
 			}			
 		}	
 
+		if(eventMap.size()>0) {
 		timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);
+		} else {
+			log.warn("no data to insert: "+stationPath);
+		}
 	}
 
 

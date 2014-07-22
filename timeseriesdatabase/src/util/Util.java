@@ -282,5 +282,13 @@ public class Util {
 		}
 		return counter;
 	}
+	
+	public static Float[] array_float_to_array_Float(float[] a) {
+		Float[] result = new Float[a.length];
+		for(int i=0;i<a.length;i++) {
+			result[i] = a[i];
+		}
+		return result;
+	}
 
 }
