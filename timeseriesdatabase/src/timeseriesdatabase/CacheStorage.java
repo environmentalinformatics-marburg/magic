@@ -45,6 +45,7 @@ public class CacheStorage {
 
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
+				.compressionEnable()
 				.closeOnJvmShutdown()
 				.make();
 
@@ -60,6 +61,8 @@ public class CacheStorage {
 
 		db.getTreeMap(dbName);
 		schemaMap.put(streamName, timeSeriesSchema);
+		
+		
 
 	}
 
@@ -142,6 +145,16 @@ public class CacheStorage {
 			map.put(element.timestamp, element);
 		}
 		db.commit();*/
+	}
+	
+	public void printInfo() {
+		System.out.println("*** cache info ***");
+		//Map<String, Object> map = db.getAll();
+		Map<String, Object> map = db.getCatalog();
+		for(Map.Entry<String,Object> entry:map.entrySet()) {
+			System.out.println(entry.getKey()+"   "+entry.getValue().getClass());
+		}
+		System.out.println("******************");
 	}
 
 }

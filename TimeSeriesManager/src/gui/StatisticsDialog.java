@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
+import de.umr.jepc.util.Timer;
+
 public class StatisticsDialog extends Dialog {
 	
 	private TimeSeriesDatabase timeSeriesDatabase;
@@ -124,6 +126,8 @@ public class StatisticsDialog extends Dialog {
 				TimeSeriesEntry e=null;
 				Long start=null;
 				Long end=null;
+				Timer timer = new Timer();
+				timer.start(stationName);
 				while(it.hasNext()) {
 					e = it.next();
 					
@@ -139,10 +143,12 @@ public class StatisticsDialog extends Dialog {
 					}
 					entry_counter++;
 				}
+				timer.stop(stationName);
 				end = Util.ifnull(e, x->x.timestamp);
 				Function<Long,String> f = ((Long x)->TimeConverter.oleMinutesToLocalDateTime(x).toString());
 				Supplier<String> s = () -> "---";
-				println(stationName+": "+Util.ifnull(start, f)+" - "+Util.ifnull(end, f)+"\t\t entries:\t\t"+Util.bigNumberToString(entry_counter));
+				println(stationName+": "+Util.ifnull(start, f)+" - "+Util.ifnull(end, f)+"\t\t entries:\t\t"+Util.bigNumberToString(entry_counter)+"\t"+timer.toString(stationName));
+				
 				total_entry_counter += entry_counter;
 				station_counter++;
 			}

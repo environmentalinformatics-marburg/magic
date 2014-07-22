@@ -501,9 +501,42 @@ public class TimeSeriesDatabase {
 		} catch (IOException e) {
 			log.warn(e);
 		}		
-		
-		
-		
+	}
+	
+	public void readEmpiricalDiffConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("parameter_empirical_diff");
+			if(section!=null) {
+				for(String sensorName:section.keySet()) {
+					Sensor sensor =sensorMap.get(sensorName);
+					if(sensor!=null) {
+						String sensorDiff = section.get(sensorName);
+						float diff = Float.parseFloat(sensorDiff);
+						sensor.empiricalDiff = diff;
+					} else {
+						log.warn("sensor not found: "+sensorName);
+					}
+				}
+			} else {
+				throw new RuntimeException("section not found");
+			}
+		} catch (IOException e) {
+			log.warn(e);
+		}		
+	}
+	
+	public Float[] getEmpiricalDiff(String[] schema) {
+		Float[] diff = new Float[schema.length];
+		for(int i=0;i<schema.length;i++) {
+			Sensor sensor = sensorMap.get(schema[i]);
+			if(sensor!=null) {
+				diff[i] = sensor.empiricalDiff;
+			} else {
+				throw new RuntimeException("sensor not found: "+schema[i]);
+			}
+		}
+		return diff;
 	}
 	
 	
@@ -697,6 +730,25 @@ public class TimeSeriesDatabase {
 	public Station getStation(String plotID) {
 		return stationMap.get(plotID);		
 	}
+	
+	public long getFirstTimestamp(String plotID) {
+		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
+		if(it.hasNext()) {
+			return it.next().getTimestamp();
+		} else {
+			return -1;
+		}
+	}
+	
+	public long getLastTimestamp(String plotID) {
+		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
+		long timestamp = -1;
+		while (it.hasNext()) {
+			timestamp = it.next().getTimestamp();
+		}
+		return timestamp;
+	}
+	
 	
 	
 }

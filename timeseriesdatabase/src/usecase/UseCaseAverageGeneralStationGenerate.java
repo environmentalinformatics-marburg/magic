@@ -27,6 +27,12 @@ import util.Util;
 import util.iterator.TimeSeriesIterator;
 import util.iterator.TimeSeriesIteratorIterator;
 
+/**
+ * Generates time series for general stations with average of contained station values
+ * and stores it in cache database.
+ * @author woellauer
+ *
+ */
 public class UseCaseAverageGeneralStationGenerate {
 	
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";	
@@ -38,34 +44,6 @@ public class UseCaseAverageGeneralStationGenerate {
 
 		DataQuality dataquality = DataQuality.STEP;
 
-		/*
-		//String plotID = "HEG01";
-		//String plotID = "HEG20";
-		//String plotID = "HEW12";
-		//String[] querySchema = new String[]{"Ta_200"};
-		String[] querySchema = new String[]{"Ta_200","rH_200","Ta_10","Ts_5","Ts_10","Ts_20","Ts_50","SM_10","SM_15","SM_20"};
-		//String[] querySchema = null;
-		Long queryStart = null;
-		Long queryEnd = null;
-		 */
-
-		/*String[] generalStationNames = new String[]{"HEG","HEW"};
-
-		for(String generalStationName:generalStationNames) {
-
-			GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
-			List<Station> stationList = generalStation.stationList;
-
-			//TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.queryRawQualityChecked(station.plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange)));
-			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.plotID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
-
-			//TimeSeriesIterator it = qp.queryRaw(plotID, querySchema, queryStart, queryEnd);		
-			//TimeSeriesIterator it = qp.queryQualityChecked(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);
-			//TimeSeriesIterator it = qp.queryAggregated(plotID, querySchema, start, end, AggregationInterval.DAY, false, false, false, false);
-			CSV.writeNoHeader(it, "c:/timeseriesdatabase_output/empirical_range_"+generalStationName+".csv", ",", "?", CSVTimeType.TIMESTAMP);
-
-
-		}*/
 
 		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
 			long generalMinTimestamp = Long.MAX_VALUE;
@@ -104,16 +82,7 @@ public class UseCaseAverageGeneralStationGenerate {
 			//CSV.write(result_iterator, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStation_"+generalStation.name+".csv");
 			
 			timeSeriesDatabase.cacheStorage.writeNew(generalStation.name, result_iterator);
-			
-			/*Attribute[] generalAttributes = timeSeriesDatabase.createAttributes(generalSchema);			
-			timeSeriesDatabase.streamStorage.registerStream(generalStation.name, generalAttributes);
-			TreeMap<Long, Event> eventMap = new TreeMap<Long, Event>();
-			while(result_iterator.hasNext()) {
-				TimeSeriesEntry element = result_iterator.next();
-				eventMap.put(element.timestamp, new Event(Util.array_float_to_array_Float(element.data), element.timestamp));
-			}
-			timeSeriesDatabase.streamStorage.insertData(generalStation.name, eventMap );*/
-			
+
 		}
 
 

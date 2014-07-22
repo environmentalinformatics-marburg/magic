@@ -34,7 +34,7 @@ public class AverageIterator extends MoveIterator {
 	public AverageIterator(String[] schema, TimeSeriesIterator[] input_iterators) {
 		super(createSchema(schema, input_iterators));
 		this.input_iterators = input_iterators;
-		this.schemaMap = Util.StringArrayToMap(schema);
+		this.schemaMap = Util.StringArrayToMap(schema);		
 	}
 
 	@Override
@@ -76,6 +76,7 @@ public class AverageIterator extends MoveIterator {
 		for(int i=0;i<this.outputTimeSeriesSchema.columns;i++) {
 			if(value_cnt[i]>0) {
 				value_avg[i] = value_sum[i]/value_cnt[i];
+				//System.out.println("cnt: "+value_cnt[i]);
 			} else {
 				value_avg[i] = Float.NaN;
 			}

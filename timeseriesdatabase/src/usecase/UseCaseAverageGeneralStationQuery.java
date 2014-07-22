@@ -3,17 +3,24 @@ package usecase;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.function.Function;
 
+import de.umr.jepc.util.Timer;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import timeseriesdatabase.aggregated.iterator.EmpiricalIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Builder;
 import util.CSV;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * Testing empirical diff check.
+ * @author woellauer
+ *
+ */
 public class UseCaseAverageGeneralStationQuery {
 	
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
@@ -42,7 +49,7 @@ public class UseCaseAverageGeneralStationQuery {
 		};		
 	}
 	
-	private static Function<TimeSeriesEntry, TimeSeriesEntry> createCheckFunc(TimeSeriesIterator compareIt) {
+	/*private static Function<TimeSeriesEntry, TimeSeriesEntry> createCheckFunc(TimeSeriesIterator compareIt) {
 		return new Function<TimeSeriesEntry, TimeSeriesEntry>() {			
 			@Override
 			public TimeSeriesEntry apply(TimeSeriesEntry element) {
@@ -57,7 +64,8 @@ public class UseCaseAverageGeneralStationQuery {
 					if(!Float.isNaN(genElement.data[colIndex])) {
 						if(!Float.isNaN(element.data[colIndex])) {
 							float diff = Math.abs(element.data[colIndex]-genElement.data[colIndex]);
-							final float MAX_DIFF = 1.519f;
+							//final float MAX_DIFF = 1.519f;
+							final float MAX_DIFF = 4f;
 							if(diff<=MAX_DIFF) { // passed empirical check
 								result[colIndex] = element.data[colIndex];
 							} else { // passed not empirical check
@@ -73,12 +81,13 @@ public class UseCaseAverageGeneralStationQuery {
 				return new TimeSeriesEntry(timestamp,result);
 			}
 		};		
-	}
+	}*/
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
+		
 		
 		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
 			String streamName = generalStation.name;
@@ -86,26 +95,35 @@ public class UseCaseAverageGeneralStationQuery {
 			Long end = null;
 			ConcurrentNavigableMap<Long, TimeSeriesEntry> map = timeSeriesDatabase.cacheStorage.queryMap(streamName, begin, end);
 			System.out.println(generalStation.name+": "+TimeConverter.oleMinutesToLocalDateTime(map.firstKey())+"\t-\t"+TimeConverter.oleMinutesToLocalDateTime(map.lastKey()));
+			Timer timer = new Timer();
+			timer.start(generalStation.name);
+			int count = 0;
+			for(TimeSeriesEntry value:map.values()) {
+				count++;
+			}
+			timer.stop(generalStation.name);
+			System.out.println(count+"\t\t"+timer.toString(generalStation.name));
+			
 		}
 		
 		
-		String plotID = "HEW08";
+		String plotID = "SEW07";
 		String sensorName = "Ts_5";
 		String[] querySchema = new String[]{sensorName};
-		Long queryStart = 56936340l;
-		Long queryEnd = 59809800l;
+		//Long queryStart = 56936340l;
+		//Long queryEnd = 59809800l;
+		Long queryStart = timeSeriesDatabase.getFirstTimestamp(plotID);
+		Long queryEnd = timeSeriesDatabase.getLastTimestamp(plotID);
 		DataQuality dataQuality = DataQuality.STEP;
 
-		String generalName = timeSeriesDatabase.stationMap.get(plotID).generalStationName;		
-		
-		TimeSeriesIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
-		
-		input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator check_it = Builder.apply(input_it,createCheckFunc(Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd),queryStart, queryEnd),input_it)));
+
 		
 		CSV.write(qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_org.csv");
-		CSV.write(check_it, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_check.csv");
+		CSV.write(qp.query_empirical_diff_check(plotID, querySchema, queryStart, queryEnd, dataQuality), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_check.csv");
+		String generalName = timeSeriesDatabase.stationMap.get(plotID).generalStationName;
+		CSV.write(Builder.project(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd),querySchema), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_general.csv");
+		TimeSeriesIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
 		CSV.write(diff_it, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_diff.csv");
 		
 		

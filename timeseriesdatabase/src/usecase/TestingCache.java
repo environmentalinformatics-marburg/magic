@@ -36,7 +36,7 @@ public class TestingCache {
 		}
 
 
-
+		timeSeriesDatabase.cacheStorage.printInfo();
 
 
 		System.out.println("...end");

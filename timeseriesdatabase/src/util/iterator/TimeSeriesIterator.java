@@ -12,7 +12,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 		super(outputTimeSeriesSchema);
 	}
 
-	public abstract String getIteratorName();
+	public String getIteratorName() {
+		return this.getClass().getName();
+	}
 
 	
 	@Override

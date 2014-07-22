@@ -55,6 +55,11 @@ public class Sensor {
 	 */
 	public boolean useInterpolation;
 	
+	/**
+	 * maximum difference of empirical value, may be null if not used.
+	 */
+	public Float empiricalDiff;
+	
 	public Sensor(String name) {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;
@@ -65,6 +70,7 @@ public class Sensor {
 		stepMax = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
 		useInterpolation = false;
+		empiricalDiff = null;
 	}
 	
 	/**

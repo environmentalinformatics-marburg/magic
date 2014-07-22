@@ -9,7 +9,7 @@ import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.aggregated.iterator.EmpiricalIterator;
+import timeseriesdatabase.aggregated.iterator.EmpiricalIterator_OLD;
 import util.CSV;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
@@ -51,7 +51,7 @@ public class TestingEmpiricalIterator {
 		
 		
 		Float[] maxDiff = new Float[]{/*0.79f*/1.514f};
-		EmpiricalIterator resultIterator = new EmpiricalIterator(itBase, itNear, maxDiff);
+		EmpiricalIterator_OLD resultIterator = new EmpiricalIterator_OLD(itBase, itNear, maxDiff);
 		
 		CSV.write(resultIterator, CSV_OUTPUT_PATH+"testing_empirical_diff.csv");
 		

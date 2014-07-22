@@ -5,6 +5,11 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+
+
+
+
+import util.Builder;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.Interpolator;
@@ -12,6 +17,7 @@ import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.BadInterpolatedRemoveIterator;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
+import timeseriesdatabase.aggregated.iterator.EmpiricalIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
@@ -232,4 +238,21 @@ public class QueryProcessor {
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
 		}
 	}
+	
+	public TimeSeriesIterator query_empirical_diff_check(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
+		if(queryStart==null) {
+			queryStart = timeSeriesDatabase.getFirstTimestamp(plotID);
+		}
+		if(queryEnd==null) {
+			queryEnd = timeSeriesDatabase.getLastTimestamp(plotID);
+		}
+		String generalName = timeSeriesDatabase.getStation(plotID).generalStationName;
+		TimeSeriesIterator input_iterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TimeSeriesIterator compare_iterator = Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
+		Float[] maxDiff = timeSeriesDatabase.getEmpiricalDiff(input_iterator.getOutputSchema());
+		System.out.println("maxDiff[0]: "+maxDiff[0]);
+		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
+	}
+	
+	
 }
