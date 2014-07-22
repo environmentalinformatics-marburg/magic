@@ -27,8 +27,14 @@ RMSE_all=RMSE[[1]][,2]
 for (i in 2:length(model)){
   RMSE_all=cbind(RMSE_all,RMSE[[i]][,2])
 }
+names=c()
+for (i in 1:length(model)){
+  names=c(names,rep(model[i],nrow(RMSE_all)))
+}
+names=factor( names, levels=c("rf","nnet","svm"))
 pdf(paste(resultpath,"/prediction_RMSE.pdf",sep=""))
-  boxplot(RMSE_all,names=model,ylab="RMSE")
+#  boxplot(RMSE_all,names=model,ylab="RMSE")
+  bwplot(as.vector(RMSE_all)~names,ylab="RMSE")
 dev.off()
 
 combis <- combn(length(model), 2)

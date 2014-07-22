@@ -16,7 +16,10 @@ if (response=="Rain"){
   data=data[data$RInfo=="rain",] 
 }
 
-
+##transform rain to normal distribution??
+if (response=="Rain" & transformResponse){
+  data$Rain=log(data$Rain)
+}
 ############################################################################################################
 ################################## Scale and center predictor Variables ####################################
 ############################################################################################################

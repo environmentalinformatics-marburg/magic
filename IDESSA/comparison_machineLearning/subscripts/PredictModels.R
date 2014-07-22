@@ -15,6 +15,13 @@ if (any(model=="rf")){
   prediction_rf=data.frame("prediction"=predict (fit_rf,testing_predictors))
   if (type=="classification") prediction_rf$predicted_prob <- predict (fit_rf,testing_predictors,type="prob")
   prediction_rf$observed=testing_observed
+  
+  ##transform rain to normal distribution??
+  if (response=="Rain" & transformResponse){
+    prediction_rf$prediction=exp(prediction_rf$prediction)
+    prediction_rf$observed=exp(prediction_rf$observed)
+  }
+  
   prediction_rf$chDate=testing$chDate
   prediction_rf$x=testing$x
   prediction_rf$y=testing$y
@@ -27,6 +34,13 @@ if (any(model=="nnet")){
   prediction_nnet=data.frame("prediction"=predict (fit_nnet,testing_predictors))
   if (type=="classification") prediction_nnet$predicted_prob <- predict (fit_nnet,testing_predictors,type="prob")
   prediction_nnet$observed=testing_observed
+  
+  ##transform rain to normal distribution??
+  if (response=="Rain" & transformResponse){
+    prediction_nnet$prediction=exp(prediction_nnet$prediction)
+    prediction_nnet$observed=exp(prediction_nnet$observed)
+  }
+  
   prediction_nnet$chDate=testing$chDate
   prediction_nnet$x=testing$x
   prediction_nnet$y=testing$y
@@ -39,6 +53,13 @@ if (any(model=="svm")){
   prediction_svm=data.frame("prediction"=predict (fit_svm,testing_predictors))
   if (type=="classification") prediction_svm$predicted_prob <- predict (fit_svm,testing_predictors,type="prob")
   prediction_svm$observed=testing_observed
+  
+  ##transform rain to normal distribution??
+  if (response=="Rain" & transformResponse){
+    prediction_svm$prediction=exp(prediction_svm$prediction)
+    prediction_svm$observed=exp(prediction_svm$observed)
+  }
+  
   prediction_svm$chDate=testing$chDate
   prediction_svm$x=testing$x
   prediction_svm$y=testing$y
