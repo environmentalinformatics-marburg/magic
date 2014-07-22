@@ -10,6 +10,14 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
                    na.strings="-99.000000")
 
 ############################################################################################################
+###################### If resonse==Rain: Consider only raining pixels ######################################
+############################################################################################################
+if (response=="Rain"){
+  data=data[data$RInfo=="rain",] 
+}
+
+
+############################################################################################################
 ################################## Scale and center predictor Variables ####################################
 ############################################################################################################
 
@@ -19,14 +27,6 @@ if (centerscale){
 }
 
 data=data[(rowSums(is.na(data[,which(names(data) %in% predictorVariables)])))==0,]#rm rows with na in predictors
-
-
-############################################################################################################
-###################### If resonse==Rain: Consider only raining pixels ######################################
-############################################################################################################
-if (response=="Rain"){
-  data=data[data$RInfo=="rain",] 
-}
 
 
 ############################################################################################################
@@ -41,7 +41,7 @@ dateField<-eval(parse(text=paste("data$",dateField,sep="")))
 splittedData<-splitData(data,dateField,SizeOfTrainingSet,seed=useSeeds)
 testing=splittedData$testing
 if (response=="RInfo"){
-  testing$RInfo=factor(testing$RInfo,levels=c("rain","norain"))
+  testing$RInfo=factor(testing$RInfo,levels=c("rain","norain")) #reorder levels so that "rain"==TRUE
 }
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
 rm(testing,data)
@@ -55,6 +55,7 @@ gc()
 if(useSeeds) set.seed(20)
 samples<-createDataPartition(eval(parse(text=paste("training$",response,sep=""))),
                              p = sampsize,list=FALSE)
+
 training <- training[samples,] #samples used for training
 rm(samples)
 ############################################################################################################

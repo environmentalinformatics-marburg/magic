@@ -23,8 +23,8 @@ if (any(model=="svm")){
 }
 
 ######Land sea mask
-lm <- raster(paste(datapath,"/europe_landsea_mask.rst",sep=""))
-, native = T, crs = "+proj=longlat +datum=WGS84")
+lm <- raster(paste(datapath,"/europe_landsea_mask.rst",sep=""),
+             native = T, crs = "+proj=longlat +datum=WGS84")
 
 ext <- extent(c(4, 17, 47.0, 54.45))
 mm <- map('worldHires', plot = F, fill = T, col = "grey50")
