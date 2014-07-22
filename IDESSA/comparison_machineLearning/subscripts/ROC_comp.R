@@ -86,6 +86,7 @@ pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
     if (i==1) plot(perf,avg="vertical",spread.estimate="stderror",col=col[i],spread.scale=2)
     if (i>1) plot(perf,avg="vertical",spread.estimate="stderror",add=TRUE,col=col[i],spread.scale=2)
     }
+  lines(c(0,1),c(0,1),col="grey50")
   legend("bottomright",legend=paste(model,round(auc,3)),col=col[1:length(model)],lwd=1,bty="n")
 dev.off()
 
