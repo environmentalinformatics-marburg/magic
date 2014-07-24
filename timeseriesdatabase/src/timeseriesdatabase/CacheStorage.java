@@ -9,8 +9,10 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 import org.apache.logging.log4j.Logger;
+import org.mapdb.BTreeKeySerializer;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
+import org.mapdb.DB.BTreeMapMaker;
 import org.mapdb.DBMaker;
 
 import timeseriesdatabase.raw.TimeSeriesEntry;
@@ -28,10 +30,13 @@ public class CacheStorage {
 
 	/*
 	 * Layout:
-	 * stream_[name]
-	 * metadata
+	 * 
+	 * "stream_[name]": 
+	 * map timestamp -> TimeSeriesEntry
 	 * 
 	 * 
+	 * "schema":
+	 * map "stream_[name]" -> TimeSeriesSchema 
 	 * 
 	 * 
 	 */
@@ -45,11 +50,19 @@ public class CacheStorage {
 
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
-				.compressionEnable()
+				//.compressionEnable()
+				.transactionDisable()
+				.mmapFileEnable()
+				.asyncWriteEnable()
+				.cacheSize(1000000) 
 				.closeOnJvmShutdown()
 				.make();
-
-		this.schemaMap = db.getTreeMap(DB_NAME_METADATA_SCHEMA);	
+		
+		if(db.getAll().containsKey(DB_NAME_METADATA_SCHEMA)) {
+			this.schemaMap = db.getTreeMap(DB_NAME_METADATA_SCHEMA);
+		} else {
+			this.schemaMap =  db.createTreeMap(DB_NAME_METADATA_SCHEMA).makeStringMap();
+		}
 	}
 
 	public void createNew(String streamName, TimeSeriesSchema timeSeriesSchema) {
@@ -59,7 +72,8 @@ public class CacheStorage {
 		//streamMap.put(streamName, map);
 		schemaMap.remove(streamName);
 
-		db.getTreeMap(dbName);
+		//db.getTreeMap(dbName);
+		db.createTreeMap(dbName).makeLongMap();
 		schemaMap.put(streamName, timeSeriesSchema);
 		
 		

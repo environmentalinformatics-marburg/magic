@@ -78,7 +78,7 @@ public class UseCaseAverageGeneralStationGenerate {
 			}
 
 			String[] generalSchema = generalSchemaSet.toArray(new String[0]);
-			AverageIterator result_iterator = new AverageIterator(generalSchema,iteratorList.toArray(new TimeSeriesIterator[0]));
+			AverageIterator result_iterator = new AverageIterator(generalSchema,iteratorList.toArray(new TimeSeriesIterator[0]),3);
 			//CSV.write(result_iterator, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStation_"+generalStation.name+".csv");
 			
 			timeSeriesDatabase.cacheStorage.writeNew(generalStation.name, result_iterator);

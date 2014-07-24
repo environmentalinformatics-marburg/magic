@@ -749,6 +749,14 @@ public class TimeSeriesDatabase {
 		return timestamp;
 	}
 	
+	public long getFirstTimestampBaseAggregated(String plotID) {
+		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getFirstTimestamp(plotID));
+	}
+	
+	public long getLastTimestampBaseAggregated(String plotID) {
+		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getLastTimestamp(plotID));
+	}
+	
 	
 	
 }

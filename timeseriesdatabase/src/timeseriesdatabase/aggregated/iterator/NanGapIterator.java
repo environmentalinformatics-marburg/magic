@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
@@ -21,7 +23,7 @@ import util.iterator.TimeSeriesIterator;
  *
  */
 public class NanGapIterator extends MoveIterator {
-	
+
 	private static final Logger log = Util.log;
 
 	SchemaIterator<TimeSeriesEntry> input_iterator;
@@ -30,9 +32,9 @@ public class NanGapIterator extends MoveIterator {
 	 */
 	long currTimestamp;
 	TimeSeriesEntry nextElement;
-	
+
 	Long endTimestamp;
-	
+
 	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
 		String[] schema = input_schema.schema;
 		if(!input_schema.constantTimeStep) {
@@ -46,8 +48,8 @@ public class NanGapIterator extends MoveIterator {
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
 	}
-	
-	
+
+
 	/**
 	 * 
 	 * @param input_iterator
@@ -56,32 +58,56 @@ public class NanGapIterator extends MoveIterator {
 	 */
 	public NanGapIterator(TimeSeriesIterator input_iterator, Long start, Long end) {
 		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+
+		/*System.out.println("nan it start: "+TimeConverter.oleMinutesToLocalDateTime(start));
+		System.out.println("nan it end: "+TimeConverter.oleMinutesToLocalDateTime(end));
+		System.out.println("nan it timeStep: "+outputTimeSeriesSchema.timeStep);*/
+
+		if(start!=null) {		
+			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
+				throw new RuntimeException("timestamp start not alligned: "+TimeConverter.oleMinutesToLocalDateTime(start));
+			}
+			if(start%outputTimeSeriesSchema.timeStep!=0) {
+				throw new RuntimeException("timestamp start not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(start));
+			}
+		}
+
+		if(end!=null) {
+			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
+				throw new RuntimeException("timestamp end not alligned: "+TimeConverter.oleMinutesToLocalDateTime(end));
+			}		
+			if(end%outputTimeSeriesSchema.timeStep!=0) {
+				throw new RuntimeException("timestamp end not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(end));
+			}
+		}
+
+
 		this.endTimestamp = end;
 		this.input_iterator = input_iterator;		
-		if(input_iterator.hasNext()) {
+		if(input_iterator.hasNext()) { //****************input iterator is not empty***************
 			this.nextElement = input_iterator.next();
-			if(start!=null) {
-				if(start<=nextElement.timestamp) {
+			if(start!=null) { //********************** with start timestamp *********************
+				if(start<=nextElement.timestamp) { //************* next element timestamp higher than start **************
 					currTimestamp = start;
-				} else { // nextElement.timestamp < start
-					while(nextElement.timestamp<start) {
+				} else { //********* next element timestamp lower than start *************************
+					while(nextElement.timestamp<start) { // loop up to first element in start - end range
 						if(input_iterator.hasNext()) {
 							nextElement = input_iterator.next();
 						} else {
 							nextElement = null;
 						}
-						
+
 					}					
 					currTimestamp = start;
 				}
-			} else {
+			} else { //*************** no start timestamp ***************************
 				this.currTimestamp = this.nextElement.timestamp;
 			}
-		} else {
+		} else { //****************input iterator is empty***************
 			if(start!=null) {
-			input_iterator = null;			
-			currTimestamp = start;
-			nextElement = null;
+				input_iterator = null;			
+				currTimestamp = start;
+				nextElement = null;
 			} else {
 				input_iterator = null;			
 				currTimestamp = -100;
@@ -89,15 +115,15 @@ public class NanGapIterator extends MoveIterator {
 				nextElement = null;	
 			}
 		}
-		
+
 	}
 
 	@Override
 	protected TimeSeriesEntry getNext() {
 		//System.out.println(this.getClass()+"  getNext()");
-		if(nextElement==null) {
+		if(nextElement==null) {// ******************  no elements left in input_iterator ********************************************
 			if(endTimestamp==null) {
-			return null;
+				return null;
 			} else {
 				if(currTimestamp<=endTimestamp) {
 					TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
@@ -108,11 +134,11 @@ public class NanGapIterator extends MoveIterator {
 					return null;
 				}
 			}
-		} else if(currTimestamp<nextElement.timestamp) { // fill stream with NaN elements
+		} else if(currTimestamp<nextElement.timestamp) { // ************** next element higher than current timestamp ****************
 			TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
 			currTimestamp += outputTimeSeriesSchema.timeStep;
 			return nanElement;
-		} else if(currTimestamp==nextElement.timestamp) { // output current element
+		} else if(currTimestamp==nextElement.timestamp) { // ************* current element timestamp equal to current timestamp ******
 			currTimestamp += outputTimeSeriesSchema.timeStep;
 			TimeSeriesEntry currElement = nextElement;			
 			if(input_iterator.hasNext()) {
@@ -126,13 +152,14 @@ public class NanGapIterator extends MoveIterator {
 			}
 			//System.out.println(this.getClass()+" "+currTimestamp+" "+currElement);
 			return currElement;
-		} else {
-			log.error("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp);
-			return null;
+		} else {// ******************** current timestamp higher than next timestamp
+			throw new RuntimeException("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp+"\t\t"+TimeConverter.oleMinutesToLocalDateTime(currTimestamp)+"\t-\t"+TimeConverter.oleMinutesToLocalDateTime(nextElement.timestamp));
+			//log.error("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp);
+			//return null;
 		}
 	}
-	
-	
+
+
 	@Override
 	public String[] getOutputSchema() {
 		return input_iterator.getOutputSchema();
@@ -142,7 +169,7 @@ public class NanGapIterator extends MoveIterator {
 	public String getIteratorName() {
 		return "NanGapIterator";
 	}
-	
+
 	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();

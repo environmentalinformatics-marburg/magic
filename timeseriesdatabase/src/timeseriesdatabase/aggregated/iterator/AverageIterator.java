@@ -20,6 +20,7 @@ public class AverageIterator extends MoveIterator {
 
 	Map<String, Integer> schemaMap;
 	private TimeSeriesIterator[] input_iterators;
+	private final int minCount;
 
 	private static TimeSeriesSchema createSchema(String[] schema, TimeSeriesIterator[] input_iterators) {
 		boolean constantTimeStep = input_iterators[0].getOutputTimeSeriesSchema().constantTimeStep;
@@ -31,10 +32,11 @@ public class AverageIterator extends MoveIterator {
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
 	}
 
-	public AverageIterator(String[] schema, TimeSeriesIterator[] input_iterators) {
+	public AverageIterator(String[] schema, TimeSeriesIterator[] input_iterators, int minCount) {
 		super(createSchema(schema, input_iterators));
 		this.input_iterators = input_iterators;
-		this.schemaMap = Util.StringArrayToMap(schema);		
+		this.schemaMap = Util.StringArrayToMap(schema);
+		this.minCount = minCount;
 	}
 
 	@Override
@@ -74,7 +76,7 @@ public class AverageIterator extends MoveIterator {
 		}
 		float[] value_avg = new float[this.outputTimeSeriesSchema.columns];
 		for(int i=0;i<this.outputTimeSeriesSchema.columns;i++) {
-			if(value_cnt[i]>0) {
+			if(value_cnt[i]>minCount) {
 				value_avg[i] = value_sum[i]/value_cnt[i];
 				//System.out.println("cnt: "+value_cnt[i]);
 			} else {

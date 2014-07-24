@@ -239,6 +239,15 @@ public class QueryProcessor {
 		}
 	}
 	
+	/**
+	 * Same as query_continuous_base_aggregated with empirical diff check.
+	 * @param plotID
+	 * @param querySchema may be null
+	 * @param queryStart may be null
+	 * @param queryEnd may be null
+	 * @param dataQuality used for processing before empirical diff check.
+	 * @return
+	 */
 	public TimeSeriesIterator query_empirical_diff_check(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		if(queryStart==null) {
 			queryStart = timeSeriesDatabase.getFirstTimestamp(plotID);

@@ -107,13 +107,14 @@ public class UseCaseAverageGeneralStationQuery {
 		}
 		
 		
-		String plotID = "SEW07";
+		//String plotID = "SEW07";
+		String plotID = "HEG04";
 		String sensorName = "Ts_5";
 		String[] querySchema = new String[]{sensorName};
 		//Long queryStart = 56936340l;
 		//Long queryEnd = 59809800l;
-		Long queryStart = timeSeriesDatabase.getFirstTimestamp(plotID);
-		Long queryEnd = timeSeriesDatabase.getLastTimestamp(plotID);
+		Long queryStart = timeSeriesDatabase.getFirstTimestampBaseAggregated(plotID);
+		Long queryEnd = timeSeriesDatabase.getLastTimestampBaseAggregated(plotID);
 		DataQuality dataQuality = DataQuality.STEP;
 
 

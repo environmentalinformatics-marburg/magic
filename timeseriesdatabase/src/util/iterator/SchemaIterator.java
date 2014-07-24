@@ -10,7 +10,7 @@ import util.TimeSeriesSchema;
 
 public abstract class SchemaIterator<T> implements Iterator<T>, OutputSchema, ProcessingChain, ProcessingChainEntry {
 	
-	protected TimeSeriesSchema outputTimeSeriesSchema;
+	protected final TimeSeriesSchema outputTimeSeriesSchema;
 
 	public SchemaIterator(TimeSeriesSchema outputTimeSeriesSchema) {
 		this.outputTimeSeriesSchema = outputTimeSeriesSchema;
