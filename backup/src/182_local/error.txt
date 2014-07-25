@@ -1,3 +1,0 @@
-Fri May 16 15:55:22 CEST 2014
-rsync: change_dir "/mnt/sd19006/ei_data_exploratories" failed: No such file or directory (2)
-rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1183) [sender=3.1.0]
