@@ -1,6 +1,8 @@
 package util;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Locale;
 
@@ -48,14 +50,25 @@ public class CSV {
 	public static void write(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
 		write(it, true, filename, separator, nanText, csvTimeType, qualityFlag, qualityCounter);
 	}
+	
+	
+		
 
 	public static void write(TimeSeriesIterator it, boolean header, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
+		try {
+			FileOutputStream out = new FileOutputStream(filename);
+			write(it, header, out, separator, nanText, csvTimeType, qualityFlag, qualityCounter);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	public static void write(TimeSeriesIterator it, boolean header, OutputStream out, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {		
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
 		}
-		try {
-			PrintStream printStream = new PrintStream(filename);
+
+			PrintStream printStream = new PrintStream(out);
 
 			if(header) {
 
@@ -197,9 +210,7 @@ public class CSV {
 				printStream.println();
 			}
 			printStream.close();
-		} catch (FileNotFoundException e) {
-			log.error(e);
-		}
+
 	}
 
 

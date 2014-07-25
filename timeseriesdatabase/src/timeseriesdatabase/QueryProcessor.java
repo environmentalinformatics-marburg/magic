@@ -257,7 +257,7 @@ public class QueryProcessor {
 		}
 		String generalName = timeSeriesDatabase.getStation(plotID).generalStationName;
 		TimeSeriesIterator input_iterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator compare_iterator = Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
+		TimeSeriesIterator compare_iterator = Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
 		Float[] maxDiff = timeSeriesDatabase.getEmpiricalDiff(input_iterator.getOutputSchema());
 		System.out.println("maxDiff[0]: "+maxDiff[0]);
 		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);

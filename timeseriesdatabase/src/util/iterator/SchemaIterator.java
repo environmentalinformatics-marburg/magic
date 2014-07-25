@@ -3,6 +3,7 @@ package util.iterator;
 import java.util.Iterator;
 import java.util.List;
 
+import util.CSV;
 import util.OutputSchema;
 import util.ProcessingChain;
 import util.ProcessingChainEntry;

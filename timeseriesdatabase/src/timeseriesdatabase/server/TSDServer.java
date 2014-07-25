@@ -3,7 +3,9 @@ package timeseriesdatabase.server;
 import java.rmi.RemoteException;
 
 import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.raw.TimestampSeries;
@@ -25,6 +27,24 @@ public class TSDServer implements TSDServerInterface {
 		TimeSeriesIterator it = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 		TimestampSeries timestampSeries = TimestampSeries.create(it);
 		return timestampSeries;
+	}
+
+	@Override
+	public String[] queryGeneralStations() {		
+		return timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
+	}
+
+	@Override
+	public String[] queryPlotIds(String generalStationName) {
+		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
+		if(generalStation!=null) {
+			String[] names = new String[generalStation.stationList.size()];
+			for(int i=0;i<generalStation.stationList.size();i++) {
+				names[i] = generalStation.stationList.get(i).plotID;
+			}
+			return names;
+		}
+		return null;
 	}
 
 }

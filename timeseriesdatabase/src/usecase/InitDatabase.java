@@ -15,7 +15,7 @@ import util.Util;
  * @author woellauer
  *
  */
-public class UseCaseInitDatabase {
+public class InitDatabase {
 
 	private static final Logger log = Util.log;
 
@@ -35,9 +35,20 @@ public class UseCaseInitDatabase {
 		
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		
+		String path1 = "c:/timeseriesdatabase_data_source_structure_one";
+		String path2 = "c:/timeseriesdatabase_data_source_structure_two";
+		
+		if(args.length!=2) {
+			System.out.println("load from default paths");
+		} else {			
+			path1 = args[0];
+			path2 = args[1];
+		}
+		System.out.println("load: "+path1+"\t\t"+path2);
+		
 		timeSeriesDatabase.registerStreams();
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get("c:/timeseriesdatabase_data_source_structure_one"));
-		timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get("c:/timeseriesdatabase_data_source_structure_two"));
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
+		timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get(path2));
 
 
 		timeSeriesDatabase.close();

@@ -1,0 +1,3 @@
+15:34:49 [Thread-0] ERROR EventStoreConfig.java:237 - Failed to read properties: null
+15:34:49 [Thread-0] ERROR TimeSplitBTreeEventStore.java:220 - Stream index file missing! Maybe the EventStore has not been closed properly the last time!
+15:34:49 [Thread-0] INFO  TimeSplitBTreeEventStore.java:221 - Trying to recover data if required

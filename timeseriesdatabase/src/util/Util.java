@@ -290,5 +290,20 @@ public class Util {
 		}
 		return result;
 	}
+	
+	/**
+	 * creates a map of all entries in one section of an "ini"-file
+	 * @param section
+	 * @return
+	 */
+	public static Map<String, String> readIniSectionMap(Section section) {
+		Map<String,String> sectionMap = new HashMap<String, String>();
+		for(String key:section.keySet()) {
+			if(!key.equals("NaN")) {
+				sectionMap.put(key, section.get(key));
+			}
+		}
+		return sectionMap;
+	}
 
 }

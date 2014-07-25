@@ -3,6 +3,7 @@ package util.iterator;
 import java.util.List;
 
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import util.CSV;
 import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
 
@@ -38,5 +39,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 	@Override
 	public String getProcessingTitle() {
 		return getIteratorName();
+	}
+	
+	public void writeCSV(String filename) {
+		CSV.write(this,filename);
 	}
 }

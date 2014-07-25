@@ -316,20 +316,7 @@ public class TimeSeriesDatabase {
 		
 	}
 	
-	/**
-	 * creates a map of all entries in one section of an "ini"-file
-	 * @param section
-	 * @return
-	 */
-	private Map<String, String> readSensorNameMap(Section section) {
-		Map<String,String> sensorNameMap = new HashMap<String, String>();
-		for(String key:section.keySet()) {
-			if(!key.equals("NaN")) {
-				sensorNameMap.put(key, section.get(key));
-			}
-		}
-		return sensorNameMap;
-	}
+	
 	
 	/**
 	 * read config for sensors: physical minimum and maximum values
@@ -392,7 +379,7 @@ public class TimeSeriesDatabase {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_NAME_CONVERSION_HEADER_SUFFIX);
 				if(section!=null) {
-					loggerType.sensorNameTranlationMap = readSensorNameMap(section);
+					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
 				} else {
 					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
@@ -406,12 +393,12 @@ public class TimeSeriesDatabase {
 					if(sectionName.startsWith(prefix)) {
 						String general_section = prefix+"xx"+NAME_CONVERSION_HEADER_SOIL_SUFFIX;
 						if(sectionName.equals(general_section)) {
-							generalStation.sensorNameTranlationMap = readSensorNameMap(section);
+							generalStation.sensorNameTranlationMap = Util.readIniSectionMap(section);
 						} else if(sectionName.endsWith(NAME_CONVERSION_HEADER_SOIL_SUFFIX)) {
 							String plotID = sectionName.substring(3, 8);
 							Station station = stationMap.get(plotID);
 							if(station!=null) {
-								station.sensorNameTranlationMap = readSensorNameMap(section);
+								station.sensorNameTranlationMap = Util.readIniSectionMap(section);
 							} else {
 								log.warn("station does not exist: "+plotID);
 							}

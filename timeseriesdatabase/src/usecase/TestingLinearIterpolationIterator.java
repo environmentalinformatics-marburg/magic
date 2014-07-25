@@ -26,10 +26,12 @@ public class TestingLinearIterpolationIterator {
 		String[] querySchema = new String[]{"Ta_200"};
 		Long queryStart = null;
 		Long queryEnd = null;
-		Builder base_aggregated = Builder.query_continuous_base_aggregated(qp,plotID, querySchema, queryStart, queryEnd, DataQuality.EMPIRICAL);
+		Builder base_aggregated = Builder.continuous_base_aggregated(qp,plotID, querySchema, queryStart, queryEnd, DataQuality.EMPIRICAL);
 		
 		base_aggregated.writeCSV(CSV_OUTPUT_PATH+"TestingLinearIterpolationIterator_org.csv");
 		base_aggregated.linearInterpolate().writeCSV(CSV_OUTPUT_PATH+"TestingLinearIterpolationIterator_result.csv");
+		
+		
 		
 		
 		System.out.println("...end");

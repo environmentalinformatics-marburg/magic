@@ -1,3 +1,6 @@
+import java.net.MalformedURLException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -7,8 +10,8 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+import timeseriesdatabase.server.StartServer;
 import timeseriesdatabase.server.TSDServerInterface;
-import usecase.StartServer;
 
 
 public class WebServer {
@@ -21,7 +24,22 @@ public class WebServer {
 		
 	}
 	
+	/*public void runAsync_timeseriesdatabase_server() {
+		new Thread(){
+			@Override
+			public void run() {
+				try {
+					StartServer.main(null);
+				} catch (RemoteException | MalformedURLException | AlreadyBoundException e) {
+					e.printStackTrace();
+				}
+			}}.start();
+	}*/
+	
 	public void run(int port) throws Exception {
+		
+		//runAsync_timeseriesdatabase_server();
+		
 		System.out.println("start WebServer...");
 		Server server = new Server(port);
 		
@@ -38,12 +56,15 @@ public class WebServer {
 		
 		System.out.println("start TSDServerInterface...");
 		 Registry registry = LocateRegistry.getRegistry("localhost");
-         TSDServerInterface stub = (TSDServerInterface) registry.lookup(StartServer.SERVER_NAME);
+         TSDServerInterface stub1 = (TSDServerInterface) registry.lookup(StartServer.SERVER_NAME);
+         TSDServerInterface stub2 = (TSDServerInterface) registry.lookup(StartServer.SERVER_NAME);
 		
-         QueryHandler queryHandler = new QueryHandler(stub);		
+         QueryScreenHandler queryScreenHandler = new QueryScreenHandler();
+         QueryHandler queryHandler = new QueryHandler(stub1);
+         TestingHandler testingHandler = new TestingHandler(stub2);
 		
 		HandlerList handlers = new HandlerList();
-		handlers.setHandlers(new Handler[] {resource_handler_visual, resource_handler_timeseriesdatabase_output, queryHandler, new DefaultHandler() });
+		handlers.setHandlers(new Handler[] {queryScreenHandler, queryHandler, resource_handler_visual, resource_handler_timeseriesdatabase_output, testingHandler, new DefaultHandler() });
 		server.setHandler(handlers);
 		server.start();
 		System.out.println("WebServer started at port: " + port);		

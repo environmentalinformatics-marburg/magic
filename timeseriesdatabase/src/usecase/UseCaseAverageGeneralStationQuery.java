@@ -23,7 +23,7 @@ import util.iterator.TimeSeriesIterator;
  */
 public class UseCaseAverageGeneralStationQuery {
 	
-	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
+	private static final String CSV_OUTPUT_PATH = TimeSeriesDatabaseFactory.get_CSV_output_path();
 	
 	private static Function<TimeSeriesEntry, TimeSeriesEntry> createDiffFunc(TimeSeriesIterator compareIt) {
 		return new Function<TimeSeriesEntry, TimeSeriesEntry>() {			
@@ -124,7 +124,7 @@ public class UseCaseAverageGeneralStationQuery {
 		String generalName = timeSeriesDatabase.stationMap.get(plotID).generalStationName;
 		CSV.write(Builder.project(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd),querySchema), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_general.csv");
 		TimeSeriesIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.fill(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
+		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
 		CSV.write(diff_it, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_diff.csv");
 		
 		

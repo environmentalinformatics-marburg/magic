@@ -46,7 +46,8 @@ public class TimeSeriesManager {
 		String databaseDirectory = "c:/timeseriesdatabase_database/";
 		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 		String cacheDirectory = "c:/timeseriesdatabase_cache/";
-		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+		//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 
 
 		Display display = new Display();		

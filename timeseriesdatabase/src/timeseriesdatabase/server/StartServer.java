@@ -1,4 +1,4 @@
-package usecase;
+package timeseriesdatabase.server;
 
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
@@ -11,8 +11,6 @@ import java.rmi.server.UnicastRemoteObject;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.server.TSDServer;
-import timeseriesdatabase.server.TSDServerInterface;
 
 public class StartServer {
 	

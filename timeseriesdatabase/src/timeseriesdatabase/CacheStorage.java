@@ -51,10 +51,10 @@ public class CacheStorage {
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
 				//.compressionEnable()
-				.transactionDisable()
-				.mmapFileEnable()
-				.asyncWriteEnable()
-				.cacheSize(1000000) 
+				//.transactionDisable()
+				//.mmapFileEnable()
+				//.asyncWriteEnable()
+				//.cacheSize(1000000) 
 				.closeOnJvmShutdown()
 				.make();
 		

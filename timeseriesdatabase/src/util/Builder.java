@@ -1,5 +1,6 @@
 package util;
 
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -14,10 +15,19 @@ import timeseriesdatabase.aggregated.iterator.ProjectionIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.iterator.TimeSeriesIterator;
 
-public class Builder {
+/**
+ * Builder creates a Factory to create a chain of TimeseriesIterators
+ * @author woellauer
+ *
+ */
+public class Builder implements Iterable<TimeSeriesEntry> {
 	
-	public static Builder query_continuous_base_aggregated(QueryProcessor qp, String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
-		return new Builder(()->qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality));
+	public static Builder base_aggregated(QueryProcessor qp, String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
+		return new Builder(()->qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), queryStart, queryEnd);
+	}
+	
+	public static Builder continuous_base_aggregated(QueryProcessor qp, String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
+		return new Builder(()->qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), queryStart, queryEnd);
 	}
 	
 	public static TimeSeriesIterator project(TimeSeriesIterator it, String ... schema) {
@@ -28,7 +38,11 @@ public class Builder {
 		return project(it, targetSchema.getOutputSchema());
 	}
 	
-	public static TimeSeriesIterator fill(TimeSeriesIterator it, Long start, Long end) {
+	public static TimeSeriesIterator continuous(TimeSeriesIterator it) {
+		return new NanGapIterator(it,null,null);
+	}
+	
+	public static TimeSeriesIterator continuous(TimeSeriesIterator it, Long start, Long end) {
 		return new NanGapIterator(it,start,end);
 	}
 	
@@ -42,39 +56,96 @@ public class Builder {
 	
 	private final Supplier<TimeSeriesIterator> supplier;
 	
-	public Builder(Supplier<TimeSeriesIterator> supplier) {
+	/*public Builder(Supplier<TimeSeriesIterator> supplier) {
 		this.supplier = supplier;
+		this.queryStart = null;
+		this.queryEnd = null;
+	}*/
+	
+	public Builder(Supplier<TimeSeriesIterator> supplier, Long queryStart, Long queryEnd) {
+		this.supplier = supplier;
+		this.queryStart = queryStart;
+		this.queryEnd = queryEnd;
 	}
 	
 	public TimeSeriesIterator create() {
 		return supplier.get();
 	}
 	
+	@Override
+	public Iterator<TimeSeriesEntry> iterator() {
+		return create();
+	}
+	
 	//**************************************************************************
 	
+	public final Long queryStart;
+	public final Long queryEnd;
+	
+	/**
+	 * Project schema to new schema
+	 * @param schema
+	 * @return
+	 */
 	public Builder project(String ... schema) {
-		return new Builder(()->project(this.create(),schema));
+		return new Builder(()->project(this.create(),schema),this.queryStart,this.queryEnd);
 	}
 	
-	public Builder project(TimeSeriesIterator targetSchema) {
-		return new Builder(()->project(this.create(),targetSchema));
+	/**
+	 * Project schema to schema of target_iterator
+	 * @param target_iterator
+	 * @return
+	 */
+	public Builder project(TimeSeriesIterator target_iterator) {
+		return new Builder(()->project(this.create(),target_iterator),this.queryStart,this.queryEnd);
 	}
 	
-	public Builder fill(Long start, Long end) {
-		return new Builder(()->fill(this.create(),start,end));
+	/**
+	 * Fill gaps in time with nan rows.
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public Builder continuous(Long start, Long end) {
+		return new Builder(()->continuous(this.create(),start,end),start,end);
 	}
 	
+	/**
+	 * Fill gaps in time with nan rows.
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public Builder continuous() {
+		return new Builder(()->continuous(this.create(),this.queryStart,this.queryEnd),this.queryStart,this.queryEnd);
+	}
+	
+	/**
+	 * Apply to each TimeSeriesEntry a mapper function.
+	 * @param mapper
+	 * @return
+	 */
 	public Builder apply(Function<TimeSeriesEntry,TimeSeriesEntry> mapper) {
-		return new Builder(()->apply(this.create(),mapper));
+		return new Builder(()->apply(this.create(),mapper),this.queryStart,this.queryEnd);
 	}
 	
+	/**
+	 * Interpolate one value gaps in time series with Average between previous and next value.
+	 * @return
+	 */
 	public Builder linearInterpolate() {
-		return new Builder(()->linearIterpolate(this.create()));
+		return new Builder(()->linearIterpolate(this.create()),this.queryStart,this.queryEnd);
 	}
 	
+	/**
+	 * Write output to CSV-File
+	 * @param filename
+	 */
 	public void writeCSV(String filename) {
-		CSV.write(this.create(),filename);
+		this.create().writeCSV(filename);
 	}
+
+
 	
 	
 

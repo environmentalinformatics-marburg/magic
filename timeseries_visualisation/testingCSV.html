@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>TimeSeriesDatabase Web Interface</title>
+<meta charset="utf-8">
+<style type="text/css">
+table,th,td{
+            border:1px solid black;
+			font-family:monospace;
+			border-collapse:collapse;
+			}
+			
+th,td{
+      padding:5px;
+	  }
+
+
+.axis path, .axis line {
+					fill: none;
+					stroke: black;
+					shape-rendering: crispEdges;
+					}
+					
+.axis text {
+			font-family: sans-serif;
+			font-size: 11px;
+			}
+</style>
+
+<script src="jquery-2.1.1.js"></script>
+<script type="text/javascript" src="d3.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+	setRegions();
+	$("#generalstation_input").change( function() {
+			setPlotids();
+	}); 
+});
+
+var download_CSV = function() {
+	var filename = "timeseries.csv";
+	filename += "?";
+	filename += "plotid="+$("#plotid_input").val();	
+	self.open(filename);	
+}
+
+var setRegions = function() {
+	$.getJSON("generalstations.json",function(result){
+		$("#generalstation_input").empty();
+		$.each(result, function(i, field){
+		$("#generalstation_input").append("<option value=\""+field+"\">"+field+"</option>");
+		});
+		setPlotids();
+	});
+}
+
+var setPlotids = function() {
+	$.getJSON("plotids.json?generalstation="+$("#generalstation_input").val(),function(result){
+		$("#plotid_input").empty();
+		$.each(result, function(i, field){
+			$("#plotid_input").append("<option value=\""+field+"\">"+field+"</option>");
+		});
+	});
+}
+
+var csvDataFunc = function(error, rows) {
+	$("#output_section").empty();
+	$("#output_section").append("<table id=\"output_table\"/>");
+
+	console.log(error);
+	console.log(rows[0]);
+
+	var text = "<tr>";
+	for(var name in rows[0]) {
+		text += "<th>"+name+"</th>";
+	}
+	text += "</tr>";
+	$("#output_table").append(text);
+	//output_table.append(text);
+
+	for (index = 0; index < rows.length; ++index) {
+		var row = rows[index];
+		//row = [row.timestamp, row.datetime, row.Ta_200];
+		row = row;
+		var text = "<tr>";
+		for(var key in row){
+			text += "<td>"+row[key]+"</td>";
+		}
+		text += "</tr>";
+		$("#output_table").append(text);
+		//output_table.append(text);
+	}		
+}
+
+var runQuery = function() {
+console.log($("#plotid_input").val());
+
+//var filename = "multichar_HEG04.csv";
+var filename = "timeseries.csv";
+filename += "?";
+filename += "plotid="+$("#plotid_input").val();
+
+console.log("filename: "+filename);
+		
+d3.csv(filename).get(csvDataFunc);
+}
+
+//********************************visual*******************
+var visual = function() {
+
+		var w = window.innerWidth-60;
+		var h = window.innerHeight-200;
+		
+		//var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
+		$("#output_section").empty();
+		var svg = d3.select("#output_section").append("svg").attr("width", w).attr("height", h);
+		
+							
+		
+		
+		
+		
+		
+		var padding = 40;
+		
+		var parseDate = d3.time.format.utc("%Y-%m-%dT%H:%M").parse;
+		
+		var csvDataFunc = function(error, rows) {
+		
+		var dataset = rows
+
+		var xScale = d3.time.scale()
+					  .domain(d3.extent(dataset, function(d) {return d[0];}))
+					  .range([padding,w-padding]);		
+					 
+		var yScale = d3.scale.linear()
+					 .domain([d3.min(dataset, function(d) {return d[1];}),
+					          d3.max(dataset, function(d) {return d[1];})
+							  ])
+					 .range([h-padding,padding])
+					 .nice();
+
+		var xAxis = d3.svg.axis()
+						  .scale(xScale)
+						  .orient("bottom");
+						  
+		var yAxis = d3.svg.axis()
+					      .scale(yScale)
+						  .orient("left");
+			
+		
+		
+		
+		
+		   
+		/*
+		svg.append("path")
+      .datum(data)
+      .attr("class", "area")
+      .attr("d", area);
+		*/
+
+
+		var area = d3.svg.area()
+							.x(function(d) { return xScale(d[0]); })
+							.y0(function(d) { if(isNaN(d[1])) return h-padding; else return yScale(d[1]); })
+							//.y1(function(d) { return yScale(0); });
+							.y1(h-padding);
+							
+		//var dataset = [[10,10],[20,5],[30,15],[40,10],[50,15]];					
+							
+		svg.append("path")
+		   .datum(dataset)
+		   .attr("d", area)
+		   .attr("fill","rgb(230,230,230)");	
+
+
+		svg.selectAll("circle").data(dataset).enter().append("circle")
+		   .attr("cx", function(d) {return xScale(d[0]);})
+		   .attr("cy", function(d) {return yScale(d[1]);})
+		   .attr("r", 0.5)
+		   .attr("fill", "rgb(0,0,0)");		   
+
+		/*var area = d3.svg.area()
+							.x(function(d) { return xScale(d[0]); })
+							.y0(function(d) { return yScale(d[1])-20; })
+							.y1(function(d) { return yScale(d[1]); });*/			
+		   
+		/*svg.selectAll("path").data(dataset).enter().append("path")
+			.attr("d",area)
+			.attr("fill","steelblue")*/
+			
+		/*svg.append("path")
+		   .datum(dataset)
+		   .attr("d", area)
+		   .attr("fill","steelblue");*/	 
+			
+		
+
+		//<path d="M150 0 L75 200 L225 200 Z" />
+		//svg.append("path").attr("d","M150 0 L75 200 L225 200 Z")
+		//svg.append("path").attr("d",d3.svg.area([1,2,3]));
+		   
+		svg.append("g").attr("class", "axis")
+					   .attr("transform", "translate(0,"+ (h-padding)+")")
+					   .call(xAxis);
+
+
+					   
+		svg.append("g").attr("class", "axis")
+					   .attr("transform", "translate("+padding+",0)")
+					   .call(yAxis);
+					   
+		}
+
+		/*var a = d3.csv("timeseries_Ta_200.csv")
+		          .row(function(d) {if(isNaN(d.Ta_200)) return [parseDate(d.datetime), 0]; else return [parseDate(d.datetime), +d.Ta_200];})
+				  .get(csvDataFunc);*/
+				  
+				  
+			//var filename = "timeseries_Ta_200.csv";
+			var filename = "timeseries.csv";
+			filename += "?";
+			filename += "plotid="+$("#plotid_input").val();
+
+			console.log("filename: "+filename);				  
+		
+		d3.csv(filename)
+		          .row(function(d) {return [parseDate(d.datetime), +d.Ta_200];})
+				  .get(csvDataFunc);
+				  
+}
+//*********************************************************
+
+
+</script>
+</head>
+
+<body>
+
+<h1>TimeSeriesDatabase Web Interface</h1>
+
+
+
+<form name="input" onsubmit="runQuery(); return false;">
+			
+Region: <select name="generalstation" id="generalstation_input">
+</select>
+PlotID: <select name="plotid" id="plotid_input">
+</select>
+
+</form>
+<button type="button" id="run_query" onclick="runQuery()">view data text</button>
+<button type="button" id="run_query" onclick="visual()">view data visual</button>
+<button type="button" id="download_CSV" onclick="download_CSV()">download CSV</button>
+<br><br>
+
+<p></p>
+
+<div id="output_section"/>
+
+
+</body>
+</html>
