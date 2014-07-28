@@ -58,8 +58,6 @@ if (tuneThreshold){
 #trade off######
 ###############################################################################################################
 
-library(reshape2)
-
 if (any(model=="rf")&tuneThreshold){
   pdf(paste(resultpath,"/TuningStudy_Tradeoff_rf.pdf",sep=""))
   t_mtry=unlist(fit_rf$finalModel$tuneValue[1])

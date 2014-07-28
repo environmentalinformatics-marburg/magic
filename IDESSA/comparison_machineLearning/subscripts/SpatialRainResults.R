@@ -1,13 +1,4 @@
-library(raster)
-library(latticeExtra)
-library(fields)
-library(grid)
-library(maps)
-library(mapdata)
-library(sp)
-library(rgdal)
-library(RColorBrewer)
-library(lattice)
+
 
 dir.create (paste(resultpath,"/Spatial_comp",sep=""))
 

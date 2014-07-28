@@ -34,6 +34,8 @@ dateField="chDate" #field name of the date+time variable. identifier for scenes.
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
 transformResponse=FALSE#Transform Rain rates?
+rainAreaFromRadar=FALSE#If false all cloudy pixels are considered as potentially raining. If true only pixels
+#where radar says it rains are considered for rain rate assignment
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
@@ -123,10 +125,14 @@ if(profil=="ui183"){
 setwd(scriptpath)
 dir.create(resultpath)
 ##################################################################################################################
-#                                          Load functions
+#                                          Load functions and packages
 ##################################################################################################################
-library(caret)
-library(kernlab)
+usedPackages=c("caret","kernlab","ROCR","raster","latticeExtra","fields","reshape2",
+               "grid","maps","mapdata","sp","rgdal","RColorBrewer","lattice","doParallel")
+
+
+
+lapply(usedPackages, library, character.only=T)
 for (i in list.files(additionalFunctionPath)){
   source(paste(additionalFunctionPath,"/",i,sep=""))
 }
@@ -134,7 +140,6 @@ for (i in list.files(additionalFunctionPath)){
 #                                          Organise parallel processing
 ##################################################################################################################
 if (doParallel){
-  library(doParallel)
   cl <- makeCluster(detectCores())
   registerDoParallel(cl)
 }

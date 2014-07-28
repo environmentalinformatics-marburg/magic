@@ -97,6 +97,8 @@ if (any(model=="nnet")){
   fit_nnet<-train (predictors, 
                    class, 
                    method = method,
+                   linout = TRUE, 
+                   trace = FALSE,
                    trControl = ctrl, 
                    tuneGrid=tuneGrid_NNet,
                    metric=metric,

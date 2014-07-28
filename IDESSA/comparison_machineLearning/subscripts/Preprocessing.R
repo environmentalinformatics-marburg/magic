@@ -10,11 +10,12 @@ data <- read.table(paste(datapath,"/",inputTable,sep=""),
                    na.strings="-99.000000")
 
 ############################################################################################################
-###################### If resonse==Rain: Consider only raining pixels ######################################
+###################### If response==Rain: Consider only raining pixels ######################################
 ############################################################################################################
-if (response=="Rain"){
+if (response=="Rain" & rainAreaFromRadar){
   data=data[data$RInfo=="rain",] 
 }
+
 
 ##transform rain to normal distribution??
 if (response=="Rain" & transformResponse){
@@ -49,6 +50,7 @@ if (response=="RInfo"){
 save(testing,file=paste(resultpath,"/testing.RData",sep=""))
 rm(testing,data)
 training=splittedData$training
+save(training,file=paste(resultpath,"/training.RData",sep=""))
 rm(splittedData)
 gc()
 ############################################################################################################
