@@ -21,5 +21,7 @@
 	<classpathentry kind="lib" path="C:/downloads/jfreechart-1.0.18/lib/swtgraphics2d.jar"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MapDB"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

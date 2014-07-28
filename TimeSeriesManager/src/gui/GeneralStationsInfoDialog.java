@@ -20,39 +20,39 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 
 public class GeneralStationsInfoDialog extends Dialog {
-	
+
 	TimeSeriesDatabase timeSeriesDatabase; 
 
 	public GeneralStationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
-		
+
 	}
-	
+
 	public GeneralStationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
-	    super(parent, style);
-	    this.timeSeriesDatabase = timeSeriesDatabase;
-	    setText("General Station Info");
-	  }
-	
+		super(parent, style);
+		this.timeSeriesDatabase = timeSeriesDatabase;
+		setText("General Station Info");
+	}
+
 	public String open() {
-	    // Create the dialog window
-	    Shell shell = new Shell(getParent(), getStyle());
-	    shell.setText(getText());
-	    createContents(shell);
-	    shell.pack();
-	    shell.open();
-	    Display display = getParent().getDisplay();
-	    while (!shell.isDisposed()) {
-	      if (!display.readAndDispatch()) {
-	        display.sleep();
-	      }
-	    }
-	    // Return the entered value, or null
-	    return null;
-	  }
-	
+		// Create the dialog window
+		Shell shell = new Shell(getParent(), getStyle());
+		shell.setText(getText());
+		createContents(shell);
+		shell.pack();
+		shell.open();
+		Display display = getParent().getDisplay();
+		while (!shell.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep();
+			}
+		}
+		// Return the entered value, or null
+		return null;
+	}
+
 	private void createContents(final Shell shell) {
-;
+		;
 		shell.setLayout(new GridLayout());
 		Table table = new Table (shell, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
 		table.setLinesVisible (true);
@@ -69,23 +69,27 @@ public class GeneralStationsInfoDialog extends Dialog {
 		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
 			TableItem item = new TableItem (table, SWT.NONE);
 			item.setText (0, generalStation.name);
-			
+
 			String s ="";
-			for(Entry<String, String> entry:generalStation.sensorNameTranlationMap.entrySet()) {
+			if(generalStation.sensorNameTranlationMap!=null) {
+				for(Entry<String, String> entry:generalStation.sensorNameTranlationMap.entrySet()) {
 				s+=entry.getKey()+"->"+entry.getValue()+"  ";
 			}
-			
+			} else {
+				s="---";
+			}
+
 			item.setText (1, s);
-			
+
 		}
-		
-		
+
+
 		for (int i=0; i<titles.length; i++) {
 			table.getColumn (i).pack ();
 		}	
 
-	   
-	  }	
+
+	}	
 
 }
 

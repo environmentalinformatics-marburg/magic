@@ -136,14 +136,18 @@ public class Util {
 		}
 		return result;
 	}
+	
+	public static void printArray(String[] a) {
+		printArray(a," ");
+	}
 
 	/**
 	 * print array of values in one line
 	 * @param a
 	 */
-	public static void printArray(String[] a) {
+	public static void printArray(String[] a,String sep) {
 		for(int i=0;i<a.length;i++) {
-			System.out.print(a[i]+" ");
+			System.out.print(a[i]+sep);
 		}
 		System.out.println();
 	}

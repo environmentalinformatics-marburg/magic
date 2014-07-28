@@ -105,8 +105,7 @@ public class Station {
 	public LoggerType getLoggerType() {
 		LoggerType loggerType = timeSeriesDatabase.loggerTypeMap.get(propertyMap.get("LOGGER")); 
 		if(loggerType==null) {
-			log.warn("logger type not found: ");
-			System.out.println("logger type not found: ");
+			log.warn("logger type not found: "+propertyMap.get("LOGGER"));
 		}
 		return loggerType;
 	}

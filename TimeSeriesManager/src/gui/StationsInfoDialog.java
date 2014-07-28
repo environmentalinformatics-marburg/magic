@@ -72,7 +72,7 @@ public class StationsInfoDialog extends Dialog {
 			item.setText (2, ""+station.geoPosLatitude);
 			item.setText (3, ""+station.serialID);
 			item.setText (4, station.generalStationName);
-			item.setText (5, station.getLoggerType().typeName);
+			item.setText (5, util.Util.ifnull(station.getLoggerType(), x->x.typeName,()->"---"));
 
 			String properties="";
 			for(Entry<String, String> entry:station.propertyMap.entrySet()) {

@@ -50,6 +50,9 @@ public class TimeSeriesDatabaseFactory {
 	public static TimeSeriesDatabase createDefault(String databaseDirectory,String configDirectory, String cacheDirectory) {		
 		try {
 			TimeSeriesDatabase timeSeriesDatabase = new TimeSeriesDatabase(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory);
+			
+			//BE
+			
 			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations.ini");
 			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema.ini");
 			timeSeriesDatabase.readStationConfig(configDirectory+"be_config_station_inventory.cnf");
@@ -62,6 +65,19 @@ public class TimeSeriesDatabaseFactory {
 			timeSeriesDatabase.readStationGeoPositionConfig(configDirectory+"be_station_master.csv");
 			timeSeriesDatabase.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini");
 			timeSeriesDatabase.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini");
+			
+			//KiLi
+			
+			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations_kili.ini");
+			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema_kili.ini");
+			
+			
+			
+			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
+			//timeSeriesDatabase.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf");
+			
+			
+			
 			return timeSeriesDatabase;		
 		} catch (Exception e) {
 			log.error("create TimeSeriesDatabase"+e);

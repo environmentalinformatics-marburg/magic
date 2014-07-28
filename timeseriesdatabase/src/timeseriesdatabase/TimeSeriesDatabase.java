@@ -35,6 +35,7 @@ import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
+import timeseriesdatabase.raw.KiLiCSV;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Table;
@@ -55,51 +56,51 @@ import de.umr.jepc.util.enums.TimeRepresentation;
  *
  */
 public class TimeSeriesDatabase {
-	
+
 	private static final Logger log = Util.log;
-	
+
 	/**
 	 * EventStore is the storage of all time series
 	 */
 	//public TimeSplitBTreeEventStore store;
 	public StreamStorage streamStorage;
-	
+
 	/**
 	 * station/logger type name	->	LoggerType Object
 	 * 00CEMU, ...
 	 */
 	public Map<String,LoggerType> loggerTypeMap;
-	
+
 	/**
 	 * plot id	->	Station Object
 	 * HEG01, ...
 	 */
 	public Map<String,Station> stationMap;
-	
+
 	/**
 	 * general station name	->	GeneralStation Object
 	 * HEG, HEW, ...
 	 */
 	public Map<String,GeneralStation> generalStationMap;
-	
+
 	/**
 	 * sensor name	->	Sensor Object
 	 * Ta_200, ...
 	 */
 	public Map<String,Sensor> sensorMap;
-	
+
 	/**
 	 * set of sensor names of input files, that should not be stored in database
 	 */
 	public Set<String> ignoreSensorNameSet;
-	
+
 	/**
 	 * set of sensor name, that should be included in base aggregation processing
 	 */
 	public Set<String> baseAggregatonSensorNameSet;
-	
+
 	public CacheStorage cacheStorage;
-	
+
 	/**
 	 * create a new TimeSeriesDatabase object and connects to stored database files
 	 * @param databasePath
@@ -115,10 +116,10 @@ public class TimeSeriesDatabase {
 		sensorMap = new TreeMap<String,Sensor>();//new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
 		baseAggregatonSensorNameSet = new HashSet<String>();
-		
+
 		this.cacheStorage = new CacheStorage(cachePath);
 	}
-	
+
 	public Attribute[] createAttributes(String[] names) {
 		Attribute[] result = new Attribute[names.length];
 		for(int i=0;i<names.length;i++) {
@@ -126,7 +127,7 @@ public class TimeSeriesDatabase {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * for each station type read schema of data, only data of names in this schema is included in the database
 	 * This method creates LoggerType Objects
@@ -147,11 +148,13 @@ public class TimeSeriesDatabase {
 					String sensorName = names.get(i);
 					sensorNames[i] = sensorName;
 					schema[i] =  new Attribute(sensorName,DataType.FLOAT);
-					if(!sensorMap.containsKey(sensorName)) {
+					if(sensorMap.containsKey(sensorName)) {
+						// log.info("sensor already exists: "+sensorName+" new in "+typeName);
+					} else {
 						sensorMap.put(sensorName, new Sensor(sensorName));
 					}
 				}
-				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);
+				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?
 				loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
 			}
 		} catch (Exception e) {
@@ -180,14 +183,14 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}
 	}
-	
+
 	/**
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
 	 */
 	public void readStationConfig(String configFile) {
 		Map<String,List<Map<String,String>>> plotIdMap = readStationConfigInternal(configFile);
-		
+
 		for(Entry<String, List<Map<String, String>>> entryMap:plotIdMap.entrySet()) {
 			if(entryMap.getValue().size()!=1) {
 				log.error("multiple properties for one station not implemented:\t"+entryMap.getValue());
@@ -199,7 +202,7 @@ public class TimeSeriesDatabase {
 			}
 		}	
 	}
-	
+
 	/**
 	 * reads properties of stations
 	 * @param configFile
@@ -254,6 +257,81 @@ public class TimeSeriesDatabase {
 		}
 	}
 
+
+	/**
+	 * reads properties of stations and creates Station Objects
+	 * @param configFile
+	 */
+	public void readKiLiStationConfig(String configFile) { //  KiLi
+		Map<String, List<Map<String, String>>> serialMap = readKiLiStationConfigInternal(configFile);
+		for(Entry<String, List<Map<String, String>>> entry:serialMap.entrySet()) {
+			String serial = entry.getKey();
+			Map<String, String> properyMap = entry.getValue().get(0); // !!
+			final String GENERALSTATION_PROPERTY_NAME = "TYPE";
+			String generalStationName = properyMap.get(GENERALSTATION_PROPERTY_NAME);
+			System.out.println("generalStationName: "+generalStationName);
+			Station station = new Station(this, generalStationName, serial, entry.getValue().get(0)); // !!
+			stationMap.put(serial, station);
+		}
+	}
+
+	/**
+	 * reads properties of stations
+	 * @param configFile
+	 */
+	private static Map<String,List<Map<String,String>>> readKiLiStationConfigInternal(String config_file) {  //  KiLi
+		try {
+			CSVReader reader = new CSVReader(new FileReader(config_file));
+			List<String[]> list = reader.readAll();			
+			String[] names = list.get(0);			
+			final String NAN_TEXT = "NaN";			
+			Map<String,Integer> nameMap = new HashMap<String,Integer>(); // map: header name -> column index			
+			for(int i=0;i<names.length;i++) {
+				if(!names[i].equals(NAN_TEXT)) {
+					if(nameMap.containsKey(names[i])) {
+						log.error("dublicate name: "+names[i]);
+					} else {
+						nameMap.put(names[i], i);
+					}
+				}
+			}
+
+			String[][] values = new String[list.size()-1][];
+			for(int i=1;i<list.size();i++) {
+				values[i-1] = list.get(i);
+			}
+
+
+
+			Map<String,List<Map<String,String>>> serialMap = new HashMap<String,List<Map<String,String>>>();
+			int serialIndex = nameMap.get("SERIAL");
+			for(String[] row:values) {
+				String serial = row[serialIndex];
+
+				List<Map<String, String>> mapList = serialMap.get(serial);
+				if(mapList==null) {
+					mapList = new ArrayList<Map<String, String>>(1);
+					serialMap.put(serial, mapList);
+				}
+
+				HashMap<String, String> properyMap = new HashMap<String,String>();
+
+				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
+					String value = row[mapEntry.getValue()];
+					if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {
+						properyMap.put(mapEntry.getKey(), value);
+					}					
+				}				
+				mapList.add(properyMap);
+			}
+			reader.close();
+			return serialMap;			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	/**
 	 * registers streams for all containing stations (with stream name == plotID)
 	 */
@@ -263,7 +341,7 @@ public class TimeSeriesDatabase {
 			//store.registerStream(station.plotID, station.getLoggerType().schema);
 		}
 	}
-	
+
 	/**
 	 * clears all stream data in EventStore; deletes all database files
 	 */
@@ -271,7 +349,7 @@ public class TimeSeriesDatabase {
 		streamStorage.clear();
 		//store.clear();
 	}
-	
+
 	/**
 	 * close EventStore, all pending stream data is written to disk
 	 */
@@ -279,7 +357,7 @@ public class TimeSeriesDatabase {
 		streamStorage.close();
 		//store.close();
 	}
-	
+
 	/**
 	 * loads all files of one exploratory HEG, HEW, ...
 	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
@@ -291,18 +369,18 @@ public class TimeSeriesDatabase {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriyPath);
 			for(Path stationPath:stream) {
 				String stationID = stationPath.subpath(stationPath.getNameCount()-1, stationPath.getNameCount()).toString();
-				
+
 				//*** workaround for directory names ***
-				
+
 				if(stationID.startsWith("HG")) {
 					stationID = "HEG"+stationID.substring(2);
 				} else if(stationID.startsWith("HW")) {
 					stationID = "HEW"+stationID.substring(2);
 				}
-				
+
 				//**********************************
-				
-				
+
+
 				if(!stationMap.containsKey(stationID)) {
 					log.error("station does not exist in database:\t"+stationID);
 				} else {				
@@ -313,11 +391,11 @@ public class TimeSeriesDatabase {
 		} catch (IOException e) {
 			log.error(e);
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
 	 * read config for sensors: physical minimum and maximum values
 	 * @param configFile
@@ -336,7 +414,7 @@ public class TimeSeriesDatabase {
 			}
 		}
 	}
-	
+
 	public void readSensorEmpiricalRangeConfig(String configFile) {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_empirical_range");
 		if(list!=null) {
@@ -351,7 +429,7 @@ public class TimeSeriesDatabase {
 			}
 		}
 	}
-	
+
 	public void readSensorStepRangeConfig(String configFile) {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"paramter_step_range");
 		if(list!=null) {
@@ -366,7 +444,7 @@ public class TimeSeriesDatabase {
 			}
 		}
 	}
-	
+
 	/**
 	 * reads config for translation of input sensor names to database sensor names
 	 * @param configFile
@@ -384,7 +462,7 @@ public class TimeSeriesDatabase {
 					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
 			}
-			
+
 			final String NAME_CONVERSION_HEADER_SOIL_SUFFIX = "_soil_parameters_header_0000";
 			for(Section section:ini.values()) {
 				String sectionName = section.getName();
@@ -412,7 +490,7 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}
 	}
-	
+
 	/**
 	 * reads names of used general stations
 	 * @param configFile
@@ -421,8 +499,12 @@ public class TimeSeriesDatabase {
 		try {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("general_stations");
-			for(String name:section.keySet()) {				
-				generalStationMap.put(name, new GeneralStation(name));
+			for(String name:section.keySet()) {
+				if(generalStationMap.containsKey(name)) {
+					log.warn("general station already exists: "+name);
+				} else {
+					generalStationMap.put(name, new GeneralStation(name));
+				}
 			}
 
 		} catch (Exception e) {
@@ -446,7 +528,7 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}	
 	}
-	
+
 	/**
 	 * reads sensor config for base aggregation: for each sensor the type of aggregation is read
 	 * @param configFile
@@ -489,7 +571,7 @@ public class TimeSeriesDatabase {
 			log.warn(e);
 		}		
 	}
-	
+
 	public void readEmpiricalDiffConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -512,7 +594,7 @@ public class TimeSeriesDatabase {
 			log.warn(e);
 		}		
 	}
-	
+
 	public Float[] getEmpiricalDiff(String[] schema) {
 		Float[] diff = new Float[schema.length];
 		for(int i=0;i<schema.length;i++) {
@@ -525,8 +607,8 @@ public class TimeSeriesDatabase {
 		}
 		return diff;
 	}
-	
-	
+
+
 	public void loadDirectory_with_stations_structure_two(Path rootPath) {
 		log.info("loadDirectory_with_stations_structure_two:\t"+rootPath);
 		try {
@@ -548,9 +630,9 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}		
 	}
-	
-	
-	
+
+
+
 	/**
 	 * loads all files of all exploratories
 	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
@@ -567,8 +649,49 @@ public class TimeSeriesDatabase {
 		} catch (IOException e) {
 			log.error(e);
 		}
-		
+
 	}
+
+	public void loadDirectoryOfAllExploratories_structure_kili(Path kiliPath) {
+		log.info("loadDirectoryOfAllExploratories_structure_kili:\t"+kiliPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
+			for(Path path:stream) {
+				//System.out.println(path);
+				//loadDirectoryOfOneExploratory_structure_one(path);
+				loadOneDirectory_structure_kili(Paths.get(path+"/ra01_nai05_0000"));
+			}
+		} catch (IOException e) {
+			log.error(e);
+		}
+
+	}
+
+	public void loadOneDirectory_structure_kili(Path kiliPath) {
+		try {
+			System.out.println("*** load directory: "+kiliPath+" ***");
+			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
+			for(Path path:stream) {
+				//System.out.println(path);
+
+				try {
+					//System.out.println("read: "+path);
+					KiLiCSV kiliCSV = KiLiCSV.readFile(path);
+
+					String streamName = null;
+
+					this.streamStorage.insertData(kiliCSV.serial, kiliCSV.eventMap);
+
+				} catch(Exception e) {
+					log.error(e+" in "+path);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
 
 	/**
 	 * sql query on storage of raw time series
@@ -579,7 +702,7 @@ public class TimeSeriesDatabase {
 	/*public Iterator<Event> __OLD_query(String sql) {
 		return store.query(sql);		
 	}*/
-	
+
 	/**
 	 * query stream of plotID within startTime and endTime
 	 * (not used)
@@ -609,7 +732,7 @@ public class TimeSeriesDatabase {
 		}
 		return sensors;
 	}
-	
+
 	/**
 	 * read geo config of stations:
 	 * 1. read geo pos of station
@@ -643,37 +766,74 @@ public class TimeSeriesDatabase {
 						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
 					}
 				}
-				
+
 			}
-			
+
 		} catch(Exception e) {
 			log.error(e);
 		}		
 		calcNearestStations();		
 	}
-	
+
+	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
+		try{		
+			Table table = Table.readCSV(config_file);		
+			int plotidIndex = table.getColumnIndex("PlotID");
+			int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
+			int lonIndex = table.getColumnIndex("Lon");
+			int latIndex = table.getColumnIndex("Lat");			
+			for(String[] row:table.rows) {
+				String plotID = row[epplotidIndex];
+				if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
+					Station station = stationMap.get(plotID);
+					if(station!=null) {					
+						try {					
+							double lon = Double.parseDouble(row[lonIndex]);
+							double lat = Double.parseDouble(row[latIndex]);					
+							station.geoPoslongitude = lon;
+							station.geoPosLatitude = lat;					
+						} catch(Exception e) {
+							log.warn("geo pos not read: "+plotID);
+						}
+						if(plotidIndex>-1) {
+							station.serialID = row[plotidIndex];
+						}
+					} else {
+						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+					}
+				}
+
+			}
+
+		} catch(Exception e) {
+			log.error(e);
+		}		
+		calcNearestStations();		
+	}*/
+
+
 	public void updateGeneralStations() {
-		
+
 		for(GeneralStation g:generalStationMap.values()) {
 			g.stationList = new ArrayList<Station>();
 		}
-		
+
 		for(Station station:stationMap.values()) {
 			generalStationMap.get(station.generalStationName).stationList.add(station);
 		}
-		
+
 	}
-	
+
 	public void calcNearestStations() {
 		updateGeneralStations();
-		
+
 		for(Station station:stationMap.values()) {
-			
-			
+
+
 			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
-			
+
 			List<Object[]> differenceList = new ArrayList<Object[]>();
-			
+
 			List<Station> stationList = generalStationMap.get(station.generalStationName).stationList;
 			//System.out.println(station.plotID+" --> "+stationList);
 			for(Station targetStation:stationList) {
@@ -683,7 +843,7 @@ public class TimeSeriesDatabase {
 					differenceList.add(new Object[]{difference,targetStation});
 				}
 			}
-			
+
 			differenceList.sort(new Comparator<Object[]>() {
 
 				@Override
@@ -693,31 +853,31 @@ public class TimeSeriesDatabase {
 					return Double.compare(d1, d2);
 				}
 			});
-			
+
 			List<Station> targetStationList = new ArrayList<Station>(differenceList.size());
 			for(Object[] targetStation:differenceList) {
 				targetStationList.add((Station) targetStation[1]);
 			}
-			
+
 			station.nearestStationList = targetStationList;
 			//System.out.println(station.plotID+" --> "+station.nearestStationList);
 		}
-		
+
 	}
-	
+
 	public static double[] transformCoordinates(double longitude, double latitude) {
 		// TODO: do real transformation
 		return new double[]{longitude,latitude};
 	}
-	
+
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
 	}
-	
+
 	public Station getStation(String plotID) {
 		return stationMap.get(plotID);		
 	}
-	
+
 	public long getFirstTimestamp(String plotID) {
 		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
 		if(it.hasNext()) {
@@ -726,7 +886,7 @@ public class TimeSeriesDatabase {
 			return -1;
 		}
 	}
-	
+
 	public long getLastTimestamp(String plotID) {
 		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
 		long timestamp = -1;
@@ -735,15 +895,15 @@ public class TimeSeriesDatabase {
 		}
 		return timestamp;
 	}
-	
+
 	public long getFirstTimestampBaseAggregated(String plotID) {
 		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getFirstTimestamp(plotID));
 	}
-	
+
 	public long getLastTimestampBaseAggregated(String plotID) {
 		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getLastTimestamp(plotID));
 	}
-	
-	
-	
+
+
+
 }
