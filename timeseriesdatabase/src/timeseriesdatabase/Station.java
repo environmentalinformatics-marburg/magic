@@ -91,8 +91,10 @@ public class Station {
 	 * not used currently - station is identified with plotID
 	 */
 	public String serialID = null;
+	
+	public final LoggerType loggerType;
 
-	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap, List<Map<String, String>> propertyMapList) {
+	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, LoggerType loggerType, Map<String, String> propertyMap, List<Map<String, String>> propertyMapList) {
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
@@ -100,6 +102,7 @@ public class Station {
 		this.propertyMapList = propertyMapList;
 		this.geoPoslongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
+		this.loggerType = loggerType;
 
 		sensorNameTranlationMap = new HashMap<String, String>();
 
@@ -111,10 +114,10 @@ public class Station {
 	}
 
 	public LoggerType getLoggerType() {
-		LoggerType loggerType = timeSeriesDatabase.loggerTypeMap.get(propertyMap.get("LOGGER")); 
+		/*LoggerType loggerType = timeSeriesDatabase.loggerTypeMap.get(propertyMap.get("LOGGER")); 
 		if(loggerType==null) {
 			log.warn("logger type not found: "+propertyMap.get("LOGGER"));
-		}
+		}*/
 		return loggerType;
 	}
 

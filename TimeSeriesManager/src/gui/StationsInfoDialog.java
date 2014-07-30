@@ -59,7 +59,7 @@ public class StationsInfoDialog extends Dialog {
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		data.heightHint = 200;
 		table.setLayoutData(data);
-		String[] titles = {"plotID","longitude","latitude","serialID","general station", "logger type","properies"};
+		String[] titles = {"plotID","longitude","latitude","serialID","general station", "logger type","properties"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);

@@ -21,9 +21,9 @@ public class TestingKiLi {
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		timeSeriesDatabase.registerStreams();
 		
-		String basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
+		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
 		
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(basepath));
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
 		System.out.println("...end");
 	}

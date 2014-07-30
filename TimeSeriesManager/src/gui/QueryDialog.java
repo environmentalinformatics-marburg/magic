@@ -19,6 +19,7 @@ import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
+import timeseriesdatabase.VirtualPlot;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.TimeSeries;
@@ -84,7 +85,7 @@ public class QueryDialog extends Dialog {
 	private Button btnSaveInCsv;
 	private Label label;
 	private Button button;
-	
+
 	private LocalDateTime beginDateTime;
 	private LocalDateTime endDateTime;
 
@@ -175,10 +176,10 @@ public class QueryDialog extends Dialog {
 		Group grpTime = new Group(composite, SWT.NONE);
 		grpTime.setText("Time");
 		grpTime.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		label = new Label(grpTime, SWT.NONE);
 		label.setText("________________________________________");
-		
+
 		button = new Button(grpTime, SWT.NONE);
 		button.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -190,7 +191,7 @@ public class QueryDialog extends Dialog {
 					endDateTime = result.b;
 					String begin = beginDateTime==null?"---":beginDateTime.toString();
 					String end = endDateTime==null?"---":endDateTime.toString();
-				label.setText(begin+" - "+end);
+					label.setText(begin+" - "+end);
 				}
 			}
 		});
@@ -350,35 +351,35 @@ public class QueryDialog extends Dialog {
 
 		buttonUpdate.setEnabled(false);
 
-		
+
 		Thread worker = new Thread() {
 			@Override
 			public void run(){
 
 				System.out.println(cPhysicalRange+" "+cEmpiricalRange+" "+cStepRange+" "+useInterpolation);
-				
+
 				TimestampSeries resultTimeSeries = null;
 				try{				
 					System.out.println("query dataQuality: "+dataQuality);
 					TimeSeriesIterator result = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
-					
+
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));
 				} catch (Exception e) {
 
 					e.printStackTrace();
 
 				}
-				
+
 				final TimestampSeries finalResultTimeSeries = resultTimeSeries;
 
-				
+
 				getParent().getDisplay().asyncExec(new Runnable() {
 
 					@Override
 					public void run() {
 						//if(finalResultTimeSeries!=null) {
-							dataExplorer.setData(finalResultTimeSeries,agg);
+						dataExplorer.setData(finalResultTimeSeries,agg);
 						//}
 						buttonUpdate.setEnabled(true);
 
@@ -407,9 +408,9 @@ public class QueryDialog extends Dialog {
 	}
 
 	void updateGUIgeneralstations() {
-		//String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
-		//TODO: just for testing!
-		String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
+		String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
+		////TODO: just for testing!
+		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
 		comboGeneralStation.setItems(generalStations);
 		comboGeneralStation.setText(generalStations[0]);
 	}
@@ -418,22 +419,84 @@ public class QueryDialog extends Dialog {
 		String generalStationName = comboGeneralStation.getText();
 		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
 		if(generalStation!=null) {
+			ArrayList<String> plotIDList = new ArrayList<String>();
+			generalStation.stationList.stream().forEach(station->plotIDList.add(station.plotID));
+			generalStation.virtualPlotList.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
+			if(plotIDList.size()>0) {
+				String[] plotIDs = plotIDList.toArray(new String[0]);
+				comboPlotID.setItems(plotIDs);
+				comboPlotID.setText(plotIDs[0]);
+			} else {
+				comboPlotID.setItems(new String[0]);
+			}
+		} else {
+			comboPlotID.setItems(new String[0]);
+		}
+
+
+
+
+		/*
+		if(generalStation!=null) {
 			java.util.List<Station> list = generalStation.stationList;
+			if(list.size()>0) {
 			String[] plotIDs = new String[list.size()];
 			for(int i=0;i<list.size();i++) {
 				plotIDs[i] = list.get(i).plotID;
 			}
 			comboPlotID.setItems(plotIDs);
 			comboPlotID.setText(plotIDs[0]);
+			} else {
+				comboPlotID.setItems(new String[0]);
+			}
 		} else {
-			comboPlotID.setItems(new String[]{});
-		}
+			comboPlotID.setItems(new String[0]);
+		}*/
 
 	}
 
 	void updateGUISensorName() {
 		String stationName = comboPlotID.getText();
 		System.out.println("updateGUISensorName "+stationName);
+		String[] schema = null;
+		VirtualPlot virtualplot = timeSeriesDatabase.virtualplotMap.get(stationName);
+		if(virtualplot!=null) {
+			schema = virtualplot.getSchema();
+		} else {
+			Station station = timeSeriesDatabase.stationMap.get(stationName);
+			if(station!=null) {
+				schema = station.getLoggerType().sensorNames;
+			}
+		}
+		if(schema!=null) {
+			ArrayList<String> sensorNames = new ArrayList<String>();
+			for(String name:schema) {
+				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(name)) {
+					System.out.println("add: "+name);
+					sensorNames.add(name);
+				}
+			}
+			if(sensorNames.size()>0) {
+				String[] sensorNameArray = sensorNames.toArray(new String[0]);
+				String oldName = comboSensorName.getText();
+				int indexPos = Util.getIndexInArray(oldName, sensorNameArray);
+				if(indexPos<0) {
+					indexPos = 0;
+				}
+				comboSensorName.setItems(sensorNameArray);
+				comboSensorName.setText(sensorNames.get(indexPos));
+			} else {
+				comboSensorName.setItems(new String[0]);
+				comboSensorName.setText("");
+			}
+		} else {
+			comboSensorName.setItems(new String[0]);
+			comboSensorName.setText("");
+		}
+
+		/*
+
+
 		Station station = timeSeriesDatabase.stationMap.get(stationName);
 		if(station!=null) {
 			LoggerType loggerType = station.getLoggerType();
@@ -458,9 +521,10 @@ public class QueryDialog extends Dialog {
 			comboSensorName.setItems(new String[]{});
 			comboSensorName.setText("");
 		}
+	}*/
 		updateGUIinterpolated(); 
 	}
-	
+
 	protected void updateGUIinterpolated() {
 		String sensorName = comboSensorName.getText();
 		if(sensorName!=null && !sensorName.isEmpty()) {

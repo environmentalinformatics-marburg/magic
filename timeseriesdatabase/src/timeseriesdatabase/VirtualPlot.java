@@ -1,9 +1,15 @@
 package timeseriesdatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +34,41 @@ public class VirtualPlot {
 		this.plotID = plotID;
 		this.generalStationName = generalStationName;
 		this.intervalList = new ArrayList<TimestampInterval<Station>>();
+	}
+	
+	public String[] getSchema() {
+		/*Set<LoggerType> loggerTypes = new LinkedHashSet<LoggerType>();
+		//Stream<TimestampInterval<Station>> stream = intervalList.stream();
+		//intervalList.stream().forEach(interval->loggerTypes.add(interval.value.loggerType));*/
+		
+		//LinkedHashSet<String> schemaSet = new LinkedHashSet<String>();
+		
+		//loggerTypes.stream().flatMap(loggerType->Arrays.stream(loggerType.sensorNames)).forEach(name->schemaSet.add(name));
+		
+		
+		/*loggerTypes.stream().forEach(loggerType->{
+			for(String name:loggerType.sensorNames) {
+				schemaSet.add(name);
+			}			
+		});*/
+		
+		
+		/*intervalList.stream()
+					.map(interval->interval.value.loggerType)
+					.distinct()
+					.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
+					.forEach(name->schemaSet .add(name));
+		
+		return schemaSet.toArray(new String[0]);*/
+		
+		//intervalList.iterator().forEachRemaining(action);
+		
+		return intervalList.stream()
+							.map(interval->interval.value.loggerType)
+							.distinct()
+							.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
+							.distinct()
+							.toArray(String[]::new);
 	}
 
 	public void addStationEntry(Station station, Long start, Long end) {

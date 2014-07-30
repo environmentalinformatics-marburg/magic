@@ -47,8 +47,14 @@ public class InitDatabase {
 		System.out.println("load: "+path1+"\t\t"+path2);
 		
 		timeSeriesDatabase.registerStreams();
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
-		timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get(path2));
+		
+		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
+		
+		//timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
+		//timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get(path2));
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
+		
+		
 
 
 		timeSeriesDatabase.close();

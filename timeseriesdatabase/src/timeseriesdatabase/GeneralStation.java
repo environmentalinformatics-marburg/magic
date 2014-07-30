@@ -1,5 +1,7 @@
 package timeseriesdatabase;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +18,13 @@ public class GeneralStation {
 	
 	public List<Station> stationList;
 	
+	public List<VirtualPlot> virtualPlotList;
+	
 	public GeneralStation(String name) {
 		this.name = name;
+		this.stationList = new ArrayList<Station>();
+		this.sensorNameTranlationMap = new HashMap<String,String>();
+		this.virtualPlotList = new ArrayList<VirtualPlot>();
 	}
 
 }

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -115,7 +116,8 @@ public class TimeSeriesDatabase {
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile, String cachePath) {		
 		log.trace("create TimeSeriesDatabase");		
 
-		this.streamStorage = new StreamStorage(databasePath, evenstoreConfigFile);
+		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
+		//this.streamStorage = new StreamStorageMapDB(databasePath);
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
@@ -151,7 +153,8 @@ public class TimeSeriesDatabase {
 					names.add(name);
 				}
 				String[] sensorNames = new String[names.size()];
-				Attribute[] schema = new Attribute[names.size()+1];
+				//Attribute[] schema = new Attribute[names.size()+1];  // TODO: remove "sampleRate"?   //removed !!!
+				Attribute[] schema = new Attribute[names.size()];
 				for(int i=0;i<names.size();i++) {
 					String sensorName = names.get(i);
 					sensorNames[i] = sensorName;
@@ -162,7 +165,7 @@ public class TimeSeriesDatabase {
 						sensorMap.put(sensorName, new Sensor(sensorName));
 					}
 				}
-				schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?
+				//schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?   //removed !!!
 				loggerTypeMap.put(typeName, new LoggerType(typeName, sensorNames,schema));
 			}
 		} catch (Exception e) {
@@ -205,8 +208,15 @@ public class TimeSeriesDatabase {
 			} else {
 				String plotID = entryMap.getKey();
 				String generalStationName = plotID.substring(0, 3);
-				Station station = new Station(this, generalStationName, plotID, entryMap.getValue().get(0), entryMap.getValue());
-				stationMap.put(plotID, station);
+
+				LoggerType loggerType = loggerTypeMap.get(entryMap.getValue().get(0).get("LOGGER")); 
+				if(loggerType!=null) {
+					Station station = new Station(this, generalStationName, plotID, loggerType, entryMap.getValue().get(0), entryMap.getValue());
+					stationMap.put(plotID, station);
+				} else {
+					log.error("logger type not found: "+entryMap.getValue().get(0).get("LOGGER")+" -> station not created: "+plotID);
+				}			
+
 			}
 		}	
 	}
@@ -266,6 +276,23 @@ public class TimeSeriesDatabase {
 	}
 
 
+	private static String loggerPropertyKiLiToLoggerName(String s) {
+		if((s.charAt(0)>='0'&&s.charAt(0)<='9')&&(s.charAt(1)>='0'&&s.charAt(1)<='9')&&(s.charAt(2)>='0'&&s.charAt(2)<='9')){
+			return s.substring(3);
+		} else {
+			return s;
+		}
+	}
+
+	private static String plotIdKiLiToGeneralStationName(String s) {
+		if(s.length()==4&&s.charAt(3)>='0'&&s.charAt(3)<='9') {
+			return s.substring(0, 3);
+		} else {
+			return s; // not general station
+		}
+	}
+
+
 	/**
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
@@ -274,57 +301,65 @@ public class TimeSeriesDatabase {
 		Map<String, List<Map<String, String>>> serialMap = readKiLiStationConfigInternal(configFile);
 		for(Entry<String, List<Map<String, String>>> entry:serialMap.entrySet()) {
 			String serial = entry.getKey();
-			Map<String, String> firstProperyMap = entry.getValue().get(0); // !!
-			final String GENERALSTATION_PROPERTY_NAME = "TYPE";
-			String firstGeneralStationName = firstProperyMap.get(GENERALSTATION_PROPERTY_NAME);
+			//Map<String, String> firstProperyMap = entry.getValue().get(0); // !!
+			//final String GENERALSTATION_PROPERTY_NAME = "TYPE";
+			//String firstGeneralStationName = firstProperyMap.get(GENERALSTATION_PROPERTY_NAME); // not used
+			//String firstGeneralStationName = plotIdKiLiToGeneralStationName(firstProperyMap.get("PLOTID"));
 			//System.out.println("generalStationName: "+generalStationName+" serial: "+serial);
 			if(!stationMap.containsKey(serial)) {
-
-
-				Station station = new Station(this, firstGeneralStationName, serial, entry.getValue().get(0), entry.getValue()); // !!
-				stationMap.put(serial, station);
-				for(Map<String, String> properyMap:entry.getValue()) {
-					String plotid = properyMap.get("PLOTID");
-					//String generalStationName = properyMap.get(GENERALSTATION_PROPERTY_NAME);
-					VirtualPlot virtualplot = virtualplotMap.get(plotid);
-					if(virtualplot!=null) {
-						/*if(!virtualplot.generalStationName.equals(generalStationName)) {
+				System.out.println(serial);
+				String loggerName = loggerPropertyKiLiToLoggerName(entry.getValue().get(0).get("LOGGER"));
+				System.out.println("logger name: "+loggerName);
+				LoggerType loggerType = loggerTypeMap.get(loggerName); 
+				if(loggerType!=null) {
+					Station station = new Station(this, null/*no general station*/, serial,loggerType, entry.getValue().get(0), entry.getValue()); // !!
+					stationMap.put(serial, station);
+					for(Map<String, String> properyMap:entry.getValue()) {
+						String plotid = properyMap.get("PLOTID");
+						//String generalStationName = properyMap.get(GENERALSTATION_PROPERTY_NAME);
+						VirtualPlot virtualplot = virtualplotMap.get(plotid);
+						if(virtualplot!=null) {
+							/*if(!virtualplot.generalStationName.equals(generalStationName)) {
 						log.warn("different general station names: "+virtualplot.generalStationName+"\t"+generalStationName+" in "+plotid);
 					}*/
 
-						try {
-							final String PROPERTY_START = "DATE_START";
-							final String PROPERTY_END = "DATE_END";
-							String startText = properyMap.get(PROPERTY_START);
-							String endText = properyMap.get(PROPERTY_END);
+							try {
+								final String PROPERTY_START = "DATE_START";
+								final String PROPERTY_END = "DATE_END";
+								String startText = properyMap.get(PROPERTY_START);
+								String endText = properyMap.get(PROPERTY_END);
 
-							//System.out.println(startText+" - "+endText);
+								//System.out.println(startText+" - "+endText);
 
-							Long timestampStart = null;					
-							if(!startText.equals("1999-01-01")) {
-								LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
-								LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
-								timestampStart = TimeConverter.DateTimeToOleMinutes(startDateTime);
+								Long timestampStart = null;					
+								if(!startText.equals("1999-01-01")) {
+									LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
+									LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
+									timestampStart = TimeConverter.DateTimeToOleMinutes(startDateTime);
+								}
+
+								Long timestampEnd = null;
+								if(!endText.equals("2099-12-31")) {
+									LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
+									LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
+									timestampEnd = TimeConverter.DateTimeToOleMinutes(endDateTime);
+								}			
+
+								//System.out.println(timestampStart+" - "+timestampEnd);					
+
+								virtualplot.addStationEntry(station, timestampStart, timestampEnd);
+							} catch (Exception e) {
+								log.warn("entry not added: "+e);
 							}
-
-							Long timestampEnd = null;
-							if(!endText.equals("2099-12-31")) {
-								LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
-								LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
-								timestampEnd = TimeConverter.DateTimeToOleMinutes(endDateTime);
-							}			
-
-							//System.out.println(timestampStart+" - "+timestampEnd);					
-
-							virtualplot.addStationEntry(station, timestampStart, timestampEnd);
-						} catch (Exception e) {
-							log.warn("entry not added: "+e);
+						} else {
+							log.warn("virtual plotid not found: "+plotid+"    "+serial);
 						}
-					} else {
-						log.warn("virtual plotid not found: "+plotid+"    "+serial);
 					}
-				} 
-			} else {
+				} else {				
+					log.error("logger type not found: "+entry.getValue().get(0).get("LOGGER")+" -> station not created: "+serial);				
+				}						
+			}
+			else {
 				log.warn("serial already inserted: "+serial);
 			}
 		}
@@ -373,9 +408,9 @@ public class TimeSeriesDatabase {
 
 				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
 					String value = row[mapEntry.getValue()];
-					if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {
-						properyMap.put(mapEntry.getKey(), value);
-					}					
+					//if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {// ?? Nan should be in property map
+					properyMap.put(mapEntry.getKey(), value);
+					//}					
 				}				
 				mapList.add(properyMap);
 			}
@@ -393,6 +428,7 @@ public class TimeSeriesDatabase {
 	public void registerStreams() {
 		for(Station station:stationMap.values()) {
 			if(station.getLoggerType()!=null) {
+				log.info("register stream "+station.plotID+" with schema of "+station.getLoggerType().typeName);
 				streamStorage.registerStream(station.plotID, station.getLoggerType().schema);
 			} else {
 				log.error("stream not registered: "+station.plotID+"   logger type not found");
@@ -727,8 +763,9 @@ public class TimeSeriesDatabase {
 
 	public void loadOneDirectory_structure_kili(Path kiliPath) {
 		try {
-			System.out.println("*** load directory: "+kiliPath+" ***");
+			if(Files.exists(kiliPath)) {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
+			System.out.println("*** load directory: "+kiliPath+" ***");
 			for(Path path:stream) {
 				//System.out.println(path);
 
@@ -737,22 +774,25 @@ public class TimeSeriesDatabase {
 					KiLiCSV kiliCSV = KiLiCSV.readFile(path);
 
 					String streamName = null;
-					
-					if(!stationMap.containsKey(kiliCSV.serial)) {
+
+					if(stationMap.containsKey(kiliCSV.serial)) {
 						System.out.println("insert "+kiliCSV.eventMap.size()+" into "+kiliCSV.serial);
 
 						this.streamStorage.insertData(kiliCSV.serial, kiliCSV.eventMap);
-						
+
 					} else {
 						log.warn("not in database: "+kiliCSV.serial);
 					}
-					
-					
+
+
 
 				} catch(Exception e) {
 					log.error(e+" in "+path);
 				}
 			}
+		} else {
+			log.warn("directory not found: "+kiliPath);
+		}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -883,10 +923,29 @@ public class TimeSeriesDatabase {
 
 		for(GeneralStation g:generalStationMap.values()) {
 			g.stationList = new ArrayList<Station>();
+			g.virtualPlotList = new ArrayList<VirtualPlot>();
 		}
 
 		for(Station station:stationMap.values()) {
-			generalStationMap.get(station.generalStationName).stationList.add(station);
+			if(station.generalStationName!=null) {
+				GeneralStation generalStation = generalStationMap.get(station.generalStationName);
+				if(generalStation!=null) {
+					generalStation.stationList.add(station);
+				} else {
+					log.warn("general station not found: "+station.generalStationName+" in "+station.plotID);
+				}
+			}
+		}
+		
+		for(VirtualPlot virtualplot:virtualplotMap.values()) {
+			if(virtualplot.generalStationName!=null) {
+				GeneralStation generalStation = generalStationMap.get(virtualplot.generalStationName);
+				if(generalStation!=null) {
+					generalStation.virtualPlotList.add(virtualplot);
+				} else {
+					log.warn("general station not found: "+virtualplot.generalStationName+" in "+virtualplot.plotID);
+				}
+			}
 		}
 
 	}

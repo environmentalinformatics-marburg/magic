@@ -79,11 +79,12 @@ public class TimeSeriesDatabaseFactory {
 			
 			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
 			
-			
+			timeSeriesDatabase.updateGeneralStations(); //TODO later remove!
 			
 			
 			return timeSeriesDatabase;		
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error("create TimeSeriesDatabase"+e);
 			return null;
 		}		
