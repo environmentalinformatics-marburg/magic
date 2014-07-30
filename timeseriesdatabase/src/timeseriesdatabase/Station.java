@@ -61,6 +61,13 @@ public class Station {
 	 * general properties like logger type
 	 */
 	public Map<String, String> propertyMap;
+	
+	/**
+	 * TODO change
+	 * 
+	 * list of property map for Kili
+	 */
+	public List<Map<String, String>> propertyMapList;
 
 	/**
 	 * translation map: input sensor name -> database sensor name
@@ -85,20 +92,21 @@ public class Station {
 	 */
 	public String serialID = null;
 
-	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap) {
+	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, Map<String, String> propertyMap, List<Map<String, String>> propertyMapList) {
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.propertyMap = propertyMap;
+		this.propertyMapList = propertyMapList;
 		this.geoPoslongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
 
 		sensorNameTranlationMap = new HashMap<String, String>();
 
 
-		if(!plotID.equals(propertyMap.get("PLOTID"))) {
+		/*if(!plotID.equals(propertyMap.get("PLOTID"))) { // TODO not usable for KiLi
 			log.error("wrong plotID");
-		}
+		}*/
 
 	}
 

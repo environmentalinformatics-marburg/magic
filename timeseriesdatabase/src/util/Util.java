@@ -218,7 +218,21 @@ public class Util {
 		result.add(e);
 		return result;
 	}
+	
+	public static <T> T  ifnull(T a, T isNull){
+		if(a==null) {
+			return isNull;
+		} else {
+			return a;
+		}
+	}
 
+	/**
+	 * return result of func if a is not null else null
+	 * @param a
+	 * @param func
+	 * @return
+	 */
 	public static <A, B> B  ifnull(A a, Function<A,B> func){
 		if(a==null) {
 			return null;
@@ -227,6 +241,13 @@ public class Util {
 		}
 	}
 
+	/**
+	 * return result of funcArg if a is not null else result of funcNull
+	 * @param a
+	 * @param funcArg
+	 * @param funcNull
+	 * @return
+	 */
 	public static <A, B> B  ifnull(A a, Function<A,B> funcArg, Supplier<B> funcNull){
 		if(a==null) {
 			return funcNull.get();

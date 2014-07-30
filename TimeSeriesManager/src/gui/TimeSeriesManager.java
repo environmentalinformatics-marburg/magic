@@ -75,6 +75,10 @@ public class TimeSeriesManager {
 		generalstationsItem.setText("general stations");
 		generalstationsItem.addSelectionListener(new generalstationsItemListener());
 		
+		MenuItem loggertypeItem = new MenuItem(infoMenu, SWT.PUSH);
+		loggertypeItem.setText("logger types");
+		loggertypeItem.addSelectionListener(new loggertypeItemListener());
+		
 		
 		
 		MenuItem queryMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
@@ -141,6 +145,15 @@ public class TimeSeriesManager {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			GeneralStationsInfoDialog dialog = new GeneralStationsInfoDialog(shell,timeSeriesDatabase);
+			dialog.open();
+
+		}
+	}
+	
+	class loggertypeItemListener extends SelectionAdapter {
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			LoggerTypeInfoDialog dialog = new LoggerTypeInfoDialog(shell,timeSeriesDatabase);
 			dialog.open();
 
 		}

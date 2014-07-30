@@ -114,5 +114,11 @@ public class StreamStorage {
 			}
 		}
 	}
+	
+	public void getInfo() {
+		for(String streamName:store.getRegisteredStreams()) {
+			System.out.println(streamName);
+		}
+	}
 
 }

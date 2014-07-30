@@ -87,7 +87,7 @@ public class KiLiCSV {
 		if(!header[1].startsWith(HEADER_SERIALNUMBER_NAME)) {
 			throw new RuntimeException("read header error !header[1].startsWith(HEADER_SERIALNUMBER_NAME)");
 		}
-		String serialnumber = header[1].substring(HEADER_SERIALNUMBER_NAME.length()).trim();		
+		String serialnumber = ""+Long.parseLong(header[1].substring(HEADER_SERIALNUMBER_NAME.length()).trim());		
 		//System.out.println(serialnumber);
 
 		if(!header[2].startsWith("Logging Method:")) {

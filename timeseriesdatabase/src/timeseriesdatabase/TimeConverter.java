@@ -69,4 +69,11 @@ public class TimeConverter {
 	public static long DateTimeToOleMinutes(LocalDateTime datetime) {
 		return Duration.between(OLE_AUTOMATION_TIME_START, datetime).toMinutes();
 	}
+	
+	public static String oleMinutesToText(Long oleTimeMinutes) {
+		if(oleTimeMinutes==null) {
+			return "---";
+		}
+		return oleMinutesToLocalDateTime(oleTimeMinutes).toString();
+	}
 }

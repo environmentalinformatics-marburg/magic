@@ -53,28 +53,32 @@ public class TimeSeriesDatabaseFactory {
 			
 			//BE
 			
-			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations.ini");
-			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema.ini");
-			timeSeriesDatabase.readStationConfig(configDirectory+"be_config_station_inventory.cnf");
-			timeSeriesDatabase.readSensorNameTranslationConfig(configDirectory+"be_config_level0050_standards.cnf");
-			timeSeriesDatabase.readIgnoreSensorNameConfig(configDirectory+"ignore_sensors.ini");
-			timeSeriesDatabase.readSensorPhysicalRangeConfig(configDirectory+"parameter_physical_range.ini");
-			timeSeriesDatabase.readSensorEmpiricalRangeConfig(configDirectory+"parameter_empirical_range.ini");
-			timeSeriesDatabase.readSensorStepRangeConfig(configDirectory+"parameter_step_range.ini");
-			timeSeriesDatabase.readBaseAggregationConfig(configDirectory+"base_aggregation.ini");
-			timeSeriesDatabase.readStationGeoPositionConfig(configDirectory+"be_station_master.csv");
-			timeSeriesDatabase.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini");
-			timeSeriesDatabase.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini");
+			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations.ini"); // BE 1. read list of general stations and create: general station objects
+			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema.ini"); // BE 2. read schema of logger types and create: logger type objects, sensor objects
+			timeSeriesDatabase.readStationConfig(configDirectory+"be_config_station_inventory.cnf"); // BE 3. read station list, generate general station name and properties and create station objects
+			timeSeriesDatabase.readSensorNameTranslationConfig(configDirectory+"be_config_level0050_standards.cnf"); // BE 4. read read input name sensor translation and insert it in existing logger type objects
+			
+			timeSeriesDatabase.readIgnoreSensorNameConfig(configDirectory+"ignore_sensors.ini"); // read and insert sensor names that should be not inserted in database
+			timeSeriesDatabase.readSensorPhysicalRangeConfig(configDirectory+"parameter_physical_range.ini"); // read and insert physical range to sensor objects
+			timeSeriesDatabase.readSensorEmpiricalRangeConfig(configDirectory+"parameter_empirical_range.ini"); // (TODO change/remove)  read and insert empirical range to sensor objects
+			timeSeriesDatabase.readSensorStepRangeConfig(configDirectory+"parameter_step_range.ini"); // read and insert step range to sensor objects
+			timeSeriesDatabase.readBaseAggregationConfig(configDirectory+"base_aggregation.ini"); // read and insert type of aggregation to sensor objects
+			timeSeriesDatabase.readStationGeoPositionConfig(configDirectory+"be_station_master.csv"); // BE read and insert geo position and station serial to station objects, add nearest station list to station object
+			timeSeriesDatabase.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini"); // read list of sensor names for interpolation and mark sensor objects
+			timeSeriesDatabase.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini"); // (TODO change) read empirical max diff and insert it in sensor objects
 			
 			//KiLi
 			
-			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations_kili.ini");
-			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema_kili.ini");
-			
+			timeSeriesDatabase.readGeneralStationConfig(configDirectory+"general_stations_kili.ini"); // KiLi 1. read list of general stations and create: general station objects
+			timeSeriesDatabase.readLoggerSchemaConfig(configDirectory+"station_type_schema_kili.ini"); // KiLi 2. read schema of logger types and create: logger type objects, sensor objects
+			timeSeriesDatabase.readLoggerTypeSensorTranslationConfig(configDirectory+"logger_type_sensor_translation_kili.ini"); // KiLi 3. read read input name sensor translation and insert it in existing logger type objects
+			timeSeriesDatabase.readVirtualPlotConfig(configDirectory+"station_master.csv"); // KiLi 4. read plotids and create virtualplot objects    TODO: read and insert geo position
+			timeSeriesDatabase.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf"); // KiLi 5. read time interval of stations and insert it in virtualplot objects
+
 			
 			
 			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
-			//timeSeriesDatabase.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf");
+			
 			
 			
 			

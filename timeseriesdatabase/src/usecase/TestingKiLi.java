@@ -19,6 +19,7 @@ public class TestingKiLi {
 		System.out.println("begin...");
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		timeSeriesDatabase.registerStreams();
 		
 		String basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
 		
