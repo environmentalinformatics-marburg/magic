@@ -61,7 +61,7 @@ public class Station {
 	 * general properties like logger type
 	 */
 	public Map<String, String> propertyMap;
-	
+
 	/**
 	 * TODO change
 	 * 
@@ -91,7 +91,7 @@ public class Station {
 	 * not used currently - station is identified with plotID
 	 */
 	public String serialID = null;
-	
+
 	public final LoggerType loggerType;
 
 	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, LoggerType loggerType, Map<String, String> propertyMap, List<Map<String, String>> propertyMapList) {
@@ -245,7 +245,7 @@ public class Station {
 		}	
 
 		if(eventMap.size()>0) {
-		timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);
+			timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);
 		} else {
 			log.warn("no data to insert: "+stationPath);
 		}
@@ -264,14 +264,16 @@ public class Station {
 	 * @param sensorName
 	 * @return
 	 */
-	private String translateInputSensorName(String sensorName) {
+	public String translateInputSensorName(String sensorName, boolean useGeneralstation) {
 		String resultName = sensorNameTranlationMap.get(sensorName);
 		if(resultName!=null) {
 			return resultName;
 		}
-		resultName = timeSeriesDatabase.generalStationMap.get(generalStationName).sensorNameTranlationMap.get(sensorName);
-		if(resultName!=null) {
-			return resultName;
+		if(useGeneralstation) {
+			resultName = timeSeriesDatabase.generalStationMap.get(generalStationName).sensorNameTranlationMap.get(sensorName);
+			if(resultName!=null) {
+				return resultName;
+			}
 		}
 		LoggerType loggerType = getLoggerType();
 		resultName = loggerType.sensorNameTranlationMap.get(sensorName);
@@ -326,7 +328,7 @@ public class Station {
 			SensorHeader sensorHeader = udbfTimeSeries.sensorHeaders[sensorIndex];
 			String rawSensorName = sensorHeader.name;
 			if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
-				String sensorName = translateInputSensorName(rawSensorName);
+				String sensorName = translateInputSensorName(rawSensorName,true);
 				//System.out.println(sensorHeader.name+"->"+sensorName);
 				if(sensorName != null) {
 					for(int schemaIndex=0;schemaIndex<sensorNames.length;schemaIndex++) {
@@ -367,7 +369,7 @@ public class Station {
 		//create events
 		Object[] payload = new Object[loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
-		payload[loggerType.schema.length-1] = sampleRate; 
+		//payload[loggerType.schema.length-1] = sampleRate;  // ?????????????????????????????  TODO 
 		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
 			// one input row
@@ -393,12 +395,12 @@ public class Station {
 
 		return resultList;
 	}
-	
+
 	@Override
 	public String toString() {
 		return plotID;
 	}
-	
+
 	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
 		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(plotID,start,end);
 		if(rawEventIterator==null) {
@@ -411,13 +413,13 @@ public class Station {
 			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
 		}
 	}
-	
+
 	public String[] getValidSchemaEntries(String[] querySchema) {
 		Map<String, Integer> schemaMap = Util.StringArrayToMap(getLoggerType().sensorNames);
 		ArrayList<String> resultList = new ArrayList<String>();
 		for(String sensorName:querySchema) {
 			if(schemaMap.containsKey(sensorName)) {
-			resultList.add(sensorName);
+				resultList.add(sensorName);
 			}
 		}
 		if(resultList.size()==0) {
@@ -425,7 +427,7 @@ public class Station {
 		}
 		return resultList.toArray(new String[0]);
 	}
-	
+
 	public List<Station> getNearestStationsWithSensor(String sensorName) {
 		ArrayList<Station> result = new ArrayList<Station>();
 		for(Station station:nearestStationList) {

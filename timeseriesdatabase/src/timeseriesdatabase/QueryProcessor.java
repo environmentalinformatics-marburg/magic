@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 
 
+
 import util.Builder;
 import util.TimestampInterval;
 import timeseriesdatabase.aggregated.AggregationInterval;
@@ -270,16 +271,19 @@ public class QueryProcessor {
 	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
 		VirtualPlot virtualPlot = timeSeriesDatabase.virtualplotMap.get(plotID);
 		if(virtualPlot!=null) {
-			List<TimestampInterval<Station>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, null);			 
+			if(querySchema==null) {
+				querySchema = timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema());
+			}
+			List<TimestampInterval<Station>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, querySchema);			 
 			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
 			for(TimestampInterval<Station> interval:intervalList) {
-				TimeSeriesIterator it = this.query_base_aggregated(interval.value.plotID, null, interval.start, interval.end, dataQuality);
+				String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.plotID,querySchema);
+				TimeSeriesIterator it = this.query_base_aggregated(interval.value.plotID, stationSchema, interval.start, interval.end, dataQuality);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);
 				}
 			}
-			String[] result_schema = timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema());
-			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(result_schema, processing_iteratorList.toArray(new TimeSeriesIterator[0]));			
+			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(querySchema, processing_iteratorList.toArray(new TimeSeriesIterator[0]));			
 			Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
 			Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
 			TimeSeriesIterator it_continuous_base_aggregated = Util.ifnull(it_virtual_base_aggregated, x->new NanGapIterator(x, start, end));

@@ -29,13 +29,19 @@ import java.util.stream.Stream;
 import javax.management.RuntimeErrorException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
+
+
 
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.TimeSeriesDatabase;
+import util.Util;
 
 public class KiLiCSV {
+	
+	private static final Logger log = Util.log;
 
 	public final String serial;
 	public final TreeMap<Long, Event> eventMap;
@@ -47,7 +53,7 @@ public class KiLiCSV {
 
 
 
-	public static KiLiCSV readFile(Path path) throws IOException {
+	public static KiLiCSV readFile(TimeSeriesDatabase timeSeriesDatabase, Path path) throws IOException {
 
 		/*String filename = "filename.CSV";
 		Object filereader = new FileInputStream(filename);
@@ -121,11 +127,69 @@ public class KiLiCSV {
 		}
 		columnNamesList.add("Time");
 		for(int i=2;i<columnHeaders.length;i++) {
-			String name = columnHeaders[i].substring(0, columnHeaders[i].indexOf("["));
+			String name = columnHeaders[i].substring(0, columnHeaders[i].indexOf("[")).trim();
 			//System.out.println("name: "+name);
 			columnNamesList.add(name);
 		}		
 		String[] columnNames = columnNamesList.toArray(new String[0]);
+		
+		//*********************schama mapping ***************************
+		
+		String[] schema  = timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNames;
+		System.out.println(timeSeriesDatabase.getStation(serialnumber).getLoggerType().typeName);
+		System.out.println(":: "+Util.arrayToString(columnNames));
+		System.out.println("-> "+Util.arrayToString(schema));
+		
+		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
+				int[] eventPos = new int[columnNames.length];  
+				eventPos[0] = -1;
+				eventPos[1] = -1;
+				//creates mapping eventPos   (  udbf pos -> event pos )
+				for(int sensorIndex=2; sensorIndex<columnNames.length; sensorIndex++) {
+					eventPos[sensorIndex] = -1;
+					String rawSensorName = columnNames[sensorIndex];
+					if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
+						String sensorName = timeSeriesDatabase.stationMap.get(serialnumber).translateInputSensorName(rawSensorName,false);
+						System.out.println(rawSensorName+" -> "+sensorName+"   "+timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNameTranlationMap.get(rawSensorName)+"   "+timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNameTranlationMap);
+						//System.out.println(sensorHeader.name+"->"+sensorName);
+						if(sensorName != null) {
+							for(int schemaIndex=0;schemaIndex<schema.length;schemaIndex++) {
+								String schemaSensorName = schema[schemaIndex];
+								if(schemaSensorName.equals(sensorName)) {
+									eventPos[sensorIndex] = schemaIndex;
+								}
+							}
+						}
+						if(eventPos[sensorIndex] == -1) {
+							if(sensorName==null) {
+								log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName);
+							} else {
+								log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName);
+							}
+						}
+					}
+				}
+
+				//mapping event index position -> sensor index position 
+				int[] sensorPos = new int[schema.length];
+				for(int i=0;i<sensorPos.length;i++) {
+					sensorPos[i] = -1;
+				}
+				int validSensorCount = 0;
+				for(int i=0;i<eventPos.length;i++) {
+					if(eventPos[i]>-1) {
+						validSensorCount++;
+						sensorPos[eventPos[i]] = i;
+					}
+				}
+
+				if(validSensorCount<1) {
+					log.trace("no fitting sensors in "+path);
+					return null; //all event columns are empty
+				}
+		
+		
+				//*********************end of schama mapping ***************************
 
 
 		TreeMap<Long, Event> eventMap = new TreeMap<Long, Event>();
@@ -163,7 +227,7 @@ public class KiLiCSV {
 			long timestamp = TimeConverter.DateTimeToOleMinutes(datetime);			
 			//System.out.println(datetime+" "+timestamp);
 
-			Float[] data = new Float[columnNames.length-2];
+			/*Float[] data = new Float[columnNames.length-2];
 			for(int colIndex=2;colIndex<columnNames.length;colIndex++) {
 				try {
 					float value = Float.parseFloat(row[colIndex]);
@@ -173,6 +237,21 @@ public class KiLiCSV {
 					data[colIndex-2] = Float.NaN;
 				}
 				//System.out.println(value);
+			}*/
+			
+			Float[] data = new Float[schema.length];
+			for(int schemaIndex=0;schemaIndex<schema.length;schemaIndex++) {
+				if(sensorPos[schemaIndex]>-1) {
+					try {
+						float value = Float.parseFloat(row[sensorPos[schemaIndex]]);
+						data[schemaIndex] = value;
+					} catch (NumberFormatException e) {
+						e.printStackTrace();
+						data[schemaIndex] = Float.NaN;
+					}
+				} else {
+					data[schemaIndex] = Float.NaN;
+				}
 			}
 
 			//TimeSeriesEntry timeSeriesEntry = new TimeSeriesEntry(timestamp, data);

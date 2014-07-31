@@ -26,16 +26,6 @@ public class StreamStorageMapDB implements StreamStorage {
 	
 	private static final Logger log = Util.log;
 	
-	private static class StorageEntry implements Serializable {
-		private static final long serialVersionUID = 2832034902535063248L;
-		public final long timestamp;
-		public final float[] data;
-		public StorageEntry(long timestamp, float[] data) {
-			this.timestamp = timestamp;
-			this.data = data;
-		}
-	}
-	
 	private static final String DB_NAME_STREAM_METADATA = "StreamMetadata";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";
 	
@@ -67,22 +57,24 @@ public class StreamStorageMapDB implements StreamStorage {
 		@Override
 		public void serialize(DataOutput out, Event event)
 				throws IOException {
-			out.writeLong(event.getTimestamp());
+			long timestamp = event.getTimestamp();
 			Object[] payload = event.getPayload();
-			out.write(payload.length);
-			for(Object value:payload) {
-				out.writeFloat((Float)value);
+			int count = payload.length;
+			out.writeLong(timestamp); // ** write long
+			out.writeInt(count);      // ** write int
+			for(int i=0;i<count;i++) {
+				out.writeFloat((Float)payload[i]); // ** write float
 			}
 		}
 
 		@Override
 		public Event deserialize(DataInput in, int available)
 				throws IOException {
-			long timestamp = in.readLong();
-			int size = in.readInt();
-			Object[] payload = new Object[size];
-			for(int i=0;i<size;i++) {
-				payload[i] = in.readFloat();
+			long timestamp = in.readLong(); // ** read long
+			int count = in.readInt();        // ** read int
+			Float[] payload = new Float[count];
+			for(int i=0;i<count;i++) {
+				payload[i] = in.readFloat(); // ** read float
 			}
 			return new Event(payload,timestamp);
 		}
@@ -144,10 +136,10 @@ public class StreamStorageMapDB implements StreamStorage {
 		}
 	}
 	
-	private ConcurrentNavigableMap<Long, StorageEntry> queryMap(String streamName, Long begin, Long end) {
+	private ConcurrentNavigableMap<Long, Event> queryMap(String streamName, Long begin, Long end) {
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		if(streamMetadataMap.containsKey(dbName)) {
-			ConcurrentNavigableMap<Long, StorageEntry> map = db.getTreeMap(dbName);
+			ConcurrentNavigableMap<Long, Event> map = db.getTreeMap(dbName);
 			if(begin!=null) {
 				Long fromKey = begin;
 				if(end!=null) {
@@ -172,26 +164,11 @@ public class StreamStorageMapDB implements StreamStorage {
 
 	@Override
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
-		ConcurrentNavigableMap<Long, StorageEntry> map = queryMap(streamName, start, end);
+		ConcurrentNavigableMap<Long, Event> map = queryMap(streamName, start, end);
 		if(map==null) {
 			return null;
 		}
-		Iterator<StorageEntry> it = map.values().iterator();
-		return new Iterator<Event>() {
-			@Override
-			public boolean hasNext() {
-				return it.hasNext();
-			}
-			@Override
-			public Event next() {
-				StorageEntry element = it.next();
-				float[] data = element.data;
-				Object[] payload = new Object[data.length];
-				for(int i=0;i<data.length;i++) {
-					payload[i] = data[i];
-				}
-				return new Event(payload, element.timestamp);
-			}};
+		return map.values().iterator();
 	}
 
 	@Override

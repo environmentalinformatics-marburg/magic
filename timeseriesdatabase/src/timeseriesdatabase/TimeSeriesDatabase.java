@@ -116,8 +116,8 @@ public class TimeSeriesDatabase {
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile, String cachePath) {		
 		log.trace("create TimeSeriesDatabase");		
 
-		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
-		//this.streamStorage = new StreamStorageMapDB(databasePath);
+		//this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
+		this.streamStorage = new StreamStorageMapDB(databasePath);
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
@@ -771,9 +771,9 @@ public class TimeSeriesDatabase {
 
 				try {
 					//System.out.println("read: "+path);
-					KiLiCSV kiliCSV = KiLiCSV.readFile(path);
-
-					String streamName = null;
+					KiLiCSV kiliCSV = KiLiCSV.readFile(this,path);
+					
+					if(kiliCSV!=null) {
 
 					if(stationMap.containsKey(kiliCSV.serial)) {
 						System.out.println("insert "+kiliCSV.eventMap.size()+" into "+kiliCSV.serial);
@@ -783,10 +783,13 @@ public class TimeSeriesDatabase {
 					} else {
 						log.warn("not in database: "+kiliCSV.serial);
 					}
+					
+					}
 
 
 
 				} catch(Exception e) {
+					e.printStackTrace();
 					log.error(e+" in "+path);
 				}
 			}
@@ -1038,6 +1041,7 @@ public class TimeSeriesDatabase {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_TRANSLATION_HEADER_SUFFIX);
 				if(section!=null) {
+					System.out.println("read "+section.getName());
 					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
 				} else {
 					//not all logger types may be defined in in this file
@@ -1123,6 +1127,17 @@ public class TimeSeriesDatabase {
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		for(String name:rawSchema) {
 			if(baseAggregationSensorNameSet.contains(name)) {
+				sensorNames.add(name);
+			}
+		}
+		return sensorNames.toArray(new String[0]);
+	}
+	
+	public String[] getValidSchema(String stationID, String[] schema) {
+		ArrayList<String> sensorNames = new ArrayList<String>();
+		Map<String, Integer> map = Util.StringArrayToMap(stationMap.get(stationID).getLoggerType().sensorNames);
+		for(String name:schema) {
+			if(map.containsKey(name)) {
 				sensorNames.add(name);
 			}
 		}

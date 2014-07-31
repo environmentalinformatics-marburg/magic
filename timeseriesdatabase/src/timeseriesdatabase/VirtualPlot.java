@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
+import de.umr.jepc.Attribute;
 import util.TimestampInterval;
 import util.Util;
 
@@ -25,7 +26,7 @@ import util.Util;
  *
  */
 public class VirtualPlot {
-	
+
 	private static final Logger log = Util.log;
 
 	public final String plotID;
@@ -38,46 +39,46 @@ public class VirtualPlot {
 		this.generalStationName = generalStationName;
 		this.intervalList = new ArrayList<TimestampInterval<Station>>();
 	}
-	
+
 	public String[] getSchema() {
 		/*Set<LoggerType> loggerTypes = new LinkedHashSet<LoggerType>();
 		//Stream<TimestampInterval<Station>> stream = intervalList.stream();
 		//intervalList.stream().forEach(interval->loggerTypes.add(interval.value.loggerType));*/
-		
+
 		//LinkedHashSet<String> schemaSet = new LinkedHashSet<String>();
-		
+
 		//loggerTypes.stream().flatMap(loggerType->Arrays.stream(loggerType.sensorNames)).forEach(name->schemaSet.add(name));
-		
-		
+
+
 		/*loggerTypes.stream().forEach(loggerType->{
 			for(String name:loggerType.sensorNames) {
 				schemaSet.add(name);
 			}			
 		});*/
-		
-		
+
+
 		/*intervalList.stream()
 					.map(interval->interval.value.loggerType)
 					.distinct()
 					.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
 					.forEach(name->schemaSet .add(name));
-		
+
 		return schemaSet.toArray(new String[0]);*/
-		
+
 		//intervalList.iterator().forEachRemaining(action);
-		
+
 		return intervalList.stream()
-							.map(interval->interval.value.loggerType)
-							.distinct()
-							.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
-							.distinct()
-							.toArray(String[]::new);
+				.map(interval->interval.value.loggerType)
+				.distinct()
+				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
+				.distinct()
+				.toArray(String[]::new);
 	}
 
 	public void addStationEntry(Station station, Long start, Long end) {
 		intervalList.add(new TimestampInterval<Station>(station, start, end));
 	}
-	
+
 	private static boolean overlaps(Long queryStart, Long queryEnd, Long iStart, Long iEnd) {
 		if(queryStart==null) {
 			queryStart = Long.MIN_VALUE;
@@ -117,18 +118,31 @@ public class VirtualPlot {
 				}
 			}
 		});
-		
+
 		Iterator<TimestampInterval<Station>> it = intervalList.iterator();
-		
-		
+
+
 		List<TimestampInterval<Station>> resultIntervalList = new ArrayList<TimestampInterval<Station>>();
 		while(it.hasNext()) {
 			TimestampInterval<Station> interval = it.next();
-			if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
-				resultIntervalList.add(interval);
+			if(schemaOverlaps(interval.value.loggerType.sensorNames,schema)) {
+				if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
+					resultIntervalList.add(interval);
+				}
 			}
 		}
-		
+		System.out.println("resultIntervalList: "+resultIntervalList.size());
 		return resultIntervalList;
+	}
+
+	private boolean schemaOverlaps(String[] schema, String[] schema2) {
+		for(String name:schema) {
+			for(String name2:schema2) {
+				if(name.equals(name2)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

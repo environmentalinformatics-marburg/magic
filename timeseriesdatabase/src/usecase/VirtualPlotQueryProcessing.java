@@ -38,7 +38,7 @@ public class VirtualPlotQueryProcessing {
 		
 		DataQuality dataQuality = DataQuality.EMPIRICAL;
 		boolean interpolated = false;
-		//qp.virtualquery_aggregated(plotName, schema, queryStart, queryEnd, dataQuality , AggregationInterval.HOUR, interpolated).writeCSV(CSV_OUTPUT_PATH+"virtualPlot.csv");;
+		qp.virtualquery_aggregated(plotName, schema, queryStart, queryEnd, dataQuality , AggregationInterval.HOUR, interpolated).writeCSV(CSV_OUTPUT_PATH+"virtualPlot.csv");;
 		
 		/*
 		VirtualPlot virtualPlot = timeSeriesDatabase.virtualplotMap.get(plotName);
