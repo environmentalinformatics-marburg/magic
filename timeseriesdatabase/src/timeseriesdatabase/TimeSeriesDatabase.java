@@ -102,7 +102,7 @@ public class TimeSeriesDatabase {
 	/**
 	 * set of sensor name, that should be included in base aggregation processing
 	 */
-	public Set<String> baseAggregatonSensorNameSet;
+	public Set<String> baseAggregationSensorNameSet;
 
 	public CacheStorage cacheStorage;
 
@@ -123,7 +123,7 @@ public class TimeSeriesDatabase {
 		generalStationMap = new HashMap<String, GeneralStation>();
 		sensorMap = new TreeMap<String,Sensor>();//new HashMap<String,Sensor>();
 		ignoreSensorNameSet = new HashSet<String>();
-		baseAggregatonSensorNameSet = new HashSet<String>();
+		baseAggregationSensorNameSet = new HashSet<String>();
 
 		this.cacheStorage = new CacheStorage(cachePath);
 
@@ -307,9 +307,9 @@ public class TimeSeriesDatabase {
 			//String firstGeneralStationName = plotIdKiLiToGeneralStationName(firstProperyMap.get("PLOTID"));
 			//System.out.println("generalStationName: "+generalStationName+" serial: "+serial);
 			if(!stationMap.containsKey(serial)) {
-				System.out.println(serial);
+				//System.out.println(serial);
 				String loggerName = loggerPropertyKiLiToLoggerName(entry.getValue().get(0).get("LOGGER"));
-				System.out.println("logger name: "+loggerName);
+				//System.out.println("logger name: "+loggerName);
 				LoggerType loggerType = loggerTypeMap.get(loggerName); 
 				if(loggerType!=null) {
 					Station station = new Station(this, null/*no general station*/, serial,loggerType, entry.getValue().get(0), entry.getValue()); // !!
@@ -655,7 +655,7 @@ public class TimeSeriesDatabase {
 							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
 						}
 						sensor.baseAggregationType = aggregateType;
-						baseAggregatonSensorNameSet.add(sensorName);
+						baseAggregationSensorNameSet.add(sensorName);
 					} else {
 						log.warn("sensor not found: "+sensorName);
 					}
@@ -1117,5 +1117,15 @@ public class TimeSeriesDatabase {
 		} catch(Exception e) {
 			log.error(e);
 		}				
+	}
+	
+	public String[] getBaseAggregationSchema(String[] rawSchema) {
+		ArrayList<String> sensorNames = new ArrayList<String>();
+		for(String name:rawSchema) {
+			if(baseAggregationSensorNameSet.contains(name)) {
+				sensorNames.add(name);
+			}
+		}
+		return sensorNames.toArray(new String[0]);
 	}
 }

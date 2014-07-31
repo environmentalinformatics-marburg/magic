@@ -361,7 +361,8 @@ public class QueryDialog extends Dialog {
 				TimestampSeries resultTimeSeries = null;
 				try{				
 					System.out.println("query dataQuality: "+dataQuality);
-					TimeSeriesIterator result = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
+					TimeSeriesIterator result = qp.virtualquery_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
+					//TimeSeriesIterator result = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));
@@ -471,7 +472,7 @@ public class QueryDialog extends Dialog {
 		if(schema!=null) {
 			ArrayList<String> sensorNames = new ArrayList<String>();
 			for(String name:schema) {
-				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(name)) {
+				if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(name)) {
 					System.out.println("add: "+name);
 					sensorNames.add(name);
 				}

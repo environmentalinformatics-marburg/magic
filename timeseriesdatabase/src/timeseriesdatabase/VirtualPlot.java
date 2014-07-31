@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
+
+import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
 import util.TimestampInterval;
 import util.Util;
@@ -74,6 +77,22 @@ public class VirtualPlot {
 	public void addStationEntry(Station station, Long start, Long end) {
 		intervalList.add(new TimestampInterval<Station>(station, start, end));
 	}
+	
+	private static boolean overlaps(Long queryStart, Long queryEnd, Long iStart, Long iEnd) {
+		if(queryStart==null) {
+			queryStart = Long.MIN_VALUE;
+		}
+		if(queryEnd==null) {
+			queryEnd = Long.MAX_VALUE;
+		}
+		if(iStart==null) {
+			iStart = Long.MIN_VALUE;
+		}
+		if(iEnd==null) {
+			iEnd = Long.MAX_VALUE;
+		}		
+		return queryStart <= iEnd && iStart <= queryEnd;
+	}
 
 	/**
 	 * Get list of stations with overlapping entries in time interval start - end
@@ -82,17 +101,7 @@ public class VirtualPlot {
 	 * @param schema
 	 * @return
 	 */
-	public List<Station> getStationList(Long queryStart, Long queryEnd, String[] schema) {
-
-		/*
-
-		null1             end1
-		         start2          end2
-
-
-
-		 */
-
+	public List<TimestampInterval<Station>> getStationList(Long queryStart, Long queryEnd, String[] schema) {
 		intervalList.sort( (a,b) -> {
 			if(a.start==null) {
 				if(b.start==null) {
@@ -108,48 +117,18 @@ public class VirtualPlot {
 				}
 			}
 		});
-
-		List<Station> resultList = new ArrayList<Station>();
-		Long currStart = queryStart;
-		TimestampInterval<Station> currInterval = null;
-		for(TimestampInterval<Station> interval:intervalList) {
-			
-			long intervalStart = util.Util.ifnull(interval.start,0l);
-			long intervalEnd = util.Util.ifnull(interval.end,1000000000l);
-			
-			
-			/*
-			if(currInterval==null) { // process first interval in list
-				if(queryStart==null) { // query start not defined
-					currInterval = interval;
-					currStart = interval.start;
-				} else { // query start defined
-					if(interval.start==null) { // query start defined  interval.start not defined       // check if query overlaps with interval
-						
-					}
-				}
-			}
-			*/
-			
-			/*System.out.println("process interval: "+interval);
-			
-			if(currStart==null) {
-				currInterval = interval;
-				currStart = interval.start;
-			} else if(interval.start==null){
-				if(interval.end>queryStart) {
-					System.out.println("return interval: "+interval);
-				}
-			}*/
-			
-			//if(currStart)
-			System.out.println(intervalStart+"    "+TimeConverter.oleMinutesToText(intervalEnd));
-		}
-		return resultList;
-	}
-	
-	/*private static boolean isInRange(Long aStart, Long aEnd, Long bStart, Long bEnd) {
 		
-	}*/
-
+		Iterator<TimestampInterval<Station>> it = intervalList.iterator();
+		
+		
+		List<TimestampInterval<Station>> resultIntervalList = new ArrayList<TimestampInterval<Station>>();
+		while(it.hasNext()) {
+			TimestampInterval<Station> interval = it.next();
+			if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
+				resultIntervalList.add(interval);
+			}
+		}
+		
+		return resultIntervalList;
+	}
 }

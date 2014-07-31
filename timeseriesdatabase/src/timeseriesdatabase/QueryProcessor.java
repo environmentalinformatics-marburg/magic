@@ -9,7 +9,10 @@ import org.apache.logging.log4j.Logger;
 
 
 
+
+
 import util.Builder;
+import util.TimestampInterval;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.Interpolator;
@@ -19,6 +22,7 @@ import timeseriesdatabase.aggregated.iterator.BadInterpolatedRemoveIterator;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.iterator.EmpiricalIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
+import timeseriesdatabase.aggregated.iterator.VirtualPlotIterator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.iterator.QualityFlagIterator;
@@ -168,8 +172,8 @@ public class QueryProcessor {
 			Station sourceStation = nearestStationList.get(i);			
 			String[] qNames = sourceStation.getValidSchemaEntries(interpolationSensorNames);
 			if(qNames!=null) {
-			TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.plotID, qNames, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
-			sourceTimeseries[i] = TimeSeries.create(source_iterator);
+				TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.plotID, qNames, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
+				sourceTimeseries[i] = TimeSeries.create(source_iterator);
 			} else {
 				sourceTimeseries[i] = null;
 			}
@@ -188,7 +192,7 @@ public class QueryProcessor {
 		TimeSeriesIterator clipIterator = targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
 		return new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
 	}
-	
+
 	/**
 	 * Query one high aggregated time series without interpolation
 	 * @param plotID
@@ -238,7 +242,7 @@ public class QueryProcessor {
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
 		}
 	}
-	
+
 	/**
 	 * Same as query_continuous_base_aggregated with empirical diff check.
 	 * @param plotID
@@ -262,6 +266,30 @@ public class QueryProcessor {
 		System.out.println("maxDiff[0]: "+maxDiff[0]);
 		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
 	}
-	
-	
+
+	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
+		VirtualPlot virtualPlot = timeSeriesDatabase.virtualplotMap.get(plotID);
+		if(virtualPlot!=null) {
+			List<TimestampInterval<Station>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, null);			 
+			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
+			for(TimestampInterval<Station> interval:intervalList) {
+				TimeSeriesIterator it = this.query_base_aggregated(interval.value.plotID, null, interval.start, interval.end, dataQuality);
+				if(it!=null&&it.hasNext()) {
+					processing_iteratorList.add(it);
+				}
+			}
+			String[] result_schema = timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema());
+			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(result_schema, processing_iteratorList.toArray(new TimeSeriesIterator[0]));			
+			Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
+			Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
+			TimeSeriesIterator it_continuous_base_aggregated = Util.ifnull(it_virtual_base_aggregated, x->new NanGapIterator(x, start, end));
+			return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));			
+		} else if(timeSeriesDatabase.stationMap.containsKey(plotID)){
+			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
+		} else {
+			return null;
+		}
+	}
+
+
 }

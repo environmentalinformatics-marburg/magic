@@ -49,7 +49,7 @@ public class StreamStorageMapDB implements StreamStorage {
 				.transactionDisable() //!!
 				.mmapFileEnable() //!!
 				.asyncWriteEnable() //!!
-				.cacheSize(1000000)  //!!
+				.cacheSize(100000)  //!!
 				.closeOnJvmShutdown()
 				.make();
 		
@@ -97,7 +97,7 @@ public class StreamStorageMapDB implements StreamStorage {
 	    final String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		if(!streamMetadataMap.containsKey(dbName)) {
 
-			db.createTreeMap(dbName).valueSerializer(eventSerializer).makeLongMap();
+			db.createTreeMap(dbName).valueSerializer(eventSerializer).nodeSize(126).makeLongMap();
 			streamMetadataMap.put(dbName, attributes);
 		}
 		

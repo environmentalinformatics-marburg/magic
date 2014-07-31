@@ -44,7 +44,7 @@ public class TimestampSeries implements TimeSeriesIterable, Serializable {
 	public static TimestampSeries create(SchemaIterator<TimeSeriesEntry> input_iterator) {
 		if(!input_iterator.hasNext()) {
 			log.warn("TimestampSeries.create: input_iterator is empty");
-			new Exception().printStackTrace(System.out);
+			//new Exception().printStackTrace(System.out);
 			return null;
 		}
 		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();

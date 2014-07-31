@@ -21,6 +21,7 @@ import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
 import timeseriesdatabase.Sensor;
+import timeseriesdatabase.Station;
 
 /**
  * Some utilities
@@ -329,6 +330,14 @@ public class Util {
 			}
 		}
 		return sectionMap;
+	}
+
+	public static String arrayToString(String[] array) {
+		String result = "";
+		for(String s:array) {
+			result+=s+" ";
+		}
+		return result;
 	}
 
 }

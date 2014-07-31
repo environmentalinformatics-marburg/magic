@@ -309,10 +309,10 @@ public class AggregatedQueryDialog extends Dialog {
 		if(station!=null) {
 			LoggerType loggerType = station.getLoggerType();
 			ArrayList<String> sensorNames = new ArrayList<String>();
-			System.out.println(timeSeriesDatabase.baseAggregatonSensorNameSet);
+			System.out.println(timeSeriesDatabase.baseAggregationSensorNameSet);
 			for(String name:loggerType.sensorNames) {
 				System.out.println("loggerType.sensorNames: "+name);
-				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(name)) {
+				if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(name)) {
 					System.out.println("add: "+name);
 					sensorNames.add(name);
 				}

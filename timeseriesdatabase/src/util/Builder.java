@@ -1,5 +1,6 @@
 package util;
 
+import java.sql.Time;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -13,6 +14,7 @@ import timeseriesdatabase.aggregated.iterator.LinearIterpolationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.aggregated.iterator.ProjectionIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.TimestampSeries;
 import util.iterator.TimeSeriesIterator;
 
 /**
@@ -143,6 +145,10 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 	 */
 	public void writeCSV(String filename) {
 		this.create().writeCSV(filename);
+	}
+	
+	public TimestampSeries createTimestampSeries() {
+		return Util.ifnull(this.create(), it->TimestampSeries.create(it));
 	}
 
 
