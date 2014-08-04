@@ -2,8 +2,10 @@ package timeseriesdatabase;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -68,7 +70,7 @@ public class StreamStorageEventStore implements StreamStorage {
 
 		Map<Long,Event> storageMap = new HashMap<Long,Event>();
 		Iterator<Event> it = queryRawEvents(streamName, startTimestamp, endTimestamp);
-		
+
 		if(it!=null) {
 			while(it.hasNext()) {
 				Event e = it.next();
@@ -91,36 +93,74 @@ public class StreamStorageEventStore implements StreamStorage {
 		store.flushStream(streamName);
 	}
 
-	/**
-	 * Basic method for all queries
-	 * @param streamName
-	 * @param start may be null
-	 * @param end may be null
-	 * @return iterator of events
-	 */
-	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
-		if(start!=null) {
-			long startTime = start;
-			if(end!=null) {
-				long endTime = end;
-				return store.getHistoryRange(streamName, startTime, endTime);
-			} else {
-				return store.getFreshestHistory(streamName, startTime);
+	@Override
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last) {
+		Iterator<Event> it = queryRawEvents(streamName, first, last);
+		Map<Long,Event> storageMap = null;
+		if(it!=null) {
+			storageMap = new HashMap<Long,Event>();
+			while(it.hasNext()) {
+				Event e = it.next();
+				if(storageMap.containsKey(e.getTimestamp())) {
+					log.error("duplicate timestamp events in database");
+				} else {
+					storageMap.put(e.getTimestamp(), e);
+				}
+			}			
+		}		
+
+		if(storageMap!=null&&storageMap.size()>0) {
+			for(Event event:eventList) {
+				if(!storageMap.containsKey(event.getTimestamp())) { // only push if event does not exist in stream
+					store.pushEvent(streamName, event.getPayload(),event.getTimestamp());
+				}
 			}
 		} else {
-			if(end!=null) {
-				long endTime = end;
-				return store.getHistoryRange(streamName, Long.MIN_VALUE, endTime);
-			} else {
-				return store.getHistory(streamName);
+			Attribute[] internalSchema = store.getSchema(streamName);
+			for(Attribute attr:internalSchema) {
+				System.out.print(attr.getAttributeName()+" ");
+			}
+			System.out.println();
+			for(Event event:eventList) {
+				if(event.getPayload().length!=internalSchema.length-2) {// TODO point or interval time representation
+					log.warn("internal schema: "+internalSchema.length+" payload: "+event.getPayload().length);
+				}
+				store.pushEvent(streamName, event.getPayload(),event.getTimestamp());
 			}
 		}
-	}
-	
-	public void getInfo() {
-		for(String streamName:store.getRegisteredStreams()) {
-			System.out.println(streamName);
-		}
+		store.flushStream(streamName);
 	}
 
+
+/**
+ * Basic method for all queries
+ * @param streamName
+ * @param start may be null
+ * @param end may be null
+ * @return iterator of events
+ */
+public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
+	if(start!=null) {
+		long startTime = start;
+		if(end!=null) {
+			long endTime = end;
+			return store.getHistoryRange(streamName, startTime, endTime);
+		} else {
+			return store.getFreshestHistory(streamName, startTime);
+		}
+	} else {
+		if(end!=null) {
+			long endTime = end;
+			return store.getHistoryRange(streamName, Long.MIN_VALUE, endTime);
+		} else {
+			return store.getHistory(streamName);
+		}
+	}
+}
+
+public void getInfo() {
+	for(String streamName:store.getRegisteredStreams()) {
+		System.out.println(streamName);
+	}
+}
 }

@@ -102,7 +102,10 @@ public class VirtualPlot {
 	 * @param schema
 	 * @return
 	 */
-	public List<TimestampInterval<Station>> getStationList(Long queryStart, Long queryEnd, String[] schema) {
+	public List<TimestampInterval<Station>> getStationList(Long queryStart, Long queryEnd, String[] schema) {		
+		if(schema==null) {
+			schema = getSchema();
+		}		
 		intervalList.sort( (a,b) -> {
 			if(a.start==null) {
 				if(b.start==null) {

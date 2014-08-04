@@ -8,10 +8,13 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -53,6 +56,10 @@ public class Util {
 		}
 		return String.format("%.2f", value);
 	}
+	
+	public static Map<String,Integer> stringArrayToMap(String[] entries) {
+		return stringArrayToMap(entries, false);
+	}
 
 	/**
 	 * create position map of array of Strings:
@@ -60,14 +67,16 @@ public class Util {
 	 * @param entries
 	 * @return
 	 */
-	public static Map<String,Integer> StringArrayToMap(String[] entries) {
+	public static Map<String,Integer> stringArrayToMap(String[] entries, boolean ignoreNull) {
 		Map<String,Integer> map = new HashMap<String,Integer>();
 		if(entries==null) {
 			throw new RuntimeException("StringArrayToMap: entries==null");
 		}
 		for(int i=0;i<entries.length;i++) {
 			if(entries[i]==null) {
-				log.warn("StringArrayToMap: entries["+i+"]==null ==> will not be included in map");
+				if(!ignoreNull) {
+					log.warn("StringArrayToMap: entries["+i+"]==null ==> will not be included in map");				
+				}
 			} else {
 				map.put(entries[i], i);
 			}
@@ -83,7 +92,7 @@ public class Util {
 	 * @return
 	 */
 	public static int[] stringArrayToPositionIndexArray(String resultNames[], String[] sourcePosStringArray, boolean warn, boolean exception) {
-		return stringArrayToPositionIndexArray(resultNames,StringArrayToMap(sourcePosStringArray), warn, exception);
+		return stringArrayToPositionIndexArray(resultNames,stringArrayToMap(sourcePosStringArray), warn, exception);
 	}
 
 	/**
@@ -137,7 +146,7 @@ public class Util {
 		}
 		return result;
 	}
-	
+
 	public static void printArray(String[] a) {
 		printArray(a," ");
 	}
@@ -219,7 +228,7 @@ public class Util {
 		result.add(e);
 		return result;
 	}
-	
+
 	public static <T> T  ifnull(T a, T isNull){
 		if(a==null) {
 			return isNull;
@@ -278,7 +287,7 @@ public class Util {
 	public static <S, T> int fillArray(Collection<S> collection, T[] array, Function<S,T> transform) {
 		return fillArray(collection.iterator(),array,transform);
 	}
-	
+
 	public static <S, T> int fillArray(Iterator<S> input_iterator, T[] array, Function<S,T> transform) {
 		Iterator<T> it = new Iterator<T>(){
 			@Override
@@ -308,7 +317,7 @@ public class Util {
 		}
 		return counter;
 	}
-	
+
 	public static Float[] array_float_to_array_Float(float[] a) {
 		Float[] result = new Float[a.length];
 		for(int i=0;i<a.length;i++) {
@@ -316,7 +325,7 @@ public class Util {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * creates a map of all entries in one section of an "ini"-file
 	 * @param section
@@ -338,6 +347,21 @@ public class Util {
 			result+=s+" ";
 		}
 		return result;
+	}
+
+	public static TreeSet<String> getDuplicateNames(String[] schema, boolean ignorNull) {
+		TreeSet<String> resultSet = new TreeSet<String>();		
+		Set<String> names = new HashSet<String>();		
+		for(String name:schema) {
+			if(!ignorNull||name!=null) {
+				if(!names.contains(name)) {
+					names.add(name);
+				} else {
+					resultSet.add(name);
+				}
+			}
+		}	
+		return resultSet;
 	}
 
 }

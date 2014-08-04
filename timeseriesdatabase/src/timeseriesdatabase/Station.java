@@ -415,7 +415,7 @@ public class Station {
 	}
 
 	public String[] getValidSchemaEntries(String[] querySchema) {
-		Map<String, Integer> schemaMap = Util.StringArrayToMap(getLoggerType().sensorNames);
+		Map<String, Integer> schemaMap = Util.stringArrayToMap(getLoggerType().sensorNames);
 		ArrayList<String> resultList = new ArrayList<String>();
 		for(String sensorName:querySchema) {
 			if(schemaMap.containsKey(sensorName)) {

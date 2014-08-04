@@ -54,6 +54,9 @@ public class InitDatabase {
 		//timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get(path2));
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
+		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
+		
 		
 
 

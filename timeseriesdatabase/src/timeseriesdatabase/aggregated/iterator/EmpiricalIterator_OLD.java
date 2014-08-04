@@ -48,7 +48,7 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 		
 		String[] schema = this.outputTimeSeriesSchema.schema;
 		for(int itIndex=0;itIndex<compareIterators.length;itIndex++) {
-			Map<String, Integer> map = Util.StringArrayToMap(compareIterators[itIndex].getOutputSchema());  
+			Map<String, Integer> map = Util.stringArrayToMap(compareIterators[itIndex].getOutputSchema());  
 			for(int colIndex=0;colIndex<columns;colIndex++) {
 				if(maxDiff!=null) {
 					Integer attrNr = map.get(schema[colIndex]);

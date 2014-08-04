@@ -88,7 +88,7 @@ public class RawDataProcessor {
 		if(querySensorNames==null) {// all available sensors are in result schema
 			return schemaSensorNames;			
 		} else {		
-			Map<String, Integer> schemaSensorNameMap = Util.StringArrayToMap(schemaSensorNames);
+			Map<String, Integer> schemaSensorNameMap = Util.stringArrayToMap(schemaSensorNames);
 			ArrayList<String> parameterNameList = new ArrayList<String>();		
 			for(String querySensorName:querySensorNames) {
 				if(schemaSensorNameMap.containsKey(querySensorName)) {

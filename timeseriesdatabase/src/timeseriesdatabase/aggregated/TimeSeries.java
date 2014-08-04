@@ -227,12 +227,12 @@ public class TimeSeries implements TimeSeriesIterable {
 	 * @return
 	 */
 	public int getParameterNameIndex(String parameterName) {
-		return Util.StringArrayToMap(parameterNames).get(parameterName);
+		return Util.stringArrayToMap(parameterNames).get(parameterName);
 
 	}
 	
 	public boolean containsParamterName(String parameterName) {
-		return Util.StringArrayToMap(parameterNames).containsKey(parameterName);
+		return Util.stringArrayToMap(parameterNames).containsKey(parameterName);
 	}
 
 	/**

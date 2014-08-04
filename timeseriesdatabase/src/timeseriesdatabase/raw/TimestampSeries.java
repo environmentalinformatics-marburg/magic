@@ -204,7 +204,7 @@ public class TimestampSeries implements TimeSeriesIterable, Serializable {
 	
 	public List<Long> getNaNList(String parameterName) {
 		
-		int columnID = Util.StringArrayToMap(parameterNames).get(parameterName);
+		int columnID = Util.stringArrayToMap(parameterNames).get(parameterName);
 
 		List<Long> gapList = new ArrayList<Long>();
 		long currentTimeStamp = -1;

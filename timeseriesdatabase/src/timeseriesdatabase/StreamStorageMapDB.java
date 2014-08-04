@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -136,6 +137,22 @@ public class StreamStorageMapDB implements StreamStorage {
 		}
 	}
 	
+	@Override
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last) {
+		String dbName = DB_NAME_STREAM_PREFIX+streamName;
+		Attribute[] attributes = streamMetadataMap.get(dbName);
+		if(attributes!=null) {
+			BTreeMap<Long, Event> storeMap = db.getTreeMap(dbName);
+			for(Event event:eventList) {
+				storeMap.put(event.getTimestamp(), event);
+			}
+			db.commit();			
+		} else {
+			log.warn("stream not found: "+streamName);
+		}
+		
+	}	
+	
 	private ConcurrentNavigableMap<Long, Event> queryMap(String streamName, Long begin, Long end) {
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		if(streamMetadataMap.containsKey(dbName)) {
@@ -173,8 +190,7 @@ public class StreamStorageMapDB implements StreamStorage {
 
 	@Override
 	public void getInfo() {
-		// TODO Auto-generated method stub
+		throw new RuntimeException("TODO");
 		
 	}
-
 }

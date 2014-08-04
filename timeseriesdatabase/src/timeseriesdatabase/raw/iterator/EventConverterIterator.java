@@ -39,7 +39,7 @@ public class EventConverterIterator extends TimeSeriesIterator {
 	@Override
 	public TimeSeriesEntry next() {
 		Event event = inputIterator.next();
-		System.out.println("event: "+event);
+		//System.out.println("event: "+event);
 		Object[] payload = event.getPayload();
 		float[] data = new float[outputTimeSeriesSchema.columns];
 		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {

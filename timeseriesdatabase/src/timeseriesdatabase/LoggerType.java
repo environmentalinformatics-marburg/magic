@@ -23,5 +23,10 @@ public class LoggerType {
 		this.schema = schema;
 		this.sensorNameTranlationMap = new HashMap<String, String>();
 	}
+	
+	@Override
+	public String toString() {
+		return "logger: "+typeName;
+	}
 
 }

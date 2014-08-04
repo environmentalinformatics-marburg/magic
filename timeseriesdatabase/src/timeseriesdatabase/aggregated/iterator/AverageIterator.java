@@ -35,7 +35,7 @@ public class AverageIterator extends MoveIterator {
 	public AverageIterator(String[] schema, TimeSeriesIterator[] input_iterators, int minCount) {
 		super(createSchema(schema, input_iterators));
 		this.input_iterators = input_iterators;
-		this.schemaMap = Util.StringArrayToMap(schema);
+		this.schemaMap = Util.stringArrayToMap(schema);
 		this.minCount = minCount;
 	}
 

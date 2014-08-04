@@ -108,7 +108,7 @@ public class BaseAggregationProcessor {
 			}
 			return (String[]) parameterNameList.toArray(new String[0]);			
 		} else {		
-			Map<String, Integer> schemaSensorNameMap = Util.StringArrayToMap(schemaSensorNames);
+			Map<String, Integer> schemaSensorNameMap = Util.stringArrayToMap(schemaSensorNames);
 			ArrayList<String> parameterNameList = new ArrayList<String>();		
 			for(String querySensorName:querySensorNames) {
 				if(schemaSensorNameMap.containsKey(querySensorName)) {

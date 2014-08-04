@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +42,7 @@ import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
+import timeseriesdatabase.raw.CSVTimeSeries;
 import timeseriesdatabase.raw.KiLiCSV;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
@@ -116,8 +119,8 @@ public class TimeSeriesDatabase {
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile, String cachePath) {		
 		log.trace("create TimeSeriesDatabase");		
 
-		//this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
-		this.streamStorage = new StreamStorageMapDB(databasePath);
+		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
+		//this.streamStorage = new StreamStorageMapDB(databasePath);
 		loggerTypeMap = new HashMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();//new HashMap<String,Station>();
 		generalStationMap = new HashMap<String, GeneralStation>();
@@ -308,11 +311,13 @@ public class TimeSeriesDatabase {
 			//System.out.println("generalStationName: "+generalStationName+" serial: "+serial);
 			if(!stationMap.containsKey(serial)) {
 				//System.out.println(serial);
-				String loggerName = loggerPropertyKiLiToLoggerName(entry.getValue().get(0).get("LOGGER"));
+				//String loggerName = loggerPropertyKiLiToLoggerName(entry.getValue().get(0).get("LOGGER"));
+				String loggerName = loggerPropertyKiLiToLoggerName(entry.getValue().get(entry.getValue().size()-1).get("LOGGER"));// !! better loggerType match of inventory
 				//System.out.println("logger name: "+loggerName);
 				LoggerType loggerType = loggerTypeMap.get(loggerName); 
 				if(loggerType!=null) {
-					Station station = new Station(this, null/*no general station*/, serial,loggerType, entry.getValue().get(0), entry.getValue()); // !!
+					//Station station = new Station(this, null/*no general station*/, serial,loggerType, entry.getValue().get(0), entry.getValue()); // !!
+					Station station = new Station(this, null/*no general station*/, serial,loggerType, entry.getValue().get(entry.getValue().size()-1), entry.getValue()); // !! better loggerType match of inventory
 					stationMap.put(serial, station);
 					for(Map<String, String> properyMap:entry.getValue()) {
 						String plotid = properyMap.get("PLOTID");
@@ -751,9 +756,14 @@ public class TimeSeriesDatabase {
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
 			for(Path path:stream) {
-				//System.out.println(path);
-				//loadDirectoryOfOneExploratory_structure_one(path);
-				loadOneDirectory_structure_kili(Paths.get(path+"/ra01_nai05_0000"));
+				//loadOneDirectory_structure_kili(Paths.get(path+"/ra01_nai05_0000"));
+				
+				DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
+				for(Path subPath:subStream) {
+					loadOneDirectory_structure_kili(subPath);
+				}
+				
+				
 			}
 		} catch (IOException e) {
 			log.error(e);
@@ -764,15 +774,107 @@ public class TimeSeriesDatabase {
 	public void loadOneDirectory_structure_kili(Path kiliPath) {
 		try {
 			if(Files.exists(kiliPath)) {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
-			System.out.println("*** load directory: "+kiliPath+" ***");
-			for(Path path:stream) {
-				//System.out.println(path);
+				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
+				System.out.println("*** load directory: "+kiliPath+" ***");
+				for(Path path:stream) {
+					//System.out.println(path);
 
+					try{
+						CSVTimeSeries csvtimeSeries = new CSVTimeSeries(path);
+						TimestampSeries timestampSeries = csvtimeSeries.readEntries();
+
+						if(timestampSeries!=null) {
+
+							if(!timestampSeries.entryList.isEmpty()) {
+
+								Station station = stationMap.get(csvtimeSeries.serialnumber);
+								if(station!=null) {
+
+									String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
+									for(int i=0;i<csvtimeSeries.parameterNames.length;i++) {
+										translatedInputSchema[i] = station.translateInputSensorName(csvtimeSeries.parameterNames[i], false);
+									}
+
+									Map<String, Integer> schemaMap = Util.stringArrayToMap(translatedInputSchema,true);
+									String PLACE_HOLDER_W_R_300_U = "PLACE_HOLDER_W_R_300_U";
+									if(schemaMap.containsKey(PLACE_HOLDER_W_R_300_U)) {
+										int counter_PLACE_HOLDER_W_R_300_U = 0;
+										String[] entries_PLACE_HOLDER_W_R_300_U =  new String[]{"SWDR_300_U", "SWUR_300_U", "LWDR_300_U", "LWUR_300_U"};
+										
+										if(station.loggerType.typeName.equals("wxt")) {
+											String[] entries_alternative_PLACE_HOLDER_W_R_300_U = new String[]{"LWDR_300_U", "LWUR_300_U", "SWDR_300_U", "SWUR_300_U"};
+											long up_to_2011 = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2011, 8, 20,23,59));
+											//TODO change entries_PLACE_HOLDER_W_R_300_U											
+										}
+										
+										
+										for(int schmaIndex=0;schmaIndex<translatedInputSchema.length;schmaIndex++) {
+											if(translatedInputSchema[schmaIndex]!=null&&translatedInputSchema[schmaIndex].equals(PLACE_HOLDER_W_R_300_U)) {
+												if(counter_PLACE_HOLDER_W_R_300_U<entries_PLACE_HOLDER_W_R_300_U.length) {
+													translatedInputSchema[schmaIndex] = entries_PLACE_HOLDER_W_R_300_U[counter_PLACE_HOLDER_W_R_300_U];													
+												} else {
+													log.warn("no real name for column "+PLACE_HOLDER_W_R_300_U+" "+counter_PLACE_HOLDER_W_R_300_U);
+													translatedInputSchema[schmaIndex] = null;
+												}
+												counter_PLACE_HOLDER_W_R_300_U++;
+											}
+										}
+									}
+									
+									
+									
+									String PLACE_HOLDER_RT_NRT_I = "PLACE_HOLDER_RT_NRT_I";
+									if(schemaMap.containsKey(PLACE_HOLDER_RT_NRT_I)) {
+										int counter_PLACE_HOLDER_RT_NRT_I = 0;
+										String[] entries_PLACE_HOLDER_RT_NRT_I = new String[]{"P_RT_NRT_01_I","P_RT_NRT_02_I"};
+										for(int schmaIndex=0;schmaIndex<translatedInputSchema.length;schmaIndex++) {
+											if(translatedInputSchema[schmaIndex]!=null&&translatedInputSchema[schmaIndex].equals(PLACE_HOLDER_RT_NRT_I)) {
+												if(counter_PLACE_HOLDER_RT_NRT_I<entries_PLACE_HOLDER_RT_NRT_I.length) {
+													translatedInputSchema[schmaIndex] = entries_PLACE_HOLDER_RT_NRT_I[counter_PLACE_HOLDER_RT_NRT_I];	
+												} else {
+													log.warn("no real name for column "+PLACE_HOLDER_RT_NRT_I+" "+counter_PLACE_HOLDER_RT_NRT_I);
+													translatedInputSchema[schmaIndex] = null;
+												}
+												counter_PLACE_HOLDER_RT_NRT_I++;
+											}
+										}
+									}
+
+
+
+									TreeSet<String> duplicates = Util.getDuplicateNames(translatedInputSchema,true);
+									if(!duplicates.isEmpty()) {
+										log.warn("duplicates: "+duplicates+" in "+path);
+									}
+
+									String debugInfo = station.loggerType.toString();
+									List<Event> eventList = csvtimeSeries.toEvents(timestampSeries, translatedInputSchema, station.loggerType.sensorNames, debugInfo);
+
+									if(eventList!=null) {							
+										streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd);
+									} else {
+										log.warn("no events inserted: "+path);
+									}
+								} else {
+									log.error("station not found: "+csvtimeSeries.serialnumber+" in "+path);
+								}
+							} else {
+								log.warn("timestampseries is empty");
+							}
+						} else {
+							log.error("no timestampseries");
+						}
+
+					} catch(Exception e) {
+						e.printStackTrace();
+						log.error(e+" in "+path);
+					}
+
+					/*
 				try {
 					//System.out.println("read: "+path);
-					KiLiCSV kiliCSV = KiLiCSV.readFile(this,path);
-					
+					KiLiCSV kiliCSV = KiLiCSV.readFileOLD(this,path);
+
 					if(kiliCSV!=null) {
 
 					if(stationMap.containsKey(kiliCSV.serial)) {
@@ -783,19 +885,17 @@ public class TimeSeriesDatabase {
 					} else {
 						log.warn("not in database: "+kiliCSV.serial);
 					}
-					
+
 					}
-
-
-
 				} catch(Exception e) {
 					e.printStackTrace();
 					log.error(e+" in "+path);
 				}
+					 */
+				}
+			} else {
+				log.warn("directory not found: "+kiliPath);
 			}
-		} else {
-			log.warn("directory not found: "+kiliPath);
-		}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -939,7 +1039,7 @@ public class TimeSeriesDatabase {
 				}
 			}
 		}
-		
+
 		for(VirtualPlot virtualplot:virtualplotMap.values()) {
 			if(virtualplot.generalStationName!=null) {
 				GeneralStation generalStation = generalStationMap.get(virtualplot.generalStationName);
@@ -1122,7 +1222,7 @@ public class TimeSeriesDatabase {
 			log.error(e);
 		}				
 	}
-	
+
 	public String[] getBaseAggregationSchema(String[] rawSchema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		for(String name:rawSchema) {
@@ -1132,10 +1232,10 @@ public class TimeSeriesDatabase {
 		}
 		return sensorNames.toArray(new String[0]);
 	}
-	
+
 	public String[] getValidSchema(String stationID, String[] schema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
-		Map<String, Integer> map = Util.StringArrayToMap(stationMap.get(stationID).getLoggerType().sensorNames);
+		Map<String, Integer> map = Util.stringArrayToMap(stationMap.get(stationID).getLoggerType().sensorNames);
 		for(String name:schema) {
 			if(map.containsKey(name)) {
 				sensorNames.add(name);

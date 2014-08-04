@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -37,6 +38,15 @@ public interface StreamStorage {
 	 * @param eventMap
 	 */
 	public void insertData(String streamName, TreeMap<Long,Event> eventMap);
+	
+	/**
+	 * insert ordered list of data with time span first to last
+	 * @param streamName
+	 * @param eventList
+	 * @param first
+	 * @param last
+	 */
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last);
 
 	/**
 	 * Basic method for all queries
@@ -48,5 +58,4 @@ public interface StreamStorage {
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end);
 	
 	public void getInfo();
-
 }
