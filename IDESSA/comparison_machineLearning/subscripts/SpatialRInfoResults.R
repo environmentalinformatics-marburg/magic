@@ -131,7 +131,6 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   tmp=datp[[1]]+ as.layer(lmplot, under = T)
   for (i in 2:length(model)){
     tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
-    
   }
   comb <- c(tmp, 
           x.same=T, y.same=T, layout = c(3, 1))

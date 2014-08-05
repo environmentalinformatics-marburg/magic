@@ -152,7 +152,7 @@ diffp[[i]] <- spplot(diff[[i]], mm= mm, maxpixels = 400000, colorkey = list(spac
 
 tmpdate=paste(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene])
 datp[[1]]=update(datp[[1]],strip = strip.custom(bg = "grey20", 
-                                                factor.levels =c("observed [mm/1h]","rf [mm/1h]","nnet[mm/1h]","svm[mm/1h]"),
+                                                factor.levels =paste0(c("observed",model),"[mm/1h]"),
                                                 par.strip.text = list(
                                                   col = "white", font = 2, cex = 1)),
                  main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
@@ -161,29 +161,31 @@ datp[[1]]=update(datp[[1]],strip = strip.custom(bg = "grey20",
 
 
 diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20", 
-                                                  factor.levels =c("rf[mm/1h]","nnet[mm/1h]","svm[mm/1h]"),
+                                                  factor.levels =paste0(model,"[mm/1h]"),
                                                   par.strip.text = list(
                                                     col = "white", font = 2, cex = 1)),
                   main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
                              substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
 )
 
+tmp=datp[[1]]+ as.layer(lmplot, under = T)
+for (i in 2:(length(model)+1)){
+  tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
+}
+tmp2=diffp[[1]]+ as.layer(lmplot, under = T)
+for (i in 2:length(model)){
+  tmp2=c(tmp2,diffp[[i]]+ as.layer(lmplot, under = T))
+}
 
-#  lengthInfo1=paste0("datp[[",c(1:length(model)+1),"]]+ as.layer(lmplot, under = T),")
-  comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
-            datp[[2]]+ as.layer(lmplot, under = T),
-            datp[[3]]+ as.layer(lmplot, under = T), 
-            datp[[4]]+ as.layer(lmplot, under = T),
+  comb <- c(tmp, 
             x.same=T, y.same=T, layout = c(4, 1))
   pdf(paste(resultpath,"/Spatial_comp/SpatialComparison_",
             unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
    print(comb)
   dev.off()
 
-  combDiff <- c(diffp[[1]]+ as.layer(lmplot, under = T), 
-                diffp[[2]]+ as.layer(lmplot, under = T),
-                diffp[[3]]+ as.layer(lmplot, under = T),
-          x.same=T, y.same=T, layout = c(3, 1))
+  combDiff <- c(tmp2, 
+                x.same=T, y.same=T, layout = c(3, 1))
 
   pdf(paste(resultpath,"/Spatial_comp/Diff_",
           unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
