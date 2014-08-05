@@ -466,7 +466,7 @@ public class QueryDialog extends Dialog {
 		} else {
 			Station station = timeSeriesDatabase.stationMap.get(stationName);
 			if(station!=null) {
-				schema = station.getLoggerType().sensorNames;
+				schema = station.loggerType.sensorNames;
 			}
 		}
 		if(schema!=null) {

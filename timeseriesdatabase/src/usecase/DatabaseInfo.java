@@ -26,7 +26,7 @@ public class DatabaseInfo {
 			for(TimestampInterval<Station> interval:virtualplot.intervalList) {
 				String startText = TimeConverter.oleMinutesToText(interval.start);
 				String endText = TimeConverter.oleMinutesToText(interval.end);
-				String typeText = util.Util.ifnull(interval.value.getLoggerType(), x->x.typeName, ()->"unknown");
+				String typeText = util.Util.ifnull(interval.value.loggerType, x->x.typeName, ()->"unknown");
 				System.out.println(startText+" - "+endText+"\t\tstream name: "+interval.value.plotID+"\t"+typeText);
 			}
 			System.out.println();

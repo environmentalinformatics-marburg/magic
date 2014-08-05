@@ -32,6 +32,7 @@ import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.UDBFTimestampSeries;
 import timeseriesdatabase.raw.UniversalDataBinFile;
 import timeseriesdatabase.raw.iterator.EventConverterIterator;
+import util.TimestampInterval;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
@@ -58,16 +59,10 @@ public class Station {
 	public double geoPosLatitude;
 
 	/**
-	 * general properties like logger type
-	 */
-	public Map<String, String> propertyMap;
-
-	/**
-	 * TODO change
 	 * 
 	 * list of property map for Kili
 	 */
-	public List<Map<String, String>> propertyMapList;
+	public List<TimestampInterval<StationProperties>>   propertiesList;
 
 	/**
 	 * translation map: input sensor name -> database sensor name
@@ -94,31 +89,18 @@ public class Station {
 
 	public final LoggerType loggerType;
 
-	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, LoggerType loggerType, Map<String, String> propertyMap, List<Map<String, String>> propertyMapList) {
+	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, LoggerType loggerType, List<StationProperties> propertyMapList) {
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
-		this.propertyMap = propertyMap;
-		this.propertyMapList = propertyMapList;
+		this.propertiesList = StationProperties.createIntervalList(propertyMapList);
 		this.geoPoslongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
 		this.loggerType = loggerType;
-
 		sensorNameTranlationMap = new HashMap<String, String>();
-
-
-		/*if(!plotID.equals(propertyMap.get("PLOTID"))) { // TODO not usable for KiLi
+		/*if(!plotID.equals(propertyMap.get("PLOTID"))) { // not usable for KiLi
 			log.error("wrong plotID");
 		}*/
-
-	}
-
-	public LoggerType getLoggerType() {
-		/*LoggerType loggerType = timeSeriesDatabase.loggerTypeMap.get(propertyMap.get("LOGGER")); 
-		if(loggerType==null) {
-			log.warn("logger type not found: "+propertyMap.get("LOGGER"));
-		}*/
-		return loggerType;
 	}
 
 	/**
@@ -275,7 +257,6 @@ public class Station {
 				return resultName;
 			}
 		}
-		LoggerType loggerType = getLoggerType();
 		resultName = loggerType.sensorNameTranlationMap.get(sensorName);
 		if(resultName!=null) {
 			return resultName;
@@ -316,10 +297,8 @@ public class Station {
 		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
 		int[] eventPos = new int[udbfTimeSeries.sensorHeaders.length];  
 
-		LoggerType loggerType = getLoggerType();
-
 		//sensor names contained in event stream schema
-		String[] sensorNames = getLoggerType().sensorNames;
+		String[] sensorNames = loggerType.sensorNames;
 
 
 		//creates mapping eventPos   (  udbf pos -> event pos )
@@ -340,9 +319,9 @@ public class Station {
 				}
 				if(eventPos[sensorIndex] == -1) {
 					if(sensorName==null) {
-						log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+propertyMap.get("LOGGER"));
+						log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
 					} else {
-						log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+propertyMap.get("LOGGER"));
+						log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
 					}
 				}
 			}
@@ -406,7 +385,7 @@ public class Station {
 		if(rawEventIterator==null) {
 			return null;
 		}		
-		String[] inputSchema = getLoggerType().sensorNames;		
+		String[] inputSchema = loggerType.sensorNames;		
 		if(querySchema==null) {
 			return new EventConverterIterator(inputSchema, rawEventIterator, inputSchema);
 		} else {			
@@ -415,7 +394,7 @@ public class Station {
 	}
 
 	public String[] getValidSchemaEntries(String[] querySchema) {
-		Map<String, Integer> schemaMap = Util.stringArrayToMap(getLoggerType().sensorNames);
+		Map<String, Integer> schemaMap = Util.stringArrayToMap(loggerType.sensorNames);
 		ArrayList<String> resultList = new ArrayList<String>();
 		for(String sensorName:querySchema) {
 			if(schemaMap.containsKey(sensorName)) {
@@ -431,7 +410,7 @@ public class Station {
 	public List<Station> getNearestStationsWithSensor(String sensorName) {
 		ArrayList<Station> result = new ArrayList<Station>();
 		for(Station station:nearestStationList) {
-			for(String name:station.getLoggerType().sensorNames) {
+			for(String name:station.loggerType.sensorNames) {
 				if(sensorName.equals(name)) {
 					result.add(station);
 					break;
@@ -439,6 +418,19 @@ public class Station {
 			}
 		}
 		return result;
+	}
+	
+	public StationProperties getProperties(long intervalStart, long intervalEnd) {
+		StationProperties properties = null;
+		for(TimestampInterval<StationProperties> interval:propertiesList) {
+			if((interval.start==null || interval.start<=intervalStart) && (interval.end==null || intervalEnd<=interval.end)) {
+				if(properties!=null) {
+					log.warn("multiple properties for one time interval: "+intervalStart+" "+intervalEnd);
+				}
+				properties = interval.value;
+			}
+		}
+		return properties;
 	}
 }
 

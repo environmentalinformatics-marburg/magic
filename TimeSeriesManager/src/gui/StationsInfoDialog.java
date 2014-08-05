@@ -72,15 +72,15 @@ public class StationsInfoDialog extends Dialog {
 			item.setText (2, ""+station.geoPosLatitude);
 			item.setText (3, ""+station.serialID);
 			item.setText (4, station.generalStationName);
-			item.setText (5, util.Util.ifnull(station.getLoggerType(), x->x.typeName,()->"---"));
+			item.setText (5, util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
 
-			String properties="";
-			for(Entry<String, String> entry:station.propertyMap.entrySet()) {
+			String properties="TODO";
+			/*for(Entry<String, String> entry:station.propertyMapList.get(0).value.entrySet()) {
 				String key = entry.getKey();
 				if(!(key.equals("LOGGER")||key.equals("PLOTID"))) {
 					properties+= key+"="+entry.getValue()+"    ";
 				}
-			}
+			}*/
 
 			item.setText (6, properties);
 		}

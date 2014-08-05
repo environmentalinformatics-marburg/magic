@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +29,8 @@ import org.ini4j.Profile.Section;
 
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
+import timeseriesdatabase.StationProperties;
+import timeseriesdatabase.TimeConverter;
 
 /**
  * Some utilities
@@ -363,5 +369,4 @@ public class Util {
 		}	
 		return resultSet;
 	}
-
 }

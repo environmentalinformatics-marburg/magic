@@ -117,10 +117,6 @@ public class StreamStorageEventStore implements StreamStorage {
 			}
 		} else {
 			Attribute[] internalSchema = store.getSchema(streamName);
-			for(Attribute attr:internalSchema) {
-				System.out.print(attr.getAttributeName()+" ");
-			}
-			System.out.println();
 			for(Event event:eventList) {
 				if(event.getPayload().length!=internalSchema.length-2) {// TODO point or interval time representation
 					log.warn("internal schema: "+internalSchema.length+" payload: "+event.getPayload().length);

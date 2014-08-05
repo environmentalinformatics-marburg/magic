@@ -307,7 +307,7 @@ public class AggregatedQueryDialog extends Dialog {
 		System.out.println("updateGUISensorName "+stationName);
 		Station station = timeSeriesDatabase.stationMap.get(stationName);
 		if(station!=null) {
-			LoggerType loggerType = station.getLoggerType();
+			LoggerType loggerType = station.loggerType;
 			ArrayList<String> sensorNames = new ArrayList<String>();
 			System.out.println(timeSeriesDatabase.baseAggregationSensorNameSet);
 			for(String name:loggerType.sensorNames) {

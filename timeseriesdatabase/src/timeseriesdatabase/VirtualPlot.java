@@ -75,8 +75,8 @@ public class VirtualPlot {
 				.toArray(String[]::new);
 	}
 
-	public void addStationEntry(Station station, Long start, Long end) {
-		intervalList.add(new TimestampInterval<Station>(station, start, end));
+	public void addStationEntry(Station station, StationProperties properties) {
+		intervalList.add(new TimestampInterval<Station>(station, properties.get_date_start(), properties.get_date_end()));
 	}
 
 	private static boolean overlaps(Long queryStart, Long queryEnd, Long iStart, Long iEnd) {

@@ -286,7 +286,7 @@ public class KiLiCSV {
 		
 		//*********************schama mapping ***************************
 		
-		String[] schema  = timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNames;
+		String[] schema  = timeSeriesDatabase.getStation(serialnumber).loggerType.sensorNames;
 		//System.out.println(timeSeriesDatabase.getStation(serialnumber).getLoggerType().typeName);
 		//System.out.println(":: "+Util.arrayToString(columnNames));
 		//System.out.println("-> "+Util.arrayToString(schema));

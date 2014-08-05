@@ -156,7 +156,7 @@ public class QueryProcessor {
 
 		String[] tempSchema = querySchema;
 		if(querySchema==null) {
-			tempSchema = station.getLoggerType().sensorNames;
+			tempSchema = station.loggerType.sensorNames;
 		}		
 		ArrayList<String> tempInterpolationSensorNameList = new ArrayList<String>();
 		for(String sensorName:tempSchema) {
