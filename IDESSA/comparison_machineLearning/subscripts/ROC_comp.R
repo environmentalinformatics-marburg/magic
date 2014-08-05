@@ -1,12 +1,9 @@
-if (any(model=="rf")){
-  load(paste(resultpath,"/prediction_rf.RData",sep=""))
+
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="prediction")))
+for (i in predictionFiles){
+  load(i)
 }
-if (any(model=="nnet")){
-  load(paste(resultpath,"/prediction_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/prediction_svm.RData",sep=""))
-}
+
 load(paste(resultpath,"/predictorVariables.RData",sep=""))
 load(paste(resultpath,"/testing.RData",sep=""))
 
@@ -38,6 +35,14 @@ if (response=="RInfo"){
    pred <- prediction(prediction_svm$predicted_prob$rain,obs)
     perf_svm <- performance(pred, "tpr", "fpr") 
    auc_svm=unlist(performance(pred, measure="auc")@y.values)
+  }
+  if (any(model=="avNNet")){
+    obs=as.numeric(prediction_avNNet$observed)
+    obs[as.character(prediction_avNNet$observed)=="norain"]=0
+    obs[as.character(prediction_avNNet$observed)=="rain"]=1
+    pred <- prediction(prediction_avNNet$predicted_prob$rain,obs)
+    perf_avNNet <- performance(pred, "tpr", "fpr") 
+    auc_avNNet=unlist(performance(pred, measure="auc")@y.values)
   }
 
   if (length(model)==4) color=c("black","red","blue","green","grey")
@@ -107,6 +112,9 @@ if (type=="classification"){
   if (any(model=="svm")){
     write.csv(table(prediction_svm$observed,prediction_svm$prediction),file=paste(resultpath,"/crosstabSVM.csv",sep=""))
   }
+  if (any(model=="avNNet")){
+    write.csv(table(prediction_avNNet$observed,prediction_avNNet$prediction),file=paste(resultpath,"/crosstabavNNet.csv",sep=""))
+  }
 ###################
   pdf(paste(resultpath,"/prediction_crosstab.pdf",sep=""))
   if (length(model)>2) par(mfrow=c(2,2))
@@ -118,6 +126,9 @@ if (type=="classification"){
   }
   if (any(model=="svm")){
     plot(prediction_svm$observed,prediction_svm$prediction,main="SVM",xlab="observed",ylab="predicted")
+  }
+  if (any(model=="avNNet")){
+   plot(prediction_avNNet$observed,prediction_avNNet$prediction,main="avNNet",xlab="observed",ylab="predicted")
   }
   dev.off()
 }

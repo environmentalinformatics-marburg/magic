@@ -29,7 +29,7 @@ shortTest=TRUE#if TRUE then learning parameters and data set are set automatical
 #                                          Data adjustments
 ##################################################################################################################
 inputTable="rfInput_vp03_day_as.dat"
-response<-"Rain" #field name of the response variable. "Rain" or "RInfo"
+response<-"RInfo" #field name of the response variable. "Rain" or "RInfo"
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
@@ -54,7 +54,7 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","nnet","svm") # supported: rf,nnet,svm.
+model=c("rf","nnet","svm","avNNet") # supported: rf,nnet,svm.
 adaptiveResampling=FALSE #use adaptive crosss validation?
 
 ###only for classification:

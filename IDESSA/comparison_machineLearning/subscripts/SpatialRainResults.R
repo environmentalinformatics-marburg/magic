@@ -3,16 +3,10 @@
 dir.create (paste(resultpath,"/Spatial_comp",sep=""))
 
 #####load predictions!!!!!!!!!
-if (any(model=="rf")){
-  load(paste(resultpath,"/prediction_rf.RData",sep=""))
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="prediction")))
+for (i in predictionFiles){
+  load(i)
 }
-if (any(model=="nnet")){
-  load(paste(resultpath,"/prediction_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/prediction_svm.RData",sep=""))
-}
-
 ######Land sea mask
 lm <- raster(paste(datapath,"/europe_landsea_mask.rst",sep=""), 
              native = T, crs = "+proj=longlat +datum=WGS84")
@@ -175,7 +169,7 @@ diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20",
 )
 
 
-
+#  lengthInfo1=paste0("datp[[",c(1:length(model)+1),"]]+ as.layer(lmplot, under = T),")
   comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
             datp[[2]]+ as.layer(lmplot, under = T),
             datp[[3]]+ as.layer(lmplot, under = T), 

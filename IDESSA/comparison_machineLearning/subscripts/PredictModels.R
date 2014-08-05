@@ -67,6 +67,29 @@ if (any(model=="svm")){
   rm(prediction_svm)
   gc()
 }
+
+
+if (any(model=="avNNet")){
+  load(paste(resultpath,"/fit_avNNet.RData",sep=""))
+  prediction_avNNet=data.frame("prediction"=predict (fit_avNNet,testing_predictors))
+  if (type=="classification") prediction_avNNet$predicted_prob <- predict (fit_avNNet,testing_predictors,type="prob")
+  prediction_avNNet$observed=testing_observed
+  
+  ##transform rain to normal distribution??
+  if (response=="Rain" & transformResponse){
+    prediction_avNNet$prediction=exp(prediction_avNNet$prediction)
+    prediction_avNNet$observed=exp(prediction_avNNet$observed)
+  }
+  
+  prediction_avNNet$chDate=testing$chDate
+  prediction_avNNet$x=testing$x
+  prediction_avNNet$y=testing$y
+  save(prediction_avNNet,file=paste(resultpath,"/prediction_avNNet.RData",sep=""))
+  rm(prediction_avNNet)
+  gc()
+}
+
+
 ##############################################################################
 rm(testing)
 gc()

@@ -2,14 +2,9 @@
 dir.create (paste(resultpath,"/Spatial_comp",sep=""))
 
 #####load predictions!!!!!!!!!
-if (any(model=="rf")){
-  load(paste(resultpath,"/prediction_rf.RData",sep=""))
-}
-if (any(model=="nnet")){
-  load(paste(resultpath,"/prediction_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/prediction_svm.RData",sep=""))
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="prediction")))
+for (i in predictionFiles){
+  load(i)
 }
 
 ######Land sea mask
@@ -127,18 +122,23 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   datp[[1]]=update(datp[[1]],par.settings=list(superpose.polygon=list(col=c("palegreen3"," darkgreen","darkorange","red"))),
                  auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,space="right",rectangles=TRUE), #columns=4
                  strip = strip.custom(bg = "grey20", 
-                                      factor.levels =c("rf","nnet","svm"),
+                                      factor.levels =model,
                                       par.strip.text = list(
                                         col = "white", font = 2, cex = 1)),
                  main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
                             substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
   )
-
-
-  comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
-            datp[[2]]+ as.layer(lmplot, under = T),
-            datp[[3]]+ as.layer(lmplot, under = T), 
-            x.same=T, y.same=T, layout = c(3, 1))
+  tmp=datp[[1]]+ as.layer(lmplot, under = T)
+  for (i in 2:length(model)){
+    tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
+    
+  }
+  comb <- c(tmp, 
+          x.same=T, y.same=T, layout = c(3, 1))
+#  comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
+#            datp[[2]]+ as.layer(lmplot, under = T),
+#            datp[[3]]+ as.layer(lmplot, under = T), 
+#            x.same=T, y.same=T, layout = c(3, 1))
   pdf(paste(resultpath,"/Spatial_comp/SpatialComparison_",
             unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
    print(comb)

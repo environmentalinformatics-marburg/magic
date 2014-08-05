@@ -1,14 +1,9 @@
 ######compare RMSE of regression models########################
 
 
-if (any(model=="rf")){
-  load(paste(resultpath,"/prediction_rf.RData",sep=""))
-}
-if (any(model=="nnet")){
-  load(paste(resultpath,"/prediction_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/prediction_svm.RData",sep=""))
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="prediction")))
+for (i in predictionFiles){
+  load(i)
 }
 load(paste(resultpath,"/predictorVariables.RData",sep=""))
 load(paste(resultpath,"/testing.RData",sep=""))
@@ -31,7 +26,7 @@ names=c()
 for (i in 1:length(model)){
   names=c(names,rep(model[i],nrow(RMSE_all)))
 }
-names=factor( names, levels=c("rf","nnet","svm"))
+names=factor( names, levels=c("rf","nnet","svm","avNNet"))
 pdf(paste(resultpath,"/prediction_RMSE.pdf",sep=""))
 #  boxplot(RMSE_all,names=model,ylab="RMSE")
   bwplot(as.vector(RMSE_all)~names,ylab="RMSE")
