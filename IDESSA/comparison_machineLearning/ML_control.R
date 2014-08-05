@@ -168,6 +168,7 @@ source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("ROC_comp.R",echo=TRUE)
+if (type=="classification") source("confusion_comp.R",echo=TRUE)
 if (type=="regression") source("RMSE_comp.R",echo=TRUE)
 if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
 if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
