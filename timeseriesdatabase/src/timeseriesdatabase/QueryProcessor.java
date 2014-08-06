@@ -60,7 +60,7 @@ public class QueryProcessor {
 	 * @return
 	 */
 	public TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
-		Station station = timeSeriesDatabase.stationMap.get(plotID);
+		Station station = timeSeriesDatabase.getStation(plotID);
 		return Util.ifnull(station,x->x.queryRaw(querySchema, queryStart, queryEnd),()->{log.warn("plotID not found: "+plotID);return null;});
 	}	
 
@@ -160,7 +160,7 @@ public class QueryProcessor {
 		}		
 		ArrayList<String> tempInterpolationSensorNameList = new ArrayList<String>();
 		for(String sensorName:tempSchema) {
-			if(timeSeriesDatabase.sensorMap.get(sensorName).useInterpolation) {
+			if(timeSeriesDatabase.getSensor(sensorName).useInterpolation) {
 				tempInterpolationSensorNameList.add(sensorName);
 			}
 		}		
@@ -278,17 +278,23 @@ public class QueryProcessor {
 			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
 			for(TimestampInterval<Station> interval:intervalList) {
 				String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.plotID,querySchema);
+				if(stationSchema.length==0) {
+					log.warn("schema empty");
+				}
 				TimeSeriesIterator it = this.query_base_aggregated(interval.value.plotID, stationSchema, interval.start, interval.end, dataQuality);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);
 				}
+			}
+			if(processing_iteratorList.isEmpty()) {
+				return null;
 			}
 			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(querySchema, processing_iteratorList.toArray(new TimeSeriesIterator[0]));			
 			Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
 			Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
 			TimeSeriesIterator it_continuous_base_aggregated = Util.ifnull(it_virtual_base_aggregated, x->new NanGapIterator(x, start, end));
 			return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));			
-		} else if(timeSeriesDatabase.stationMap.containsKey(plotID)){
+		} else if(timeSeriesDatabase.stationExists(plotID)){
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 		} else {
 			return null;

@@ -24,5 +24,13 @@ public class UDBFTimestampSeries {
 		this.time = time;
 		this.data = data;
 	}
+	
+	public String[] getHeaderNames() {
+		String[] headerNames = new String[sensorHeaders.length];
+		for(int i=0;i<sensorHeaders.length;i++) {
+			headerNames[i] = sensorHeaders[i].name;
+		}
+		return headerNames;
+	}
 
 }

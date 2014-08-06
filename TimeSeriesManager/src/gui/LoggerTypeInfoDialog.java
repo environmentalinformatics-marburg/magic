@@ -67,7 +67,7 @@ public class LoggerTypeInfoDialog extends Dialog {
 			column.setText (titles [i]);
 		}
 		
-		for(LoggerType loggertype:timeSeriesDatabase.loggerTypeMap.values()) {
+		for(LoggerType loggertype:timeSeriesDatabase.getLoggerTypes()) {
 			TableItem item = new TableItem (table, SWT.NONE);
 			item.setText(0, loggertype.typeName);
 			

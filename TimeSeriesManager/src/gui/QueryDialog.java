@@ -464,7 +464,7 @@ public class QueryDialog extends Dialog {
 		if(virtualplot!=null) {
 			schema = virtualplot.getSchema();
 		} else {
-			Station station = timeSeriesDatabase.stationMap.get(stationName);
+			Station station = timeSeriesDatabase.getStation(stationName);
 			if(station!=null) {
 				schema = station.loggerType.sensorNames;
 			}
@@ -529,7 +529,7 @@ public class QueryDialog extends Dialog {
 	protected void updateGUIinterpolated() {
 		String sensorName = comboSensorName.getText();
 		if(sensorName!=null && !sensorName.isEmpty()) {
-			Sensor sensor = timeSeriesDatabase.sensorMap.get(sensorName);
+			Sensor sensor = timeSeriesDatabase.getSensor(sensorName);
 			if(sensor != null) {
 				checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
 				return;

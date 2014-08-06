@@ -79,6 +79,10 @@ public class TimeSeriesManager {
 		loggertypeItem.setText("logger types");
 		loggertypeItem.addSelectionListener(new loggertypeItemListener());
 		
+		MenuItem sourcecatalogItem = new MenuItem(infoMenu, SWT.PUSH);
+		sourcecatalogItem.setText("source catalog");
+		sourcecatalogItem.addSelectionListener(new sourcecatalogItemListener());
+		
 		
 		
 		MenuItem queryMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
@@ -154,6 +158,16 @@ public class TimeSeriesManager {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
 			LoggerTypeInfoDialog dialog = new LoggerTypeInfoDialog(shell,timeSeriesDatabase);
+			dialog.open();
+
+		}
+	}
+
+	class sourcecatalogItemListener extends SelectionAdapter {
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			//SourceCatalogInfoDialog dialog = new SourceCatalogInfoDialog(shell,timeSeriesDatabase);
+			SourceCatalogDialog dialog = new SourceCatalogDialog(shell, timeSeriesDatabase);
 			dialog.open();
 
 		}

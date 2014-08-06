@@ -305,7 +305,7 @@ public class AggregatedQueryDialog extends Dialog {
 	void updateGUISensorName() {
 		String stationName = comboPlotID.getText();
 		System.out.println("updateGUISensorName "+stationName);
-		Station station = timeSeriesDatabase.stationMap.get(stationName);
+		Station station = timeSeriesDatabase.getStation(stationName);
 		if(station!=null) {
 			LoggerType loggerType = station.loggerType;
 			ArrayList<String> sensorNames = new ArrayList<String>();

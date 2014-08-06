@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import timeseriesdatabase.TimeSeriesLoader;
 import timeseriesdatabase.raw.KiLiCSV;
 import util.Util;
 
@@ -19,11 +20,12 @@ public class TestingKiLi {
 		System.out.println("begin...");
 		
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		TimeSeriesLoader timeseriesloader = new TimeSeriesLoader(timeSeriesDatabase);
 		timeSeriesDatabase.registerStreams();
 		
 		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
 		
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
+		timeseriesloader.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
 		System.out.println("...end");
 	}

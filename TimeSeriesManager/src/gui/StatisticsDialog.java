@@ -116,7 +116,7 @@ public class StatisticsDialog extends Dialog {
 		long total_entry_counter = 0;
 		long total_data_values_counter = 0;
 		
-		for(String stationName:timeSeriesDatabase.stationMap.keySet()) {
+		for(String stationName:timeSeriesDatabase.getStationNames()) {
 			
 			TimeSeriesIterator it = qp.query_raw(stationName, null, null, null);
 			if(it==null) {

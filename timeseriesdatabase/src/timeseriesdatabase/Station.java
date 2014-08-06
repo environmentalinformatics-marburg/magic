@@ -25,6 +25,7 @@ import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
+import timeseriesdatabase.catalog.SourceEntry;
 import timeseriesdatabase.raw.RawDataProcessor;
 import timeseriesdatabase.raw.SensorHeader;
 import timeseriesdatabase.raw.TimestampSeries;
@@ -144,6 +145,8 @@ public class Station {
 					List<Event> eventList = translateToEvents(timeSeries);
 					if(eventList!=null) {
 						eventsList.add(eventList);
+						
+						timeSeriesDatabase.sourceCatalog.insert(new SourceEntry(path,plotID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0]));
 					}
 				} catch (Exception e) {
 					log.error("file not read: "+path+"\t"+e);
@@ -227,7 +230,7 @@ public class Station {
 		}	
 
 		if(eventMap.size()>0) {
-			timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);
+			timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);			
 		} else {
 			log.warn("no data to insert: "+stationPath);
 		}

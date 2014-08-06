@@ -300,7 +300,7 @@ public class KiLiCSV {
 					eventPos[sensorIndex] = -1;
 					String rawSensorName = columnNames[sensorIndex];
 					if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
-						String sensorName = timeSeriesDatabase.stationMap.get(serialnumber).translateInputSensorName(rawSensorName,false);
+						String sensorName = timeSeriesDatabase.getStation(serialnumber).translateInputSensorName(rawSensorName,false);
 						//System.out.println(rawSensorName+" -> "+sensorName+"   "+timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNameTranlationMap.get(rawSensorName)+"   "+timeSeriesDatabase.getStation(serialnumber).getLoggerType().sensorNameTranlationMap);
 						//System.out.println(sensorHeader.name+"->"+sensorName);
 						if(sensorName != null) {

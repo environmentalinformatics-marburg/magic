@@ -2,8 +2,6 @@ package gui;
 
 
 
-import java.util.Map.Entry;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -15,23 +13,24 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import timeseriesdatabase.Sensor;
-import timeseriesdatabase.Station;
+import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
-import util.Util;
+import timeseriesdatabase.aggregated.AggregationType;
+import timeseriesdatabase.catalog.SourceEntry;
 
-public class StationsInfoDialog extends Dialog {
+public class SourceCatalogInfoDialog extends Dialog {
 
 	TimeSeriesDatabase timeSeriesDatabase; 
 
-	public StationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public SourceCatalogInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 
 	}
 
-	public StationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	public SourceCatalogInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		setText("Station Info");
+		setText("Source Catalog Info");
 	}
 
 	public String open() {
@@ -52,47 +51,30 @@ public class StationsInfoDialog extends Dialog {
 	}
 
 	private void createContents(final Shell shell) {
-		;
 		shell.setLayout(new GridLayout());
 		Table table = new Table (shell, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
 		table.setLinesVisible (true);
 		table.setHeaderVisible (true);
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.heightHint = 200;
+		data.heightHint = 400;
 		table.setLayoutData(data);
-		String[] titles = {"plotID","longitude","latitude","serialID","general station", "logger type","properties"};
+
+		String[] titles = {"Station Name", "First Timestamp", "Last Timestamp", "File Name"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);
-		}	
-
-		for(Station station:timeSeriesDatabase.getStations()) {
-			TableItem item = new TableItem (table, SWT.NONE);
-			item.setText (0, station.plotID);
-			item.setText (1, ""+station.geoPoslongitude);
-			item.setText (2, ""+station.geoPosLatitude);
-			item.setText (3, ""+station.serialID);
-			item.setText (4, Util.ifnull(station.generalStationName, x->x, ()->"---"));
-			item.setText (5, util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
-
-			String properties="TODO";
-			/*for(Entry<String, String> entry:station.propertyMapList.get(0).value.entrySet()) {
-				String key = entry.getKey();
-				if(!(key.equals("LOGGER")||key.equals("PLOTID"))) {
-					properties+= key+"="+entry.getValue()+"    ";
-				}
-			}*/
-
-			item.setText (6, properties);
 		}
-
+		for(SourceEntry entry:timeSeriesDatabase.sourceCatalog.getEntries()) {
+			TableItem item = new TableItem (table, SWT.NONE);
+			item.setText(0, entry.stationName);
+			item.setText(1, TimeConverter.oleMinutesToText(entry.firstTimestamp));
+			item.setText(2, TimeConverter.oleMinutesToText(entry.lastTimestamp));
+			item.setText(3, entry.filename);
+		}		
 
 		for (int i=0; i<titles.length; i++) {
 			table.getColumn (i).pack ();
-		}	
+		}
 
-
-	}	
-
+	}
 }
-

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
+import timeseriesdatabase.TimeSeriesLoader;
 import util.Util;
 
 /**
@@ -34,6 +35,7 @@ public class InitDatabase {
 		// *** ... workaround
 		
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		TimeSeriesLoader timeseriesloader = new TimeSeriesLoader(timeSeriesDatabase);
 		
 		String path1 = "c:/timeseriesdatabase_data_source_structure_one";
 		String path2 = "c:/timeseriesdatabase_data_source_structure_two";
@@ -50,9 +52,9 @@ public class InitDatabase {
 		
 		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
 		
-		//timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
-		//timeSeriesDatabase.loadDirectory_with_stations_structure_two(Paths.get(path2));
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
+		//timeseriesloader.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
+		//timeseriesloader.loadDirectory_with_stations_structure_two(Paths.get(path2));
+		timeseriesloader.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
