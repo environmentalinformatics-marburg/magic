@@ -2,15 +2,11 @@
 #abb tuning parameters- model
 #abb ob RMSE ~ number of trees bei 1000 noch improved
 
-if (any(model=="rf")){
-  load(paste(resultpath,"/fit_rf.RData",sep=""))
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="fit_")))
+for (i in predictionFiles){
+  load(i)
 }
-if (any(model=="nnet")){
-  load(paste(resultpath,"/fit_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/fit_svm.RData",sep=""))
-}
+
 
 pdf(paste(resultpath,"/TuningStudy.pdf",sep=""))
 if (any(model=="rf")){
@@ -21,6 +17,9 @@ if (any(model=="nnet")){
 }
 if (any(model=="svm")){
   plot(fit_svm,main="svm")
+}
+if (any(model=="avNNet")){
+  plot(fit_avNNet,main="avNNet")
 }
 dev.off()
 ####Tuning study b
@@ -51,6 +50,24 @@ if (tuneThreshold){
          fit_svm$results$ROC[fit_svm$results$threshold==fit_svm$results$threshold[1]],
          type="l",xlab="#Cost",ylab="AUC",main="SVM")
   }
+  
+  
+  if (any(model=="avNNet")&tuneThreshold){
+    col=gray.colors(length(unique(fit_avNNet$results$decay)),start = 0, end = 0.8)
+    k=1
+    i=unique(fit_avNNet$results$decay)[1]
+    plot(fit_avNNet$results$size[fit_avNNet$results$threshold==fit_avNNet$results$threshold[1]&fit_avNNet$results$decay==i],
+         fit_avNNet$results$ROC[fit_avNNet$results$threshold==fit_avNNet$results$threshold[1]&fit_avNNet$results$decay==i],
+         type="l",xlab="#Hidden Units",ylab="AUC",main="avNNet",col=col[k],
+         ylim=c(min(fit_avNNet$results$ROC)-0.01,max(fit_avNNet$results$ROC)))
+    for (i in unique(fit_avNNet$results$decay)[-1]){
+      k=k+1
+      lines(fit_avNNet$results$size[fit_avNNet$results$threshold==fit_avNNet$results$threshold[1]&fit_avNNet$results$decay==i],
+            fit_avNNet$results$ROC[fit_avNNet$results$threshold==fit_avNNet$results$threshold[1]&fit_avNNet$results$decay==i],col=col[k])
+    }
+    legend("bottomright",legend=unique(fit_avNNet$results$decay),col=col,lty=1,cex=0.8,ncol=2)
+  }
+  
   dev.off()
 }
 
@@ -105,5 +122,23 @@ if (any(model=="svm")&tuneThreshold){
     theme(legend.position = "top")
 }
 if (any(model=="svm")&tuneThreshold){
+  dev.off()
+}
+
+
+if (any(model=="avNNet")&tuneThreshold){
+  pdf(paste(resultpath,"/TuningStudy_Tradeoff_avNNet.pdf",sep=""))
+  t_size=unlist(fit_avNNet$finalModel$tuneValue[1])
+  t_decay=unlist(fit_avNNet$finalModel$tuneValue[2])
+  metrics <- fit_avNNet$results[fit_avNNet$results$size==t_size&fit_avNNet$results$decay==t_decay, c(4, 6:8)]
+  metrics <- melt(metrics, id.vars = "threshold",
+                  variable.name = "Resampled",
+                  value.name = "Data")
+  ggplot(metrics, aes(x = threshold, y = Data, color = Resampled)) +
+    geom_line() +
+    ylab("") + xlab("Probability Cutoff") +
+    theme(legend.position = "top")
+}
+if (any(model=="avNNet")&tuneThreshold){
   dev.off()
 }

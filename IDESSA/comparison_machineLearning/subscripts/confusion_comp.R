@@ -1,14 +1,9 @@
 #Comparison of Confusion metrics
 dir.create (paste(resultpath,"/Confusion_comp",sep=""))
 
-if (any(model=="rf")){
-  load(paste(resultpath,"/prediction_rf.RData",sep=""))
-}
-if (any(model=="nnet")){
-  load(paste(resultpath,"/prediction_nnet.RData",sep=""))
-}
-if (any(model=="svm")){
-  load(paste(resultpath,"/prediction_svm.RData",sep=""))
+predictionFiles=paste0(resultpath,"/",Filter(function(x) grepl("RData", x), list.files(resultpath,pattern="prediction")))
+for (i in predictionFiles){
+  load(i)
 }
 
 #calculate confusion metrices per scene
@@ -41,6 +36,7 @@ for (score in 1:ncol(confusiondata[[1]])){
   for (i in 1:length(model)){
     names=c(names,rep(model[i],nrow(confusiondata[[1]])))
   }
+  names=factor( names, levels=model)
 ####Plot
   scoredata=as.vector(scoredata)
   pdf(paste(resultpath,"/Confusion_comp/comparison_",scorenames[score],".pdf",sep=""))

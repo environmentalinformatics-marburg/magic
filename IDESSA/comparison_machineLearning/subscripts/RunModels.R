@@ -97,7 +97,7 @@ if (any(model=="nnet")){
   fit_nnet<-train (predictors, 
                    class, 
                    method = method,
-                   linout = TRUE, 
+                   if (type=="regression") linout = TRUE, 
                    trace = FALSE,
                    trControl = ctrl, 
                    tuneGrid=tuneGrid_NNet,
@@ -112,7 +112,47 @@ if (any(model=="nnet")){
   gc()
 }
   
-  
+if (any(model=="avNNet")){  
+  if (tuneThreshold) {
+    method = avNNet_thres
+    tuneGrid_NNet <- expand.grid(.size = nnet_size,
+                                 .decay = nnet_decay,
+                                 .bag=FALSE,
+                                 .threshold=thresholds)
+  }
+  if (!tuneThreshold) {
+    method = "avNNet"
+    tuneGrid_NNet <- expand.grid(.size = nnet_size,
+                                 .decay = nnet_decay,
+                                 .bag=FALSE)
+  }
+  ptm <- proc.time()
+  if(useSeeds) set.seed(20)
+  fit_avNNet<-train (predictors, 
+                   class, 
+                   method = method,
+                   if (type=="regression") linout = TRUE, 
+                   trace = FALSE,
+                   trControl = ctrl, 
+                   tuneGrid=tuneGrid_NNet,
+                   metric=metric,
+                   repeats=5,
+                   maximize = maximize #when dist is used, then min value is important
+  )
+  ptm <- proc.time() - ptm
+  capture.output(paste("Computation time: ",round(ptm[3],2)," sec"),cat("predictor Variables: "),
+                 predictorVariables,print(fit_avNNet),file=paste(resultpath,"/fit_avNNet.txt",sep=""))
+  save(fit_avNNet,file=paste(resultpath,"/fit_avNNet.RData",sep=""))
+  rm(fit_avNNet)
+  gc()
+}
+
+
+
+
+
+
+
 if (any(model=="svm")){
   
   if (tuneThreshold) {

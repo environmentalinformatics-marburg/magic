@@ -29,12 +29,12 @@ shortTest=TRUE#if TRUE then learning parameters and data set are set automatical
 #                                          Data adjustments
 ##################################################################################################################
 inputTable="rfInput_vp03_day_as.dat"
-response<-"Rain" #field name of the response variable. "Rain" or "RInfo"
+response<-"RInfo" #field name of the response variable. "Rain" or "RInfo"
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
 transformResponse=FALSE#Transform Rain rates?
-rainAreaFromRadar=FALSE#If false all cloudy pixels are considered as potentially raining. If true only pixels
+rainAreaFromRadar=TRUE#If false all cloudy pixels are considered as potentially raining. If true only pixels
 #where radar says it rains are considered for rain rate assignment
 ##################################################################################################################
 #                                Data splitting adjustments
@@ -54,7 +54,7 @@ predictorVariables=c("SZen",
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
-model=c("rf","nnet","svm") # supported: rf,nnet,svm.
+model=c("rf","nnet","svm","avNNet") # supported: rf,nnet,svm.
 adaptiveResampling=FALSE #use adaptive crosss validation?
 
 ###only for classification:
@@ -168,6 +168,7 @@ source("VisualizationOfModelOutput_Tuning.R",echo=TRUE)
 ##################################################################################################################
 source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("ROC_comp.R",echo=TRUE)
+if (type=="classification") source("confusion_comp.R",echo=TRUE)
 if (type=="regression") source("RMSE_comp.R",echo=TRUE)
 if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
 if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
