@@ -11,3 +11,16 @@ rmsePerScene=function(modeldata,dateField="chDate"){
   }
   RMSE
 }
+
+
+rsquaredPerScene=function(modeldata,dateField="chDate"){
+  rsquared=matrix(nrow=length(unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))),ncol=2)
+  for (scene in 1:length(unique(eval(parse(text=paste("modeldata$",dateField,sep="")))))){
+    rsquared[,1]=unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))
+    rsquared[scene,2]=summary(lm(modeldata$observed[modeldata$chDate==unique(modeldata$chDate)[scene]]~
+                       modeldata$prediction[modeldata$chDate==unique(modeldata$chDate)[scene]]))$r.squared 
+    
+    
+  }
+  rsquared
+}

@@ -34,7 +34,7 @@ dateField="chDate" #field name of the date+time variable. identifier for scenes.
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
 centerscale=TRUE#center and scale the predictor variables?
 transformResponse=FALSE#Transform Rain rates?
-rainAreaFromRadar=FALSE#If false all cloudy pixels are considered as potentially raining. If true only pixels
+rainAreaFromRadar=TRUE#If false all cloudy pixels are considered as potentially raining. If true only pixels
 #where radar says it rains are considered for rain rate assignment
 ##################################################################################################################
 #                                Data splitting adjustments
