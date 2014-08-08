@@ -63,7 +63,7 @@ public class SensorsInfoDialog extends Dialog {
 			column.setText (titles [i]);
 		}	
 
-		for(Sensor sensor:timeSeriesDatabase.sensorMap.values()) {
+		for(Sensor sensor:timeSeriesDatabase.getSensors()) {
 			TableItem item = new TableItem (table, SWT.NONE);
 			item.setText (0, sensor.name);
 			item.setText (1, ""+sensor.physicalMin);

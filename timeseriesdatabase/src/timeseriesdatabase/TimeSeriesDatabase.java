@@ -97,12 +97,12 @@ public class TimeSeriesDatabase {
 	 * sensor name	->	Sensor Object
 	 * Ta_200, ...
 	 */
-	public Map<String,Sensor> sensorMap;
+	private Map<String,Sensor> sensorMap;
 
 	/**
 	 * set of sensor names of input files, that should not be stored in database
 	 */
-	public Set<String> ignoreSensorNameSet;
+	private Set<String> ignoreSensorNameSet;
 
 	/**
 	 * set of sensor name, that should be included in base aggregation processing
@@ -111,7 +111,7 @@ public class TimeSeriesDatabase {
 
 	public CacheStorage cacheStorage;
 
-	public Map<String,VirtualPlot> virtualplotMap; // TODO change
+	private Map<String,VirtualPlot> virtualplotMap; // TODO change
 	
 	public SourceCatalog sourceCatalog; 
 
@@ -238,8 +238,8 @@ public class TimeSeriesDatabase {
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
+		sourceCatalog.clear();		
 		streamStorage.clear();
-		//store.clear();
 	}
 
 	/**
@@ -450,6 +450,10 @@ public class TimeSeriesDatabase {
 		return sensorMap.get(sensorName);
 	}
 	
+	public Collection<Sensor> getSensors() {
+		return sensorMap.values();
+	}
+	
 	public boolean loggerTypeExists(String loggerTypeName) {
 		return loggerTypeMap.containsKey(loggerTypeName);
 	}
@@ -484,6 +488,10 @@ public class TimeSeriesDatabase {
 		return virtualplotMap.get(plotID);
 	}
 	
+	public Collection<VirtualPlot> getVirtualPlots() {
+		return virtualplotMap.values();
+	}
+	
 	public boolean containsIgnoreSensorName(String sensorName) {
 		return ignoreSensorNameSet.contains(sensorName);
 	}
@@ -493,6 +501,10 @@ public class TimeSeriesDatabase {
 			log.warn("sensor name already ignored: "+sensorName);
 		}
 		ignoreSensorNameSet.add(sensorName);
+	}
+	
+	public boolean isContainedInBaseAggregation(String sensorName) {
+		return baseAggregationSensorNameSet.contains(sensorName);
 	}
 	
 

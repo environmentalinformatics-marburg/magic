@@ -269,19 +269,19 @@ public class QueryProcessor {
 	}
 
 	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
-		VirtualPlot virtualPlot = timeSeriesDatabase.virtualplotMap.get(plotID);
+		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			if(querySchema==null) {
 				querySchema = timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema());
 			}
-			List<TimestampInterval<Station>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, querySchema);			 
+			List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, querySchema);			 
 			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
-			for(TimestampInterval<Station> interval:intervalList) {
-				String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.plotID,querySchema);
+			for(TimestampInterval<StationProperties> interval:intervalList) {
+				String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.get_serial(),querySchema);
 				if(stationSchema.length==0) {
 					log.warn("schema empty");
 				}
-				TimeSeriesIterator it = this.query_base_aggregated(interval.value.plotID, stationSchema, interval.start, interval.end, dataQuality);
+				TimeSeriesIterator it = this.query_base_aggregated(interval.value.get_serial(), stationSchema, interval.start, interval.end, dataQuality);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);
 				}

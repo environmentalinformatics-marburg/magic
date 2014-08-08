@@ -2,6 +2,7 @@ package usecase;
 
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.Station;
+import timeseriesdatabase.StationProperties;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
@@ -21,13 +22,13 @@ public class DatabaseInfo {
 		//timeSeriesDatabase.registerStreams();
 		
 		
-		for(VirtualPlot virtualplot:timeSeriesDatabase.virtualplotMap.values()) {
+		for(VirtualPlot virtualplot:timeSeriesDatabase.getVirtualPlots()) {
 			System.out.println("******\t"+virtualplot.plotID+"   ("+virtualplot.generalStationName+")\t***");
-			for(TimestampInterval<Station> interval:virtualplot.intervalList) {
+			for(TimestampInterval<StationProperties> interval:virtualplot.intervalList) {
 				String startText = TimeConverter.oleMinutesToText(interval.start);
 				String endText = TimeConverter.oleMinutesToText(interval.end);
-				String typeText = util.Util.ifnull(interval.value.loggerType, x->x.typeName, ()->"unknown");
-				System.out.println(startText+" - "+endText+"\t\tstream name: "+interval.value.plotID+"\t"+typeText);
+				String typeText = util.Util.ifnull(interval.value.get_logger_type_name(), x->x, ()->"unknown");
+				System.out.println(startText+" - "+endText+"\t\tstream name: "+interval.value.get_plotid()+"\t"+typeText);
 			}
 			System.out.println();
 			System.out.println();

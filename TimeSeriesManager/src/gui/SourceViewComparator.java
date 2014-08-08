@@ -7,7 +7,7 @@ import timeseriesdatabase.catalog.SourceEntry;
 
 public class SourceViewComparator extends ViewerComparator {
 	
-	public enum SortType {STATION_NAME,FILE_NAME,FIRST_TIMESTAMP,LAST_TIMESTAMP,ROW_COUNT,HEADER_NAMES,SENSOR_NAMES};
+	public enum SortType {STATION_NAME,FILE_NAME,FIRST_TIMESTAMP,LAST_TIMESTAMP,ROW_COUNT,HEADER_NAMES,SENSOR_NAMES,TIME_STEP};
 	
 	public SortType sorttype = SortType.STATION_NAME;
 	
@@ -33,8 +33,13 @@ public class SourceViewComparator extends ViewerComparator {
 			break;
 		case HEADER_NAMES:
 			cmp = 0;
+			break;
 		case SENSOR_NAMES:
 			cmp = 0;
+			break;
+		case TIME_STEP:
+			cmp = Integer.compare(e1.timeStep, e2.timeStep);
+			break;
 		default:
 			cmp = e1.stationName.compareTo(e2.stationName);
 			break;

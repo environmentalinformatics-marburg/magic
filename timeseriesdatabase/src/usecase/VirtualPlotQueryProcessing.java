@@ -6,6 +6,7 @@ import java.util.List;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.Station;
+import timeseriesdatabase.StationProperties;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
@@ -33,10 +34,10 @@ public class VirtualPlotQueryProcessing {
 		Long queryEnd = null;
 		String[] schema = null;
 		
-		VirtualPlot virtualPlot = timeSeriesDatabase.virtualplotMap.get(plotName);
-		List<TimestampInterval<Station>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, schema);
-		for(TimestampInterval<Station> interval:intervalList) {
-			System.out.println(interval.value.plotID+" "+interval.value.loggerType+"\t\t"+TimeConverter.oleMinutesToText(interval.start)+"\t-\t"+TimeConverter.oleMinutesToText(interval.end));
+		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotName);
+		List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, schema);
+		for(TimestampInterval<StationProperties> interval:intervalList) {
+			System.out.println(interval.value.get_plotid()+" "+interval.value.get_logger_type_name()+"\t\t"+TimeConverter.oleMinutesToText(interval.start)+"\t-\t"+TimeConverter.oleMinutesToText(interval.end));
 		}
 		
 		

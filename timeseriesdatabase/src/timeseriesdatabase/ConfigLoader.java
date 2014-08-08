@@ -356,7 +356,7 @@ public class ConfigLoader {
 				} else {
 					log.warn("virtual plot already exists: "+plotID);
 				}*/
-				timeseriesdatabase.insertVirtualPlot(new VirtualPlot(plotID, generalStationName));
+				timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStationName));
 			}
 
 
@@ -589,7 +589,7 @@ public class ConfigLoader {
 						sensor.baseAggregationType = aggregateType;
 						timeseriesdatabase.baseAggregationSensorNameSet.add(sensorName);
 					} else {
-						log.warn("sensor not found: "+sensorName);
+						log.warn("sensor of base aggregation not found: "+sensorName);
 					}
 				}
 			}

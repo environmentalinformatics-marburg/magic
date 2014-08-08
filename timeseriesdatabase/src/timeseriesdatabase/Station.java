@@ -146,7 +146,7 @@ public class Station {
 					if(eventList!=null) {
 						eventsList.add(eventList);
 						
-						timeSeriesDatabase.sourceCatalog.insert(new SourceEntry(path,plotID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0]));
+						timeSeriesDatabase.sourceCatalog.insert(new SourceEntry(path,plotID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
 					}
 				} catch (Exception e) {
 					log.error("file not read: "+path+"\t"+e);
@@ -309,7 +309,7 @@ public class Station {
 			eventPos[sensorIndex] = -1;
 			SensorHeader sensorHeader = udbfTimeSeries.sensorHeaders[sensorIndex];
 			String rawSensorName = sensorHeader.name;
-			if(!timeSeriesDatabase.ignoreSensorNameSet.contains(rawSensorName)) {
+			if(!timeSeriesDatabase.containsIgnoreSensorName(rawSensorName)) {
 				String sensorName = translateInputSensorName(rawSensorName,true);
 				//System.out.println(sensorHeader.name+"->"+sensorName);
 				if(sensorName != null) {
@@ -351,7 +351,6 @@ public class Station {
 		//create events
 		Object[] payload = new Object[loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
-		//payload[loggerType.schema.length-1] = sampleRate;  // ?????????????????????????????  TODO 
 		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
 			// one input row

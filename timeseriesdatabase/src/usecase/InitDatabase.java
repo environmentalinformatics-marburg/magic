@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.TimeSeriesLoader;
+import timeseriesdatabase.loader.TimeSeriesLoader;
 import util.Util;
 
 /**

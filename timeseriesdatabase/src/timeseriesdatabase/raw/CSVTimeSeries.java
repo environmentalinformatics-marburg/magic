@@ -36,6 +36,8 @@ public class CSVTimeSeries {
 
 	public long timestampStart = 0;
 	public long timestampEnd = 0;
+	
+	public int timeStep;
 
 	public CSVTimeSeries(Path filename) throws IOException {
 		this.filename = filename;
@@ -135,7 +137,7 @@ public class CSVTimeSeries {
 		timestampStart = -1;
 		timestampEnd = -1;
 		long timestampPrev = -1;
-		int timeStep = -1;
+		timeStep = -1;
 		long timestamp = -1;
 
 		boolean atStart = true;

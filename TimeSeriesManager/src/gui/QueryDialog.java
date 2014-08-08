@@ -460,7 +460,7 @@ public class QueryDialog extends Dialog {
 		String stationName = comboPlotID.getText();
 		System.out.println("updateGUISensorName "+stationName);
 		String[] schema = null;
-		VirtualPlot virtualplot = timeSeriesDatabase.virtualplotMap.get(stationName);
+		VirtualPlot virtualplot = timeSeriesDatabase.getVirtualPlot(stationName);
 		if(virtualplot!=null) {
 			schema = virtualplot.getSchema();
 		} else {
@@ -472,7 +472,7 @@ public class QueryDialog extends Dialog {
 		if(schema!=null) {
 			ArrayList<String> sensorNames = new ArrayList<String>();
 			for(String name:schema) {
-				if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(name)) {
+				if(timeSeriesDatabase.isContainedInBaseAggregation(name)) {
 					System.out.println("add: "+name);
 					sensorNames.add(name);
 				}

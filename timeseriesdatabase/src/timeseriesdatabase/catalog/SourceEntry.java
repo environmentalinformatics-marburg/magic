@@ -16,9 +16,10 @@ public class SourceEntry implements Serializable {
 	public final int rows;
 	public final String[] headerNames;
 	public final String[] sensorNames;
+	public final int timeStep;
 	
 	
-	public SourceEntry(Path filename, String stationName, long firstTimestamp, long lastTimestamp, int rows, String[] headerNames, String[] sensorNames) {
+	public SourceEntry(Path filename, String stationName, long firstTimestamp, long lastTimestamp, int rows, String[] headerNames, String[] sensorNames, int timeStep) {
 		this.path = filename.subpath(0, filename.getNameCount()-1).toString();
 		this.filename = filename.getFileName().toString();
 		this.stationName = stationName;
@@ -27,6 +28,7 @@ public class SourceEntry implements Serializable {
 		this.rows = rows;
 		this.headerNames = headerNames;
 		this.sensorNames = sensorNames;
+		this.timeStep = timeStep;
 	}
 	
 	@Override

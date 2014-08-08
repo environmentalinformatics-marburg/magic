@@ -1,4 +1,4 @@
-package timeseriesdatabase;
+package timeseriesdatabase.loader;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -13,11 +13,20 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import de.umr.jepc.store.Event;
+import timeseriesdatabase.Station;
+import timeseriesdatabase.StationProperties;
+import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.catalog.SourceEntry;
 import timeseriesdatabase.raw.CSVTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 
+/**
+ * This class contains methods to read time series from input files and stores data into database.
+ * @author woellauer
+ *
+ */
 public class TimeSeriesLoader {
 	
 	private static final Logger log = Util.log;
@@ -28,6 +37,11 @@ public class TimeSeriesLoader {
 		this.timeseriesdatabase = timeseriesdatabase;
 	}
 	
+	/**
+	 * specific to KiLi:
+	 * read files contained in subfolders in KiLi folder tree
+	 * @param kiliPath
+	 */
 	public void loadDirectoryOfAllExploratories_structure_kili(Path kiliPath) {
 		log.info("loadDirectoryOfAllExploratories_structure_kili:\t"+kiliPath);
 		try {
@@ -43,6 +57,7 @@ public class TimeSeriesLoader {
 		}
 	}
 	
+	
 	public void loadOneDirectory_structure_kili(Path kiliPath) {
 		try {
 			if(Files.exists(kiliPath)) {
@@ -56,7 +71,92 @@ public class TimeSeriesLoader {
 						TimestampSeries timestampSeries = csvtimeSeries.readEntries();
 						long intervalStart = csvtimeSeries.timestampStart;
 						long intervalEnd = csvtimeSeries.timestampEnd;
+						
+						if(timestampSeries!=null) {
 
+							if(!timestampSeries.entryList.isEmpty()) {
+
+								Station station = timeseriesdatabase.getStation(csvtimeSeries.serialnumber);
+								if(station!=null) {									
+									
+									String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
+									for(int i=0;i<csvtimeSeries.parameterNames.length;i++) {
+										translatedInputSchema[i] = station.translateInputSensorName(csvtimeSeries.parameterNames[i], false);
+									}
+
+									//Map<String, Integer> schemaMap = Util.stringArrayToMap(translatedInputSchema,true);
+
+									StationProperties properties = station.getProperties(intervalStart, intervalEnd);
+
+									if(properties!=null) {
+										
+										insertOneFile(csvtimeSeries,station,properties,translatedInputSchema,timestampSeries);
+										
+									} else {
+										log.warn("no properties found in "+csvtimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
+									}									
+								} else {
+									log.error("station not found: "+csvtimeSeries.serialnumber+" in "+path);
+								}
+							} else {
+								log.warn("timestampseries is empty");
+							}
+						} else {
+							log.error("no timestampseries");
+						}
+
+					} catch(Exception e) {
+						e.printStackTrace();
+						log.error(e+" in "+path);
+					}
+
+				}
+			} else {
+				log.warn("directory not found: "+kiliPath);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void insertOneFile(CSVTimeSeries csvtimeSeries, Station station, StationProperties properties, String[] translatedInputSchema, TimestampSeries timestampSeries) {
+		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties);
+		if(loader!=null) {
+			List<Event> eventList = loader.load(csvtimeSeries, station, station.loggerType.sensorNames, timestampSeries);			
+			if(eventList!=null) {
+				timeseriesdatabase.streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd);
+				String[] resultSchema = loader.getResultSchema();				
+				timeseriesdatabase.sourceCatalog.insert(new SourceEntry(csvtimeSeries.filename,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, resultSchema, csvtimeSeries.timeStep));
+			} else {
+				log.warn("no events inserted: "+csvtimeSeries.filename);
+			}			
+		} else {
+			log.warn("no loader found for logger type: "+station.loggerType.typeName);
+		}		
+	}
+	
+	
+	
+	/**
+	 * specific to KiLi:
+	 * read files contained in direct subfolders in KiLi folder tree
+	 * special sensor name translation with time interval info from inventory
+	 * @param kiliPath
+	 */
+	public void loadOneDirectory_structure_kili_OLD(Path kiliPath) {
+		try {
+			if(Files.exists(kiliPath)) {
+				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
+				System.out.println("*** load directory: "+kiliPath+" ***");
+				for(Path path:stream) {
+					//System.out.println(path);
+
+					try{
+						CSVTimeSeries csvtimeSeries = new CSVTimeSeries(path);
+						TimestampSeries timestampSeries = csvtimeSeries.readEntries();
+						long intervalStart = csvtimeSeries.timestampStart;
+						long intervalEnd = csvtimeSeries.timestampEnd;
+						
 						if(timestampSeries!=null) {
 
 							if(!timestampSeries.entryList.isEmpty()) {
@@ -66,9 +166,10 @@ public class TimeSeriesLoader {
 
 									StationProperties properties = station.getProperties(intervalStart, intervalEnd);
 
-									if(properties==null) {
-										log.warn("no properties found in "+csvtimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
-									}
+									
+								
+								
+								
 
 									String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
 									for(int i=0;i<csvtimeSeries.parameterNames.length;i++) {
@@ -76,6 +177,12 @@ public class TimeSeriesLoader {
 									}
 
 									Map<String, Integer> schemaMap = Util.stringArrayToMap(translatedInputSchema,true);
+									
+									
+									
+									
+									
+									
 									
 									
 									//*** begin PLACE_HOLDER_W_R_300_U **** 
@@ -290,7 +397,7 @@ public class TimeSeriesLoader {
 
 									if(eventList!=null) {							
 										timeseriesdatabase.streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd);										
-										timeseriesdatabase.sourceCatalog.insert(new SourceEntry(path,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, translatedInputSchema));
+										timeseriesdatabase.sourceCatalog.insert(new SourceEntry(path,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, translatedInputSchema, csvtimeSeries.timeStep));
 									} else {
 										log.warn("no events inserted: "+path);
 									}
@@ -309,28 +416,6 @@ public class TimeSeriesLoader {
 						log.error(e+" in "+path);
 					}
 
-					/*
-				try {
-					//System.out.println("read: "+path);
-					KiLiCSV kiliCSV = KiLiCSV.readFileOLD(this,path);
-
-					if(kiliCSV!=null) {
-
-					if(stationMap.containsKey(kiliCSV.serial)) {
-						System.out.println("insert "+kiliCSV.eventMap.size()+" into "+kiliCSV.serial);
-
-						this.streamStorage.insertData(kiliCSV.serial, kiliCSV.eventMap);
-
-					} else {
-						log.warn("not in database: "+kiliCSV.serial);
-					}
-
-					}
-				} catch(Exception e) {
-					e.printStackTrace();
-					log.error(e+" in "+path);
-				}
-					 */
 				}
 			} else {
 				log.warn("directory not found: "+kiliPath);
@@ -340,6 +425,11 @@ public class TimeSeriesLoader {
 		}
 	}
 	
+	/**
+	 * specific to BE:
+	 * read files with root folder
+	 * @param rootPath
+	 */
 	public void loadDirectory_with_stations_structure_two(Path rootPath) {
 		log.info("loadDirectory_with_stations_structure_two:\t"+rootPath);
 		try {

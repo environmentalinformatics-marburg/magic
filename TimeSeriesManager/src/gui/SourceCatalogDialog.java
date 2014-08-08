@@ -168,7 +168,19 @@ public class SourceCatalogDialog extends Dialog {
 		    return ""+Util.arrayToString(e.sensorNames);
 		  }
 		});
-		colSensorNames.getColumn().addSelectionListener(getSelectionSortListener(SortType.SENSOR_NAMES));	
+		colSensorNames.getColumn().addSelectionListener(getSelectionSortListener(SortType.SENSOR_NAMES));
+		
+		TableViewerColumn colTimeStep = new TableViewerColumn(viewer, SWT.NONE);
+		colTimeStep.getColumn().setWidth(50);
+		colTimeStep.getColumn().setText("Time Step");
+		colTimeStep.setLabelProvider(new ColumnLabelProvider() {
+		  @Override
+		  public String getText(Object element) {
+			  SourceEntry e = (SourceEntry) element;
+		    return ""+e.timeStep;
+		  }
+		});
+		colTimeStep.getColumn().addSelectionListener(getSelectionSortListener(SortType.TIME_STEP));
 	}
 
 	/**

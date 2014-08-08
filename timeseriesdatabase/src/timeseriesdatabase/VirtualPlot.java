@@ -28,16 +28,19 @@ import util.Util;
 public class VirtualPlot {
 
 	private static final Logger log = Util.log;
+	
+	private final TimeSeriesDatabase timeSeriesDatabase;
 
 	public final String plotID;
 	public final String generalStationName;
 
-	public final List<TimestampInterval<Station>> intervalList;
+	public final List<TimestampInterval<StationProperties>> intervalList;
 
-	public VirtualPlot(String plotID, String generalStationName) {
+	public VirtualPlot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String generalStationName) {
+		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
 		this.generalStationName = generalStationName;
-		this.intervalList = new ArrayList<TimestampInterval<Station>>();
+		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 	}
 
 	public String[] getSchema() {
@@ -68,7 +71,13 @@ public class VirtualPlot {
 		//intervalList.iterator().forEachRemaining(action);
 
 		return intervalList.stream()
-				.map(interval->interval.value.loggerType)
+				.map(interval->{
+					LoggerType loggerType = timeSeriesDatabase.getLoggerType(interval.value.get_logger_type_name());
+					if(loggerType==null) {
+						throw new RuntimeException("logger type not found: "+interval.value.get_logger_type_name());
+					}
+					return loggerType;
+					})
 				.distinct()
 				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
 				.distinct()
@@ -76,7 +85,7 @@ public class VirtualPlot {
 	}
 
 	public void addStationEntry(Station station, StationProperties properties) {
-		intervalList.add(new TimestampInterval<Station>(station, properties.get_date_start(), properties.get_date_end()));
+		intervalList.add(new TimestampInterval<StationProperties>(properties, properties.get_date_start(), properties.get_date_end()));
 	}
 
 	private static boolean overlaps(Long queryStart, Long queryEnd, Long iStart, Long iEnd) {
@@ -102,7 +111,7 @@ public class VirtualPlot {
 	 * @param schema
 	 * @return
 	 */
-	public List<TimestampInterval<Station>> getStationList(Long queryStart, Long queryEnd, String[] schema) {		
+	public List<TimestampInterval<StationProperties>> getStationList(Long queryStart, Long queryEnd, String[] schema) {		
 		if(schema==null) {
 			schema = getSchema();
 		}		
@@ -122,13 +131,13 @@ public class VirtualPlot {
 			}
 		});
 
-		Iterator<TimestampInterval<Station>> it = intervalList.iterator();
+		Iterator<TimestampInterval<StationProperties>> it = intervalList.iterator();
 
 
-		List<TimestampInterval<Station>> resultIntervalList = new ArrayList<TimestampInterval<Station>>();
+		List<TimestampInterval<StationProperties>> resultIntervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		while(it.hasNext()) {
-			TimestampInterval<Station> interval = it.next();
-			if(schemaOverlaps(interval.value.loggerType.sensorNames,schema)) {
+			TimestampInterval<StationProperties> interval = it.next();
+			if(schemaOverlaps(timeSeriesDatabase.getLoggerType(interval.value.get_logger_type_name()).sensorNames,schema)) {
 				if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
 					resultIntervalList.add(interval);
 				}
