@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import timeseriesdatabase.StationProperties;
+import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.TimestampSeries;
 import de.umr.jepc.store.Event;
@@ -14,8 +15,8 @@ public class Loader_rad extends AbstractLoader {
 
 	private ProcessingType[] processingTypes = null;
 
-	public Loader_rad(String[] inputSchema, StationProperties properties) {
-		super(inputSchema,properties);
+	public Loader_rad(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
+		super(inputSchema,properties, csvtimeSeries);
 	}
 
 	@Override
@@ -44,8 +45,8 @@ public class Loader_rad extends AbstractLoader {
 					} else if(serial_PAR01_is_value&&!serial_PYR01_is_value) {
 						resultSchema[schemaIndex] = "par_01";
 					} else {
-						log.warn("no entry found");
-						resultSchema[schemaIndex] = inputSchema[schemaIndex];
+						//log.warn("no entry found");
+						resultSchema[schemaIndex] = null;
 					}
 					break;
 				case 2:
@@ -54,8 +55,8 @@ public class Loader_rad extends AbstractLoader {
 					} else if(serial_PAR02_is_value&&!serial_PYR02_is_value) {
 						resultSchema[schemaIndex] = "par_02";
 					} else {
-						log.warn("no entry found");
-						resultSchema[schemaIndex] = inputSchema[schemaIndex];
+						//log.warn("no entry found in "+csvtimeSeries.filename);
+						resultSchema[schemaIndex] = null;
 					}
 					break;					
 				default:
@@ -73,6 +74,7 @@ public class Loader_rad extends AbstractLoader {
 	protected void createProcessingTypes() {
 		processingTypes = new ProcessingType[resultSchema.length];
 		for(int schemaIndex=0; schemaIndex<resultSchema.length; schemaIndex++) {
+			if(resultSchema[schemaIndex]!=null) {
 			switch(resultSchema[schemaIndex]) {
 			case "swdr_01":
 				processingTypes[schemaIndex] = ProcessingType.FACTOR_10;
@@ -89,6 +91,9 @@ public class Loader_rad extends AbstractLoader {
 			default:
 				processingTypes[schemaIndex] = ProcessingType.COPY;
 			}
+		} else {
+			processingTypes[schemaIndex] = ProcessingType.NONE;
+		}
 		}
 	}
 

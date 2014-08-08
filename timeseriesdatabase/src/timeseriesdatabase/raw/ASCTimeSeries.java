@@ -23,9 +23,11 @@ import timeseriesdatabase.TimeConverter;
 
 import util.Util;
 
-public class CSVTimeSeries {
+public class ASCTimeSeries {
 
 	private static final Logger log = Util.log;
+
+	public boolean isDataFile = true;
 
 	public final Path filename;
 
@@ -36,10 +38,10 @@ public class CSVTimeSeries {
 
 	public long timestampStart = 0;
 	public long timestampEnd = 0;
-	
+
 	public int timeStep;
 
-	public CSVTimeSeries(Path filename) throws IOException {
+	public ASCTimeSeries(Path filename) throws IOException {
 		this.filename = filename;
 		BufferedReader bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
 		Stream<String> lines = bufferedReader.lines();
@@ -59,31 +61,59 @@ public class CSVTimeSeries {
 		if(c<HEADER_LINE_COUNT) {
 			throw new RuntimeException("read header error c<HEADER_LINE_COUNT");
 		}
-		final String HEADER_DESCRIPTION_NAME = "Description:";
-		if(!header[0].startsWith(HEADER_DESCRIPTION_NAME)) {
-			throw new RuntimeException("read header error !header[0].startsWith(HEADER_DESCRIPTION_NAME)");
+		final String HEADER_DESCRIPTION_NAME_ENGLISH = "Description:";
+		final String HEADER_DESCRIPTION_NAME_GERMAN = "Meßstellenbeschreibung:";
+		final String HEADER_DESCRIPTION_NAME_GERMAN_2 = "Me"+((char)239)+((char)191)+((char)189)+"stellenbeschreibung:";
+		String descriptionName = null;
+		if(header[0].startsWith(HEADER_DESCRIPTION_NAME_ENGLISH)) {
+			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_ENGLISH.length()).trim();
+		} else if(header[0].startsWith(HEADER_DESCRIPTION_NAME_GERMAN)) {
+			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_GERMAN.length()).trim();
+			
+		} else if(header[0].startsWith(HEADER_DESCRIPTION_NAME_GERMAN_2)) {
+			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_GERMAN_2.length()).trim();			
+		} else if(header[0].startsWith("Plot:")) {
+			isDataFile = false;
+			return;
+		} else {
+			System.out.println("0header[0]"+header[0].charAt(0)+" : "+(int)header[0].charAt(0));
+			System.out.println("1header[0]"+header[0].charAt(1)+" : "+(int)header[0].charAt(1));
+			System.out.println("2header[0]"+header[0].charAt(2)+" : "+(int)header[0].charAt(2));
+			System.out.println("3header[0]"+header[0].charAt(3)+" : "+(int)header[0].charAt(3));
+			System.out.println("4header[0]"+header[0].charAt(4)+" : "+(int)header[0].charAt(4));
+			throw new RuntimeException("read header error !header[0].startsWith(HEADER_DESCRIPTION_NAME): "+header[0]);
 		}
-		String descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME.length()).trim();
 		//System.out.println(descriptionName);
 
-		final String HEADER_SERIALNUMBER_NAME = "Serialnumber :";
-		if(!header[1].startsWith(HEADER_SERIALNUMBER_NAME)) {
-			throw new RuntimeException("read header error !header[1].startsWith(HEADER_SERIALNUMBER_NAME)");
+		final String HEADER_SERIALNUMBER_NAME_ENGLISH = "Serialnumber :";
+		final String HEADER_SERIALNUMBER_NAME_GERMAN = "Logger Seriennummer    :";
+		serialnumber = null;
+		if(header[1].startsWith(HEADER_SERIALNUMBER_NAME_ENGLISH)) {
+			serialnumber = ""+Long.parseLong(header[1].substring(HEADER_SERIALNUMBER_NAME_ENGLISH.length()).trim());
+		} else if(header[1].startsWith(HEADER_SERIALNUMBER_NAME_GERMAN)) {
+			serialnumber = ""+Long.parseLong(header[1].substring(HEADER_SERIALNUMBER_NAME_GERMAN.length()).trim());
+		} else {
+			throw new RuntimeException("read header error !header[1].startsWith(HEADER_SERIALNUMBER_NAME): "+header[1]);
 		}
-		serialnumber = ""+Long.parseLong(header[1].substring(HEADER_SERIALNUMBER_NAME.length()).trim());		
 		//System.out.println(serialnumber);
 
-		if(!header[2].startsWith("Logging Method:")) {
-			throw new RuntimeException("read header error !header[2].startsWith('Logging Method:')");
+		if(!(header[2].startsWith("Logging Method:")||header[2].startsWith("Logging Methode:"))) {
+			throw new RuntimeException("read header error !header[2].startsWith('Logging Method:'): '"+header[2]+"'"+header[2].startsWith("Logging Method:"));
 		}
 		//System.out.println(header[2]);
-		if(!header[3].startsWith("MeasureInterval:")) {
-			throw new RuntimeException("read header error !header[3].startsWith('MeasureInterval:'");
+		if(!(header[3].startsWith("MeasureInterval:")||header[3].startsWith("Messintervall:"))) {
+			throw new RuntimeException("read header error !header[3].startsWith('MeasureInterval:':  "+header[3]);
 		}
 
 		//Date	Time	Temperature   [°C]	Rel.Humidity   [%]	
 		//String[] columnHeaders = StringUtils.split(header[4]);
 		String[] columnHeaders = StringUtils.split(header[4], '\t');
+
+		for(int i=0;i<columnHeaders.length;i++) {
+			columnHeaders[i] = columnHeaders[i].trim();
+		}
+
+
 		//util.Util.printArray(columnHeaders,"#");
 
 
@@ -95,12 +125,12 @@ public class CSVTimeSeries {
 		for(String col:columnHeaders) {
 			//System.out.println(col);
 		}
-		if(!columnHeaders[0].equals("Date")) {
+		if(!(columnHeaders[0].equals("Date")||columnHeaders[0].equals("Datum"))) {    
 			throw new RuntimeException("read header error !columnHeaders[0].equals('Date')");
 		}
 		columnNamesList.add("Date");
-		if(!columnHeaders[1].equals("Time")) {
-			throw new RuntimeException("read header error !columnHeaders[1].equals('Time')");
+		if(!(columnHeaders[1].equals("Time")||columnHeaders[1].equals("Zeit"))) {
+			throw new RuntimeException("read header error !columnHeaders[1].equals('Time'): '"+columnHeaders[1]+"'");
 		}
 		columnNamesList.add("Time");
 		for(int i=2;i<columnHeaders.length;i++) {
@@ -131,7 +161,10 @@ public class CSVTimeSeries {
 		return TimeConverter.DateTimeToOleMinutes(datetime);
 	}
 
-	public TimestampSeries readEntries() {		
+	public TimestampSeries readEntries() {
+		if(!isDataFile) {
+			return null;
+		}
 		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
 
 		timestampStart = -1;
@@ -140,18 +173,14 @@ public class CSVTimeSeries {
 		timeStep = -1;
 		long timestamp = -1;
 
-		boolean atStart = true;
 		while(iterator_lines.hasNext()) {
 			String line = iterator_lines.next();
 
-
-			if(atStart) {
-				if(line.startsWith("RUN")||line.startsWith("-------------")||line.startsWith("Messintervall")) {// one more pre data line
-					continue;
-				}
+			if(line.startsWith("RUN")||line.startsWith("-------------")/*||line.startsWith("Messintervall")*/
+			   ||line.startsWith("Me")||line.startsWith("Logg")||line.startsWith("Datum")) {// one more pre data line
+				timestampPrev = -1;
+				continue;
 			}
-
-			atStart= false;
 
 			String[] row = StringUtils.split(line);
 			if(row.length!=parameterNames.length+2) {
@@ -165,7 +194,7 @@ public class CSVTimeSeries {
 				timestampStart = timestamp;
 			}
 			if(timestampPrev!=-1&&timeStep!=-1&&timestamp!=timestampPrev+timeStep) {
-				throw new RuntimeException("kili CSV time step error");
+				throw new RuntimeException("kili CSV time step error: prev current: "+timestampPrev+"  "+timestamp+"    "+TimeConverter.oleMinutesToText(timestampPrev)+"  "+TimeConverter.oleMinutesToText(timestamp));
 			}
 			if(timeStep!=-1&&timeStep!=(timestamp-timestampPrev)) {
 				throw new RuntimeException("kili CSV time step error");
@@ -179,7 +208,7 @@ public class CSVTimeSeries {
 			if(timestampPrev!=-1 && timestamp<=timestampPrev) {
 				throw new RuntimeException("kili CSV timestamp error: prev: "+timestampPrev+" current: "+timestamp+" prev: "+TimeConverter.oleMinutesToText(timestampPrev)+" current: "+TimeConverter.oleMinutesToText(timestamp)+"     line: "+line);
 			}
-			
+
 
 			float[] data = new float[parameterNames.length];
 			for(int colIndex=0;colIndex<parameterNames.length;colIndex++) {
@@ -201,6 +230,9 @@ public class CSVTimeSeries {
 	}
 
 	public List<Event> toEvents(TimestampSeries timestampSeries, String[] translatedInputSchema, String[] targetSchema, String debugInfo) {
+		if(!isDataFile) {
+			return null;
+		}
 
 		//sourcePos[targetIndex] => sourceIndex
 		int[] sourcePos = new int[targetSchema.length];

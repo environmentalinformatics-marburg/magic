@@ -44,7 +44,7 @@ import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.catalog.SourceCatalog;
-import timeseriesdatabase.raw.CSVTimeSeries;
+import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.KiLiCSV;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;

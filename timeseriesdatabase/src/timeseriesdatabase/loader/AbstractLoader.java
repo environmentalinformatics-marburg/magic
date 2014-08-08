@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
-import timeseriesdatabase.raw.CSVTimeSeries;
+import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 
@@ -18,13 +18,15 @@ public abstract class AbstractLoader {
 
 	protected final String[] inputSchema;
 	protected final StationProperties properties;
+	protected final ASCTimeSeries csvtimeSeries;
 	
 	protected String[] resultSchema = null;
 	protected int[] sourcePos;
 
-	public AbstractLoader(String[] inputSchema, StationProperties properties) {
+	public AbstractLoader(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
 		this.inputSchema = inputSchema;
 		this.properties = properties;
+		this.csvtimeSeries = csvtimeSeries;
 	}
 
 	protected abstract void createProcessingTypes();
@@ -49,19 +51,19 @@ public abstract class AbstractLoader {
 					log.warn("sensor name not in target schema "+sensorName+" "+getClass().toGenericString());
 				}
 			} else {
-				log.warn("no sensor translation: "+inputSchema[sourceIndex]);
+				log.warn("no sensor translation: "+inputSchema[sourceIndex]+" in "+csvtimeSeries.filename);
 			}
 
 		}
 		return containsValidColumns;
 	}
 
-	public List<Event> load(CSVTimeSeries csvtimeSeries, Station station, String[] targetSchema, TimestampSeries timestampSeries) {
-		System.out.println("inputSchema: "+Util.arrayToString(inputSchema));
+	public List<Event> load(Station station, String[] targetSchema, TimestampSeries timestampSeries) {
+		//System.out.println("inputSchema: "+Util.arrayToString(inputSchema));
 		createResultSchema();
 		createProcessingTypes();
 
-		System.out.println("resultSchema: "+Util.arrayToString(resultSchema));
+		//System.out.println("resultSchema: "+Util.arrayToString(resultSchema));
 
 		boolean containsValidColumns = createSourcePos(targetSchema);
 		if(containsValidColumns) {

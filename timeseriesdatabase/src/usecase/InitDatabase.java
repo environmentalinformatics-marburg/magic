@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.loader.TimeSeriesLoader;
+import timeseriesdatabase.loader.TimeSeriesLoaderKiLi;
 import util.Util;
 
 /**
@@ -35,7 +36,7 @@ public class InitDatabase {
 		// *** ... workaround
 		
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
-		TimeSeriesLoader timeseriesloader = new TimeSeriesLoader(timeSeriesDatabase);
+		TimeSeriesLoaderKiLi timeseriesloader = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
 		
 		String path1 = "c:/timeseriesdatabase_data_source_structure_one";
 		String path2 = "c:/timeseriesdatabase_data_source_structure_two";

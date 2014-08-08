@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import timeseriesdatabase.StationProperties;
+import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.TimestampSeries;
 import de.umr.jepc.store.Event;
@@ -16,8 +17,8 @@ public class Loader_gp1 extends AbstractLoader {
 	private float calib_coefficient_wd = Float.NaN;
 	private float calib_coefficient_wv = Float.NaN;
 
-	public Loader_gp1(String[] inputSchema, StationProperties properties) {
-		super(inputSchema,properties);
+	public Loader_gp1(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
+		super(inputSchema,properties, csvtimeSeries);
 	}
 
 	@Override

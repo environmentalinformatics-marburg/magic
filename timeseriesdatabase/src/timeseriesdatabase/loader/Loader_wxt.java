@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
-import timeseriesdatabase.raw.CSVTimeSeries;
+import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
@@ -28,8 +28,8 @@ public class Loader_wxt extends AbstractLoader {
 	
 	private int pos_T_CNR = -1;	
 
-	public Loader_wxt(String[] inputSchema, StationProperties properties) {
-		super(inputSchema,properties);
+	public Loader_wxt(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
+		super(inputSchema,properties, csvtimeSeries);
 	}
 
 	@Override

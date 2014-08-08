@@ -285,7 +285,16 @@ public class QueryDialog extends Dialog {
 	private void runQuery() {
 
 		String plotID = comboPlotID.getText();
-		String[] querySchema = new String[]{comboSensorName.getText()};
+		
+		String sensorName = comboSensorName.getText();
+		String[] querySchema;
+		if(sensorName.equals("WD")) {
+			querySchema = new String[]{sensorName,"WV"};
+		} else {
+			querySchema = new String[]{sensorName};
+		}
+		
+		
 		Long queryStart = Util.ifnull(beginDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		Long queryEnd = Util.ifnull(endDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
