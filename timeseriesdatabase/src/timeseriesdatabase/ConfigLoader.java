@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
@@ -21,6 +22,7 @@ import timeseriesdatabase.aggregated.AggregationType;
 import util.Table;
 import util.Util;
 import util.Util.FloatRange;
+import util.Triple;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase
@@ -36,7 +38,7 @@ public class ConfigLoader {
 	public ConfigLoader(TimeSeriesDatabase timeseriesdatabase) {
 		this.timeseriesdatabase = timeseriesdatabase;
 	}
-	
+
 	/**
 	 * reads names of used general stations
 	 * @param configFile
@@ -44,20 +46,38 @@ public class ConfigLoader {
 	public void readGeneralStationConfig(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
-			Section section = ini.get("general_stations");
-			for(String name:section.keySet()) {
-				if(timeseriesdatabase.generalStationExists(name)) {
-					log.warn("general station already exists: "+name);
-				} else {
-					timeseriesdatabase.insertGeneralStation(new GeneralStation(name));
+			TreeMap<String, Triple<String, Region, String>> creationMap = new TreeMap<String,Triple<String,Region,String>>();
+			Section section_general_stations = ini.get("general_stations");
+			for(Entry<String, String> entry:section_general_stations.entrySet()) {
+				String generalName = entry.getKey();
+				String regionName = entry.getValue();
+				Region region = timeseriesdatabase.getRegion(regionName);
+				if(region == null) {
+					log.warn("region not found: "+regionName);
 				}
+				//timeseriesdatabase.insertGeneralStation(new GeneralStation(generalName,region,null));
+				creationMap.put(generalName, new Triple<String, Region, String>(generalName, region, null));
+			}
+
+			Section section_general_station_long_names = ini.get("general_station_long_names");
+			if(section_general_station_long_names!=null) {
+				for(Entry<String, String> entry:section_general_station_long_names.entrySet()) {
+					creationMap.compute(entry.getKey(), (k,triple) -> new Triple<String, Region, String>(triple.a,triple.b,entry.getValue()));
+				}
+			}
+			for(Triple<String, Region, String> triple:creationMap.values()) {
+				String longName = triple.c;
+				if(longName==null) {
+					longName = triple.a;
+				}
+				timeseriesdatabase.insertGeneralStation(new GeneralStation(triple.a,triple.b,longName));
 			}
 
 		} catch (Exception e) {
 			log.error(e);
 		}		
 	}
-	
+
 	/**
 	 * for each station type read schema of data, only data of names in this schema is included in the database
 	 * This method creates LoggerType Objects
@@ -92,7 +112,7 @@ public class ConfigLoader {
 			log.error(e);
 		}
 	}
-	
+
 	/**
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
@@ -109,7 +129,7 @@ public class ConfigLoader {
 
 				LoggerType loggerType = timeseriesdatabase.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
 				if(loggerType!=null) {
-					Station station = new Station(timeseriesdatabase, generalStationName, plotID, loggerType, entryMap.getValue());
+					Station station = new Station(timeseriesdatabase, generalStationName, plotID, loggerType, entryMap.getValue(), true);
 					timeseriesdatabase.insertStation(station);
 				} else {
 					log.error("logger type not found: "+entryMap.getValue().get(0).get_logger_type_name()+" -> station not created: "+plotID);
@@ -118,7 +138,7 @@ public class ConfigLoader {
 			}
 		}	
 	}
-	
+
 	/**
 	 * reads properties of stations
 	 * @param configFile
@@ -172,7 +192,7 @@ public class ConfigLoader {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * reads config for translation of input sensor names to database sensor names
 	 * @param configFile
@@ -194,7 +214,7 @@ public class ConfigLoader {
 			final String NAME_CONVERSION_HEADER_SOIL_SUFFIX = "_soil_parameters_header_0000";
 			for(Section section:ini.values()) {
 				String sectionName = section.getName();
-				for(GeneralStation generalStation:timeseriesdatabase.getGeneralStaions()) {
+				for(GeneralStation generalStation:timeseriesdatabase.getGeneralStations()) {
 					String prefix = "000"+generalStation.name;
 					if(sectionName.startsWith(prefix)) {
 						String general_section = prefix+"xx"+NAME_CONVERSION_HEADER_SOIL_SUFFIX;
@@ -218,7 +238,7 @@ public class ConfigLoader {
 			log.error(e);
 		}
 	}
-	
+
 	/**
 	 * read geo config of stations:
 	 * 1. read geo pos of station
@@ -246,10 +266,10 @@ public class ConfigLoader {
 							log.warn("geo pos not read: "+plotID);
 						}
 						if(plotidIndex>-1) {
-							station.serialID = row[plotidIndex];
+							station.alternativeID = row[plotidIndex];
 						}
 					} else {
-						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]+"    in config file: "+config_file);
 					}
 				}
 
@@ -260,7 +280,7 @@ public class ConfigLoader {
 		}		
 		calcNearestStations();		
 	}
-	
+
 	public void calcNearestStations() {
 		timeseriesdatabase.updateGeneralStations();
 		for(Station station:timeseriesdatabase.getStations()) {
@@ -292,16 +312,16 @@ public class ConfigLoader {
 		}
 
 	}
-	
+
 	public static double[] transformCoordinates(double longitude, double latitude) {
 		// TODO: do real transformation
 		return new double[]{longitude,latitude};
 	}
-	
+
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
 	}
-	
+
 	public void readLoggerTypeSensorTranslationConfig(String configFile) {		
 		String SENSOR_TRANSLATION_HEADER_SUFFIX = "_sensor_translation";
 		try {
@@ -310,7 +330,7 @@ public class ConfigLoader {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_TRANSLATION_HEADER_SUFFIX);
 				if(section!=null) {
-					System.out.println("read "+section.getName());
+					//System.out.println("read "+section.getName());
 					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
 				} else {
 					//not all logger types may be defined in in this file
@@ -321,10 +341,28 @@ public class ConfigLoader {
 			log.error(e);
 		}		
 	}
-	
+
 	public void readVirtualPlotConfig(String config_file) {
-		try{		
+		try{
+
 			Table table = Table.readCSV(config_file);
+			int plotidIndex = table.getColumnIndex("PlotID"); // virtual plotid
+			for(String[] row:table.rows) {
+				String plotID = row[plotidIndex];				
+				if(plotID.length()==4&&plotID.charAt(3)>='0'&&plotID.charAt(3)<='9') {
+					String generalStationName = plotID.substring(0, 3);
+					if(timeseriesdatabase.generalStationExists(generalStationName)) {
+						timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStationName));
+					} else {
+						log.warn("unknown general station in: "+plotID+"\t"+generalStationName+"  VirtualPlot not inserted"+"   in config file: "+config_file);
+					}
+				} else {
+					log.warn("not valid plotID name: "+plotID+"  VirtualPlot not inserted"+"   in config file: "+config_file);;
+				}
+
+			}
+
+			/*Table table = Table.readCSV(config_file);
 			int plotidIndex = table.getColumnIndex("PlotID"); // virtual plotid
 			int categoriesIndex = table.getColumnIndex("Categories"); // general station
 
@@ -332,6 +370,9 @@ public class ConfigLoader {
 				String plotID = row[plotidIndex];
 
 				String generalStationName = row[categoriesIndex];
+
+
+
 
 				if(plotID.length()==4&&plotID.charAt(3)>='0'&&plotID.charAt(3)<='9') {
 					String gen = plotID.substring(0, 3);
@@ -341,23 +382,16 @@ public class ConfigLoader {
 						log.warn("unknown general station in: "+plotID+"\t"+gen);
 					}
 				} else {
-					log.warn("unknown general station in: "+plotID);
+					log.warn("unknown general station in: "+plotID+"    config file: "+config_file);
 				}
 
 
 
 				if(!timeseriesdatabase.generalStationExists(generalStationName)) {// TODO
-					log.warn("unknown general station: "+generalStationName);
-				}
-				/*VirtualPlot virtualplot = virtualplotMap.get(plotID);
-				if(virtualplot==null) {
-					virtualplot = new VirtualPlot(plotID, generalStationName);
-					virtualplotMap.put(plotID, virtualplot);
-				} else {
-					log.warn("virtual plot already exists: "+plotID);
-				}*/
+					log.warn("unknown general station: "+generalStationName+"   in config file: "+config_file);
+				}				
 				timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStationName));
-			}
+			}*/
 
 
 
@@ -392,36 +426,36 @@ public class ConfigLoader {
 			log.error(e);
 		}				
 	}
-	
+
 	/**
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
 	 */
 	public void readKiLiStationConfig(String configFile) { //  KiLi
-		Map<String, List<StationProperties>> serialNameMap = timeseriesdatabase.readKiLiStationConfigInternal(configFile);
+		Map<String, List<StationProperties>> serialNameMap = readKiLiStationConfigInternal(configFile);
 		for(Entry<String, List<StationProperties>> entry:serialNameMap.entrySet()) {
 			String serialName = entry.getKey();
 			List<StationProperties> propertiesList = entry.getValue();
 			if(!timeseriesdatabase.stationExists(serialName)) {
 				LoggerType loggerType = null;
 				for(StationProperties properties:propertiesList) {
-					String newloggerName = timeseriesdatabase.loggerPropertyKiLiToLoggerName(properties.get_logger_type_name());
+					String newloggerName = loggerPropertyKiLiToLoggerName(properties.get_logger_type_name());
 					if(newloggerName!=null) {
 						LoggerType newloggerType = timeseriesdatabase.getLoggerType(newloggerName);
 						if(newloggerType!=null) {
 							if(loggerType!=null&&loggerType!=newloggerType) {
-								log.warn("different logger types defined: "+loggerType+"  "+newloggerType+"   in "+serialName);
+								log.warn("different logger types defined: "+loggerType+"  "+newloggerType+"   in "+serialName+"   in config file: "+configFile);
 							}
 							loggerType = newloggerType;
 						} else {
-							log.warn("loggertype not found: "+newloggerName);
+							log.warn("loggertype not found: "+newloggerName+"   in config file: "+configFile);
 						}
 					} else {
 						log.warn("no loggertype name");
 					}
 				}
 				if(loggerType!=null) {
-					Station station = new Station(timeseriesdatabase,null,serialName,loggerType,propertiesList);
+					Station station = new Station(timeseriesdatabase,null,serialName,loggerType,propertiesList, false);
 					timeseriesdatabase.insertStation(station);				
 					for(StationProperties properties:propertiesList) {
 						String virtualPlotID = properties.get_plotid();
@@ -429,14 +463,14 @@ public class ConfigLoader {
 						if(virtualPlot!=null) {
 							virtualPlot.addStationEntry(station, properties);
 						} else {
-							log.warn("virtual plot id not found: "+virtualPlotID);
+							log.warn("virtual plotID not found: "+virtualPlotID+"   in config file: "+configFile);
 						}
 					}				
 				} else {
-					log.error("station with no logger type not inserted: "+serialName);
+					log.warn("station with no logger type not inserted: "+serialName+"   in config file: "+configFile);
 				}				
 			} else {
-				log.error("serialName already inserted: "+serialName);
+				log.warn("serialName already inserted: "+serialName);
 			}
 		}
 
@@ -488,7 +522,64 @@ public class ConfigLoader {
 			}
 		}*/
 	}
-	
+
+	/**
+	 * reads properties of stations
+	 * @param configFile
+	 */
+	static Map<String, List<StationProperties>> readKiLiStationConfigInternal(String config_file) {  //  KiLi
+		try {
+			CSVReader reader = new CSVReader(new FileReader(config_file));
+			List<String[]> list = reader.readAll();			
+			String[] names = list.get(0);			
+			final String NAN_TEXT = "NaN";			
+			Map<String,Integer> nameMap = new HashMap<String,Integer>(); // map: header name -> column index			
+			for(int i=0;i<names.length;i++) {
+				if(!names[i].equals(NAN_TEXT)) {
+					if(nameMap.containsKey(names[i])) {
+						log.error("dublicate name: "+names[i]);
+					} else {
+						nameMap.put(names[i], i);
+					}
+				}
+			}
+
+			String[][] values = new String[list.size()-1][];
+			for(int i=1;i<list.size();i++) {
+				values[i-1] = list.get(i);
+			}
+
+
+
+			Map<String,List<StationProperties>> serialMap = new HashMap<String,List<StationProperties>>();
+			int serialIndex = nameMap.get("SERIAL");
+			for(String[] row:values) {
+				String serial = row[serialIndex];
+
+				List<StationProperties> mapList = serialMap.get(serial);
+				if(mapList==null) {
+					mapList = new ArrayList<StationProperties>(1);
+					serialMap.put(serial, mapList);
+				}
+
+				HashMap<String, String> properyMap = new HashMap<String,String>();
+
+				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
+					String value = row[mapEntry.getValue()];
+					//if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {// ?? Nan should be in property map
+					properyMap.put(mapEntry.getKey(), value);
+					//}					
+				}				
+				mapList.add(new StationProperties(properyMap));
+			}
+			reader.close();
+			return serialMap;			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	/**
 	 * reads names of input sensors, that should not be included in database
 	 * @param configFile
@@ -505,7 +596,7 @@ public class ConfigLoader {
 			log.error(e);
 		}	
 	}
-	
+
 	/**
 	 * read config for sensors: physical minimum and maximum values
 	 * @param configFile
@@ -524,7 +615,7 @@ public class ConfigLoader {
 			}
 		}
 	}
-	
+
 	public void readSensorEmpiricalRangeConfig(String configFile) {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_empirical_range");
 		if(list!=null) {
@@ -539,7 +630,7 @@ public class ConfigLoader {
 			}
 		}
 	}
-	
+
 	public void readSensorStepRangeConfig(String configFile) {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"paramter_step_range");
 		if(list!=null) {
@@ -554,7 +645,7 @@ public class ConfigLoader {
 			}
 		}
 	}
-	
+
 	/**
 	 * reads sensor config for base aggregation: for each sensor the type of aggregation is read
 	 * @param configFile
@@ -565,31 +656,12 @@ public class ConfigLoader {
 			Section section = ini.get("base_aggregation");
 			if(section!=null) {
 				for(String sensorName:section.keySet()) {
-					Sensor sensor = timeseriesdatabase.getSensor(sensorName);
-					if(sensor!=null) {
-						String aggregateTypeText = section.get(sensorName);
-						AggregationType aggregateType = AggregationType.NONE;
-						if(aggregateTypeText.toLowerCase().equals("average")) {
-							aggregateType = AggregationType.AVERAGE;
-						} else if(aggregateTypeText.toLowerCase().equals("sum")) {
-							aggregateType = AggregationType.SUM;
-						} else if(aggregateTypeText.toLowerCase().equals("maximum")) {
-							aggregateType = AggregationType.MAXIMUM;							
-						} else if(aggregateTypeText.toLowerCase().equals("average_wind_direction")) {
-							aggregateType = AggregationType.AVERAGE_WIND_DIRECTION;
-						} else if(aggregateTypeText.toLowerCase().equals("average_wind_velocity")) {
-							aggregateType = AggregationType.AVERAGE_WIND_VELOCITY;							
-						} else if(aggregateTypeText.toLowerCase().equals("average_zero")) {
-							aggregateType = AggregationType.AVERAGE_ZERO;
-						} else if(aggregateTypeText.toLowerCase().equals("average_albedo")) {
-							aggregateType = AggregationType.AVERAGE_ALBEDO;	
-						} else {
-							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
-						}
-						sensor.baseAggregationType = aggregateType;
-						timeseriesdatabase.baseAggregationSensorNameSet.add(sensorName);
+					String aggregateTypeText = section.get(sensorName);					
+					AggregationType aggregateType = AggregationType.getAggregationType(aggregateTypeText);
+					if(aggregateType!=null) {
+						timeseriesdatabase.insertBaseAggregation(sensorName, aggregateType);
 					} else {
-						log.warn("sensor of base aggregation not found: "+sensorName);
+						log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
 					}
 				}
 			}
@@ -597,7 +669,7 @@ public class ConfigLoader {
 			log.warn(e);
 		}		
 	}
-	
+
 	/**
 	 * read list of sensors that should be included in gap filling processing
 	 * @param configFile
@@ -619,7 +691,7 @@ public class ConfigLoader {
 			log.error(e);
 		}
 	}
-	
+
 	public void readEmpiricalDiffConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -642,4 +714,69 @@ public class ConfigLoader {
 			log.warn(e);
 		}		
 	}
+
+	public void readRegionConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+
+			Section section = ini.get("region");
+			if(section!=null) {
+				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:regionNameMap.entrySet()) {
+					String regionName = entry.getKey();
+					String regionLongName = entry.getValue();
+					timeseriesdatabase.insertRegion(new Region(regionName, regionLongName));
+				}
+			} else {
+				log.warn("region section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String loggerPropertyKiLiToLoggerName(String s) {
+		if((s.charAt(0)>='0'&&s.charAt(0)<='9')&&(s.charAt(1)>='0'&&s.charAt(1)<='9')&&(s.charAt(2)>='0'&&s.charAt(2)<='9')){
+			return s.substring(3);
+		} else {
+			return s;
+		}
+	}
+
+	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
+	try{		
+		Table table = Table.readCSV(config_file);		
+		int plotidIndex = table.getColumnIndex("PlotID");
+		int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
+		int lonIndex = table.getColumnIndex("Lon");
+		int latIndex = table.getColumnIndex("Lat");			
+		for(String[] row:table.rows) {
+			String plotID = row[epplotidIndex];
+			if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
+				Station station = stationMap.get(plotID);
+				if(station!=null) {					
+					try {					
+						double lon = Double.parseDouble(row[lonIndex]);
+						double lat = Double.parseDouble(row[latIndex]);					
+						station.geoPoslongitude = lon;
+						station.geoPosLatitude = lat;					
+					} catch(Exception e) {
+						log.warn("geo pos not read: "+plotID);
+					}
+					if(plotidIndex>-1) {
+						station.serialID = row[plotidIndex];
+					}
+				} else {
+					log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
+				}
+			}
+
+		}
+
+	} catch(Exception e) {
+		log.error(e);
+	}		
+	calcNearestStations();		
+}*/
+
 }

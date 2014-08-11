@@ -30,17 +30,17 @@ public class TSDServer implements TSDServerInterface {
 	}
 
 	@Override
-	public String[] queryGeneralStations() {		
-		return timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
+	public String[] queryGeneralStations() {
+		return timeSeriesDatabase.getGeneralStationNames();
 	}
 
 	@Override
 	public String[] queryPlotIds(String generalStationName) {
-		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
+		GeneralStation generalStation = timeSeriesDatabase.getGeneralStation(generalStationName);
 		if(generalStation!=null) {
 			String[] names = new String[generalStation.stationList.size()];
 			for(int i=0;i<generalStation.stationList.size();i++) {
-				names[i] = generalStation.stationList.get(i).plotID;
+				names[i] = generalStation.stationList.get(i).stationID;
 			}
 			return names;
 		}

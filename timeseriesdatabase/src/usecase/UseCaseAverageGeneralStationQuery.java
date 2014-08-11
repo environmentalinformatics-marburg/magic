@@ -89,7 +89,7 @@ public class UseCaseAverageGeneralStationQuery {
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		
-		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
+		for(GeneralStation generalStation:timeSeriesDatabase.getGeneralStations()) {
 			String streamName = generalStation.name;
 			Long begin = null;
 			Long end = null;

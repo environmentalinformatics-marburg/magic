@@ -90,7 +90,7 @@ public class StationProperties {
 	}
 
 	public String get_logger_type_name() {
-		return TimeSeriesDatabase.loggerPropertyKiLiToLoggerName(propertyMap.get(PROPERTY_LOGGER));
+		return ConfigLoader.loggerPropertyKiLiToLoggerName(propertyMap.get(PROPERTY_LOGGER));
 	}
 
 	public TimestampInterval<StationProperties> createTimestampInterval() {

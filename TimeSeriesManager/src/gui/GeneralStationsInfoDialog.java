@@ -66,7 +66,7 @@ public class GeneralStationsInfoDialog extends Dialog {
 			column.setText (titles [i]);
 		}	
 
-		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
+		for(GeneralStation generalStation:timeSeriesDatabase.getGeneralStations()) {
 			TableItem item = new TableItem (table, SWT.NONE);
 			item.setText (0, generalStation.name);
 

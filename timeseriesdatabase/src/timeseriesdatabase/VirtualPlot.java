@@ -44,32 +44,6 @@ public class VirtualPlot {
 	}
 
 	public String[] getSchema() {
-		/*Set<LoggerType> loggerTypes = new LinkedHashSet<LoggerType>();
-		//Stream<TimestampInterval<Station>> stream = intervalList.stream();
-		//intervalList.stream().forEach(interval->loggerTypes.add(interval.value.loggerType));*/
-
-		//LinkedHashSet<String> schemaSet = new LinkedHashSet<String>();
-
-		//loggerTypes.stream().flatMap(loggerType->Arrays.stream(loggerType.sensorNames)).forEach(name->schemaSet.add(name));
-
-
-		/*loggerTypes.stream().forEach(loggerType->{
-			for(String name:loggerType.sensorNames) {
-				schemaSet.add(name);
-			}			
-		});*/
-
-
-		/*intervalList.stream()
-					.map(interval->interval.value.loggerType)
-					.distinct()
-					.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
-					.forEach(name->schemaSet .add(name));
-
-		return schemaSet.toArray(new String[0]);*/
-
-		//intervalList.iterator().forEachRemaining(action);
-
 		return intervalList.stream()
 				.map(interval->{
 					LoggerType loggerType = timeSeriesDatabase.getLoggerType(interval.value.get_logger_type_name());

@@ -68,10 +68,10 @@ public class StationsInfoDialog extends Dialog {
 
 		for(Station station:timeSeriesDatabase.getStations()) {
 			TableItem item = new TableItem (table, SWT.NONE);
-			item.setText (0, station.plotID);
+			item.setText (0, station.stationID);
 			item.setText (1, ""+station.geoPoslongitude);
 			item.setText (2, ""+station.geoPosLatitude);
-			item.setText (3, ""+station.serialID);
+			item.setText (3, ""+station.alternativeID);
 			item.setText (4, Util.ifnull(station.generalStationName, x->x, ()->"---"));
 			item.setText (5, util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
 

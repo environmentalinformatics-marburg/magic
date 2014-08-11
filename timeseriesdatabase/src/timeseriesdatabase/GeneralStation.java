@@ -14,14 +14,20 @@ public class GeneralStation {
 	
 	public String name;
 	
+	public final Region region;
+	
+	public final String longName;
+	
 	public Map<String,String> sensorNameTranlationMap;
 	
 	public List<Station> stationList;
 	
 	public List<VirtualPlot> virtualPlotList;
 	
-	public GeneralStation(String name) {
+	public GeneralStation(String name, Region region, String longName) {
 		this.name = name;
+		this.region = region;
+		this.longName = longName;
 		this.stationList = new ArrayList<Station>();
 		this.sensorNameTranlationMap = new HashMap<String,String>();
 		this.virtualPlotList = new ArrayList<VirtualPlot>();

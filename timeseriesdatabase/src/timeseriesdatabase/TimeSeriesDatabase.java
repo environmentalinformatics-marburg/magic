@@ -30,12 +30,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.BasicMultiMap;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
+import org.ini4j.spi.BeanAccess;
 
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
@@ -71,6 +74,11 @@ public class TimeSeriesDatabase {
 	private static final Logger log = Util.log;
 
 	/**
+	 * map regionName -> Region
+	 */
+	private Map<String,Region> regionMap;
+
+	/**
 	 * EventStore is the storage of all time series
 	 */
 	public StreamStorage streamStorage;
@@ -91,7 +99,7 @@ public class TimeSeriesDatabase {
 	 * general station name	->	GeneralStation Object
 	 * HEG, HEW, ...
 	 */
-	public Map<String,GeneralStation> generalStationMap;
+	private Map<String,GeneralStation> generalStationMap;
 
 	/**
 	 * sensor name	->	Sensor Object
@@ -107,12 +115,12 @@ public class TimeSeriesDatabase {
 	/**
 	 * set of sensor name, that should be included in base aggregation processing
 	 */
-	public Set<String> baseAggregationSensorNameSet;
+	private Set<String> baseAggregationSensorNameSet;
 
 	public CacheStorage cacheStorage;
 
-	private Map<String,VirtualPlot> virtualplotMap; // TODO change
-	
+	private Map<String,VirtualPlot> virtualplotMap;
+
 	public SourceCatalog sourceCatalog; 
 
 	/**
@@ -122,6 +130,8 @@ public class TimeSeriesDatabase {
 	 */
 	public TimeSeriesDatabase(String databasePath, String evenstoreConfigFile, String cachePath) {		
 		log.trace("create TimeSeriesDatabase");		
+
+		this.regionMap = new TreeMap<String,Region>();
 
 		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
 		//this.streamStorage = new StreamStorageMapDB(databasePath);
@@ -135,90 +145,9 @@ public class TimeSeriesDatabase {
 		this.cacheStorage = new CacheStorage(cachePath);
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
-		
+
 		this.sourceCatalog = new SourceCatalog(databasePath);
-	}
-
-	public Attribute[] createAttributes(String[] names) {
-		Attribute[] result = new Attribute[names.length];
-		for(int i=0;i<names.length;i++) {
-			result[i] = new Attribute(names[i],DataType.FLOAT);
-		}
-		return result;
-	}
-
-	static String loggerPropertyKiLiToLoggerName(String s) {
-		if((s.charAt(0)>='0'&&s.charAt(0)<='9')&&(s.charAt(1)>='0'&&s.charAt(1)<='9')&&(s.charAt(2)>='0'&&s.charAt(2)<='9')){
-			return s.substring(3);
-		} else {
-			return s;
-		}
-	}
-
-	private static String plotIdKiLiToGeneralStationName(String s) {
-		if(s.length()==4&&s.charAt(3)>='0'&&s.charAt(3)<='9') {
-			return s.substring(0, 3);
-		} else {
-			return s; // not general station
-		}
-	}
-
-	/**
-	 * reads properties of stations
-	 * @param configFile
-	 */
-	static Map<String, List<StationProperties>> readKiLiStationConfigInternal(String config_file) {  //  KiLi
-		try {
-			CSVReader reader = new CSVReader(new FileReader(config_file));
-			List<String[]> list = reader.readAll();			
-			String[] names = list.get(0);			
-			final String NAN_TEXT = "NaN";			
-			Map<String,Integer> nameMap = new HashMap<String,Integer>(); // map: header name -> column index			
-			for(int i=0;i<names.length;i++) {
-				if(!names[i].equals(NAN_TEXT)) {
-					if(nameMap.containsKey(names[i])) {
-						log.error("dublicate name: "+names[i]);
-					} else {
-						nameMap.put(names[i], i);
-					}
-				}
-			}
-
-			String[][] values = new String[list.size()-1][];
-			for(int i=1;i<list.size();i++) {
-				values[i-1] = list.get(i);
-			}
-
-
-
-			Map<String,List<StationProperties>> serialMap = new HashMap<String,List<StationProperties>>();
-			int serialIndex = nameMap.get("SERIAL");
-			for(String[] row:values) {
-				String serial = row[serialIndex];
-
-				List<StationProperties> mapList = serialMap.get(serial);
-				if(mapList==null) {
-					mapList = new ArrayList<StationProperties>(1);
-					serialMap.put(serial, mapList);
-				}
-
-				HashMap<String, String> properyMap = new HashMap<String,String>();
-
-				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
-					String value = row[mapEntry.getValue()];
-					//if(!value.toUpperCase().equals(NAN_TEXT.toUpperCase())) {// ?? Nan should be in property map
-					properyMap.put(mapEntry.getKey(), value);
-					//}					
-				}				
-				mapList.add(new StationProperties(properyMap));
-			}
-			reader.close();
-			return serialMap;			
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+	}	
 
 	/**
 	 * registers streams for all containing stations (with stream name == plotID)
@@ -226,10 +155,10 @@ public class TimeSeriesDatabase {
 	public void registerStreams() {
 		for(Station station:getStations()) {
 			if(station.loggerType!=null) {
-				log.info("register stream "+station.plotID+" with schema of "+station.loggerType.typeName);
-				streamStorage.registerStream(station.plotID, station.loggerType.schema);
+				log.info("register stream "+station.stationID+" with schema of "+station.loggerType.typeName);
+				streamStorage.registerStream(station.stationID, station.loggerType.schema);
 			} else {
-				log.error("stream not registered: "+station.plotID+"   logger type not found");
+				log.error("stream not registered: "+station.stationID+"   logger type not found");
 			}
 		}
 	}
@@ -247,7 +176,6 @@ public class TimeSeriesDatabase {
 	 */
 	public void close() {
 		streamStorage.close();
-		//store.close();
 	}	
 
 	public Float[] getEmpiricalDiff(String[] schema) {
@@ -280,63 +208,27 @@ public class TimeSeriesDatabase {
 		return sensors;
 	}
 
-	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
-		try{		
-			Table table = Table.readCSV(config_file);		
-			int plotidIndex = table.getColumnIndex("PlotID");
-			int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
-			int lonIndex = table.getColumnIndex("Lon");
-			int latIndex = table.getColumnIndex("Lat");			
-			for(String[] row:table.rows) {
-				String plotID = row[epplotidIndex];
-				if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
-					Station station = stationMap.get(plotID);
-					if(station!=null) {					
-						try {					
-							double lon = Double.parseDouble(row[lonIndex]);
-							double lat = Double.parseDouble(row[latIndex]);					
-							station.geoPoslongitude = lon;
-							station.geoPosLatitude = lat;					
-						} catch(Exception e) {
-							log.warn("geo pos not read: "+plotID);
-						}
-						if(plotidIndex>-1) {
-							station.serialID = row[plotidIndex];
-						}
-					} else {
-						log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
-					}
-				}
-
-			}
-
-		} catch(Exception e) {
-			log.error(e);
-		}		
-		calcNearestStations();		
-	}*/
-
 	public void updateGeneralStations() {
 
-		for(GeneralStation g:generalStationMap.values()) {
+		for(GeneralStation g:getGeneralStations()) {
 			g.stationList = new ArrayList<Station>();
 			g.virtualPlotList = new ArrayList<VirtualPlot>();
 		}
 
 		for(Station station:getStations()) {
 			if(station.generalStationName!=null) {
-				GeneralStation generalStation = generalStationMap.get(station.generalStationName);
+				GeneralStation generalStation = getGeneralStation(station.generalStationName);
 				if(generalStation!=null) {
 					generalStation.stationList.add(station);
 				} else {
-					log.warn("general station not found: "+station.generalStationName+" in "+station.plotID);
+					log.warn("general station not found: "+station.generalStationName+" in "+station.stationID);
 				}
 			}
 		}
 
 		for(VirtualPlot virtualplot:virtualplotMap.values()) {
 			if(virtualplot.generalStationName!=null) {
-				GeneralStation generalStation = generalStationMap.get(virtualplot.generalStationName);
+				GeneralStation generalStation = getGeneralStation(virtualplot.generalStationName);
 				if(generalStation!=null) {
 					generalStation.virtualPlotList.add(virtualplot);
 				} else {
@@ -346,31 +238,33 @@ public class TimeSeriesDatabase {
 		}
 	}
 
+	//*********************************************** begin Station *************************************************
+
 	public Station getStation(String stationName) {
 		return stationMap.get(stationName);		
 	}
-	
+
 	public Collection<Station> getStations() {
 		return stationMap.values();
 	}
-	
+
 	public Set<String> getStationNames() {
 		return stationMap.keySet();
 	}
-	
+
 	public boolean stationExists(String stationName) {
 		return stationMap.containsKey(stationName);
 	}
-	
+
 	public void insertStation(Station station) {
-		if(stationMap.containsKey(station.plotID)) {
-			log.warn("override station (already exists): "+station.plotID);
+		if(stationMap.containsKey(station.stationID)) {
+			log.warn("override station (already exists): "+station.stationID);
 		}
-		stationMap.put(station.plotID, station);
+		stationMap.put(station.stationID, station);
 	}
 
-	public long getFirstTimestamp(String plotID) {
-		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
+	public long getFirstTimestamp(String stationID) {
+		Iterator<Event> it = streamStorage.queryRawEvents(stationID, null, null);
 		if(it.hasNext()) {
 			return it.next().getTimestamp();
 		} else {
@@ -378,8 +272,8 @@ public class TimeSeriesDatabase {
 		}
 	}
 
-	public long getLastTimestamp(String plotID) {
-		Iterator<Event> it = streamStorage.queryRawEvents(plotID, null, null);
+	public long getLastTimestamp(String stationID) {
+		Iterator<Event> it = streamStorage.queryRawEvents(stationID, null, null);
 		long timestamp = -1;
 		while (it.hasNext()) {
 			timestamp = it.next().getTimestamp();
@@ -387,23 +281,224 @@ public class TimeSeriesDatabase {
 		return timestamp;
 	}
 
-	public long getFirstTimestampBaseAggregated(String plotID) {
-		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getFirstTimestamp(plotID));
+	public long getFirstTimestampBaseAggregated(String stationID) {
+		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getFirstTimestamp(stationID));
 	}
 
-	public long getLastTimestampBaseAggregated(String plotID) {
-		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getLastTimestamp(plotID));
+	public long getLastTimestampBaseAggregated(String stationID) {
+		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getLastTimestamp(stationID));
 	}
 
+	//*********************************************** end Station *************************************************
+
+	//*********************************************** begin GeneralStation *************************************************
+
+	public boolean generalStationExists(String generalStationName) {
+		return generalStationMap.containsKey(generalStationName);
+	}
+
+	public void insertGeneralStation(GeneralStation generalStation) {
+		if(generalStationExists(generalStation.name)) {
+			log.warn("override general station (already exists): "+generalStation.name);
+		}
+		generalStationMap.put(generalStation.name, generalStation);
+	}
+
+	public Collection<GeneralStation> getGeneralStations() {
+		return generalStationMap.values();
+	}
+
+	public GeneralStation getGeneralStation(String generalStationName) {
+		return generalStationMap.get(generalStationName);
+	}
+
+	public GeneralStation getGeneralStationByLongName(String longName) {
+		for(GeneralStation generalStaion:generalStationMap.values()) {
+			if(generalStaion.longName.equals(longName)) {
+				return generalStaion;
+			}
+		}
+		return null;
+	}
+
+	public String[] getGeneralStationNames() {
+		return generalStationMap.keySet().stream().toArray(String[]::new);
+	}
+
+	public Stream<GeneralStation> getGeneralStations(Region region) {
+		return generalStationMap.values().stream().filter(x->x.region==region);
+	}
+
+	//*********************************************** end GeneralStation *************************************************
+
+	//*********************************************** begin Sensor *******************************************************
+
+	public boolean sensorExists(String sensorName) {
+		return sensorMap.containsKey(sensorName);
+	}
+
+	public void insertSensor(Sensor sensor) {
+		if(sensorExists(sensor.name)) {
+			log.warn("override sensor (already exists): "+sensor.name);
+		}
+		sensorMap.put(sensor.name, sensor);
+	}
+
+	public Sensor getSensor(String sensorName) {
+		return sensorMap.get(sensorName);
+	}
+
+	public Collection<Sensor> getSensors() {
+		return sensorMap.values();
+	}
+
+	//*********************************************** end Sensor **********************************************************
+
+	//*********************************************** begin LoggerType *******************************************************
+
+	public boolean loggerTypeExists(String loggerTypeName) {
+		return loggerTypeMap.containsKey(loggerTypeName);
+	}
+
+	public void insertLoggerType(LoggerType loggertype) {
+		if(loggerTypeExists(loggertype.typeName)) {
+			log.warn("override logger type (already exists): "+loggertype.typeName);
+		}
+		loggerTypeMap.put(loggertype.typeName, loggertype);
+	}
+
+	public LoggerType getLoggerType(String loggerTypeName) {
+		return loggerTypeMap.get(loggerTypeName);
+	}
+
+	public Collection<LoggerType> getLoggerTypes() {
+		return loggerTypeMap.values();
+	}
+
+	//*********************************************** begin VirtualPlot *******************************************************
+
+	public boolean virtualPlotExists(String plotID) {
+		return virtualplotMap.containsKey(plotID);
+	}
+
+	public void insertVirtualPlot(VirtualPlot virtualPlot) {
+		if(virtualPlotExists(virtualPlot.plotID)) {
+			log.warn("overwrite virtual plot (already exists): "+virtualPlot.plotID);
+		}
+		virtualplotMap.put(virtualPlot.plotID, virtualPlot);
+	}
+
+	public VirtualPlot getVirtualPlot(String plotID) {
+		return virtualplotMap.get(plotID);
+	}
+
+	public Collection<VirtualPlot> getVirtualPlots() {
+		return virtualplotMap.values();
+	}
+
+	//*********************************************** end VirtualPlot *********************************************************
+
+	//*********************************************** begin ignore sensor names *******************************************************
+
+	public boolean containsIgnoreSensorName(String sensorName) {
+		return ignoreSensorNameSet.contains(sensorName);
+	}
+
+	public void insertIgnoreSensorName(String sensorName) {
+		if(containsIgnoreSensorName(sensorName)) {
+			log.warn("sensor name already ignored: "+sensorName);
+		}
+		ignoreSensorNameSet.add(sensorName);
+	}
+
+	//*********************************************** end ignore sensor names *******************************************************
+
+
+
+
+	//*********************************************** begin Region *******************************************************************
+
+	public boolean regionExists(String regionName) {
+		return regionMap.containsKey(regionName);
+	}
+
+	public void insertRegion(Region region) {
+		if(regionExists(region.name)) {
+			log.warn("overwrite region (already exists): "+region.name);
+		}
+		regionMap.put(region.name, region);
+	}
+
+	public Collection<Region> getRegions() {
+		return regionMap.values();
+	}
+
+	public Set<String> getRegionNames() {
+		return regionMap.keySet();
+	}
+
+	public String[] getRegionLongNames() {
+		return regionMap.values().stream().map(x -> x.longName).toArray(String[]::new);
+	}
+
+	/**
+	 * slow method
+	 * @param longName
+	 * @return 
+	 */
+	public Region getRegionByLongName(String longName) {
+		for(Region region:regionMap.values()) {
+			if(region.longName.equals(longName)) {
+				return region;
+			}
+		}
+		return null;
+	}
+
+	public Region getRegion(String regionName) {
+		return regionMap.get(regionName);
+	}
+
+
+
+	public String[] getGeneralStationLongNames(Region region) {
+		return getGeneralStations(region).map(x -> x.longName).sorted().toArray(String[]::new);
+	}
+
+	//*********************************************** end Region *************************************************************************
+
+
+	//*********************************************** begin base aggregation *************************************************************************
+
+	public boolean baseAggregationExists(String sensorName) {
+		return baseAggregationSensorNameSet.contains(sensorName);
+	}
+	
+	public void insertBaseAggregation(String sensorName, AggregationType aggregateType) {
+		Sensor sensor = getSensor(sensorName);
+		if(sensor!=null) {
+			if(baseAggregationExists(sensorName)) {
+				log.warn("base aggregation already exists: "+sensorName);
+			} else {
+				baseAggregationSensorNameSet.add(sensorName);
+			}
+			sensor.baseAggregationType = aggregateType;
+		} else {
+			log.warn("sensor does not exist; base aggregation not inserted: "+sensorName);
+		}
+	}
+	
 	public String[] getBaseAggregationSchema(String[] rawSchema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		for(String name:rawSchema) {
-			if(baseAggregationSensorNameSet.contains(name)) {
+			if(this.baseAggregationExists(name)) {
 				sensorNames.add(name);
 			}
 		}
 		return sensorNames.toArray(new String[0]);
 	}
+
+	//*********************************************** end base aggregation *************************************************************************
 
 	public String[] getValidSchema(String stationID, String[] schema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
@@ -415,97 +510,6 @@ public class TimeSeriesDatabase {
 		}
 		return sensorNames.toArray(new String[0]);
 	}
-	
-	public boolean generalStationExists(String generalStationName) {
-		return generalStationMap.containsKey(generalStationName);
-	}
-	
-	public void insertGeneralStation(GeneralStation generalStation) {
-		if(generalStationExists(generalStation.name)) {
-			log.warn("override general station (already exists): "+generalStation.name);
-		}
-		generalStationMap.put(generalStation.name, generalStation);
-	}
-	
-	public Collection<GeneralStation> getGeneralStaions() {
-		return generalStationMap.values();
-	}
-	
-	public GeneralStation getGeneralStation(String generalStationName) {
-		return generalStationMap.get(generalStationName);
-	}
-	
-	public boolean sensorExists(String sensorName) {
-		return sensorMap.containsKey(sensorName);
-	}
-	
-	public void insertSensor(Sensor sensor) {
-		if(sensorExists(sensor.name)) {
-			log.warn("override sensor (already exists): "+sensor.name);
-		}
-		sensorMap.put(sensor.name, sensor);
-	}
-	
-	public Sensor getSensor(String sensorName) {
-		return sensorMap.get(sensorName);
-	}
-	
-	public Collection<Sensor> getSensors() {
-		return sensorMap.values();
-	}
-	
-	public boolean loggerTypeExists(String loggerTypeName) {
-		return loggerTypeMap.containsKey(loggerTypeName);
-	}
-	
-	public void insertLoggerType(LoggerType loggertype) {
-		if(loggerTypeExists(loggertype.typeName)) {
-			log.warn("override logger type (already exists): "+loggertype.typeName);
-		}
-		loggerTypeMap.put(loggertype.typeName, loggertype);
-	}
-	
-	public LoggerType getLoggerType(String loggerTypeName) {
-		return loggerTypeMap.get(loggerTypeName);
-	}
-	
-	public Collection<LoggerType> getLoggerTypes() {
-		return loggerTypeMap.values();
-	}
-	
-	public boolean virtualPlotExists(String plotID) {
-		return virtualplotMap.containsKey(plotID);
-	}
-	
-	public void insertVirtualPlot(VirtualPlot virtualPlot) {
-		if(virtualPlotExists(virtualPlot.plotID)) {
-			log.warn("override virtual plot (already exists): "+virtualPlot.plotID);
-		}
-		virtualplotMap.put(virtualPlot.plotID, virtualPlot);
-	}
-	
-	public VirtualPlot getVirtualPlot(String plotID) {
-		return virtualplotMap.get(plotID);
-	}
-	
-	public Collection<VirtualPlot> getVirtualPlots() {
-		return virtualplotMap.values();
-	}
-	
-	public boolean containsIgnoreSensorName(String sensorName) {
-		return ignoreSensorNameSet.contains(sensorName);
-	}
-	
-	public void insertIgnoreSensorName(String sensorName) {
-		if(containsIgnoreSensorName(sensorName)) {
-			log.warn("sensor name already ignored: "+sensorName);
-		}
-		ignoreSensorNameSet.add(sensorName);
-	}
-	
-	public boolean isContainedInBaseAggregation(String sensorName) {
-		return baseAggregationSensorNameSet.contains(sensorName);
-	}
-	
+
 
 }

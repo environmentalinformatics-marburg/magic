@@ -37,11 +37,11 @@ public class TestingEmpiricalIterator {
 		List<Station> nearList = station.getNearestStationsWithSensor("Ta_200");
 		
 		Stream<Station> stream = nearList.stream();
-		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.plotID, querySchema, queryStart, queryEnd, dataQuality));
+		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
 		Iterator<TimeSeriesIterator> it = stream1.iterator();
 
 		TimeSeriesIterator[] itNear = new TimeSeriesIterator[NEAR_STATIONS];
-		int c = Util.fillArray(nearList, itNear, x->qp.query_continuous_base_aggregated(x.plotID, querySchema, queryStart, queryEnd, dataQuality));
+		int c = Util.fillArray(nearList, itNear, x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
 		if(c<NEAR_STATIONS) {
 			throw new RuntimeException("c: "+c+" "+nearList.size());
 		}

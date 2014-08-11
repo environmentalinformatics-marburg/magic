@@ -21,7 +21,7 @@ public class MultiChart {
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
-		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get("HEW");
+		GeneralStation generalStation = timeSeriesDatabase.getGeneralStation("HEW");
 		
 		String[] querySchema = new String[]{"Ta_200"};
 		Long queryStart = null;
@@ -30,8 +30,8 @@ public class MultiChart {
 		AggregationInterval aggregationInterval = AggregationInterval.DAY;
 		
 		for(Station station:generalStation.stationList) {			
-			TimeSeriesIterator it = qp.query_aggregated(station.plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
-			CSV.write(it,CSV_OUTPUT_PATH+"multichar_"+station.plotID+".csv");
+			TimeSeriesIterator it = qp.query_aggregated(station.stationID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval);
+			CSV.write(it,CSV_OUTPUT_PATH+"multichar_"+station.stationID+".csv");
 		}
 		
 		

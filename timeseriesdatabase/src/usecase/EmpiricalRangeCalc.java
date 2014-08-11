@@ -42,11 +42,11 @@ public class EmpiricalRangeCalc {
 
 		for(String generalStationName:generalStationNames) {
 
-			GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
+			GeneralStation generalStation = timeSeriesDatabase.getGeneralStation(generalStationName);
 			List<Station> stationList = generalStation.stationList;
 			
 			//TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.queryRawQualityChecked(station.plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange)));
-			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.plotID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
+			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.stationID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
 			
 			//TimeSeriesIterator it = qp.queryRaw(plotID, querySchema, queryStart, queryEnd);		
 			//TimeSeriesIterator it = qp.queryQualityChecked(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);

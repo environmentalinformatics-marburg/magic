@@ -45,12 +45,12 @@ public class UseCaseAverageGeneralStationGenerate {
 		DataQuality dataquality = DataQuality.STEP;
 
 
-		for(GeneralStation generalStation:timeSeriesDatabase.generalStationMap.values()) {
+		for(GeneralStation generalStation:timeSeriesDatabase.getGeneralStations()) {
 			long generalMinTimestamp = Long.MAX_VALUE;
 			long generalMaxTimestamp = Long.MIN_VALUE;
 			TreeSet<String> generalSchemaSet = new TreeSet<String>();
 			for(Station station:generalStation.stationList) {
-				TimeSeriesIterator it = qp.query_raw(station.plotID, null, null, null);
+				TimeSeriesIterator it = qp.query_raw(station.stationID, null, null, null);
 				if(it!=null) {
 
 					String[] schema = it.getOutputSchema();
@@ -71,7 +71,7 @@ public class UseCaseAverageGeneralStationGenerate {
 			System.out.println(generalStation.name+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(generalMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(generalMaxTimestamp)+" **************************************************************** "+generalMinTimestamp+"\t-\t"+generalMaxTimestamp);
 			List<TimeSeriesIterator> iteratorList = new ArrayList<TimeSeriesIterator>();
 			for(Station station:generalStation.stationList) {
-				TimeSeriesIterator it = qp.query_continuous_base_aggregated(station.plotID, null, generalMinTimestamp, generalMaxTimestamp, dataquality);
+				TimeSeriesIterator it = qp.query_continuous_base_aggregated(station.stationID, null, generalMinTimestamp, generalMaxTimestamp, dataquality);
 				if(it!=null) {
 					iteratorList.add(it);
 				}

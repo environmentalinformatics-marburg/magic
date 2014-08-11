@@ -287,12 +287,12 @@ public class AggregatedQueryDialog extends Dialog {
 
 	void updateGUIplotID() {
 		String generalStationName = comboGeneralStation.getText();
-		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
+		GeneralStation generalStation = timeSeriesDatabase.getGeneralStation(generalStationName);
 		if(generalStation!=null) {
 			java.util.List<Station> list = generalStation.stationList;
 			String[] plotIDs = new String[list.size()];
 			for(int i=0;i<list.size();i++) {
-				plotIDs[i] = list.get(i).plotID;
+				plotIDs[i] = list.get(i).stationID;
 			}
 			comboPlotID.setItems(plotIDs);
 			comboPlotID.setText(plotIDs[0]);
@@ -309,10 +309,9 @@ public class AggregatedQueryDialog extends Dialog {
 		if(station!=null) {
 			LoggerType loggerType = station.loggerType;
 			ArrayList<String> sensorNames = new ArrayList<String>();
-			System.out.println(timeSeriesDatabase.baseAggregationSensorNameSet);
 			for(String name:loggerType.sensorNames) {
 				System.out.println("loggerType.sensorNames: "+name);
-				if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(name)) {
+				if(timeSeriesDatabase.baseAggregationExists(name)) {
 					System.out.println("add: "+name);
 					sensorNames.add(name);
 				}

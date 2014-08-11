@@ -54,7 +54,7 @@ public class UseCaseGapFilling {
 		CSV.write(result_interpolated,"c:/timeseriesdatabase_output/result_gapfilled.csv", " ", nanValue, CSVTimeType.TIMESTAMP_AND_DATETIME);
 		
 		System.out.println(timeSeriesDatabase.getStation(plotID).nearestStationList);
-		String nearPlot = timeSeriesDatabase.getStation(plotID).nearestStationList.get(0).plotID;
+		String nearPlot = timeSeriesDatabase.getStation(plotID).nearestStationList.get(0).stationID;
 		TimeSeriesIterator near = qp.query_base_aggregated_interpolated(nearPlot, querySensorNames, result.getFirstTimestamp(), result.getLastTimestamp(), dataQuality);
 		
 		System.out.println(near);

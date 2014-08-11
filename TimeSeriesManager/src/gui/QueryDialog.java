@@ -2,6 +2,7 @@ package gui;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.widgets.DateTime;
@@ -15,6 +16,7 @@ import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
+import timeseriesdatabase.Region;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
@@ -63,6 +65,7 @@ public class QueryDialog extends Dialog {
 
 	protected Shell shlAggregatedQuery;
 
+	private Combo comboRegion;
 	private Combo comboGeneralStation;
 	private Combo comboPlotID;
 	private Combo comboSensorName;
@@ -128,34 +131,35 @@ public class QueryDialog extends Dialog {
 	 */
 	private void createContents() {
 		shlAggregatedQuery = new Shell(getParent(), getStyle());
-		shlAggregatedQuery.setSize(1264, 300);
+		shlAggregatedQuery.setSize(1479, 306);
 		shlAggregatedQuery.setText("Aggregated Query");
 		shlAggregatedQuery.setLayout(new BorderLayout(0, 0));
 
 		Composite composite = new Composite(shlAggregatedQuery, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
 		composite.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
+
 		Group grpRegion = new Group(composite, SWT.NONE);
 		grpRegion.setText("Region");
 		grpRegion.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		Combo comboRegion = new Combo(grpRegion, SWT.NONE);
+		comboRegion = new Combo(grpRegion, SWT.READ_ONLY);
+		comboRegion.setItems(new String[]{"----------------"});		
 		comboRegion.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+				updateGUIgeneralstations();
+				updateGUIplotID();
+				updateGUISensorName();
 			}
 		});
-		comboRegion.setItems(new String[]{"Exploratories","Kilimanjaro"});
-		comboRegion.setText("Exploratories");
-		comboRegion.setItem(0, "Exploratories");
 
 		Group grpGeneral = new Group(composite, SWT.NONE);
 		grpGeneral.setText("General");
 		grpGeneral.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		comboGeneralStation = new Combo(grpGeneral, SWT.NONE);
+		comboGeneralStation = new Combo(grpGeneral, SWT.READ_ONLY);
+		comboGeneralStation.setItems(new String[]{"-------------------------------"});
 		comboGeneralStation.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -168,7 +172,7 @@ public class QueryDialog extends Dialog {
 		grpPlot.setText("Plot");
 		grpPlot.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		comboPlotID = new Combo(grpPlot, SWT.NONE);
+		comboPlotID = new Combo(grpPlot, SWT.READ_ONLY);
 		comboPlotID.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -180,7 +184,7 @@ public class QueryDialog extends Dialog {
 		grpSensor.setText("Sensor");
 		grpSensor.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		comboSensorName = new Combo(grpSensor, SWT.NONE);
+		comboSensorName = new Combo(grpSensor, SWT.READ_ONLY);
 		comboSensorName.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -216,14 +220,14 @@ public class QueryDialog extends Dialog {
 		grpAggregation.setText("Aggregation");
 		grpAggregation.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		comboAggregation = new Combo(grpAggregation, SWT.NONE);
+		comboAggregation = new Combo(grpAggregation, SWT.READ_ONLY);
 
 		//**************************
 		grpTestgroup = new Group(composite, SWT.NONE);
 		grpTestgroup.setText("Quality");
 		grpTestgroup.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		comboQuality = new Combo(grpTestgroup, SWT.NONE);
+		comboQuality = new Combo(grpTestgroup, SWT.READ_ONLY);
 		comboQuality.setItems(new String[] {"no check", "physical range", "physical range + step range", "physical range + step range + empirical range"});
 		comboQuality.setBounds(0, 10, 91, 23);
 		comboQuality.select(3);
@@ -300,7 +304,7 @@ public class QueryDialog extends Dialog {
 	private void runQuery() {
 
 		String plotID = comboPlotID.getText();
-		
+
 		String sensorName = comboSensorName.getText();
 		String[] querySchema;
 		if(sensorName.equals("WD")) {
@@ -308,8 +312,8 @@ public class QueryDialog extends Dialog {
 		} else {
 			querySchema = new String[]{sensorName};
 		}
-		
-		
+
+
 		Long queryStart = Util.ifnull(beginDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		Long queryEnd = Util.ifnull(endDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
@@ -425,6 +429,7 @@ public class QueryDialog extends Dialog {
 
 
 	void updateGUI() {
+		updateGUIregions();
 		updateGUIgeneralstations();
 		updateGUIplotID();
 		updateGUISensorName();
@@ -432,20 +437,43 @@ public class QueryDialog extends Dialog {
 		updateGUIInfo();
 	}
 
+	void updateGUIregions() {
+		String[] longNames = timeSeriesDatabase.getRegionLongNames();
+
+		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
+		comboRegion.setItems(longNames);
+		comboRegion.setText(longNames[0]);
+	}
+
 	void updateGUIgeneralstations() {
-		String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
-		////TODO: just for testing!
+
+		String regionLongName = comboRegion.getText();
+		Region region = timeSeriesDatabase.getRegionByLongName(regionLongName);
+		if(region!=null) {
+			String[] generalStationNames = timeSeriesDatabase.getGeneralStationLongNames(region);
+			comboGeneralStation.setItems(generalStationNames);
+			if(generalStationNames.length>0) {
+				comboGeneralStation.setText(generalStationNames[0]);
+			} else {
+				comboGeneralStation.setText("");	
+			}
+		} else {
+			comboPlotID.setItems(new String[0]);
+		}
+
+		/*String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
 		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
 		comboGeneralStation.setItems(generalStations);
-		comboGeneralStation.setText(generalStations[0]);
+		comboGeneralStation.setText(generalStations[0]);*/
 	}
 
 	void updateGUIplotID() {
 		String generalStationName = comboGeneralStation.getText();
-		GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
+		GeneralStation generalStation = timeSeriesDatabase.getGeneralStationByLongName(generalStationName);
+		//GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
 		if(generalStation!=null) {
 			ArrayList<String> plotIDList = new ArrayList<String>();
-			generalStation.stationList.stream().forEach(station->plotIDList.add(station.plotID));
+			generalStation.stationList.stream().forEach(station->plotIDList.add(station.stationID));
 			generalStation.virtualPlotList.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
 			if(plotIDList.size()>0) {
 				String[] plotIDs = plotIDList.toArray(new String[0]);
@@ -494,22 +522,16 @@ public class QueryDialog extends Dialog {
 			}
 		}
 		if(schema!=null) {
-			ArrayList<String> sensorNames = new ArrayList<String>();
-			for(String name:schema) {
-				if(timeSeriesDatabase.isContainedInBaseAggregation(name)) {
-					System.out.println("add: "+name);
-					sensorNames.add(name);
-				}
-			}
-			if(sensorNames.size()>0) {
-				String[] sensorNameArray = sensorNames.toArray(new String[0]);
+			
+			String[] sensorNames = timeSeriesDatabase.getBaseAggregationSchema(schema);
+			if(sensorNames.length>0) {
 				String oldName = comboSensorName.getText();
-				int indexPos = Util.getIndexInArray(oldName, sensorNameArray);
+				comboSensorName.setItems(sensorNames);
+				int indexPos = Util.getIndexInArray(oldName, sensorNames);				
 				if(indexPos<0) {
-					indexPos = 0;
+					indexPos = 0;					
 				}
-				comboSensorName.setItems(sensorNameArray);
-				comboSensorName.setText(sensorNames.get(indexPos));
+				comboSensorName.setText(sensorNames[indexPos]);
 			} else {
 				comboSensorName.setItems(new String[0]);
 				comboSensorName.setText("");
@@ -519,34 +541,6 @@ public class QueryDialog extends Dialog {
 			comboSensorName.setText("");
 		}
 
-		/*
-
-
-		Station station = timeSeriesDatabase.stationMap.get(stationName);
-		if(station!=null) {
-			LoggerType loggerType = station.getLoggerType();
-			ArrayList<String> sensorNames = new ArrayList<String>();
-			System.out.println(timeSeriesDatabase.baseAggregatonSensorNameSet);
-			for(String name:loggerType.sensorNames) {
-				System.out.println("loggerType.sensorNames: "+name);
-				if(timeSeriesDatabase.baseAggregatonSensorNameSet.contains(name)) {
-					System.out.println("add: "+name);
-					sensorNames.add(name);
-				}
-			}
-			String[] sensorNameArray = sensorNames.toArray(new String[0]);
-			String oldName = comboSensorName.getText();
-			int indexPos = Util.getIndexInArray(oldName, sensorNameArray);
-			if(indexPos<0) {
-				indexPos = 0;
-			}
-			comboSensorName.setItems(sensorNameArray);
-			comboSensorName.setText(sensorNames.get(indexPos));
-		} else {
-			comboSensorName.setItems(new String[]{});
-			comboSensorName.setText("");
-		}
-	}*/
 		updateGUIinterpolated(); 
 	}
 

@@ -173,7 +173,7 @@ public class QueryProcessor {
 			Station sourceStation = nearestStationList.get(i);			
 			String[] qNames = sourceStation.getValidSchemaEntries(interpolationSensorNames);
 			if(qNames!=null) {
-				TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.plotID, qNames, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
+				TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.stationID, qNames, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
 				sourceTimeseries[i] = TimeSeries.create(source_iterator);
 			} else {
 				sourceTimeseries[i] = null;

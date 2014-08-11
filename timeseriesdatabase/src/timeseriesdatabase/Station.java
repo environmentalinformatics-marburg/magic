@@ -50,14 +50,13 @@ public class Station {
 	private static final Logger log = Util.log;
 
 	public TimeSeriesDatabase timeSeriesDatabase;
-
+	
 	/**
 	 * Stream name of this station
 	 */
-	public String plotID;
-
-	public double geoPoslongitude;
-	public double geoPosLatitude;
+	public final String stationID;
+	
+	public final LoggerType loggerType;	
 
 	/**
 	 * 
@@ -70,7 +69,11 @@ public class Station {
 	 * This map contains only entries that are specific for this Station (or plotID)
 	 */
 	public Map<String,String> sensorNameTranlationMap;
-
+	
+	//*** start of fields that are used if this station is identical to one plot ***
+	public final boolean isPlot;
+	public double geoPoslongitude;
+	public double geoPosLatitude;
 	/**
 	 * The general name of this plotID for example HEG03 it is HEG
 	 * This name belongs to a GeneralStation Object
@@ -81,27 +84,42 @@ public class Station {
 	 * list of stations of same general station id ordered by position difference to this station
 	 */
 	public List<Station> nearestStationList;
-
+	
 	/**
 	 * serial number of station: A19557, A2277, ...
 	 * not used currently - station is identified with plotID
 	 */
-	public String serialID = null;
+	public String alternativeID = null;
+	//*** end of fields that are used if this station is identical to one plot ***
+	
 
-	public final LoggerType loggerType;
-
-	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String plotID, LoggerType loggerType, List<StationProperties> propertyMapList) {
+	public Station(TimeSeriesDatabase timeSeriesDatabase, String generalStationName, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
+		this.isPlot = isPlot;
 		this.generalStationName = generalStationName;
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		this.plotID = plotID;
+		this.stationID = stationID;
 		this.propertiesList = StationProperties.createIntervalList(propertyMapList);
 		this.geoPoslongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
 		this.loggerType = loggerType;
 		sensorNameTranlationMap = new HashMap<String, String>();
-		/*if(!plotID.equals(propertyMap.get("PLOTID"))) { // not usable for KiLi
-			log.error("wrong plotID");
-		}*/
+		if(isPlot) {
+			if(propertiesList.size()!=1) {
+				log.warn("station that is plot can only have one StationProperties: "+propertiesList.size());
+				if(!stationID.equals(propertyMapList.get(0).get_plotid())) {
+					log.warn("stationID is not equal to plotID for station that is plot: "+stationID+"  "+propertyMapList.get(0).get_plotid());
+				}
+			}
+		} else {
+			for(StationProperties property:propertyMapList) {
+				if(!stationID.equals(property.get_serial())) {
+					log.warn("stationID does not equal to serial: "+stationID+"  "+property.get_serial());
+				}
+				if(!loggerType.typeName.equals(property.get_logger_type_name())) {
+					log.warn("station logger does not equal to property logger: "+loggerType.typeName+"  "+property.get_logger_type_name()+" in "+stationID);
+				}
+			}
+		}
 	}
 
 	/**
@@ -109,8 +127,8 @@ public class Station {
 	 * @param stationPath
 	 */
 	public void loadDirectoryOfOneStation(Path stationPath) {
-		log.info("load station:\t"+stationPath+"\tplotID:\t"+plotID);
-		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+plotID);
+		log.info("load station:\t"+stationPath+"\tplotID:\t"+stationID);
+		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+stationID);
 
 		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
 
@@ -146,7 +164,7 @@ public class Station {
 					if(eventList!=null) {
 						eventsList.add(eventList);
 						
-						timeSeriesDatabase.sourceCatalog.insert(new SourceEntry(path,plotID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
+						timeSeriesDatabase.sourceCatalog.insert(new SourceEntry(path,stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
 					}
 				} catch (Exception e) {
 					log.error("file not read: "+path+"\t"+e);
@@ -230,14 +248,11 @@ public class Station {
 		}	
 
 		if(eventMap.size()>0) {
-			timeSeriesDatabase.streamStorage.insertData(plotID, eventMap);			
+			timeSeriesDatabase.streamStorage.insertData(stationID, eventMap);			
 		} else {
 			log.warn("no data to insert: "+stationPath);
 		}
 	}
-
-
-
 
 	/**
 	 * This method determines the database sensor name out of an input sensor name.
@@ -255,7 +270,7 @@ public class Station {
 			return resultName;
 		}
 		if(useGeneralstation) {
-			resultName = timeSeriesDatabase.generalStationMap.get(generalStationName).sensorNameTranlationMap.get(sensorName);
+			resultName = timeSeriesDatabase.getGeneralStation(generalStationName).sensorNameTranlationMap.get(sensorName);
 			if(resultName!=null) {
 				return resultName;
 			}
@@ -281,7 +296,7 @@ public class Station {
 	 * @throws IOException
 	 */
 	public UDBFTimestampSeries readUDBFTimeSeries(Path filename) throws IOException {
-		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+plotID);
+		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+stationID);
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
 		UDBFTimestampSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
 		udbFile.close();
@@ -322,9 +337,9 @@ public class Station {
 				}
 				if(eventPos[sensorIndex] == -1) {
 					if(sensorName==null) {
-						log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
+						log.warn("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+stationID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
 					} else {
-						log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+plotID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
+						log.trace("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+stationID+"\t"+udbfTimeSeries.filename+"\t"+loggerType);
 					}
 				}
 			}
@@ -368,7 +383,7 @@ public class Station {
 
 			//just for testing purpose
 			if(udbfTimeSeries.time[rowIndex]==58508670) {
-				System.out.println("write time 58508670 in "+plotID+"\t"+udbfTimeSeries.filename);
+				System.out.println("write time 58508670 in "+stationID+"\t"+udbfTimeSeries.filename);
 			}
 			long timestamp = udbfTimeSeries.time[rowIndex];
 			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
@@ -379,11 +394,11 @@ public class Station {
 
 	@Override
 	public String toString() {
-		return plotID;
+		return stationID;
 	}
 
 	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
-		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(plotID,start,end);
+		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(stationID,start,end);
 		if(rawEventIterator==null) {
 			return null;
 		}		

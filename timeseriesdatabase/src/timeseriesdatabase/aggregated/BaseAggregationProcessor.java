@@ -102,7 +102,7 @@ public class BaseAggregationProcessor {
 			// create output schema of aggregated data in parameterNames
 			ArrayList<String> parameterNameList = new ArrayList<String>();
 			for(String sensorName:schemaSensorNames) {
-				if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(sensorName)) {
+				if(timeSeriesDatabase.baseAggregationExists(sensorName)) {
 					parameterNameList.add(sensorName);				
 				}
 			}
@@ -112,10 +112,10 @@ public class BaseAggregationProcessor {
 			ArrayList<String> parameterNameList = new ArrayList<String>();		
 			for(String querySensorName:querySensorNames) {
 				if(schemaSensorNameMap.containsKey(querySensorName)) {
-					if(timeSeriesDatabase.baseAggregationSensorNameSet.contains(querySensorName)) {
+					if(timeSeriesDatabase.baseAggregationExists(querySensorName)) {
 						parameterNameList.add(querySensorName);
 					} else {
-						log.warn(querySensorName+" not available in base aggregation: "+timeSeriesDatabase.baseAggregationSensorNameSet);
+						log.warn(querySensorName+" not available in base aggregation");
 					}
 				} else {
 					log.warn(querySensorName+" not in schema: "+schemaSensorNameMap);
