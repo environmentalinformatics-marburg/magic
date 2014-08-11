@@ -135,6 +135,21 @@ public class QueryDialog extends Dialog {
 		Composite composite = new Composite(shlAggregatedQuery, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
 		composite.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		Group grpRegion = new Group(composite, SWT.NONE);
+		grpRegion.setText("Region");
+		grpRegion.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		Combo comboRegion = new Combo(grpRegion, SWT.NONE);
+		comboRegion.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				
+			}
+		});
+		comboRegion.setItems(new String[]{"Exploratories","Kilimanjaro"});
+		comboRegion.setText("Exploratories");
+		comboRegion.setItem(0, "Exploratories");
 
 		Group grpGeneral = new Group(composite, SWT.NONE);
 		grpGeneral.setText("General");

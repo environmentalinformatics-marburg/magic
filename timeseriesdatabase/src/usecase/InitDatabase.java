@@ -52,9 +52,10 @@ public class InitDatabase {
 		timeSeriesDatabase.registerStreams();
 		
 		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
+		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
 		
-		//timeseriesloader.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
-		//timeseriesloader.loadDirectory_with_stations_structure_two(Paths.get(path2));
+		timeseriesloader.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
+		timeseriesloader.loadDirectory_with_stations_structure_two(Paths.get(path2));
 		timeseriesloader.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";

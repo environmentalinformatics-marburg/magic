@@ -30,7 +30,7 @@ public class SourceCatalog {
 		try{
 			this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
 					//.compressionEnable()
-					.transactionDisable() //!!
+					//.transactionDisable() //!!
 					.mmapFileEnable() //!!
 					.asyncWriteEnable() //!!
 					.cacheSize(100000)  //!!
@@ -39,7 +39,7 @@ public class SourceCatalog {
 		} catch(Exception e) { // workaround for empty database open error
 			this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
 					//.compressionEnable()
-					.transactionDisable() //!!
+					//.transactionDisable() //!!
 					.mmapFileEnable() //!!
 					.asyncWriteEnable() //!!
 					.cacheSize(100000)  //!!

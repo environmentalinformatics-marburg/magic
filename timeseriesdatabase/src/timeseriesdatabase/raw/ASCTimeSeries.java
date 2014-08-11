@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,9 +19,9 @@ import org.apache.logging.log4j.Logger;
 
 
 
+
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.TimeConverter;
-
 import util.Util;
 
 public class ASCTimeSeries {
@@ -41,12 +42,140 @@ public class ASCTimeSeries {
 
 	public int timeStep;
 
+	BufferedReader bufferedReader;
+	
+	public boolean isASCVariant = false;
+
 	public ASCTimeSeries(Path filename) throws IOException {
 		this.filename = filename;
-		BufferedReader bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
+		this.bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
 		Stream<String> lines = bufferedReader.lines();
 		iterator_lines = lines.iterator();
 		readHeader();
+	}
+	
+	public TimestampSeries readEntriesASCVariant() {
+		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
+		
+		long timestamp = -1;
+		timestampStart = -1;
+		timestampEnd = -1;
+		long timestampPrev = -1;
+
+		/*
+		timestampEnd = -1;
+		
+		timeStep = -1;
+		*/
+
+		while(iterator_lines.hasNext()) {
+			String line = iterator_lines.next();
+			
+			String[] row = StringUtils.split(line, ',');
+			if(row.length!=parameterNames.length+2) {
+				throw new RuntimeException("read row error: "+line+"\t\t"+filename);
+			}
+			for(int i=0;i<row.length;i++) {
+				row[i] = row[i].trim();
+			}
+			
+			
+
+			timestamp = parseTimestamp(row[0], row[1],true);
+
+			if(timestampStart==-1) {
+				timestampStart = timestamp;
+			}
+			if(timestampPrev!=-1 && timestamp<=timestampPrev) {
+				throw new RuntimeException("kili CSV timestamp error: prev: "+timestampPrev+" current: "+timestamp+" prev: "+TimeConverter.oleMinutesToText(timestampPrev)+" current: "+TimeConverter.oleMinutesToText(timestamp)+"     line: "+line);
+			}
+
+			float[] data = new float[parameterNames.length];
+			for(int colIndex=0;colIndex<parameterNames.length;colIndex++) {
+				try {
+					float value = Float.parseFloat(row[colIndex+2]);
+					data[colIndex] = value;
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+					data[colIndex] = Float.NaN;
+				}
+			}
+
+			resultList.add(new TimeSeriesEntry(timestamp,data));
+			timestampPrev = timestamp;
+		}
+		timestampEnd = timestamp;		
+		return new TimestampSeries(parameterNames,resultList,timeStep);
+	}
+
+
+	private void readHeaderVariant() {
+		try {
+			final int HEADER_LINE_COUNT = 8;
+			bufferedReader.close();
+			bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
+			Stream<String> lines = bufferedReader.lines();
+			iterator_lines = lines.iterator();
+			String[] header = new String[HEADER_LINE_COUNT];
+			int c=0;
+			while(c<HEADER_LINE_COUNT && iterator_lines.hasNext()) {
+				header[c] = iterator_lines.next();
+				c++;
+			}
+			if(c<HEADER_LINE_COUNT) {
+				throw new RuntimeException("read header error c<HEADER_LINE_COUNT");
+			}
+			
+			if(!header[0].startsWith("Plot:")) {
+				throw new RuntimeException("header variant error: "+header[0]);
+			}
+			
+			if(!header[1].startsWith("Color:")) {
+				throw new RuntimeException("header variant error: "+header[1]);
+			}
+			
+			String HEADER_SERIALNUMBER_NAME = "Serial number:";
+			if(!header[2].startsWith(HEADER_SERIALNUMBER_NAME)) {
+				throw new RuntimeException("header variant error: "+header[2]);
+			}
+			serialnumber = ""+Long.parseLong(header[2].substring(HEADER_SERIALNUMBER_NAME.length()).trim());
+			
+			if(!header[3].startsWith("Logging Methode:")) {
+				throw new RuntimeException("header variant error: "+header[3]);
+			}
+			
+			if(!header[4].startsWith("Interval:")) {
+				throw new RuntimeException("header variant error: "+header[4]);
+			}
+			
+			if(!header[5].startsWith("Isotope TF canisters:")) {
+				throw new RuntimeException("header variant error: "+header[5]);
+			}
+			
+			if(!header[6].startsWith("Isotope TF mixture:")) {
+				throw new RuntimeException("header variant error: "+header[6]);
+			}
+			
+			String[] columnHeaders = StringUtils.split(header[7], ',');
+			for(int i=0;i<columnHeaders.length;i++) {
+				columnHeaders[i] = columnHeaders[i].trim();
+			}
+			if(!columnHeaders[0].equals("Date")) {
+				throw new RuntimeException("header variant error in column header should be: 'Date' "+columnHeaders[0]+"  in  "+header[7]);
+			}
+			if(!columnHeaders[1].equals("Time")) {
+				throw new RuntimeException("header variant error in column header should be: 'Time' "+columnHeaders[1]+"  in  "+header[7]);
+			}
+			
+			parameterNames = new String[columnHeaders.length-2];
+			for(int i=0;i<parameterNames.length;i++) {
+				parameterNames[i] = columnHeaders[i+2];
+			}			
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			log.error(e);
+		}
 	}
 
 	private void readHeader() {	
@@ -58,6 +187,15 @@ public class ASCTimeSeries {
 			header[c] = iterator_lines.next();
 			c++;
 		}
+		if(c>0) {
+			if(header[0].startsWith("Plot:")) {
+				isASCVariant = true;
+				//log.warn("read variant of asc format");
+				readHeaderVariant();
+			}
+		}
+
+
 		if(c<HEADER_LINE_COUNT) {
 			throw new RuntimeException("read header error c<HEADER_LINE_COUNT");
 		}
@@ -69,7 +207,7 @@ public class ASCTimeSeries {
 			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_ENGLISH.length()).trim();
 		} else if(header[0].startsWith(HEADER_DESCRIPTION_NAME_GERMAN)) {
 			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_GERMAN.length()).trim();
-			
+
 		} else if(header[0].startsWith(HEADER_DESCRIPTION_NAME_GERMAN_2)) {
 			descriptionName = header[0].substring(HEADER_DESCRIPTION_NAME_GERMAN_2.length()).trim();			
 		} else if(header[0].startsWith("Plot:")) {
@@ -146,11 +284,23 @@ public class ASCTimeSeries {
 		}		
 	}
 
-	private static long parseTimestamp(String dateText, String timeText) {
-		// 01.07.13
-		int dayOfMonth = 10*(dateText.charAt(0)-'0')+(dateText.charAt(1)-'0');
-		int month = 10*(dateText.charAt(3)-'0')+(dateText.charAt(4)-'0');
-		int year = 2000 + 10*(dateText.charAt(6)-'0')+(dateText.charAt(7)-'0');
+	private static long parseTimestamp(String dateText, String timeText, boolean isISOdate) {		
+		int dayOfMonth;
+		int month;
+		int year;
+		
+		if(isISOdate) {
+			// 2012-06-15
+			// 0123456789
+			year = 1000*(dateText.charAt(0)-'0')+100*(dateText.charAt(1)-'0')+10*(dateText.charAt(2)-'0')+(dateText.charAt(3)-'0');
+			month = 10*(dateText.charAt(5)-'0')+(dateText.charAt(6)-'0');
+			dayOfMonth = 10*(dateText.charAt(8)-'0')+(dateText.charAt(9)-'0');
+		} else {
+			// 01.07.13
+			dayOfMonth = 10*(dateText.charAt(0)-'0')+(dateText.charAt(1)-'0');
+			month = 10*(dateText.charAt(3)-'0')+(dateText.charAt(4)-'0');
+			year = 2000 + 10*(dateText.charAt(6)-'0')+(dateText.charAt(7)-'0');
+		}	
 
 		// 09:30:00
 		int hour = 10*(timeText.charAt(0)-'0')+(timeText.charAt(1)-'0');
@@ -165,6 +315,10 @@ public class ASCTimeSeries {
 		if(!isDataFile) {
 			return null;
 		}
+		if(isASCVariant) {
+			log.error("isASCVariant");
+			return null;
+		}
 		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
 
 		timestampStart = -1;
@@ -177,7 +331,7 @@ public class ASCTimeSeries {
 			String line = iterator_lines.next();
 
 			if(line.startsWith("RUN")||line.startsWith("-------------")/*||line.startsWith("Messintervall")*/
-			   ||line.startsWith("Me")||line.startsWith("Logg")||line.startsWith("Datum")) {// one more pre data line
+					||line.startsWith("Me")||line.startsWith("Logg")||line.startsWith("Datum")) {// one more pre data line
 				timestampPrev = -1;
 				continue;
 			}
@@ -188,7 +342,7 @@ public class ASCTimeSeries {
 			}
 
 
-			timestamp = parseTimestamp(row[0], row[1]);
+			timestamp = parseTimestamp(row[0], row[1], false);
 
 			if(timestampStart==-1) {
 				timestampStart = timestamp;
