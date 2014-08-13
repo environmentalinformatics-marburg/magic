@@ -27,6 +27,28 @@ for (i in 1:length(model)){
   }
 }
 scorenames=names(confusion[[1]][[1]])
+###write confusion means
+confusionmeans=lapply(confusiondata,colMeans)
+confusionsd=lapply(confusiondata,function(x){apply(x, 2, sd)})
+confusionmeansMatrix=matrix(ncol=length(scorenames),nrow=length(model))
+confusionsdMatrix=matrix(ncol=length(scorenames),nrow=length(model))
+for (i in 1:length(confusionmeans)){
+  confusionmeansMatrix[i,]=confusionmeans[[i]]
+  confusionsdMatrix[i,]=confusionsd[[i]]
+}
+
+confusionMeanAndSD=paste(round(confusionmeansMatrix,2),"+/-",round(confusionsdMatrix,2))
+confusionMeanAndSD=matrix(confusionMeanAndSD,ncol=length(scorenames),nrow=length(model),byrow=FALSE)
+
+colnames(confusionMeanAndSD)=scorenames
+colnames(confusionmeansMatrix)=scorenames
+colnames(confusionsdMatrix)=scorenames
+
+write.csv(confusionmeansMatrix,file=paste(resultpath,"/Confusion_comp/confusionmeans.csv",sep=""))
+write.csv(confusionsdMatrix,file=paste(resultpath,"/Confusion_comp/confusionsd.csv",sep=""))
+write.csv(confusionMeanAndSD,file=paste(resultpath,"/Confusion_comp/confusionMeanAndSD.csv",sep=""))
+##########
+
 for (score in 1:ncol(confusiondata[[1]])){
   scoredata=confusiondata[[1]][,score]
   for (i in 2:length(model)){
