@@ -72,6 +72,7 @@ pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
   col=c("black","red","blue","darkgreen","red")
   auc=c()
   aucvals=list()
+  perf=list()
   for (i in 1:length(model)){
     modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
     predframe=list()
@@ -85,19 +86,46 @@ pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
 
     pred <- prediction(predframe,obsframe)
 
-    perf <- performance(pred, "tpr", "fpr") 
+    perf[[i]] <- performance(pred, "tpr", "fpr")  
     aucvals[[i]]=unlist(performance(pred, measure="auc")@y.values)
     auc[i]=mean(unlist(performance(pred, measure="auc")@y.values))
-    if (i==1) plot(perf,avg="vertical",spread.estimate="stderror",col=col[i],spread.scale=2)
-    if (i>1) plot(perf,avg="vertical",spread.estimate="stderror",add=TRUE,col=col[i],spread.scale=2)
+    if (i==1) plot(perf[[i]],avg="vertical",spread.estimate="stderror",col=col[i],spread.scale=2)
+    if (i>1) plot(perf[[i]],avg="vertical",spread.estimate="stderror",add=TRUE,col=col[i],spread.scale=2)
     }
   lines(c(0,1),c(0,1),col="grey50")
   legend("bottomright",legend=paste(model,round(auc,3)),col=col[1:length(model)],lwd=1,bty="n")
 dev.off()
 
+##################################################################################################################
+#                                                 Compare ROC by t-test
+##################################################################################################################
+ttestresults=matrix(ncol=length(aucvals),nrow=length(aucvals))
 
+for (i in 1:(length(aucvals)-1)){
+#  for (i in 1:(length(aucvals))){
+  for(k in (i+1):length(aucvals)){
+#    for(k in 1:length(aucvals)){
+    ttestresults[i,k]=t.test(aucvals[[i]],aucvals[[k]])$p.value
+  }
+}
 
+ttestresultsPaired=matrix(ncol=length(aucvals),nrow=length(aucvals))
 
+for (i in 1:(length(aucvals)-1)){
+  #  for (i in 1:(length(aucvals))){
+  for(k in (i+1):length(aucvals)){
+    #    for(k in 1:length(aucvals)){
+    ttestresultsPaired[i,k]=t.test(aucvals[[i]],aucvals[[k]],paired=T)$p.value
+  }
+}
+
+colnames(ttestresults)=model
+rownames(ttestresults)=model
+colnames(ttestresultsPaired)=model
+rownames(ttestresultsPaired)=model
+
+write.csv(ttestresults,file=paste(resultpath,"/ttest_ROC.csv",sep=""))
+write.csv(ttestresultsPaired,file=paste(resultpath,"/ttest_Paired_ROC.csv",sep=""))
 
 ##################################################################################################################
 #                                                 CROSSTABS
