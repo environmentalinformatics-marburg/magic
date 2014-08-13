@@ -1,4 +1,4 @@
-package usecase;
+package timeseriesdatabase.run;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.loader.TimeSeriesLoader;
+import timeseriesdatabase.loader.TimeSeriesLoaderBE;
 import timeseriesdatabase.loader.TimeSeriesLoaderKiLi;
 import util.Util;
 
@@ -27,16 +27,17 @@ public class InitDatabase {
 		// *** workaround for not created database files ... 
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 		timeSeriesDatabase.clear();
-		try {
+		/*try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
 			log.warn(e);
 		}
-		System.gc();
+		System.gc();*/
 		// *** ... workaround
 		
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
-		TimeSeriesLoaderKiLi timeseriesloader = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
+		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
+		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase);
 		
 		String path1 = "c:/timeseriesdatabase_data_source_structure_one";
 		String path2 = "c:/timeseriesdatabase_data_source_structure_two";
@@ -54,9 +55,9 @@ public class InitDatabase {
 		String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili/";
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
 		
-		timeseriesloader.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
-		timeseriesloader.loadDirectory_with_stations_structure_two(Paths.get(path2));
-		timeseriesloader.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
+		timeseriesloaderBE.loadDirectoryOfAllExploratories_structure_one(Paths.get(path1));
+		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get(path2));
+		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath));
 		
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/

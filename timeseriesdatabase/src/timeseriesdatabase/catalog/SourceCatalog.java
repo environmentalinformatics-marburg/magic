@@ -27,47 +27,17 @@ public class SourceCatalog {
 	private BTreeMap<String, SourceEntry> catalogMap;
 
 	public SourceCatalog(String databasePath) {
-		try{
-			this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
-					//.compressionEnable()
-					//.transactionDisable() //!!
-					.mmapFileEnable() //!!
-					.asyncWriteEnable() //!!
-					.cacheSize(100000)  //!!
-					.closeOnJvmShutdown()
-					.make();
-		} catch(Exception e) { // workaround for empty database open error
-			this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
-					//.compressionEnable()
-					//.transactionDisable() //!!
-					.mmapFileEnable() //!!
-					.asyncWriteEnable() //!!
-					.cacheSize(100000)  //!!
-					.closeOnJvmShutdown()
-					.make();
-		}
+		this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
+				         .closeOnJvmShutdown()
+				         .make();
 
 		if(db.getAll().containsKey(DB_NAME_SOURCE_CATALOG)) {
+			System.out.println("open existing SourceCatalog");
 			this.catalogMap = db.getTreeMap(DB_NAME_SOURCE_CATALOG);
 		} else {
+			System.out.println("create new SourceCatalog");
 			this.catalogMap =  db.createTreeMap(DB_NAME_SOURCE_CATALOG).makeStringMap();
 		}
-
-
-		/*
-		Function2<String, String, SourceEntry> fun = new Fun.Function2<String, String, SourceEntry>() {
-			@Override
-			public String run(String key, SourceEntry value) {
-				// TODO Auto-generated method stub
-				return value.stationName;
-			}
-        };
-		MapWithModificationListener<String, SourceEntry> map = catalogMap;
-		Set<Tuple2<String,String>> secondary = new TreeSet<Fun.Tuple2<String,String>>();		
-		Bind.secondaryKey(map, secondary, fun);
-		 */
-
-
 	}
 
 	public void clear() {
@@ -84,6 +54,11 @@ public class SourceCatalog {
 
 	public List<SourceEntry> getEntriesWithStationName(String stationName) {		
 		return getEntries().stream().filter((SourceEntry x)->x.stationName.equals(stationName)).collect(Collectors.toList());		
+	}
+	
+	public void close() {
+		db.commit();
+		db.close();
 	}
 
 }

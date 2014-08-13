@@ -1,5 +1,12 @@
 package gui;
 
+import gui.info.GeneralStationsInfoDialog;
+import gui.info.LoggerTypeInfoDialog;
+import gui.info.SensorsInfoDialog;
+import gui.info.SourceCatalogInfoDialog;
+import gui.info.StationsInfoDialog;
+import gui.info.VirtualPlotInfoDialog;
+
 import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.Logger;
@@ -31,7 +38,7 @@ public class TimeSeriesManager {
 
 	public TimeSeriesDatabase timeSeriesDatabase;
 	
-	public Shell shell;
+	public Shell shlTimeSeriesManager;
 	public Text textBox;
 	
 	public PrintBox printbox;
@@ -52,15 +59,16 @@ public class TimeSeriesManager {
 
 		Display display = new Display();		
 
-		shell = new Shell(display);
-		shell.setSize(300, 400);
-		shell.setLayout(new FillLayout());
+		shlTimeSeriesManager = new Shell(display);
+		shlTimeSeriesManager.setText("time series database manager");
+		shlTimeSeriesManager.setSize(300, 400);
+		shlTimeSeriesManager.setLayout(new FillLayout());
 
-		Menu menuBar = new Menu(shell, SWT.BAR);
+		Menu menuBar = new Menu(shlTimeSeriesManager, SWT.BAR);
 		MenuItem infoMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		infoMenuHeader.setText("Info");
 
-		Menu infoMenu = new Menu(shell, SWT.DROP_DOWN);
+		Menu infoMenu = new Menu(shlTimeSeriesManager, SWT.DROP_DOWN);
 		infoMenuHeader.setMenu(infoMenu);
 
 		MenuItem sensorsItem = new MenuItem(infoMenu, SWT.PUSH);
@@ -70,6 +78,10 @@ public class TimeSeriesManager {
 		MenuItem stationsItem = new MenuItem(infoMenu, SWT.PUSH);
 		stationsItem.setText("stations");
 		stationsItem.addSelectionListener(new stationsItemListener());
+		
+		MenuItem virtualPlotItem = new MenuItem(infoMenu, SWT.PUSH);
+		virtualPlotItem.setText("virtual plots");
+		virtualPlotItem.addSelectionListener(new virtualPlotsItemListener());
 		
 		MenuItem generalstationsItem = new MenuItem(infoMenu, SWT.PUSH);
 		generalstationsItem.setText("general stations");
@@ -87,7 +99,7 @@ public class TimeSeriesManager {
 		
 		MenuItem queryMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		queryMenuHeader.setText("Query");
-		Menu queryMenu = new Menu(shell, SWT.DROP_DOWN);
+		Menu queryMenu = new Menu(shlTimeSeriesManager, SWT.DROP_DOWN);
 		queryMenuHeader.setMenu(queryMenu);
 		
 		MenuItem queryItem = new MenuItem(queryMenu, SWT.PUSH);
@@ -96,7 +108,7 @@ public class TimeSeriesManager {
 		
 		MenuItem statisticsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		statisticsMenuHeader.setText("Statistics");
-		Menu statisticsMenu = new Menu(shell, SWT.DROP_DOWN);
+		Menu statisticsMenu = new Menu(shlTimeSeriesManager, SWT.DROP_DOWN);
 		statisticsMenuHeader.setMenu(statisticsMenu);
 		
 		MenuItem statisticsItem = new MenuItem(statisticsMenu, SWT.PUSH);
@@ -104,7 +116,7 @@ public class TimeSeriesManager {
 		statisticsItem.addSelectionListener(new statisticsItemListener());
 
 
-		textBox = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+		textBox = new Text(shlTimeSeriesManager, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 
 		textBox.append("start");
 
@@ -115,9 +127,9 @@ public class TimeSeriesManager {
 		printbox = new PrintBox(this);
 
 
-		shell.setMenuBar(menuBar);        
-		shell.open();
-		while (!shell.isDisposed()) {
+		shlTimeSeriesManager.setMenuBar(menuBar);        
+		shlTimeSeriesManager.open();
+		while (!shlTimeSeriesManager.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
@@ -131,7 +143,7 @@ public class TimeSeriesManager {
 	class sensorsItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			SensorsInfoDialog dialog = new SensorsInfoDialog(shell,timeSeriesDatabase);
+			SensorsInfoDialog dialog = new SensorsInfoDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
 		}
 	}
@@ -139,7 +151,7 @@ public class TimeSeriesManager {
 	class stationsItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			StationsInfoDialog dialog = new StationsInfoDialog(shell,timeSeriesDatabase);
+			StationsInfoDialog dialog = new StationsInfoDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
 
 		}
@@ -148,44 +160,39 @@ public class TimeSeriesManager {
 	class generalstationsItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			GeneralStationsInfoDialog dialog = new GeneralStationsInfoDialog(shell,timeSeriesDatabase);
+			GeneralStationsInfoDialog dialog = new GeneralStationsInfoDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
-
 		}
 	}
 	
 	class loggertypeItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			LoggerTypeInfoDialog dialog = new LoggerTypeInfoDialog(shell,timeSeriesDatabase);
+			LoggerTypeInfoDialog dialog = new LoggerTypeInfoDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
-
 		}
 	}
 
 	class sourcecatalogItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			//SourceCatalogInfoDialog dialog = new SourceCatalogInfoDialog(shell,timeSeriesDatabase);
-			SourceCatalogDialog dialog = new SourceCatalogDialog(shell, timeSeriesDatabase);
+			SourceCatalogInfoDialog dialog = new SourceCatalogInfoDialog(shlTimeSeriesManager, timeSeriesDatabase);
 			dialog.open();
-
 		}
 	}
 	
-	class aggregatedQueryItemListener extends SelectionAdapter {
+	class virtualPlotsItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			AggregatedQueryDialog dialog = new AggregatedQueryDialog(shell,timeSeriesDatabase);
+			VirtualPlotInfoDialog dialog = new VirtualPlotInfoDialog(shlTimeSeriesManager, timeSeriesDatabase);
 			dialog.open();
-
 		}
 	}
 	
 	class queryItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			QueryDialog dialog = new QueryDialog(shell,timeSeriesDatabase);
+			QueryDialog dialog = new QueryDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
 
 		}
@@ -194,7 +201,7 @@ public class TimeSeriesManager {
 	class statisticsItemListener extends SelectionAdapter {
 		@Override
 		public void widgetSelected(SelectionEvent event) {
-			StatisticsDialog dialog = new StatisticsDialog(shell,timeSeriesDatabase);
+			StatisticsDialog dialog = new StatisticsDialog(shlTimeSeriesManager,timeSeriesDatabase);
 			dialog.open();
 
 		}

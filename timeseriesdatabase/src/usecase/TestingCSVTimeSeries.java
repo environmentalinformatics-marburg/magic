@@ -3,7 +3,7 @@ package usecase;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import timeseriesdatabase.raw.ASCTimeSeries;
+import timeseriesdatabase.loader.ASCTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 
 public class TestingCSVTimeSeries {

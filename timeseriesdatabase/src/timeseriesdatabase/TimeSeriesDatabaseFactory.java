@@ -71,6 +71,7 @@ public class TimeSeriesDatabaseFactory {
 			configLoader.readLoggerTypeSensorTranslationConfig(configDirectory+"logger_type_sensor_translation_kili.ini"); // KiLi 3. read read input name sensor translation and insert it in existing logger type objects
 			configLoader.readVirtualPlotConfig(configDirectory+"station_master.csv"); // KiLi 4. read plotids and create virtualplot objects    TODO: read and insert geo position
 			configLoader.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf"); // KiLi 5. read time interval of stations and insert it in virtualplot objects
+			configLoader.calcNearestVirtualPlots();
 			//*** KilI end
 			
 			//*** sensor config	start		

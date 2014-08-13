@@ -102,7 +102,7 @@ public class UseCaseAverageGeneralStationQuery {
 				count++;
 			}
 			timer.stop(generalStation.name);
-			System.out.println(count+"\t\t"+timer.toString(generalStation.name));
+			//System.out.println(count+"\t\t"+timer.toString(generalStation.name));
 			
 		}
 		
@@ -121,7 +121,7 @@ public class UseCaseAverageGeneralStationQuery {
 		
 		CSV.write(qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_org.csv");
 		CSV.write(qp.query_empirical_diff_check(plotID, querySchema, queryStart, queryEnd, dataQuality), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_check.csv");
-		String generalName = timeSeriesDatabase.getStation(plotID).generalStationName;
+		String generalName = timeSeriesDatabase.getStation(plotID).generalStation.name;
 		CSV.write(Builder.project(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd),querySchema), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_general.csv");
 		TimeSeriesIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));

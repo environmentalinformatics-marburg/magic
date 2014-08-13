@@ -260,7 +260,7 @@ public class QueryProcessor {
 		if(queryEnd==null) {
 			queryEnd = timeSeriesDatabase.getLastTimestamp(plotID);
 		}
-		String generalName = timeSeriesDatabase.getStation(plotID).generalStationName;
+		String generalName = timeSeriesDatabase.getStation(plotID).generalStation.name;
 		TimeSeriesIterator input_iterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		TimeSeriesIterator compare_iterator = Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
 		Float[] maxDiff = timeSeriesDatabase.getEmpiricalDiff(input_iterator.getOutputSchema());
@@ -289,7 +289,7 @@ public class QueryProcessor {
 			if(processing_iteratorList.isEmpty()) {
 				return null;
 			}
-			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(querySchema, processing_iteratorList.toArray(new TimeSeriesIterator[0]));			
+			VirtualPlotIterator it_virtual_base_aggregated = new VirtualPlotIterator(querySchema, processing_iteratorList.toArray(new TimeSeriesIterator[0]),plotID);			
 			Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
 			Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
 			TimeSeriesIterator it_continuous_base_aggregated = Util.ifnull(it_virtual_base_aggregated, x->new NanGapIterator(x, start, end));

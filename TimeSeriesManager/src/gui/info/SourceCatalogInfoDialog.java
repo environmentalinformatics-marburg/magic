@@ -1,10 +1,11 @@
-package gui;
+package gui.info;
 
-import gui.SourceViewComparator.SortType;
+import gui.info.SourceViewComparator.SortType;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,7 +34,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.FillLayout;
 
-public class SourceCatalogDialog extends Dialog {
+public class SourceCatalogInfoDialog extends Dialog {
+	
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText("Database Source Catalog");
+		
+	}
+
+	private static Logger log = Util.log;
 
 	private TimeSeriesDatabase timeSeriesDatabase;
 	private Table table;
@@ -45,9 +55,10 @@ public class SourceCatalogDialog extends Dialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public SourceCatalogDialog(Shell parentShell, TimeSeriesDatabase timeSeriesDatabase) {
+	public SourceCatalogInfoDialog(Shell parentShell, TimeSeriesDatabase timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
+		
 		this.timeSeriesDatabase = timeSeriesDatabase;
 	}
 
@@ -75,6 +86,8 @@ public class SourceCatalogDialog extends Dialog {
 
 		// set the content provider
 		viewer.setContentProvider(ArrayContentProvider.getInstance());
+		
+		System.out.println("catalog size: "+timeSeriesDatabase.sourceCatalog.getEntries().size());
 
 		viewer.setInput(timeSeriesDatabase.sourceCatalog.getEntries());
 		

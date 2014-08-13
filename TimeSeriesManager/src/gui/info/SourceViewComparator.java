@@ -1,4 +1,4 @@
-package gui;
+package gui.info;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;

@@ -3,6 +3,8 @@ package timeseriesdatabase.aggregated.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jfree.util.Log;
+
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
@@ -42,17 +44,25 @@ public class VirtualPlotIterator extends MoveIterator {
 	private TimeSeriesEntry[] processing_current;
 	private int[][] processing_position_index;
 
-	public VirtualPlotIterator(String[] result_schema, TimeSeriesIterator[] input_iterator) {
+	public VirtualPlotIterator(String[] result_schema, TimeSeriesIterator[] input_iterator, String debugTextplotID) {
 		super(createSchema(result_schema, input_iterator));
+		
+		System.out.println("************************************************** create VirtualPlotIterator: "+debugTextplotID);
+		
 		this.result_schema = result_schema;
 		this.processing_iterator = input_iterator;
 		this.processing_current = new TimeSeriesEntry[processing_iterator.length];
 		this.processing_position_index = new int[processing_iterator.length][];
 
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) {
-			processing_position_index[iterator_index] = Util.stringArrayToPositionIndexArray(processing_iterator[0].getOutputSchema(), result_schema, true, true);
+			processing_position_index[iterator_index] = Util.stringArrayToPositionIndexArray(processing_iterator[iterator_index].getOutputSchema(), result_schema, true, true);
+			
+			/*System.out.println("src: "+Util.arrayToString(processing_iterator[iterator_index].getOutputSchema()));
+			System.out.println("tgt: "+Util.arrayToString(result_schema));
+			System.out.println("pos: "+Util.arrayToString(processing_position_index[iterator_index]));*/
+			
 		}
-		
+
 		currentTimestamp=Long.MAX_VALUE;
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) {
 			if(!processing_iterator[iterator_index].hasNext()) {
@@ -80,15 +90,19 @@ public class VirtualPlotIterator extends MoveIterator {
 		if(currentElements==0) {
 			return null;
 		}
-		//float[] resultData = new float[result_schema.length];
+
 		float[] resultData = TimeSeriesEntry.getNanData(result_schema.length);
-		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) {
+		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) { //loop over iterators with iterator_index
 			if(processing_current[iterator_index]!=null) {
 				if(processing_current[iterator_index].timestamp == currentTimestamp) { // insert data into resultData
 					float[] data = processing_current[iterator_index].data;
+					final int[] x = processing_position_index[iterator_index];					
+
 					for(int colIndex=0;colIndex<data.length;colIndex++) {
-						if(!Float.isNaN(data[colIndex])) {
-							resultData[processing_position_index[iterator_index][colIndex]] = data[colIndex];
+						final float value = data[colIndex];
+						if(!Float.isNaN(value)) {							
+							final int resultIndex = x[colIndex];
+							resultData[resultIndex] = value;
 						}
 					}
 					if(processing_iterator[iterator_index].hasNext()) {

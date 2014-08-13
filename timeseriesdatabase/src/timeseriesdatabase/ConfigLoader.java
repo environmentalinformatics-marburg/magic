@@ -126,16 +126,18 @@ public class ConfigLoader {
 			} else {
 				String plotID = entryMap.getKey();
 				String generalStationName = plotID.substring(0, 3);
-
+				GeneralStation generalStation = timeseriesdatabase.getGeneralStation(generalStationName);
+				if(generalStation==null) {
+					log.warn("general station not found: "+generalStation);
+				}
 				LoggerType loggerType = timeseriesdatabase.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
 				if(loggerType!=null) {
-					Station station = new Station(timeseriesdatabase, generalStationName, plotID, loggerType, entryMap.getValue(), true);
+					Station station = new Station(timeseriesdatabase, generalStation, plotID, loggerType, entryMap.getValue(), true);
 					timeseriesdatabase.insertStation(station);
 				} else {
 					log.error("logger type not found: "+entryMap.getValue().get(0).get_logger_type_name()+" -> station not created: "+plotID);
-				}			
-
-			}
+				}				
+			}		
 		}	
 	}
 
@@ -286,7 +288,7 @@ public class ConfigLoader {
 		for(Station station:timeseriesdatabase.getStations()) {
 			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
-			List<Station> stationList = timeseriesdatabase.getGeneralStation(station.generalStationName).stationList;
+			List<Station> stationList = station.generalStation.stationList;
 			//System.out.println(station.plotID+" --> "+stationList);
 			for(Station targetStation:stationList) {
 				if(station!=targetStation) { // reference compare
@@ -312,6 +314,40 @@ public class ConfigLoader {
 		}
 
 	}
+	
+	public void calcNearestVirtualPlots() {
+		timeseriesdatabase.updateGeneralStations();
+		
+		for(VirtualPlot virtualPlot:timeseriesdatabase.getVirtualPlots()) {
+			//double[] geoPos = transformCoordinates(virtualPlot.geoPoslongitude,virtualPlot.geoPosLatitude);
+			List<Object[]> differenceList = new ArrayList<Object[]>();
+			List<VirtualPlot> virtualPlotList = virtualPlot.generalStation.virtualPlotList;
+			for(VirtualPlot targetVirtualPlot:virtualPlotList) {
+				if(virtualPlot!=targetVirtualPlot) {
+					//double[] targetGeoPos = transformCoordinates(targetVirtualPlot.geoPoslongitude,targetVirtualPlot.geoPosLatitude);
+					//double difference = getDifference(geoPos, targetGeoPos);
+					double difference = getDifference(virtualPlot, targetVirtualPlot);
+					differenceList.add(new Object[]{difference,targetVirtualPlot});
+				}
+			}
+			differenceList.sort(new Comparator<Object[]>() {
+				@Override
+				public int compare(Object[] o1, Object[] o2) {
+					double d1 = (double) o1[0];
+					double d2 = (double) o2[0];					
+					return Double.compare(d1, d2);
+				}
+			});
+			List<VirtualPlot> targetStationList = new ArrayList<VirtualPlot>(differenceList.size());
+			for(Object[] targetStation:differenceList) {
+				targetStationList.add((VirtualPlot) targetStation[1]);
+			}
+			virtualPlot.nearestVirtualPlotList = targetStationList;
+			//System.out.println(virtualPlot.plotID+" --> "+targetStationList);
+		}
+	}
+	
+	
 
 	public static double[] transformCoordinates(double longitude, double latitude) {
 		// TODO: do real transformation
@@ -320,6 +356,10 @@ public class ConfigLoader {
 
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
+	}
+	
+	public static double getDifference(VirtualPlot source, VirtualPlot target) {
+		return Math.sqrt((source.geoPosEasting-target.geoPosEasting)*(source.geoPosEasting-target.geoPosEasting)+(source.geoPosNorthing-target.geoPosNorthing)*(source.geoPosNorthing-target.geoPosNorthing));
 	}
 
 	public void readLoggerTypeSensorTranslationConfig(String configFile) {		
@@ -347,15 +387,48 @@ public class ConfigLoader {
 
 			Table table = Table.readCSV(config_file);
 			int plotidIndex = table.getColumnIndex("PlotID"); // virtual plotid
+			//int lonIndex = table.getColumnIndex("Lon");
+			//int latIndex = table.getColumnIndex("Lat");
+			int eastingIndex = table.getColumnIndex("Easting");
+			int northingIndex = table.getColumnIndex("Northing");
 			for(String[] row:table.rows) {
 				String plotID = row[plotidIndex];				
 				if(plotID.length()==4&&plotID.charAt(3)>='0'&&plotID.charAt(3)<='9') {
 					String generalStationName = plotID.substring(0, 3);
-					if(timeseriesdatabase.generalStationExists(generalStationName)) {
-						timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStationName));
-					} else {
-						log.warn("unknown general station in: "+plotID+"\t"+generalStationName+"  VirtualPlot not inserted"+"   in config file: "+config_file);
+					
+					if(generalStationName.equals("sun")) {//correct sun -> cof
+						generalStationName = "cof";
 					}
+					
+					GeneralStation generalStation = timeseriesdatabase.getGeneralStation(generalStationName);					
+					if(generalStation==null) {
+						log.warn("unknown general station in: "+plotID+"\t"+generalStationName+"   in config file: "+config_file);
+					}
+					//String lon = row[lonIndex];
+					//String lat = row[latIndex];
+					String easting = row[eastingIndex];
+					String northing = row[northingIndex];
+					
+					//double geoPoslongitude = Double.NaN;
+					//double geoPosLatitude = Double.NaN;
+					int geoPosEasting = -1;
+					int geoPosNorthing = -1;
+					
+					/*try {					
+						geoPoslongitude = Double.parseDouble(row[lonIndex]);
+						geoPosLatitude = Double.parseDouble(row[latIndex]);					
+					} catch(Exception e) {}
+					
+					if(Double.isNaN(geoPoslongitude)||Double.isNaN(geoPosLatitude)) {
+						log.warn("geo pos not read: "+plotID);
+					}*/
+					
+					try {
+						geoPosEasting = Integer.parseInt(easting);
+						geoPosNorthing = Integer.parseInt(northing);							
+					} catch(Exception e) {}
+					
+					timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStation, geoPosEasting, geoPosNorthing));					
 				} else {
 					log.warn("not valid plotID name: "+plotID+"  VirtualPlot not inserted"+"   in config file: "+config_file);;
 				}

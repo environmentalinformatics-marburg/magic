@@ -13,9 +13,9 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.catalog.SourceEntry;
+import timeseriesdatabase.loader.ASCTimeSeries;
 import timeseriesdatabase.loader.AbstractLoader;
 import timeseriesdatabase.loader.LoaderFactory;
-import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 
 public class TestingKiliDirectoryRead {

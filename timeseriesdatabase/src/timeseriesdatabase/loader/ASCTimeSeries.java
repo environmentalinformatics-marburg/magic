@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.loader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +20,11 @@ import org.apache.logging.log4j.Logger;
 
 
 
+
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.TimeConverter;
+import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 
 public class ASCTimeSeries {

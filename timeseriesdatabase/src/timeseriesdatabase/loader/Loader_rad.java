@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import timeseriesdatabase.StationProperties;
-import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.TimestampSeries;
 import de.umr.jepc.store.Event;

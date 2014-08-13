@@ -41,6 +41,7 @@ public class StreamStorageMapDB implements StreamStorage {
 				.mmapFileEnable() //!!
 				.asyncWriteEnable() //!!
 				.cacheSize(100000)  //!!
+				.asyncWriteFlushDelay(100)
 				.closeOnJvmShutdown()
 				.make();
 		

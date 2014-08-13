@@ -33,9 +33,10 @@ public class StreamStorageEventStore implements StreamStorage {
 		try {
 			configStream = new FileInputStream(evenstoreConfigFile);
 		} catch (FileNotFoundException e) {
-			log.error(configStream);
+			log.error(e);
 		}
-		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream);
+		store = new TimeSplitBTreeEventStore(TimeRepresentation.POINT,databasePath,configStream); //TODO debug !!!!!!
+		//store = new TimeSplitBTreeEventStore(databasePath);
 		store.open();
 	}
 
@@ -128,35 +129,35 @@ public class StreamStorageEventStore implements StreamStorage {
 	}
 
 
-/**
- * Basic method for all queries
- * @param streamName
- * @param start may be null
- * @param end may be null
- * @return iterator of events
- */
-public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
-	if(start!=null) {
-		long startTime = start;
-		if(end!=null) {
-			long endTime = end;
-			return store.getHistoryRange(streamName, startTime, endTime);
+	/**
+	 * Basic method for all queries
+	 * @param streamName
+	 * @param start may be null
+	 * @param end may be null
+	 * @return iterator of events
+	 */
+	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
+		if(start!=null) {
+			long startTime = start;
+			if(end!=null) {
+				long endTime = end;
+				return store.getHistoryRange(streamName, startTime, endTime);
+			} else {
+				return store.getFreshestHistory(streamName, startTime);
+			}
 		} else {
-			return store.getFreshestHistory(streamName, startTime);
-		}
-	} else {
-		if(end!=null) {
-			long endTime = end;
-			return store.getHistoryRange(streamName, Long.MIN_VALUE, endTime);
-		} else {
-			return store.getHistory(streamName);
+			if(end!=null) {
+				long endTime = end;
+				return store.getHistoryRange(streamName, Long.MIN_VALUE, endTime);
+			} else {
+				return store.getHistory(streamName);
+			}
 		}
 	}
-}
 
-public void getInfo() {
-	for(String streamName:store.getRegisteredStreams()) {
-		System.out.println(streamName);
+	public void getInfo() {
+		for(String streamName:store.getRegisteredStreams()) {
+			System.out.println(streamName);
+		}
 	}
-}
 }

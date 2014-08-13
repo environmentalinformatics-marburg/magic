@@ -1,7 +1,6 @@
 package timeseriesdatabase.loader;
 
 import timeseriesdatabase.StationProperties;
-import timeseriesdatabase.raw.ASCTimeSeries;
 
 public class LoaderFactory {
 	

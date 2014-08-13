@@ -47,8 +47,8 @@ import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.catalog.SourceCatalog;
-import timeseriesdatabase.raw.ASCTimeSeries;
-import timeseriesdatabase.raw.KiLiCSV;
+import timeseriesdatabase.loader.ASCTimeSeries;
+import timeseriesdatabase.loader.KiLiCSV;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Table;
@@ -76,12 +76,7 @@ public class TimeSeriesDatabase {
 	/**
 	 * map regionName -> Region
 	 */
-	private Map<String,Region> regionMap;
-
-	/**
-	 * EventStore is the storage of all time series
-	 */
-	public StreamStorage streamStorage;
+	private Map<String,Region> regionMap;	
 
 	/**
 	 * station/logger type name	->	LoggerType Object
@@ -117,11 +112,26 @@ public class TimeSeriesDatabase {
 	 */
 	private Set<String> baseAggregationSensorNameSet;
 
-	public CacheStorage cacheStorage;
+
 
 	private Map<String,VirtualPlot> virtualplotMap;
 
+
+	//*** begin persistent information ***
+
+	/**
+	 * EventStore is the storage of all time series
+	 */
+	public StreamStorage streamStorage;
+
+	public CacheStorage cacheStorage;
+
 	public SourceCatalog sourceCatalog; 
+
+
+	//*** end persistent information ***
+
+
 
 	/**
 	 * create a new TimeSeriesDatabase object and connects to stored database files
@@ -135,12 +145,12 @@ public class TimeSeriesDatabase {
 
 		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
 		//this.streamStorage = new StreamStorageMapDB(databasePath);
-		loggerTypeMap = new HashMap<String, LoggerType>();
+		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
-		generalStationMap = new HashMap<String, GeneralStation>();
+		generalStationMap = new TreeMap<String, GeneralStation>();
 		sensorMap = new TreeMap<String,Sensor>();
-		ignoreSensorNameSet = new HashSet<String>();
-		baseAggregationSensorNameSet = new HashSet<String>();
+		ignoreSensorNameSet = new TreeSet<String>();
+		baseAggregationSensorNameSet = new TreeSet<String>();
 
 		this.cacheStorage = new CacheStorage(cachePath);
 
@@ -175,7 +185,21 @@ public class TimeSeriesDatabase {
 	 * close EventStore, all pending stream data is written to disk
 	 */
 	public void close() {
-		streamStorage.close();
+		try {
+			streamStorage.close();
+		} catch(Exception e) {
+			log.error("error in streamStorage.close: "+e);
+		}
+		try {
+			cacheStorage.close();
+		}  catch(Exception e) {
+			log.error("error in cacheStorage.close: "+e);
+		}
+		try {
+			sourceCatalog.close();
+		} catch(Exception e) {
+			log.error("error in sourceCatalog.close: "+e);
+		}
 	}	
 
 	public Float[] getEmpiricalDiff(String[] schema) {
@@ -216,25 +240,23 @@ public class TimeSeriesDatabase {
 		}
 
 		for(Station station:getStations()) {
-			if(station.generalStationName!=null) {
-				GeneralStation generalStation = getGeneralStation(station.generalStationName);
+			if(station.generalStation!=null) {
+				GeneralStation generalStation = station.generalStation;
 				if(generalStation!=null) {
 					generalStation.stationList.add(station);
 				} else {
-					log.warn("general station not found: "+station.generalStationName+" in "+station.stationID);
+					log.warn("no general station in "+station.stationID);
 				}
 			}
 		}
 
 		for(VirtualPlot virtualplot:virtualplotMap.values()) {
-			if(virtualplot.generalStationName!=null) {
-				GeneralStation generalStation = getGeneralStation(virtualplot.generalStationName);
-				if(generalStation!=null) {
-					generalStation.virtualPlotList.add(virtualplot);
-				} else {
-					log.warn("general station not found: "+virtualplot.generalStationName+" in "+virtualplot.plotID);
-				}
+			if(virtualplot.generalStation!=null) {
+				virtualplot.generalStation.virtualPlotList.add(virtualplot);
+			} else {
+				log.warn("no general station in "+virtualplot.plotID);
 			}
+
 		}
 	}
 
@@ -473,7 +495,7 @@ public class TimeSeriesDatabase {
 	public boolean baseAggregationExists(String sensorName) {
 		return baseAggregationSensorNameSet.contains(sensorName);
 	}
-	
+
 	public void insertBaseAggregation(String sensorName, AggregationType aggregateType) {
 		Sensor sensor = getSensor(sensorName);
 		if(sensor!=null) {
@@ -487,7 +509,7 @@ public class TimeSeriesDatabase {
 			log.warn("sensor does not exist; base aggregation not inserted: "+sensorName);
 		}
 	}
-	
+
 	public String[] getBaseAggregationSchema(String[] rawSchema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		for(String name:rawSchema) {

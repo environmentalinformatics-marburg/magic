@@ -32,17 +32,35 @@ public class VirtualPlot {
 	private final TimeSeriesDatabase timeSeriesDatabase;
 
 	public final String plotID;
-	public final String generalStationName;
+	public final GeneralStation generalStation;
+	
+	//public double geoPoslongitude = Double.NaN;
+	//public double geoPosLatitude = Double.NaN;
+	
+	public int geoPosEasting = -1;
+	public int geoPosNorthing = -1;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
 
-	public VirtualPlot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String generalStationName) {
+	/**
+	 * This list is used for interpolation when similar stations are needed.
+	 */
+	public List<VirtualPlot> nearestVirtualPlotList;
+
+	public VirtualPlot(TimeSeriesDatabase timeSeriesDatabase, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing) {
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.plotID = plotID;
-		this.generalStationName = generalStationName;
+		this.generalStation = generalStation;
+		this.geoPosEasting = geoPosEasting;
+		this.geoPosNorthing = geoPosNorthing;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
+		this.nearestVirtualPlotList = new ArrayList<VirtualPlot>(0);
 	}
 
+	/**
+	 * Creates schema of this plot that is union of all attributes of stations that are attached to this plot with some time interval.
+	 * @return
+	 */
 	public String[] getSchema() {
 		return intervalList.stream()
 				.map(interval->{
@@ -58,10 +76,23 @@ public class VirtualPlot {
 				.toArray(String[]::new);
 	}
 
+	/**
+	 * Adds one time interval of one station to this plot
+	 * @param station
+	 * @param properties
+	 */
 	public void addStationEntry(Station station, StationProperties properties) {
 		intervalList.add(new TimestampInterval<StationProperties>(properties, properties.get_date_start(), properties.get_date_end()));
 	}
 
+	/**
+	 * checks if the given interval overlaps with query interval
+	 * @param queryStart may be null if start time is not specified
+	 * @param queryEnd may be null if end time is not specified
+	 * @param iStart may be null if start time is not specified
+	 * @param iEnd may be null if end time is not specified
+	 * @return
+	 */
 	private static boolean overlaps(Long queryStart, Long queryEnd, Long iStart, Long iEnd) {
 		if(queryStart==null) {
 			queryStart = Long.MIN_VALUE;
@@ -121,6 +152,12 @@ public class VirtualPlot {
 		return resultIntervalList;
 	}
 
+	/**
+	 * Checks if there are some attributes that are in both schema
+	 * @param schema
+	 * @param schema2
+	 * @return
+	 */
 	private boolean schemaOverlaps(String[] schema, String[] schema2) {
 		for(String name:schema) {
 			for(String name2:schema2) {
@@ -131,4 +168,9 @@ public class VirtualPlot {
 		}
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return plotID;
+	}	
 }

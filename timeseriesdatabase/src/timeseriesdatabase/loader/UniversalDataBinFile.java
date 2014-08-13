@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.loader;
 
 import java.io.FileInputStream;
 import java.io.IOException;

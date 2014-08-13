@@ -170,5 +170,10 @@ public class CacheStorage {
 		}
 		System.out.println("******************");
 	}
+	
+	public void close() {
+		db.commit();
+		db.close();
+	}
 
 }

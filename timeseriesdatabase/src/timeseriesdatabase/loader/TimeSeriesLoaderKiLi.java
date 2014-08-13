@@ -10,20 +10,29 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.Logger;
+
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.catalog.SourceEntry;
-import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 
-public class TimeSeriesLoaderKiLi extends TimeSeriesLoader {
+/**
+ * This class contains methods to read time series from input files in "KiLi"-Format and stores data into database.
+ * @author woellauer
+ *
+ */
+public class TimeSeriesLoaderKiLi {
 
+	protected static final Logger log = Util.log;	
+	protected TimeSeriesDatabase timeseriesdatabase;
+	
 	public TimeSeriesLoaderKiLi(TimeSeriesDatabase timeseriesdatabase) {
-		super(timeseriesdatabase);
+		this.timeseriesdatabase = timeseriesdatabase;
 	}
 	
 	/**
@@ -103,9 +112,13 @@ public class TimeSeriesLoaderKiLi extends TimeSeriesLoader {
 			
 			
 		}		
-	}
+	}	
 	
-	
+	/**
+	 * Collects all kili-Files from one directory and adds them to ascCollectorMap.
+	 * @param kiliPath
+	 * @param ascCollectorMap
+	 */
 	public void loadOneDirectory_structure_kili(Path kiliPath, TreeMap<String, Path> ascCollectorMap) {
 		try {
 			if(Files.exists(kiliPath)) {
@@ -129,6 +142,14 @@ public class TimeSeriesLoaderKiLi extends TimeSeriesLoader {
 		}
 	}
 	
+	/**
+	 * inserts data of one files to database. Schema is translated to database schema
+	 * @param csvtimeSeries
+	 * @param station
+	 * @param properties
+	 * @param translatedInputSchema
+	 * @param timestampSeries
+	 */
 	public void insertOneFile(ASCTimeSeries csvtimeSeries, Station station, StationProperties properties, String[] translatedInputSchema, TimestampSeries timestampSeries) {
 		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties, csvtimeSeries);
 		if(loader!=null) {

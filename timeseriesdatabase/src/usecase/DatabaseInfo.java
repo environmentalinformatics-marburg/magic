@@ -23,7 +23,7 @@ public class DatabaseInfo {
 		
 		
 		for(VirtualPlot virtualplot:timeSeriesDatabase.getVirtualPlots()) {
-			System.out.println("******\t"+virtualplot.plotID+"   ("+virtualplot.generalStationName+")\t***");
+			System.out.println("******\t"+virtualplot.plotID+"   ("+virtualplot.generalStation.name+")\t***");
 			for(TimestampInterval<StationProperties> interval:virtualplot.intervalList) {
 				String startText = TimeConverter.oleMinutesToText(interval.start);
 				String endText = TimeConverter.oleMinutesToText(interval.end);

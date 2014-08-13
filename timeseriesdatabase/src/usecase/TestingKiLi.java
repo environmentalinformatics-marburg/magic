@@ -8,9 +8,8 @@ import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.loader.TimeSeriesLoader;
+import timeseriesdatabase.loader.KiLiCSV;
 import timeseriesdatabase.loader.TimeSeriesLoaderKiLi;
-import timeseriesdatabase.raw.KiLiCSV;
 import util.Util;
 
 public class TestingKiLi {

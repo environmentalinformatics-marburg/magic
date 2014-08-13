@@ -3,9 +3,9 @@ package usecase;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import timeseriesdatabase.raw.SensorHeader;
-import timeseriesdatabase.raw.UDBFTimestampSeries;
-import timeseriesdatabase.raw.UniversalDataBinFile;
+import timeseriesdatabase.loader.SensorHeader;
+import timeseriesdatabase.loader.UDBFTimestampSeries;
+import timeseriesdatabase.loader.UniversalDataBinFile;
 
 /**
  * testing

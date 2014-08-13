@@ -1,18 +1,11 @@
 package timeseriesdatabase.raw;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import org.apache.logging.log4j.Logger;
 
 import timeseriesdatabase.TimeConverter;
-import util.CSVTimeType;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesEntryIterator;
@@ -26,6 +19,8 @@ import util.iterator.TimeSeriesIterator;
  */
 public class TimestampSeries implements TimeSeriesIterable, Serializable {
 	
+	private static final long serialVersionUID = 6078067255995220349L;
+
 	private static final Logger log = Util.log;
 	
 	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TimeSeriesEntry>(0),null);

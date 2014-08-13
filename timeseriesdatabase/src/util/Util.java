@@ -271,6 +271,14 @@ public class Util {
 			return funcArg.apply(a);
 		}
 	}
+	
+	public static <A, B> B  ifnull(A a, Function<A,B> funcArg, B nullValue){
+		if(a==null) {
+			return nullValue;
+		} else {
+			return funcArg.apply(a);
+		}
+	}
 
 	public static String bigNumberToString(long n) {
 		DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols();
@@ -354,6 +362,14 @@ public class Util {
 		}
 		return result;
 	}
+	
+	public static String arrayToString(int[] array) {
+		String result = "";
+		for(int s:array) {
+			result+=s+" ";
+		}
+		return result;
+	}
 
 	public static TreeSet<String> getDuplicateNames(String[] schema, boolean ignorNull) {
 		TreeSet<String> resultSet = new TreeSet<String>();		
@@ -368,5 +384,21 @@ public class Util {
 			}
 		}	
 		return resultSet;
+	}
+	
+	public String ifNaN(float value, String text) {
+		if(Float.isNaN(value)) {
+			return text;
+		} else {
+			return ""+value;
+		}
+	}
+	
+	public static String ifNaN(double value, String text) {
+		if(Double.isNaN(value)) {
+			return text;
+		} else {
+			return ""+value;
+		}
 	}
 }

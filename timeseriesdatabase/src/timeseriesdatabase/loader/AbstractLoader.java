@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import de.umr.jepc.store.Event;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
-import timeseriesdatabase.raw.ASCTimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 

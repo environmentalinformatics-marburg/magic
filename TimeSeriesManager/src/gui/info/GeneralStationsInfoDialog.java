@@ -1,4 +1,4 @@
-package gui;
+package gui.info;
 
 
 
@@ -14,24 +14,28 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import util.Util;
 
-public class StationsInfoDialog extends Dialog {
+public class GeneralStationsInfoDialog extends Dialog {
 
 	TimeSeriesDatabase timeSeriesDatabase; 
 
-	public StationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
+	public GeneralStationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
 
 	}
 
-	public StationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	/**
+	 * @wbp.parser.constructor
+	 */
+	public GeneralStationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		setText("Station Info");
+		setText("General Station Info");
 	}
 
 	public String open() {
@@ -60,30 +64,21 @@ public class StationsInfoDialog extends Dialog {
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		data.heightHint = 200;
 		table.setLayoutData(data);
-		String[] titles = {"plotID","longitude","latitude","serialID","general station", "logger type","properties"};
+		String[] titles = {"ID", "Name","Region","Stations and Virtual Plots"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);
 		}	
 
-		for(Station station:timeSeriesDatabase.getStations()) {
+		for(GeneralStation generalStation:timeSeriesDatabase.getGeneralStations()) {
 			TableItem item = new TableItem (table, SWT.NONE);
-			item.setText (0, station.stationID);
-			item.setText (1, ""+station.geoPoslongitude);
-			item.setText (2, ""+station.geoPosLatitude);
-			item.setText (3, ""+station.alternativeID);
-			item.setText (4, Util.ifnull(station.generalStationName, x->x, ()->"---"));
-			item.setText (5, util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
-
-			String properties="TODO";
-			/*for(Entry<String, String> entry:station.propertyMapList.get(0).value.entrySet()) {
-				String key = entry.getKey();
-				if(!(key.equals("LOGGER")||key.equals("PLOTID"))) {
-					properties+= key+"="+entry.getValue()+"    ";
-				}
-			}*/
-
-			item.setText (6, properties);
+			
+			item.setText (0, Util.ifnull(generalStation.name, "---"));
+			item.setText (1, Util.ifnull(generalStation.longName, "---"));
+			item.setText (2, Util.ifnull(generalStation.region,x->""+x.longName+" ("+x.name+")","---"));
+			
+			int pCount = generalStation.stationList.size()+generalStation.virtualPlotList.size();
+			item.setText (3, ""+pCount);
 		}
 
 
@@ -95,4 +90,5 @@ public class StationsInfoDialog extends Dialog {
 	}	
 
 }
+
 

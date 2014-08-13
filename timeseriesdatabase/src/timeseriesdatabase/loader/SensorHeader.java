@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.loader;
 
 /**
  * This class contains header data from UDBF-File of one sensor.

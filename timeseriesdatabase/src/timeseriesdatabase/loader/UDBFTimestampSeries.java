@@ -1,4 +1,4 @@
-package timeseriesdatabase.raw;
+package timeseriesdatabase.loader;
 
 import java.nio.file.Path;
 
