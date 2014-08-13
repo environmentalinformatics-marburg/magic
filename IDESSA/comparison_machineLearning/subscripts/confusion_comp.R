@@ -42,7 +42,14 @@ confusionMeanAndSD=matrix(confusionMeanAndSD,ncol=length(scorenames),nrow=length
 
 colnames(confusionMeanAndSD)=scorenames
 colnames(confusionmeansMatrix)=scorenames
-colnames(confusionsdMatrix)=scorenames
+colnames(confusionmeansMatrix)=scorenames
+rownames(confusionMeanAndSD)=model
+rownames(confusionmeansMatrix)=model
+rownames(confusionmeansMatrix)=model
+
+confusionmeansMatrix=t(confusionmeansMatrix)
+confusionmeansMatrix=t(confusionmeansMatrix)
+confusionMeanAndSD=t(confusionMeanAndSD)
 
 write.csv(confusionmeansMatrix,file=paste(resultpath,"/Confusion_comp/confusionmeans.csv",sep=""))
 write.csv(confusionsdMatrix,file=paste(resultpath,"/Confusion_comp/confusionsd.csv",sep=""))
@@ -66,3 +73,18 @@ for (score in 1:ncol(confusiondata[[1]])){
   dev.off()
 }
 
+##########significant differences??
+wilcoxresultsPaired=list()
+for (j in 1:length(scorenames)){
+  wilcoxresultsPaired[[j]]=matrix(ncol=length(model),nrow=length(model))
+  for (i in 1:(length(model)-1)){
+    for(k in (i+1):length(model)){
+    wilcoxresultsPaired[[j]][i,k]=wilcox.test(confusiondata[[i]][,j],confusiondata[[k]][,j],paired=T)$p.value
+    }
+  }
+}
+for (i in 1:length(wilcoxresultsPaired)){
+  colnames(wilcoxresultsPaired[[i]])=model
+  rownames(wilcoxresultsPaired[[i]])=model
+  write.csv(wilcoxresultsPaired[[i]],file=paste(resultpath,"/Confusion_comp/wilcox_Paired_Conf_",scorenames[i],".csv",sep=""))
+}
