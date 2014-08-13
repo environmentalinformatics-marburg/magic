@@ -127,6 +127,39 @@ rownames(ttestresultsPaired)=model
 write.csv(ttestresults,file=paste(resultpath,"/ttest_ROC.csv",sep=""))
 write.csv(ttestresultsPaired,file=paste(resultpath,"/ttest_Paired_ROC.csv",sep=""))
 
+
+##################################################################################################################
+#                                                 Compare ROC by wilcoxon test
+##################################################################################################################
+wilcoxresults=matrix(ncol=length(aucvals),nrow=length(aucvals))
+
+for (i in 1:(length(aucvals)-1)){
+  #  for (i in 1:(length(aucvals))){
+  for(k in (i+1):length(aucvals)){
+    #    for(k in 1:length(aucvals)){
+    wilcoxresults[i,k]=wilcox.test(aucvals[[i]],aucvals[[k]])$p.value
+  }
+}
+
+wilcoxresultsPaired=matrix(ncol=length(aucvals),nrow=length(aucvals))
+
+for (i in 1:(length(aucvals)-1)){
+  #  for (i in 1:(length(aucvals))){
+  for(k in (i+1):length(aucvals)){
+    #    for(k in 1:length(aucvals)){
+    wilcoxresultsPaired[i,k]=wilcox.test(aucvals[[i]],aucvals[[k]],paired=T)$p.value
+  }
+}
+
+colnames(wilcoxresults)=model
+rownames(wilcoxresults)=model
+colnames(wilcoxresultsPaired)=model
+rownames(wilcoxresultsPaired)=model
+
+write.csv(wilcoxresults,file=paste(resultpath,"/wilcox_ROC.csv",sep=""))
+write.csv(wilcoxresultsPaired,file=paste(resultpath,"/wilcox_Paired_ROC.csv",sep=""))
+
+
 ##################################################################################################################
 #                                                 CROSSTABS
 ##################################################################################################################
