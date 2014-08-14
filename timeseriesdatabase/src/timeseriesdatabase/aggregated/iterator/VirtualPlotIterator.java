@@ -34,6 +34,8 @@ public class VirtualPlotIterator extends MoveIterator {
 				isContinuous = false;
 			}
 		}
+		System.out.println("constantTimeStep: "+constantTimeStep);
+		System.out.println("timeStep: "+timeStep);
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
 	}
 

@@ -4,6 +4,7 @@ package gui.info;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
@@ -41,9 +42,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 
 	private TimeSeriesDatabase timeSeriesDatabase;
 	private Table table;
-	private TableViewer tableViewer;
-	
-	private VirtualPlotViewBridge viewComparator;
+	private TableViewBridge<VirtualPlot> tableViewBridge;
 
 	/**
 	 * Create the dialog.
@@ -64,15 +63,17 @@ public class VirtualPlotInfoDialog extends Dialog {
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-		// define the TableViewer
-		tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		tableViewBridge = new TableViewBridge<VirtualPlot>(tableViewer);
 		
-		this.viewComparator = new VirtualPlotViewBridge(tableViewer); 
+		tableViewBridge.addColumn("plotID",100,v->v.plotID);		
+		tableViewBridge.addColumnText("General Station",100,v->v.generalStation.longName+" ("+v.generalStation.name+")");
+		tableViewBridge.addColumnInteger("Easting", 100,v->v.geoPosEasting);
+		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
+		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
+		tableViewBridge.addColumnInteger("Time Intervals", 100,v->v.intervalList.size());
 
-		// create the columns 
-		// not yet implemented
-		viewComparator.createColumns();
-
+		tableViewBridge.createColumns();
 		table = tableViewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
@@ -81,28 +82,16 @@ public class VirtualPlotInfoDialog extends Dialog {
 
 		// set the content provider
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-		
-		tableViewer.setInput(timeSeriesDatabase.getVirtualPlots());
-		
-		
-		
-		tableViewer.setComparator(viewComparator);
-
+		tableViewer.setInput(timeSeriesDatabase.getVirtualPlots());		
+		tableViewer.setComparator(tableViewBridge);
 		return container;
 	}
 
-	
 
-	/**
-	 * Create contents of the button bar.
-	 * @param parent
-	 */
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		/*createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
-				true);
-		createButton(parent, IDialogConstants.CANCEL_ID,
-				IDialogConstants.CANCEL_LABEL, false);*/
+		// TODO Auto-generated method stub
+		//super.createButtonsForButtonBar(parent);
 	}
 
 	/**

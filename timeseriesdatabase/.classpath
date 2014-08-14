@@ -25,7 +25,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/timeseriesdatabase/lib/javadoc/mapdb-1.0.6-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/jepc"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JEPCBtreeStore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jepc_OLD"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JEPCBtreeStore_OLD"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

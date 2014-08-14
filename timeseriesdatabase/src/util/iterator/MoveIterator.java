@@ -8,7 +8,7 @@ import util.TimeSeriesSchema;
 public abstract class MoveIterator extends TimeSeriesIterator {
 
 	private TimeSeriesEntry current = null;
-	private boolean closed = false;
+	protected boolean closed = false;
 	
 	public MoveIterator(TimeSeriesSchema outputTimeSeriesSchema) {
 		super(outputTimeSeriesSchema);

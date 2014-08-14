@@ -64,7 +64,7 @@ public class GeneralStationsInfoDialog extends Dialog {
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		data.heightHint = 200;
 		table.setLayoutData(data);
-		String[] titles = {"ID", "Name","Region","Stations and Virtual Plots"};
+		String[] titles = {"ID", "Name","Region","Group","Stations and Virtual Plots"};
 		for (int i=0; i<titles.length; i++) {
 			TableColumn column = new TableColumn (table, SWT.NONE);
 			column.setText (titles [i]);
@@ -76,9 +76,10 @@ public class GeneralStationsInfoDialog extends Dialog {
 			item.setText (0, Util.ifnull(generalStation.name, "---"));
 			item.setText (1, Util.ifnull(generalStation.longName, "---"));
 			item.setText (2, Util.ifnull(generalStation.region,x->""+x.longName+" ("+x.name+")","---"));
+			item.setText (3, Util.ifnull(generalStation.group,"---"));
 			
 			int pCount = generalStation.stationList.size()+generalStation.virtualPlotList.size();
-			item.setText (3, ""+pCount);
+			item.setText (4, ""+pCount);
 		}
 
 

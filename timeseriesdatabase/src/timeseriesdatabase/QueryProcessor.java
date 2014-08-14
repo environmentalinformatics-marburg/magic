@@ -268,7 +268,7 @@ public class QueryProcessor {
 		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
 	}
 
-	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
+	public TimeSeriesIterator virtualquery_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, boolean interpolated) {
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			if(querySchema==null) {
@@ -283,6 +283,7 @@ public class QueryProcessor {
 				}
 				TimeSeriesIterator it = this.query_base_aggregated(interval.value.get_serial(), stationSchema, interval.start, interval.end, dataQuality);
 				if(it!=null&&it.hasNext()) {
+					System.out.println("add iterator: ["+interval.value.get_serial()+"] plotID "+interval.value.get_plotid());
 					processing_iteratorList.add(it);
 				}
 			}
@@ -293,7 +294,21 @@ public class QueryProcessor {
 			Long start = Util.ifnull(queryStart, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));
 			Long end = Util.ifnull(queryEnd, x->BaseAggregationTimeUtil.calcBaseAggregationTimestamp(x));		
 			TimeSeriesIterator it_continuous_base_aggregated = Util.ifnull(it_virtual_base_aggregated, x->new NanGapIterator(x, start, end));
-			return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));			
+			return it_continuous_base_aggregated;
+			//return it_virtual_base_aggregated;
+					
+		} else if(timeSeriesDatabase.stationExists(plotID)){
+			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, AggregationInterval.HOUR, interpolated);
+		} else {
+			return null;
+		}
+	}
+	
+	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
+		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+		TimeSeriesIterator it_continuous_base_aggregated = virtualquery_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, interpolated);
+		return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
 		} else if(timeSeriesDatabase.stationExists(plotID)){
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 		} else {

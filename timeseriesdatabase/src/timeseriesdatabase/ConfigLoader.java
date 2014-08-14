@@ -39,6 +39,25 @@ public class ConfigLoader {
 		this.timeseriesdatabase = timeseriesdatabase;
 	}
 
+	private class GeneralStationBuilder {
+
+		public String name;
+		public Region region;
+		public String longName;
+		public String group;
+
+		public GeneralStationBuilder(String name) {
+			this.name = name;
+		}
+
+		public GeneralStation create() {
+			if(longName==null) {
+				longName = name;
+			}
+			return new GeneralStation(name, region, longName, group);
+		}
+	}
+
 	/**
 	 * reads names of used general stations
 	 * @param configFile
@@ -46,31 +65,43 @@ public class ConfigLoader {
 	public void readGeneralStationConfig(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
-			TreeMap<String, Triple<String, Region, String>> creationMap = new TreeMap<String,Triple<String,Region,String>>();
-			Section section_general_stations = ini.get("general_stations");
+			TreeMap<String, GeneralStationBuilder> creationMap = new TreeMap<String,GeneralStationBuilder>();
+
+			Section section_general_stations = ini.get("general_stations");//********************  [general_stations]
 			for(Entry<String, String> entry:section_general_stations.entrySet()) {
-				String generalName = entry.getKey();
+				GeneralStationBuilder generalStationBuilder = new GeneralStationBuilder(entry.getKey());
 				String regionName = entry.getValue();
-				Region region = timeseriesdatabase.getRegion(regionName);
-				if(region == null) {
+				generalStationBuilder.region = timeseriesdatabase.getRegion(regionName);
+				if(generalStationBuilder.region == null) {
 					log.warn("region not found: "+regionName);
 				}
-				//timeseriesdatabase.insertGeneralStation(new GeneralStation(generalName,region,null));
-				creationMap.put(generalName, new Triple<String, Region, String>(generalName, region, null));
+				creationMap.put(generalStationBuilder.name, generalStationBuilder);
 			}
 
-			Section section_general_station_long_names = ini.get("general_station_long_names");
+			Section section_general_station_long_names = ini.get("general_station_long_names");  //******************** [general_station_long_names]
 			if(section_general_station_long_names!=null) {
 				for(Entry<String, String> entry:section_general_station_long_names.entrySet()) {
-					creationMap.compute(entry.getKey(), (k,triple) -> new Triple<String, Region, String>(triple.a,triple.b,entry.getValue()));
+					if(creationMap.containsKey(entry.getKey())) {
+						creationMap.get(entry.getKey()).longName = entry.getValue();
+					} else {
+						log.warn("general station unknown: "+entry.getKey());
+					}
 				}
 			}
-			for(Triple<String, Region, String> triple:creationMap.values()) {
-				String longName = triple.c;
-				if(longName==null) {
-					longName = triple.a;
+
+			Section section_general_station_groups = ini.get("general_station_groups"); //******************** [general_station_groups]			if(section_general_station_long_names!=null) {
+			if(section_general_station_groups!=null) {
+				for(Entry<String, String> entry:section_general_station_groups.entrySet()) {
+					if(creationMap.containsKey(entry.getKey())) {
+						creationMap.get(entry.getKey()).group = entry.getValue();
+					} else {
+						log.warn("general station unknown: "+entry.getKey());
+					}
 				}
-				timeseriesdatabase.insertGeneralStation(new GeneralStation(triple.a,triple.b,longName));
+			}
+
+			for(GeneralStationBuilder e:creationMap.values()) {
+				timeseriesdatabase.insertGeneralStation(e.create());
 			}
 
 		} catch (Exception e) {
@@ -177,7 +208,7 @@ public class ConfigLoader {
 					plotidMap.put(plotid, entries);
 				}				
 
-				Map<String,String> valueMap = new HashMap<String, String>();
+				Map<String,String> valueMap = new TreeMap<String, String>();
 				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
 
 					String value = row[mapEntry.getValue()];
@@ -314,18 +345,16 @@ public class ConfigLoader {
 		}
 
 	}
-	
+
 	public void calcNearestVirtualPlots() {
 		timeseriesdatabase.updateGeneralStations();
-		
+
 		for(VirtualPlot virtualPlot:timeseriesdatabase.getVirtualPlots()) {
-			//double[] geoPos = transformCoordinates(virtualPlot.geoPoslongitude,virtualPlot.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
+
 			List<VirtualPlot> virtualPlotList = virtualPlot.generalStation.virtualPlotList;
 			for(VirtualPlot targetVirtualPlot:virtualPlotList) {
 				if(virtualPlot!=targetVirtualPlot) {
-					//double[] targetGeoPos = transformCoordinates(targetVirtualPlot.geoPoslongitude,targetVirtualPlot.geoPosLatitude);
-					//double difference = getDifference(geoPos, targetGeoPos);
 					double difference = getDifference(virtualPlot, targetVirtualPlot);
 					differenceList.add(new Object[]{difference,targetVirtualPlot});
 				}
@@ -346,8 +375,8 @@ public class ConfigLoader {
 			//System.out.println(virtualPlot.plotID+" --> "+targetStationList);
 		}
 	}
-	
-	
+
+
 
 	public static double[] transformCoordinates(double longitude, double latitude) {
 		// TODO: do real transformation
@@ -357,7 +386,7 @@ public class ConfigLoader {
 	public static double getDifference(double[] geoPos, double[] targetGeoPos) {
 		return Math.sqrt((geoPos[0]-targetGeoPos[0])*(geoPos[0]-targetGeoPos[0])+(geoPos[1]-targetGeoPos[1])*(geoPos[1]-targetGeoPos[1]));
 	}
-	
+
 	public static double getDifference(VirtualPlot source, VirtualPlot target) {
 		return Math.sqrt((source.geoPosEasting-target.geoPosEasting)*(source.geoPosEasting-target.geoPosEasting)+(source.geoPosNorthing-target.geoPosNorthing)*(source.geoPosNorthing-target.geoPosNorthing));
 	}
@@ -395,11 +424,11 @@ public class ConfigLoader {
 				String plotID = row[plotidIndex];				
 				if(plotID.length()==4&&plotID.charAt(3)>='0'&&plotID.charAt(3)<='9') {
 					String generalStationName = plotID.substring(0, 3);
-					
+
 					if(generalStationName.equals("sun")) {//correct sun -> cof
 						generalStationName = "cof";
 					}
-					
+
 					GeneralStation generalStation = timeseriesdatabase.getGeneralStation(generalStationName);					
 					if(generalStation==null) {
 						log.warn("unknown general station in: "+plotID+"\t"+generalStationName+"   in config file: "+config_file);
@@ -408,26 +437,26 @@ public class ConfigLoader {
 					//String lat = row[latIndex];
 					String easting = row[eastingIndex];
 					String northing = row[northingIndex];
-					
+
 					//double geoPoslongitude = Double.NaN;
 					//double geoPosLatitude = Double.NaN;
 					int geoPosEasting = -1;
 					int geoPosNorthing = -1;
-					
+
 					/*try {					
 						geoPoslongitude = Double.parseDouble(row[lonIndex]);
 						geoPosLatitude = Double.parseDouble(row[latIndex]);					
 					} catch(Exception e) {}
-					
+
 					if(Double.isNaN(geoPoslongitude)||Double.isNaN(geoPosLatitude)) {
 						log.warn("geo pos not read: "+plotID);
 					}*/
-					
+
 					try {
 						geoPosEasting = Integer.parseInt(easting);
 						geoPosNorthing = Integer.parseInt(northing);							
 					} catch(Exception e) {}
-					
+
 					timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStation, geoPosEasting, geoPosNorthing));					
 				} else {
 					log.warn("not valid plotID name: "+plotID+"  VirtualPlot not inserted"+"   in config file: "+config_file);;
@@ -635,7 +664,7 @@ public class ConfigLoader {
 					serialMap.put(serial, mapList);
 				}
 
-				HashMap<String, String> properyMap = new HashMap<String,String>();
+				TreeMap<String, String> properyMap = new TreeMap<String,String>();
 
 				for(Entry<String, Integer> mapEntry:nameMap.entrySet()) {
 					String value = row[mapEntry.getValue()];
