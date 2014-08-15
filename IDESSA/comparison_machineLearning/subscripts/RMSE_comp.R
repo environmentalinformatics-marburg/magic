@@ -74,3 +74,78 @@ names=factor( names, levels=c("rf","nnet","svm","avNNet"))
 pdf(paste(resultpath,"/prediction_Rsquared.pdf",sep=""))
 bwplot(as.vector(Rsquared_all)~names,ylab="Rsquared")
 dev.off()
+
+
+#######################ME
+
+####pro szene
+ME=list()
+for (i in 1:length(model)){
+  modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
+  ME[[i]]=MEPerScene(modeldata,dateField)
+}
+ME_all=ME[[1]][,2]
+for (i in 2:length(model)){
+  ME_all=cbind(ME_all,ME[[i]][,2])
+}
+names=c()
+for (i in 1:length(model)){
+  names=c(names,rep(model[i],nrow(ME_all)))
+}
+names=factor( names, levels=c("rf","nnet","svm","avNNet"))
+pdf(paste(resultpath,"/prediction_ME.pdf",sep=""))
+bwplot(as.vector(ME_all)~names,ylab="ME")
+dev.off()
+
+#######################MAE
+
+####pro szene
+MAE=list()
+for (i in 1:length(model)){
+  modeldata=eval(parse(text=paste("prediction_",model[i],sep="")))
+  MAE[[i]]=MAEPerScene(modeldata,dateField)
+}
+MAE_all=MAE[[1]][,2]
+for (i in 2:length(model)){
+  MAE_all=cbind(MAE_all,MAE[[i]][,2])
+}
+names=c()
+for (i in 1:length(model)){
+  names=c(names,rep(model[i],nrow(MAE_all)))
+}
+names=factor( names, levels=c("rf","nnet","svm","avNNet"))
+pdf(paste(resultpath,"/prediction_MAE.pdf",sep=""))
+bwplot(as.vector(MAE_all)~names,ylab="MAE")
+dev.off()
+
+#######################Significant differences
+Rsquared_all
+RMSE_all
+ME_all
+MAE_all
+
+
+#######################Means and SD's
+
+meanRMSE=apply(RMSE_all,2,mean)
+sdRMSE=apply(RMSE_all,2,sd)
+RMSEMeanSD=paste(round(meanRMSE,2),"+/-",round(sdRMSE,2),sep="")
+
+meanRsquared=apply(Rsquared_all,2,mean)
+sdRsquared=apply(Rsquared_all,2,sd)
+RsquaredMeanSD=paste(round(meanRsquared,2),"+/-",round(sdRsquared,2),sep="")
+
+meanME=apply(ME_all,2,mean)
+sdME=apply(ME_all,2,sd)
+MEMeanSD=paste(round(meanME,2),"+/-",round(sdME,2),sep="")
+
+meanMAE=apply(MAE_all,2,mean)
+sdMAE=apply(MAE_all,2,sd)
+MAEMeanSD=paste(round(meanMAE,2),"+/-",round(sdMAE,2),sep="")
+
+performanceMeanSD=rbind(RMSEMeanSD,RsquaredMeanSD,MEMeanSD,MAEMeanSD)
+row.names(performanceMeanSD)=c("RMSE","RSquared","ME","MAE")
+colnames(performanceMeanSD)=model
+
+write.csv(performanceMeanSD,file=paste(resultpath,"/PerformanceMeanAndSD.csv",sep=""))
+

@@ -45,7 +45,7 @@ base=raster(paste(datapath,"/baseRaster_de.tiff",sep=""))#load rastervorlage von
 ###########################
 #load obs raster
 #######
-
+mk.colors <- colorRampPalette(rev(brewer.pal(11,"Spectral")))
 for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep="")))))){
 
   obs=eval(parse(text=paste("prediction_",model[1],"$observed",sep="")))[prediction_rf$chDate==unique(prediction_rf$chDate)[scene]]
@@ -71,7 +71,8 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   maxobs=max(values(obsRasterProj),na.rm=T)
   datc[[1]]=obsRasterProj
   datp[[1]] <- spplot(datc[[1]], mm= mm, maxpixels = 400000, colorkey = list(space = "top", width = 0.5,title="test"), main = " ",
-                      col.regions = colorRampPalette(c(brewer.pal(4,"Greys")[1],brewer.pal(4,"Blues")[2],brewer.pal(4,"Blues")[3],brewer.pal(4,"Blues")[4])),
+                      col.regions =mk.colors(1000), 
+                      #col.regions = colorRampPalette(c(brewer.pal(4,"Greys")[1],brewer.pal(4,"Blues")[2],brewer.pal(4,"Blues")[3],brewer.pal(4,"Blues")[4])),
                       at = seq(-0, maxobs, 0.1),
                       panel = function(...) {
                         panel.abline(h = yat, v = xat,
@@ -117,7 +118,7 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
 ####################################################################################################################
     datc[[i+1]] <- crop(datc[[i+1]], ext)
     datp[[i+1]] <- spplot(datc[[i+1]], mm= mm, maxpixels = 400000, colorkey = list(space = "top", width = 0.5), main = " ",
-               col.regions = colorRampPalette(c(brewer.pal(4,"Greys")[1],brewer.pal(4,"Blues")[2],brewer.pal(4,"Blues")[3],brewer.pal(4,"Blues")[4])),
+               col.regions = mk.colors(1000),
                at = seq(0, maxobs, 0.1),
                panel = function(...) {
                  panel.abline(h = yat, v = xat,
@@ -172,23 +173,37 @@ tmp=datp[[1]]+ as.layer(lmplot, under = T)
 for (i in 2:(length(model)+1)){
   tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
 }
+
+tmp3=datp[[2]]+ as.layer(lmplot, under = T)
+for (i in 3:(length(model)+1)){
+  tmp3=c(tmp3,datp[[i]]+ as.layer(lmplot, under = T))
+}
+
 tmp2=diffp[[1]]+ as.layer(lmplot, under = T)
 for (i in 2:length(model)){
   tmp2=c(tmp2,diffp[[i]]+ as.layer(lmplot, under = T))
 }
 
   comb <- c(tmp, 
-            x.same=T, y.same=T, layout = c(4, 1))
-  pdf(paste(resultpath,"/Spatial_comp/SpatialComparison_",
-            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
+            x.same=T, y.same=T, layout = c(5, 1))
+  png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
    print(comb)
   dev.off()
+
+combV2 <- c(tmp3, 
+              x.same=T, y.same=T, layout = c(3, 1))
+
+png(paste(resultpath,"/Spatial_comp/SpatialComparison_OnlyPred_",
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
+print(combV2)
+dev.off()
 
   combDiff <- c(tmp2, 
                 x.same=T, y.same=T, layout = c(3, 1))
 
-  pdf(paste(resultpath,"/Spatial_comp/Diff_",
-          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
+  png(paste(resultpath,"/Spatial_comp/Diff_",
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
   print(combDiff)
   dev.off()
 }

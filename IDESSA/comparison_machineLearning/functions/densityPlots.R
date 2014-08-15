@@ -13,7 +13,7 @@ plotDensity=function(modeldata=list(),dateField="chDate",names=model){
       legend("topright",legend=names,col=colorlist[1:length(modeldata)],lwd=1,bty="n")
   }
   plot(density(modeldata[[1]]$observed),
-       xlim=c(0,quantile(modeldata[[1]]$observed,probs=c(0,1,0.99))[3]),ylim=c(0,1.8),main="mean")
+       xlim=c(0,quantile(modeldata[[1]]$observed,probs=c(0,1,0.99))[3]),ylim=c(0,1),main="mean")
   for (i in 1: length(modeldata)){
     lines(density(modeldata[[i]]$prediction),col=colorlist[i])
   }
