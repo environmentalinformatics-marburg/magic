@@ -78,7 +78,8 @@ if (any(model=="rf")){
   gc()
 }
 
-
+linout=FALSE
+if (type=="regression") linout = TRUE
 
 if (any(model=="nnet")){
   
@@ -97,7 +98,7 @@ if (any(model=="nnet")){
   fit_nnet<-train (predictors, 
                    class, 
                    method = method,
-                   if (type=="regression") linout = TRUE, 
+                    linout = linout, 
                    trace = FALSE,
                    trControl = ctrl, 
                    tuneGrid=tuneGrid_NNet,
@@ -131,7 +132,7 @@ if (any(model=="avNNet")){
   fit_avNNet<-train (predictors, 
                    class, 
                    method = method,
-                   if (type=="regression") linout = TRUE, 
+                   linout = linout, 
                    trace = FALSE,
                    trControl = ctrl, 
                    tuneGrid=tuneGrid_NNet,

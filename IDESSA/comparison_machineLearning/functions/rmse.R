@@ -24,3 +24,25 @@ rsquaredPerScene=function(modeldata,dateField="chDate"){
   }
   rsquared
 }
+
+MEPerScene=function(modeldata,dateField="chDate"){
+  library(hydroGOF)
+  ME=matrix(nrow=length(unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))),ncol=2)
+  for (scene in 1:length(unique(eval(parse(text=paste("modeldata$",dateField,sep="")))))){
+    ME[,1]=unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))
+    ME[scene,2]=me(modeldata$prediction[modeldata$chDate==unique(modeldata$chDate)[scene]],
+                    modeldata$observed[modeldata$chDate==unique(modeldata$chDate)[scene]])   
+  }
+  ME
+}
+
+MAEPerScene=function(modeldata,dateField="chDate"){
+  library(hydroGOF)
+  MAE=matrix(nrow=length(unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))),ncol=2)
+  for (scene in 1:length(unique(eval(parse(text=paste("modeldata$",dateField,sep="")))))){
+    MAE[,1]=unique(eval(parse(text=paste("modeldata$",dateField,sep=""))))
+    MAE[scene,2]=mae(modeldata$prediction[modeldata$chDate==unique(modeldata$chDate)[scene]],
+                   modeldata$observed[modeldata$chDate==unique(modeldata$chDate)[scene]])   
+  }
+  MAE
+}

@@ -28,7 +28,7 @@ shortTest=TRUE#if TRUE then learning parameters and data set are set automatical
 ##################################################################################################################
 #                                          Data adjustments
 ##################################################################################################################
-inputTable="rfInput_vp03_day_as.dat"
+inputTable="rfInput_vp03_night_as.dat"
 response<-"RInfo" #field name of the response variable. "Rain" or "RInfo"
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
@@ -46,10 +46,11 @@ sampsize=0.05 #how many percent of training scene pixels from the training data 
 #                                      Choose Predictors (must be included in "inputTable")
 ##################################################################################################################
 predictorVariables=c("SZen",
-                     "B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11",
+                    # "B01","B02","B03", "B0103", #remove them for night data sets!!
+                     "B04","B05","B06","B07","B08","B09","B10","B11",
                      #"Tau",
                      #"Aef","CWP",
-                     "B0103","B0409","B0406","B0709","B0910","B0509","B0610"
+                     "B0409","B0406","B0709","B0910","B0509","B0610"
 )
 ##################################################################################################################
 #                                      Learning adjustments
@@ -92,7 +93,7 @@ if (type=="regression"){
 ##################################################################################################################
 if(shortTest){
   inputTable="rfInput_vp03_day_om.dat"
-  sampsize=0.002
+  sampsize=0.005
   if (tuneThreshold) thresholds=seq(0.0, 1.0, 0.2)
   rf_mtry=c(2:5)
   ##### NNET Settings:
@@ -128,7 +129,7 @@ dir.create(resultpath)
 #                                          Load functions and packages
 ##################################################################################################################
 usedPackages=c("caret","kernlab","ROCR","raster","latticeExtra","fields","reshape2",
-               "grid","maps","mapdata","sp","rgdal","RColorBrewer","lattice","doParallel")
+               "grid","maps","mapdata","sp","rgdal","RColorBrewer","lattice","doParallel","hydroGOF")
 
 
 
