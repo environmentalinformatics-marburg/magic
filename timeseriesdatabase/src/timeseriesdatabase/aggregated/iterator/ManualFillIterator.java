@@ -18,7 +18,7 @@ import util.iterator.TimeSeriesIterator;
  */
 public class ManualFillIterator extends InputProcessingIterator {
 
-	private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*20;
+	private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*2;
 
 	private final int timeStep=60;
 

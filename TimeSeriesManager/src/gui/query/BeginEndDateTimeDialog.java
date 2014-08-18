@@ -1,4 +1,4 @@
-package gui;
+package gui.query;
 
 import java.time.LocalDateTime;
 

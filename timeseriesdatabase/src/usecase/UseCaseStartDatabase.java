@@ -1,26 +1,9 @@
 package usecase;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Iterator;
-
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import util.Util;
-import de.umr.eventstore.Stream;
-import de.umr.eventstore.processors.CSVProcessor;
-import de.umr.eventstore.processors.ConsoleProcessor;
-import de.umr.eventstore.processors.ProcessingEngine;
-import de.umr.eventstore.processors.Processor;
-import de.umr.eventstore.queries.Query;
-import de.umr.eventstore.queries.SQLQuery;
-import de.umr.eventstore.storage.Schema;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.store.Event;
+
 
 /**
  * UseCaseStartDatabase opens an existing database and processes some queries.

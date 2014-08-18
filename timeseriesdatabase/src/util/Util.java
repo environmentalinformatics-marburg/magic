@@ -401,4 +401,13 @@ public class Util {
 			return ""+value;
 		}
 	}
+	
+	public static boolean containsString(String[] array, String text) {
+		for(String s:array) {
+			if(s.equals(text)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

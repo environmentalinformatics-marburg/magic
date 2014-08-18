@@ -20,11 +20,11 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import util.Util;
 
-public class GeneralStationsInfoDialog extends Dialog {
+public class GeneralStationsInfoDialogOLD extends Dialog {
 
 	TimeSeriesDatabase timeSeriesDatabase; 
 
-	public GeneralStationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public GeneralStationsInfoDialogOLD(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
 
 	}
@@ -32,7 +32,7 @@ public class GeneralStationsInfoDialog extends Dialog {
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public GeneralStationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	public GeneralStationsInfoDialogOLD(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		setText("General Station Info");

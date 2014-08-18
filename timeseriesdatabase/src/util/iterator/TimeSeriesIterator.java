@@ -44,4 +44,11 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 	public void writeCSV(String filename) {
 		CSV.write(this,filename);
 	}
+	
+	public void writeConsole() {
+		while(this.hasNext()) {
+			TimeSeriesEntry e = this.next();
+			System.out.println(e);
+		}		
+	}
 }
