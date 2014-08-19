@@ -1,5 +1,6 @@
 package processinggraph;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
@@ -8,7 +9,6 @@ import util.iterator.TimeSeriesIterator;
 public class Continuous extends Node {
 	
 	private final Base source;
-	//private
 
 	protected Continuous(TimeSeriesDatabase timeSeriesDatabase, Base source) {
 		super(timeSeriesDatabase);
@@ -17,6 +17,11 @@ public class Continuous extends Node {
 
 	public static Continuous create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
 		Base node = Base.create(timeSeriesDatabase, stationName, querySchema);
+		return new Continuous(timeSeriesDatabase, node);
+	}
+	
+	public static Continuous create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
+		Base node = Base.create(timeSeriesDatabase, stationName, querySchema, dataQuality);
 		return new Continuous(timeSeriesDatabase, node);
 	}
 
@@ -31,6 +36,10 @@ public class Continuous extends Node {
 			return null;
 		}
 		return continuous;
+	}
+	
+	public TimeSeriesIterator getExactly(long start, long end) {		
+		return get(start,end);
 	}
 
 	@Override

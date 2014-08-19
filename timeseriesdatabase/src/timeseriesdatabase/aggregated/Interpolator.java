@@ -292,19 +292,19 @@ public class Interpolator {
 	 * left out.
 	 * @param sourceTimeSeries
 	 * @param targetTimeSeries
-	 * @param parameterName the sensor name that should be gap filled
+	 * @param interpolationName the sensor name that should be gap filled
 	 */
-	public static int process(TimeSeries[] sourceTimeSeries, TimeSeries targetTimeSeries, String parameterName) {
+	public static int process(TimeSeries[] sourceTimeSeries, TimeSeries targetTimeSeries, String interpolationName) {
 		final int timeStep = targetTimeSeries.timeStep;
 		long startTimestamp = targetTimeSeries.getFirstTimestamp();
 		long endTimestamp = targetTimeSeries.getLastTimestamp();
-		float[] target = targetTimeSeries.getValues(parameterName);
-		boolean[] targetInterpolationFlags = targetTimeSeries.getInterpolationFlags(parameterName);
+		float[] target = targetTimeSeries.getValues(interpolationName);
+		boolean[] targetInterpolationFlags = targetTimeSeries.getInterpolationFlags(interpolationName);
 
 		//float[][] source = new float[sourceTimeSeries.length][];
 		ArrayList<float[]> sourceList = new ArrayList<float[]>(sourceTimeSeries.length);
 		for(int i=0;i<sourceTimeSeries.length;i++) {
-			if(sourceTimeSeries[i]!=null && sourceTimeSeries[i].containsParamterName(parameterName)) {
+			if(sourceTimeSeries[i]!=null && sourceTimeSeries[i].containsParamterName(interpolationName)) {
 				if(startTimestamp!=sourceTimeSeries[i].getFirstTimestamp()) {
 					log.error("all sources need to have same startTimestamp");
 					return 0;
@@ -317,13 +317,13 @@ public class Interpolator {
 					log.error("all sources need to have same time step");
 					return 0;
 				}
-				sourceList.add(sourceTimeSeries[i].getValues(parameterName));
+				sourceList.add(sourceTimeSeries[i].getValues(interpolationName));
 			}
 		}
 
 		//process(startTimestamp, source, startTimestamp, target, targetInterpolationFlags, timeStep);
 		int interpolatedCount = processNew(sourceList.toArray(new float[0][]),target,targetInterpolationFlags);
-		System.out.println("interpolated in "+parameterName+": "+interpolatedCount);
+		System.out.println("interpolated in "+interpolationName+": "+interpolatedCount);
 		return interpolatedCount;
 	}
 

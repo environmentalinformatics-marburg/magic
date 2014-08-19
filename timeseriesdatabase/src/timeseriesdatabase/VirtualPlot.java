@@ -34,18 +34,15 @@ public class VirtualPlot {
 	public final String plotID;
 	public final GeneralStation generalStation;
 	
-	//public double geoPoslongitude = Double.NaN;
-	//public double geoPosLatitude = Double.NaN;
-	
 	public int geoPosEasting = -1;
 	public int geoPosNorthing = -1;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
-
+	
 	/**
 	 * This list is used for interpolation when similar stations are needed.
 	 */
-	public List<VirtualPlot> nearestVirtualPlotList;
+	public List<VirtualPlot> nearestVirtualPlots;
 
 	public VirtualPlot(TimeSeriesDatabase timeSeriesDatabase, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing) {
 		this.timeSeriesDatabase = timeSeriesDatabase;
@@ -54,7 +51,7 @@ public class VirtualPlot {
 		this.geoPosEasting = geoPosEasting;
 		this.geoPosNorthing = geoPosNorthing;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
-		this.nearestVirtualPlotList = new ArrayList<VirtualPlot>(0);
+		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
 	}
 
 	/**
@@ -74,6 +71,10 @@ public class VirtualPlot {
 				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
 				.distinct()
 				.toArray(String[]::new);
+	}
+	
+	public String[] getValidSchemaEntries(String[] querySchema) {
+		return Util.getValidEntries(querySchema, getSchema());
 	}
 
 	/**

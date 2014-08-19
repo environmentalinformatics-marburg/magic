@@ -168,11 +168,11 @@ public class QueryProcessor {
 
 
 		TimeSeries[] sourceTimeseries = new TimeSeries[STATION_INTERPOLATION_COUNT];
-		List<Station> nearestStationList = station.nearestStationList;
+		List<Station> nearestStationList = station.nearestStations;
 		for(int i=0;i<STATION_INTERPOLATION_COUNT;i++) {
 			Station sourceStation = nearestStationList.get(i);			
 			String[] qNames = sourceStation.getValidSchemaEntries(interpolationSensorNames);
-			if(qNames!=null) {
+			if(qNames.length>0) {
 				TimeSeriesIterator source_iterator = query_continuous_base_aggregated(sourceStation.stationID, qNames, interpolationStartTimestamp , interpolationEndTimestamp, dataQuality);			
 				sourceTimeseries[i] = TimeSeries.create(source_iterator);
 			} else {

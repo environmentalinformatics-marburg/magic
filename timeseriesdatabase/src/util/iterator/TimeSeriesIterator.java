@@ -2,6 +2,7 @@ package util.iterator;
 
 import java.util.List;
 
+import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.CSV;
 import util.ProcessingChainEntry;
@@ -50,5 +51,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 			TimeSeriesEntry e = this.next();
 			System.out.println(e);
 		}		
+	}
+	
+	public TimeSeries toTimeSeries() {
+		return TimeSeries.create(this);
 	}
 }

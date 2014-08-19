@@ -474,7 +474,7 @@ public class QueryDialog extends Dialog {
 		if(generalStation!=null) {
 			ArrayList<String> plotIDList = new ArrayList<String>();
 			generalStation.stationList.stream().forEach(station->plotIDList.add(station.stationID));
-			generalStation.virtualPlotList.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
+			generalStation.virtualPlots.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
 			if(plotIDList.size()>0) {
 				String[] plotIDs = plotIDList.toArray(new String[0]);
 				comboPlotID.setItems(plotIDs);

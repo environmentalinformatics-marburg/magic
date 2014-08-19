@@ -22,9 +22,9 @@ public class GeneralStation {
 	
 	public List<Station> stationList;
 	
-	public List<VirtualPlot> virtualPlotList;
+	public List<VirtualPlot> virtualPlots;
 	
-	public final String group;
+	public final String group; //  if no group: null
 	
 	public GeneralStation(String name, Region region, String longName, String group) {
 		this.name = name;
@@ -32,7 +32,7 @@ public class GeneralStation {
 		this.longName = longName;
 		this.stationList = new ArrayList<Station>();
 		this.sensorNameTranlationMap = new HashMap<String,String>();
-		this.virtualPlotList = new ArrayList<VirtualPlot>();
+		this.virtualPlots = new ArrayList<VirtualPlot>();
 		this.group = group;
 	}
 

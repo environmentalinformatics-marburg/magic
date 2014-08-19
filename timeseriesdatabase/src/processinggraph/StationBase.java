@@ -17,6 +17,10 @@ public class StationBase extends Base {
 		this.source = source;
 		this.useManualFillIterator = useManualFillIterator;
 	}
+	
+	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
+		return create(timeSeriesDatabase, stationName, querySchema, DataQuality.Na);
+	}
 
 	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
 		Node node = RawSource.create(timeSeriesDatabase,stationName,querySchema, dataQuality);		

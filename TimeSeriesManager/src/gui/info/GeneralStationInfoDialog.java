@@ -73,7 +73,7 @@ public class GeneralStationInfoDialog extends Dialog {
 		tableViewBridge.addColumn("Name",200,g->Util.ifnull(g.longName, "---"));
 		tableViewBridge.addColumn("Region",200,g->Util.ifnull(g.region,x->""+x.longName+" ("+x.name+")","---"));
 		tableViewBridge.addColumn("Group",70,g->Util.ifnull(g.group, "---"));
-		tableViewBridge.addColumn("Stations and Virtual Plots",100,g->""+(g.stationList.size()+g.virtualPlotList.size()));
+		tableViewBridge.addColumn("Stations and Virtual Plots",100,g->""+(g.stationList.size()+g.virtualPlots.size()));
 
 
 		tableViewBridge.createColumns();

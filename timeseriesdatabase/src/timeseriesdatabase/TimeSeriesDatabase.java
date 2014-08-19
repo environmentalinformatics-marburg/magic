@@ -236,7 +236,7 @@ public class TimeSeriesDatabase {
 
 		for(GeneralStation g:getGeneralStations()) {
 			g.stationList = new ArrayList<Station>();
-			g.virtualPlotList = new ArrayList<VirtualPlot>();
+			g.virtualPlots = new ArrayList<VirtualPlot>();
 		}
 
 		for(Station station:getStations()) {
@@ -252,7 +252,7 @@ public class TimeSeriesDatabase {
 
 		for(VirtualPlot virtualplot:virtualplotMap.values()) {
 			if(virtualplot.generalStation!=null) {
-				virtualplot.generalStation.virtualPlotList.add(virtualplot);
+				virtualplot.generalStation.virtualPlots.add(virtualplot);
 			} else {
 				log.warn("no general station in "+virtualplot.plotID);
 			}
@@ -328,6 +328,10 @@ public class TimeSeriesDatabase {
 
 	public Collection<GeneralStation> getGeneralStations() {
 		return generalStationMap.values();
+	}
+	
+	public Stream<GeneralStation> getGeneralStationsOfGroup(String group) {
+		return generalStationMap.values().stream().filter(gs -> group.equals(gs.group));
 	}
 
 	public GeneralStation getGeneralStation(String generalStationName) {

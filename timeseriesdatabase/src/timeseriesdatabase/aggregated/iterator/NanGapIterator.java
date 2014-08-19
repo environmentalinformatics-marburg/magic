@@ -95,8 +95,8 @@ public class NanGapIterator extends MoveIterator {
 							nextElement = input_iterator.next();
 						} else {
 							nextElement = null;
+							break;
 						}
-
 					}					
 					currTimestamp = start;
 				}

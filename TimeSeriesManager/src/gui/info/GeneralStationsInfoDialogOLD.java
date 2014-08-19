@@ -78,7 +78,7 @@ public class GeneralStationsInfoDialogOLD extends Dialog {
 			item.setText (2, Util.ifnull(generalStation.region,x->""+x.longName+" ("+x.name+")","---"));
 			item.setText (3, Util.ifnull(generalStation.group,"---"));
 			
-			int pCount = generalStation.stationList.size()+generalStation.virtualPlotList.size();
+			int pCount = generalStation.stationList.size()+generalStation.virtualPlots.size();
 			item.setText (4, ""+pCount);
 		}
 

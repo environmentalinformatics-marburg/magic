@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
@@ -340,7 +341,7 @@ public class ConfigLoader {
 			for(Object[] targetStation:differenceList) {
 				targetStationList.add((Station) targetStation[1]);
 			}
-			station.nearestStationList = targetStationList;
+			station.nearestStations = targetStationList;
 			//System.out.println(station.plotID+" --> "+station.nearestStationList);
 		}
 
@@ -352,8 +353,15 @@ public class ConfigLoader {
 		for(VirtualPlot virtualPlot:timeseriesdatabase.getVirtualPlots()) {
 			List<Object[]> differenceList = new ArrayList<Object[]>();
 
-			List<VirtualPlot> virtualPlotList = virtualPlot.generalStation.virtualPlotList;
-			for(VirtualPlot targetVirtualPlot:virtualPlotList) {
+			List<VirtualPlot> virtualPlots;
+			String group = virtualPlot.generalStation.group;
+			if(group==null) {
+				virtualPlots = virtualPlot.generalStation.virtualPlots;
+			} else {
+				virtualPlots = new ArrayList<VirtualPlot>();
+				timeseriesdatabase.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
+			}			
+			for(VirtualPlot targetVirtualPlot:virtualPlots) {
 				if(virtualPlot!=targetVirtualPlot) {
 					double difference = getDifference(virtualPlot, targetVirtualPlot);
 					differenceList.add(new Object[]{difference,targetVirtualPlot});
@@ -367,12 +375,9 @@ public class ConfigLoader {
 					return Double.compare(d1, d2);
 				}
 			});
-			List<VirtualPlot> targetStationList = new ArrayList<VirtualPlot>(differenceList.size());
-			for(Object[] targetStation:differenceList) {
-				targetStationList.add((VirtualPlot) targetStation[1]);
-			}
-			virtualPlot.nearestVirtualPlotList = targetStationList;
-			//System.out.println(virtualPlot.plotID+" --> "+targetStationList);
+
+			virtualPlot.nearestVirtualPlots = differenceList.stream().map(o->(VirtualPlot)o[1]).collect(Collectors.toList());
+			System.out.println(virtualPlot.plotID+" --> "+virtualPlot.nearestVirtualPlots);
 		}
 	}
 

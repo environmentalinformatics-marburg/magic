@@ -83,7 +83,7 @@ public class Station {
 	/**
 	 * list of stations of same general station id ordered by position difference to this station
 	 */
-	public List<Station> nearestStationList;
+	public List<Station> nearestStations;
 	
 	/**
 	 * serial number of station: A19557, A2277, ...
@@ -173,7 +173,7 @@ public class Station {
 		}
 	}
 
-	public String[] getValidSchemaEntries(String[] querySchema) {
+	/*public String[] getValidSchemaEntries(String[] querySchema) {
 		Map<String, Integer> schemaMap = Util.stringArrayToMap(loggerType.sensorNames);
 		ArrayList<String> resultList = new ArrayList<String>();
 		for(String sensorName:querySchema) {
@@ -185,11 +185,15 @@ public class Station {
 			return null;
 		}
 		return resultList.toArray(new String[0]);
+	}*/
+	
+	public String[] getValidSchemaEntries(String[] querySchema) {		
+		return Util.getValidEntries(querySchema, loggerType.sensorNames);
 	}
 
 	public List<Station> getNearestStationsWithSensor(String sensorName) {
 		ArrayList<Station> result = new ArrayList<Station>();
-		for(Station station:nearestStationList) {
+		for(Station station:nearestStations) {
 			for(String name:station.loggerType.sensorNames) {
 				if(sensorName.equals(name)) {
 					result.add(station);
@@ -211,5 +215,9 @@ public class Station {
 			}
 		}
 		return properties;
+	}
+	
+	public String[] getSchema() {
+		return loggerType.sensorNames;
 	}
 }

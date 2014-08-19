@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
+
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
 
 import timeseriesdatabase.Sensor;
 import timeseriesdatabase.Station;
@@ -409,5 +412,10 @@ public class Util {
 			}
 		}
 		return false;
+	}
+	
+	public static String[] getValidEntries(String[] names, String[] source) {
+		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
+		return Arrays.asList(source).stream().filter(name->sourceMap.containsKey(name)).toArray(String[]::new);
 	}
 }
