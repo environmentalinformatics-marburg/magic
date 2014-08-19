@@ -245,7 +245,6 @@ public class TimeSeries implements TimeSeriesIterable {
 	}
 
 	public boolean[] getInterpolationFlags(String parameterName) {
-		System.out.println("parameterName "+parameterName);
 		return dataInterpolated[getParameterNameIndex(parameterName)];
 	}
 

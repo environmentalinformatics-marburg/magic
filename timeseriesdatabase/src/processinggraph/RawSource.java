@@ -26,7 +26,7 @@ public class RawSource extends Node {
 		} else {
 			this.schema = station.getValidSchemaEntries(querySchema);
 			if(this.schema.length!=querySchema.length) {
-				throw new RuntimeException("not valid schema"); 
+				throw new RuntimeException("not valid schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
 			}
 		}
 		if(this.schema.length==0) {
@@ -63,7 +63,7 @@ public class RawSource extends Node {
 
 	@Override
 	public Station getSourceStation() {
-		return station;
+		return this.station;
 	}
 
 	@Override

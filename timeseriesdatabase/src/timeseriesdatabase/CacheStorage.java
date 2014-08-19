@@ -14,6 +14,7 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DB.BTreeMapMaker;
 import org.mapdb.DBMaker;
+import org.mapdb.Fun.Tuple2;
 
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.ProcessingChainEntry;
@@ -50,11 +51,12 @@ public class CacheStorage {
 
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
-				//.compressionEnable()
-				//.transactionDisable()
-				//.mmapFileEnable()
-				//.asyncWriteEnable()
-				//.cacheSize(1000000) 
+				.compressionEnable()
+				.transactionDisable()
+				.mmapFileEnable()
+				.asyncWriteEnable()
+				.asyncWriteFlushDelay(500)
+				.cacheSize(1000000)
 				.closeOnJvmShutdown()
 				.make();
 		
@@ -137,8 +139,33 @@ public class CacheStorage {
 		}
 	}
 
-	public void writeNew(String streamName,TimeSeriesIterator input_iterator) {		
-		createNew(streamName, input_iterator.getOutputTimeSeriesSchema());		
+	public void writeNew(String streamName,TimeSeriesIterator input_iterator) {
+		
+		String dbName = DB_NAME_STREAM_PREFIX+streamName;
+		db.delete(dbName);
+		schemaMap.remove(streamName);
+
+		schemaMap.put(streamName, input_iterator.getOutputTimeSeriesSchema());
+		
+		Iterator<Tuple2<Long, TimeSeriesEntry>> bulk_iterator = new Iterator<Tuple2<Long,TimeSeriesEntry>>() {
+			@Override
+			public boolean hasNext() {
+				return input_iterator.hasNext();
+			}
+			@Override
+			public Tuple2<Long, TimeSeriesEntry> next() {
+				TimeSeriesEntry e = input_iterator.next();
+				return new Tuple2<Long, TimeSeriesEntry>(e.timestamp, e);
+			}
+		};
+		
+		db.createTreeMap(dbName).nodeSize(126).pumpIgnoreDuplicates().pumpSource(bulk_iterator).pumpPresort(50000000).make();//.makeLongMap();
+		/*db.commit();
+		db.compact();*/
+				
+		
+		
+		/*createNew(streamName, input_iterator.getOutputTimeSeriesSchema());		
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		if(schemaMap.containsKey(streamName)) {
 			ConcurrentNavigableMap<Long, TimeSeriesEntry> map = db.getTreeMap(dbName);
@@ -149,7 +176,7 @@ public class CacheStorage {
 		} else {
 			log.error("stream not in database: "+streamName);
 		}
-		db.commit();
+		db.commit();*/
 		/*ConcurrentNavigableMap<Long, TimeSeriesEntry> map = streamMap.get(streamName);
 		if(map==null) {
 			map = db.getTreeMap(streamName);
@@ -173,7 +200,13 @@ public class CacheStorage {
 	
 	public void close() {
 		db.commit();
+		db.compact();
 		db.close();
+	}
+	
+	public void commit_and_compact() {
+		db.commit();
+		db.compact();
 	}
 
 }

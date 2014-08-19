@@ -23,13 +23,13 @@ public class Interpolator {
 	 * count of values for training to fill one gap
 	 */
 	public static final int TRAINING_VALUE_COUNT = 4*7*24; // four weeks with one hour time interval
-	
+
 	/**
 	 * maximum count of previous interpolated values in target training values
 	 */
 	//public static final int MAX_INTERPOLATED_IN_TRAINING_COUNT = 7*24;
 	public static final int MAX_INTERPOLATED_IN_TRAINING_COUNT = TRAINING_VALUE_COUNT; //!! TODO
-	
+
 	/**
 	 * minimum of different sources to interpolate from
 	 */
@@ -146,147 +146,6 @@ public class Interpolator {
 	}
 
 
-
-	/**
-	 * process gap filling of one target time series
-	 * @param sourceStartTimestamp start time stamp of inputSource
-	 * @param inputSource array of time series for interpolation training
-	 * @param targetStartTimestamp start time stamp of target
-	 * @param target target time series for interpolation
-	 * @param targetInterpolationFlags 
-	 * @param timeStep for all time series time difference between data values
-	 */
-	/*private static void process(long sourceStartTimestamp, float[][] inputSource, long targetStartTimestamp, float[] target, boolean[] targetInterpolationFlags, int timeStep) {
-
-		int interpolatedgapCount = 0;
-
-		if((targetStartTimestamp-sourceStartTimestamp)%timeStep!=0) {
-			log.error("wrong alignment between sourceStartTimestamp and targetStartTimestamp "+sourceStartTimestamp+"\t"+targetStartTimestamp+"\t"+timeStep);
-		}
-
-
-		target_gap_check_loop: for(int targetIndex=0;targetIndex<target.length;targetIndex++) {
-
-			if(Float.isNaN(target[targetIndex])) { // gap in target time series
-
-				float[][] source = new float[inputSource.length][];
-				for(int i=0;i<inputSource.length;i++) {
-					source[i] = inputSource[i];
-				}
-
-				int sourceGapPositionIndex = (int) (((targetStartTimestamp-sourceStartTimestamp)/timeStep)+targetIndex);	
-				int sourceTrainingStartIndex = sourceGapPositionIndex-TRAINING_VALUE_COUNT;
-				int targetTrainingStartIndex = targetIndex-TRAINING_VALUE_COUNT;
-
-				if(source[0].length<sourceTrainingStartIndex+TRAINING_VALUE_COUNT) {
-					return;
-				}
-
-				//System.out.println("gap: "+i+" sourceTrainingStartIndex: "+sourceTrainingStartIndex+"\t targetTrainingStartIndex: "+targetTrainingStartIndex);
-
-				if(sourceTrainingStartIndex>=0 && targetTrainingStartIndex>=0) {
-					//boolean vaildData = true;
-					boolean[] validData = new boolean[source.length];
-					double[][] trainingSource = new double[TRAINING_VALUE_COUNT][source.length];
-					station_loop:for(int stationIndex=0;stationIndex<source.length;stationIndex++) {
-						validData[stationIndex] = true; // source time series i contains valid training data if no NaN value is found
-						value_loop:for(int valueIndex=0;valueIndex<TRAINING_VALUE_COUNT;valueIndex++) {
-							double value = source[stationIndex][sourceTrainingStartIndex+valueIndex];
-							if(!Double.isNaN(value)) {
-								trainingSource[valueIndex][stationIndex] = value;
-							} else {
-								validData[stationIndex] = false;
-								break value_loop;
-							}
-						}
-					}
-					double[] trainingTarget = new double[TRAINING_VALUE_COUNT];
-					tagret_value_loop:for(int valueIndex=0;valueIndex<TRAINING_VALUE_COUNT;valueIndex++) {
-						double value = target[targetTrainingStartIndex+valueIndex];
-						if(!Double.isNaN(value)) {
-							trainingTarget[valueIndex] = value;
-						} else {
-							validData = null; // interpolation no possible
-							break tagret_value_loop;
-						}
-					}				
-					if(validData!=null) {
-
-						List<Integer> validSourceIndexList = new ArrayList<Integer>();
-
-						for(int stationIndex=0;stationIndex<source.length;stationIndex++) {
-							if(validData[stationIndex]) {
-								validSourceIndexList.add(stationIndex);
-							}
-						}
-
-						final int MIN_TRAINING_SOURCE_STATIONS=2;
-
-						if(validSourceIndexList.size()<MIN_TRAINING_SOURCE_STATIONS) {
-							//no interpolation possible; continue with next gap
-							continue target_gap_check_loop;
-							//return;
-						}
-
-						if(validSourceIndexList.size()<source.length) { //some source stations need to be excluded from training
-							System.out.println("training stations: "+validSourceIndexList.size()+" of "+source.length+"\t\t"+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+(targetIndex*timeStep)));
-							double[][] tempTrainingSource = trainingSource;
-							float[][] tempSource = source;
-							trainingSource = new double[tempTrainingSource.length][validSourceIndexList.size()];
-							source = new float[validSourceIndexList.size()][];
-							for(int validSourceIndex=0;validSourceIndex<validSourceIndexList.size();validSourceIndex++) {
-								int stationIndex = validSourceIndexList.get(validSourceIndex);
-								source[validSourceIndex] = tempSource[stationIndex];
-								for(int valueIndex=0;valueIndex<tempTrainingSource.length;valueIndex++) {
-									//System.out.println("valueIndex: "+valueIndex);
-									trainingSource[valueIndex][validSourceIndex] = tempTrainingSource[valueIndex][stationIndex];
-								}
-
-							}
-						}
-
-						//System.out.println("start interpolation");
-
-						OLSMultipleLinearRegression reg = new OLSMultipleLinearRegression();
-						reg.newSampleData(trainingTarget, trainingSource);
-
-						double[] a;
-
-						try {
-							a = reg.estimateRegressionParameters();
-						} catch(Exception e) {
-							log.warn("interpolation error: "+e);
-							//no interpolation possible; continue with next gap
-							continue target_gap_check_loop;
-						}
-						//Util.printArray(a);
-
-						//*** fill gap ***
-
-						double gapValue = a[0];
-
-						for(int stationIndex=0;stationIndex<source.length;stationIndex++) {
-							gapValue += source[stationIndex][sourceGapPositionIndex]*a[1+stationIndex];
-						}
-
-						//System.out.println(targetIndex+" gapValue: "+gapValue+"\t"+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+(targetIndex*timeStep))+ " in "+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp)+" - "+TimeConverter.oleMinutesToLocalDateTime(targetStartTimestamp+(target.length*timeStep)));
-
-						target[targetIndex] = (float) gapValue;
-						targetInterpolationFlags[targetIndex] = true;
-						interpolatedgapCount++;
-
-						//***
-					} else {
-						//System.out.println("data not valid: "+i);
-					}
-				}
-			}
-		}
-
-		System.out.println("interpolatedgapCount: "+interpolatedgapCount);
-
-	}*/
-
 	/**
 	 * Process gap filling of one target time series and one parameter. Some data in source time series is allowed to be
 	 * left out.
@@ -323,7 +182,20 @@ public class Interpolator {
 
 		//process(startTimestamp, source, startTimestamp, target, targetInterpolationFlags, timeStep);
 		int interpolatedCount = processNew(sourceList.toArray(new float[0][]),target,targetInterpolationFlags);
-		System.out.println("interpolated in "+interpolationName+": "+interpolatedCount);
+		return interpolatedCount;
+	}
+
+	public static int processOneValueGaps(TimeSeries timeSeries) {
+		int interpolatedCount = 0;
+		for(int colIndex=0;colIndex<timeSeries.data.length;colIndex++) {
+			float[] colData = timeSeries.data[colIndex];
+			for(int rowIndex=1;rowIndex<colData.length-1;rowIndex++) {
+				if(Float.isNaN(colData[rowIndex])&&(!Float.isNaN(colData[rowIndex-1]))&&(!Float.isNaN(colData[rowIndex+1]))) {
+					colData[rowIndex] = (colData[rowIndex-1]+colData[rowIndex+1])/2;
+					interpolatedCount++;
+				}
+			}
+		}
 		return interpolatedCount;
 	}
 

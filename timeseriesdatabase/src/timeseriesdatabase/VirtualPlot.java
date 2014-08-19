@@ -149,7 +149,6 @@ public class VirtualPlot {
 				}
 			}
 		}
-		System.out.println("resultIntervalList: "+resultIntervalList.size());
 		return resultIntervalList;
 	}
 

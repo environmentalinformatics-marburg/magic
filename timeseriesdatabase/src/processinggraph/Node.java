@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
-import timeseriesdatabase.LoggerType;
+
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.TimeSeriesEntry;
@@ -27,9 +27,7 @@ public abstract class Node implements Iterable<TimeSeriesEntry> {
 	
 	public abstract TimeSeriesIterator get(Long start, Long end);
 	
-	public Station getSourceStation() {
-		return null;
-	}
+	public abstract Station getSourceStation();
 	
 	public void writeCSV(Long start, Long end, String filename) {
 		get(start,end).writeCSV(filename);

@@ -377,7 +377,7 @@ public class ConfigLoader {
 			});
 
 			virtualPlot.nearestVirtualPlots = differenceList.stream().map(o->(VirtualPlot)o[1]).collect(Collectors.toList());
-			System.out.println(virtualPlot.plotID+" --> "+virtualPlot.nearestVirtualPlots);
+			//System.out.println(virtualPlot.plotID+" --> "+virtualPlot.nearestVirtualPlots);
 		}
 	}
 

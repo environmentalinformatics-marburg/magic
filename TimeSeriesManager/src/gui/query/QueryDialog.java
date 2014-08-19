@@ -54,6 +54,10 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import processinggraph.Aggregated;
+import processinggraph.Interpolated;
+import processinggraph.Node;
+
 public class QueryDialog extends Dialog {
 
 	private static Logger log = Util.log;
@@ -384,16 +388,24 @@ public class QueryDialog extends Dialog {
 			@Override
 			public void run(){
 
-				System.out.println(cPhysicalRange+" "+cEmpiricalRange+" "+cStepRange+" "+useInterpolation);
-
 				TimestampSeries resultTimeSeries = null;
 				try{				
-					System.out.println("query dataQuality: "+dataQuality);
+					/*System.out.println("query dataQuality: "+dataQuality);
 					TimeSeriesIterator result = qp.virtualquery_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 					//TimeSeriesIterator result = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 
-					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));
+					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
+					Node node;
+					if(useInterpolation) {
+						node = Aggregated.createInterpolated(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
+					} else {
+						node = Aggregated.create(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
+					}
+					TimeSeriesIterator it = node.get(queryStart, queryEnd);
+					if(it!=null&&it.hasNext()) {
+						resultTimeSeries = it.toTimestampSeries();
+					}
 				} catch (Exception e) {
 
 					e.printStackTrace();

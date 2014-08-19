@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.Station;
 import timeseriesdatabase.StationProperties;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.VirtualPlot;
@@ -56,7 +57,6 @@ public class VirtualBase extends Base  {
 				Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
 				TimeSeriesIterator it = node.get(interval.start, interval.end);
 				if(it!=null&&it.hasNext()) {
-					System.out.println("add iterator: ["+interval.value.get_serial()+"] plotID "+interval.value.get_plotid());
 					processing_iteratorList.add(it);
 				}
 			}
@@ -74,5 +74,10 @@ public class VirtualBase extends Base  {
 	@Override
 	public boolean isContinuous() {
 		return false; // maybe todo
+	}
+
+	@Override
+	public Station getSourceStation() {
+		return null; // source unknown
 	}
 }

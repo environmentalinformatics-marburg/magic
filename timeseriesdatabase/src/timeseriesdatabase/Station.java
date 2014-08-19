@@ -157,7 +157,7 @@ public class Station {
 
 	@Override
 	public String toString() {
-		return stationID;
+		return stationID+"("+loggerType.typeName+")";
 	}
 
 	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		

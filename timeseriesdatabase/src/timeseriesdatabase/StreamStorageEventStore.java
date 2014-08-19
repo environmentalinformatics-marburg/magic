@@ -119,9 +119,9 @@ public class StreamStorageEventStore implements StreamStorage {
 		} else {
 			Attribute[] internalSchema = store.getSchema(streamName);
 			for(Event event:eventList) {
-				if(event.getPayload().length!=internalSchema.length-2) {// TODO point or interval time representation
+				/*if(event.getPayload().length!=internalSchema.length-2) {// TODO point or interval time representation
 					log.warn("internal schema: "+internalSchema.length+" payload: "+event.getPayload().length);
-				}
+				}*/
 				store.pushEvent(streamName, event.getPayload(),event.getTimestamp());
 			}
 		}

@@ -416,6 +416,6 @@ public class Util {
 	
 	public static String[] getValidEntries(String[] names, String[] source) {
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
-		return Arrays.asList(source).stream().filter(name->sourceMap.containsKey(name)).toArray(String[]::new);
+		return Arrays.asList(names).stream().filter(name->sourceMap.containsKey(name)).toArray(String[]::new);
 	}
 }

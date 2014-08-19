@@ -13,6 +13,7 @@ import timeseriesdatabase.VirtualPlot;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.BadInterpolatedRemoveIterator;
+import timeseriesdatabase.aggregated.iterator.LinearIterpolationIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
@@ -39,6 +40,10 @@ public class Interpolated extends Node {
 		}
 		this.interpolationSources = interpolationSources;
 		this.interpolationSchema = interpolationSchema;
+	}
+	
+	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema) {
+		return create(timeSeriesDatabase, plotID, querySchema, DataQuality.Na);
 	}
 
 	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, DataQuality dataQuality) {
@@ -118,15 +123,23 @@ public class Interpolated extends Node {
 		Long queryStart = start;
 		Long queryEnd = end;
 		start =  Util.ifnull(start, x->x-TRAINING_TIME_INTERVAL);
-		TimeSeries sourceTimeSeries = source.get(start, end).toTimeSeries();
+		TimeSeriesIterator source_iterator = source.get(start, end);
+		if(source_iterator==null||!source_iterator.hasNext()) {
+			return null;
+		}
+		TimeSeries sourceTimeSeries = source_iterator.toTimeSeries();		
+		int linearInterpolatedCount = Interpolator.processOneValueGaps(sourceTimeSeries);
 		long interpolationStart = sourceTimeSeries.getFirstTimestamp();
 		long interpolationEnd = sourceTimeSeries.getLastTimestamp();
 
 		List<TimeSeries> interpolationTimeSeriesTemp = new ArrayList<TimeSeries>();
+		int sourcesLinearInterpolationCount=0;
 		for(Continuous interpolationSource:interpolationSources) {
 			TimeSeriesIterator it = interpolationSource.getExactly(interpolationStart, interpolationEnd);
 			if(it!=null&&it.hasNext()) {
-				interpolationTimeSeriesTemp.add(it.toTimeSeries());
+				TimeSeries timeSeries = it.toTimeSeries();
+				sourcesLinearInterpolationCount += Interpolator.processOneValueGaps(timeSeries);
+				interpolationTimeSeriesTemp.add(timeSeries);
 			}
 		}
 		TimeSeries[] interpolationTimeSeries = interpolationTimeSeriesTemp.toArray(new TimeSeries[0]);
@@ -136,20 +149,25 @@ public class Interpolated extends Node {
 		for(String interpolationName:interpolationSchema) {
 			interpolatedCount += Interpolator.process(interpolationTimeSeries, sourceTimeSeries, interpolationName);
 		}
-		System.out.println("interpolatedCount: "+interpolatedCount);
+		System.out.println("interpolated: linear: "+linearInterpolatedCount+"   multi linear: "+interpolatedCount+"   sources linear: "+sourcesLinearInterpolationCount);
 
 		sourceTimeSeries.hasDataInterpolatedFlag = true;		
 		TimeSeriesIterator clipIterator = sourceTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
-		if(interpolatedCount==0) {
-			return clipIterator;
-		} else {
-			return new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
-		}		
+		TimeSeriesIterator resultIterator = clipIterator;
+		if(interpolatedCount>0) {
+			resultIterator = new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
+		}
+		return resultIterator;
 	}
 
 	@Override
 	public boolean isContinuous() {
 		return true;
+	}
+
+	@Override
+	public Station getSourceStation() {
+		return source.getSourceStation();
 	}
 
 

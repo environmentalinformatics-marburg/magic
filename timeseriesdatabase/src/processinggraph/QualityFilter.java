@@ -1,6 +1,7 @@
 package processinggraph;
 
 import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.iterator.BadQualityToNanIterator;
 import timeseriesdatabase.raw.iterator.QualityFlagIterator;
@@ -47,5 +48,10 @@ public class QualityFilter extends Node{
 	@Override
 	public boolean isContinuous() {
 		return source.isContinuous();
+	}
+
+	@Override
+	public Station getSourceStation() {
+		return source.getSourceStation();
 	}
 }

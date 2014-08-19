@@ -34,8 +34,6 @@ public class VirtualPlotIterator extends MoveIterator {
 				isContinuous = false;
 			}
 		}
-		System.out.println("constantTimeStep: "+constantTimeStep);
-		System.out.println("timeStep: "+timeStep);
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
 	}
 
@@ -48,9 +46,7 @@ public class VirtualPlotIterator extends MoveIterator {
 
 	public VirtualPlotIterator(String[] result_schema, TimeSeriesIterator[] input_iterator, String debugTextplotID) {
 		super(createSchema(result_schema, input_iterator));
-		
-		System.out.println("************************************************** create VirtualPlotIterator: "+debugTextplotID);
-		
+	
 		this.result_schema = result_schema;
 		this.processing_iterator = input_iterator;
 		this.processing_current = new TimeSeriesEntry[processing_iterator.length];
@@ -58,11 +54,6 @@ public class VirtualPlotIterator extends MoveIterator {
 
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) {
 			processing_position_index[iterator_index] = Util.stringArrayToPositionIndexArray(processing_iterator[iterator_index].getOutputSchema(), result_schema, true, true);
-			
-			/*System.out.println("src: "+Util.arrayToString(processing_iterator[iterator_index].getOutputSchema()));
-			System.out.println("tgt: "+Util.arrayToString(result_schema));
-			System.out.println("pos: "+Util.arrayToString(processing_position_index[iterator_index]));*/
-			
 		}
 
 		currentTimestamp=Long.MAX_VALUE;
@@ -118,7 +109,6 @@ public class VirtualPlotIterator extends MoveIterator {
 		}
 		//result element
 		TimeSeriesEntry resultTimeSeriesEntry = new TimeSeriesEntry(currentTimestamp, resultData);
-		//System.out.println(resultTimeSeriesEntry);
 
 		//set next element timestamp
 		currentTimestamp=Long.MAX_VALUE;

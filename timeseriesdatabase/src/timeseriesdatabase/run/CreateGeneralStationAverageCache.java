@@ -1,4 +1,4 @@
-package usecase;
+package timeseriesdatabase.run;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +33,10 @@ import util.iterator.TimeSeriesIteratorIterator;
  * @author woellauer
  *
  */
-public class UseCaseAverageGeneralStationGenerate {
-	
+public class CreateGeneralStationAverageCache {
+
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";	
-	
+
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TimeSeriesDatabase timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
@@ -68,26 +68,29 @@ public class UseCaseAverageGeneralStationGenerate {
 					}
 				}
 			}
-			System.out.println(generalStation.name+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(generalMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(generalMaxTimestamp)+" **************************************************************** "+generalMinTimestamp+"\t-\t"+generalMaxTimestamp);
-			List<TimeSeriesIterator> iteratorList = new ArrayList<TimeSeriesIterator>();
-			for(Station station:generalStation.stationList) {
-				TimeSeriesIterator it = qp.query_continuous_base_aggregated(station.stationID, null, generalMinTimestamp, generalMaxTimestamp, dataquality);
-				if(it!=null) {
-					iteratorList.add(it);
+
+			if(generalMinTimestamp!=Long.MAX_VALUE && generalMaxTimestamp!=Long.MIN_VALUE) {
+				System.out.println(generalStation.name+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(generalMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(generalMaxTimestamp)+" **************************************************************** "+generalMinTimestamp+"\t-\t"+generalMaxTimestamp);
+				List<TimeSeriesIterator> iteratorList = new ArrayList<TimeSeriesIterator>();
+				for(Station station:generalStation.stationList) {
+					TimeSeriesIterator it = qp.query_continuous_base_aggregated(station.stationID, null, generalMinTimestamp, generalMaxTimestamp, dataquality);
+					if(it!=null) {
+						iteratorList.add(it);
+					}
 				}
+
+				String[] generalSchema = generalSchemaSet.toArray(new String[0]);
+				AverageIterator result_iterator = new AverageIterator(generalSchema,iteratorList.toArray(new TimeSeriesIterator[0]),3);
+				//CSV.write(result_iterator, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStation_"+generalStation.name+".csv");
+
+				timeSeriesDatabase.cacheStorage.writeNew(generalStation.name, result_iterator);
+
 			}
-
-			String[] generalSchema = generalSchemaSet.toArray(new String[0]);
-			AverageIterator result_iterator = new AverageIterator(generalSchema,iteratorList.toArray(new TimeSeriesIterator[0]),3);
-			//CSV.write(result_iterator, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStation_"+generalStation.name+".csv");
-			
-			timeSeriesDatabase.cacheStorage.writeNew(generalStation.name, result_iterator);
-
 		}
 
 
 
-
+		timeSeriesDatabase.close();
 
 
 		System.out.println("...end");

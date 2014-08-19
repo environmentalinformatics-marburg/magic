@@ -4,6 +4,7 @@ import java.util.List;
 
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
+import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
 import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
@@ -55,5 +56,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 	
 	public TimeSeries toTimeSeries() {
 		return TimeSeries.create(this);
+	}
+	
+	public TimestampSeries toTimestampSeries() {
+		return TimestampSeries.create(this);
 	}
 }

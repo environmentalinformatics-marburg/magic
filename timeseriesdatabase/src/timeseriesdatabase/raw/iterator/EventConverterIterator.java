@@ -27,8 +27,6 @@ public class EventConverterIterator extends TimeSeriesIterator {
 		super(TimeSeriesSchema.createJustSchema(outputSchema));
 		this.inputIterator = inputIterator;		
 		eventPos = Util.stringArrayToPositionIndexArray(outputSchema, inputSchema, true, true);
-		System.out.println(Util.arrayToString(inputSchema));
-		System.out.println(Util.arrayToString(outputSchema));
 	}
 
 	@Override

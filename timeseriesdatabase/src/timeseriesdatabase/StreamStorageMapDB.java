@@ -109,6 +109,8 @@ public class StreamStorageMapDB implements StreamStorage {
 
 	@Override
 	public void close() {
+		db.commit();
+		db.compact();
 		db.close();		
 	}
 

@@ -67,7 +67,6 @@ public class AggregationIterator extends MoveIterator {
 	
 	
 	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
-		System.out.println("input_schema: "+input_schema);
 		String[] schema = input_schema.schema;
 		if(!input_schema.constantTimeStep) {
 			throw new RuntimeException("no constant time step");

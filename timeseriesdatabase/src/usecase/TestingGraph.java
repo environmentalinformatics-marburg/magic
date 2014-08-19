@@ -26,20 +26,22 @@ public class TestingGraph {
 		
 		//String stationName = "HEG01";
 		//String stationName = "8";
-		String stationName = "fer0";
-		//String stationName = "cof3";
+		//String stationName = "fer0";
+		String stationName = "cof3";
 		String[] querySchema = null;
-		AggregationInterval aggregationInterval = AggregationInterval.DAY;
-		//Node node = Base.create(timeSeriesDatabase, stationName, querySchema, DataQuality.Na);
+		AggregationInterval aggregationInterval = AggregationInterval.MONTH;
+		DataQuality dataQuality = DataQuality.EMPIRICAL;
+		//Node node = Base.create(timeSeriesDatabase, stationName, querySchema, dataQuality);
 		//Node node = Continuous.create(timeSeriesDatabase, stationName, querySchema);
 		//Node node = Aggregated.create(timeSeriesDatabase, stationName, querySchema, aggregationInterval);
-		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, DataQuality.EMPIRICAL);
+		//Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, DataQuality.EMPIRICAL);
+		Node node = Aggregated.createInterpolated(timeSeriesDatabase, stationName, querySchema, aggregationInterval, dataQuality);
 		Long start = null;
 		Long end = null;
 		//TimeSeriesIterator it = node.get(start, end);
 		
-		node.writeCSV(start, end, CSV_OUTPUT_PATH+"TestingGraph.csv");
-		//node.writeConsole(start, end);
+		//node.writeCSV(start, end, CSV_OUTPUT_PATH+"TestingGraph.csv");
+		node.writeConsole(start, end);
 
 		//it = new AggregationIterator(timeSeriesDatabase, it, aggregationInterval);
 		
