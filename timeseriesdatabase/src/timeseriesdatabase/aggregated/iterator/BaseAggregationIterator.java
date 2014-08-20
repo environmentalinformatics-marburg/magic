@@ -183,6 +183,8 @@ public class BaseAggregationIterator extends MoveIterator {
 			float value = (float) inputData[i];
 
 			switch(sensors[i].baseAggregationType) {
+			case NONE:
+				throw new RuntimeException("sensor name not usable for base aggregation: "+sensors[i].name);
 			case AVERAGE_ALBEDO:
 				double hourTimestamp = timestamp/60d;
 				double hour = (hourTimestamp%24)+0;

@@ -284,31 +284,30 @@ public class TimeSeriesDatabase {
 		}
 		stationMap.put(station.stationID, station);
 	}
-
-	public long getFirstTimestamp(String stationID) {
-		Iterator<Event> it = streamStorage.queryRawEvents(stationID, null, null);
-		if(it.hasNext()) {
-			return it.next().getTimestamp();
-		} else {
-			return -1;
+	
+	public long[] getTimestampInterval(String stationName) {
+		VirtualPlot virtualPlot = getVirtualPlot(stationName);
+		if(virtualPlot!=null) {
+			return virtualPlot.getTimestampInterval();
 		}
-	}
-
-	public long getLastTimestamp(String stationID) {
-		Iterator<Event> it = streamStorage.queryRawEvents(stationID, null, null);
-		long timestamp = -1;
+		Iterator<Event> it = streamStorage.queryRawEvents(stationName, null, null);
+		if(it==null || !it.hasNext()) {
+			return null;
+		}
+		long start = it.next().getTimestamp();
+		long end = start;
 		while (it.hasNext()) {
-			timestamp = it.next().getTimestamp();
+			end = it.next().getTimestamp();
 		}
-		return timestamp;
+		return new long[]{start,end};
 	}
-
-	public long getFirstTimestampBaseAggregated(String stationID) {
-		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getFirstTimestamp(stationID));
-	}
-
-	public long getLastTimestampBaseAggregated(String stationID) {
-		return BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(getLastTimestamp(stationID));
+	
+	public long[] getTimestampBaseInterval(String stationName) {
+		long[] interval = getTimestampInterval(stationName);
+		if(interval==null) {
+			return null;
+		}
+		return new long[]{BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[0]),BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[1])};
 	}
 
 	//*********************************************** end Station *************************************************
@@ -353,6 +352,16 @@ public class TimeSeriesDatabase {
 
 	public Stream<GeneralStation> getGeneralStations(Region region) {
 		return generalStationMap.values().stream().filter(x->x.region==region);
+	}
+	
+	public Set<String> getGeneralStationGroups() {
+		Set<String> set = new TreeSet<String>();
+		getGeneralStations().forEach(gs->set.add(gs.group));
+		return set;
+	}
+	
+	public Stream<String> getStationAndVirtualPlotNames(String group) {
+		return getGeneralStationsOfGroup(group).flatMap(gs->gs.getStationAndVirtualPlotNames());
 	}
 
 	//*********************************************** end GeneralStation *************************************************
@@ -463,8 +472,8 @@ public class TimeSeriesDatabase {
 		return regionMap.keySet();
 	}
 
-	public String[] getRegionLongNames() {
-		return regionMap.values().stream().map(x -> x.longName).toArray(String[]::new);
+	public Stream<String> getRegionLongNames() {
+		return regionMap.values().stream().map(x -> x.longName);
 	}
 
 	/**

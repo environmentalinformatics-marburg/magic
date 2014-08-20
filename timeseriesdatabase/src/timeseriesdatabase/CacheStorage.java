@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeKeySerializer;
@@ -52,7 +54,7 @@ public class CacheStorage {
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
 				.compressionEnable()
-				.transactionDisable()
+				//.transactionDisable()
 				.mmapFileEnable()
 				.asyncWriteEnable()
 				.asyncWriteFlushDelay(500)
@@ -131,7 +133,8 @@ public class CacheStorage {
 				public String getIteratorName() {
 					return "cache query iterator";
 				}				
-			};			
+			};
+			System.out.println(it2.getOutputTimeSeriesSchema());
 			return it2;
 		} else {
 			log.error("stream not in database: "+streamName);
@@ -159,9 +162,9 @@ public class CacheStorage {
 			}
 		};
 		
-		db.createTreeMap(dbName).nodeSize(126).pumpIgnoreDuplicates().pumpSource(bulk_iterator).pumpPresort(50000000).make();//.makeLongMap();
-		/*db.commit();
-		db.compact();*/
+		db.createTreeMap(dbName).nodeSize(126).pumpIgnoreDuplicates().pumpSource(bulk_iterator).pumpPresort(1000000).make();//.makeLongMap();
+		db.commit();
+		//db.compact();
 				
 		
 		
@@ -207,6 +210,14 @@ public class CacheStorage {
 	public void commit_and_compact() {
 		db.commit();
 		db.compact();
+	}
+	
+	public Stream<String> getStreamNames() {
+		return db.getAll().keySet().stream().filter(x->x.startsWith(DB_NAME_STREAM_PREFIX)).map(x->x.substring(DB_NAME_STREAM_PREFIX.length()));
+	}
+	
+	public TimeSeriesSchema getSchema(String streamName) {
+		return schemaMap.get(streamName);		
 	}
 
 }

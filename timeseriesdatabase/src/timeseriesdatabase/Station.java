@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.BaseAggregationProcessor;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import timeseriesdatabase.aggregated.TimeSeries;
@@ -189,6 +190,22 @@ public class Station {
 	
 	public String[] getValidSchemaEntries(String[] querySchema) {		
 		return Util.getValidEntries(querySchema, loggerType.sensorNames);
+	}
+	
+	public boolean isValidSchema(String[] querySchema) {
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+	}
+	
+	public boolean isValidBaseSchema(String[] querySchema) {
+		if(!isValidSchema(querySchema)) {
+			return false;
+		}
+		for(String name:querySchema) {
+			if(timeSeriesDatabase.getSensor(name).baseAggregationType==AggregationType.NONE) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public List<Station> getNearestStationsWithSensor(String sensorName) {

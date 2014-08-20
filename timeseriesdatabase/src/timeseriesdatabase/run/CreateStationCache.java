@@ -1,6 +1,8 @@
 package timeseriesdatabase.run;
 
+import processinggraph.Base;
 import processinggraph.RawSource;
+import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import util.iterator.TimeSeriesIterator;
@@ -13,11 +15,15 @@ public class CreateStationCache {
 
 		int lastCommit=0;
 		int counter=0;
-		for(String stationName:timeSeriesDatabase.getStationNames()) {
-			TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
+		for(Station station:timeSeriesDatabase.getStations()) {
+			TimeSeriesIterator input_iterator = null;
+			//TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
+			if(station.isPlot) {
+				input_iterator = Base.create(timeSeriesDatabase, station.stationID, null).get(null, null);
+			}
 			if(input_iterator!=null&&input_iterator.hasNext()) {
-				System.out.println(stationName);
-				timeSeriesDatabase.cacheStorage.writeNew(stationName, input_iterator);
+				System.out.println(station.stationID);
+				timeSeriesDatabase.cacheStorage.writeNew(station.stationID, input_iterator);
 				counter++;
 				if(lastCommit+20<counter) {
 					System.out.println("commit and compact");

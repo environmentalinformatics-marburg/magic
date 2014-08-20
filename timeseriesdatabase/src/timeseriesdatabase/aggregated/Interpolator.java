@@ -169,7 +169,7 @@ public class Interpolator {
 					return 0;
 				}
 				if(endTimestamp!=sourceTimeSeries[i].getLastTimestamp()) {
-					log.error("all sources need to have same endTimestamp");
+					log.error("all sources need to have same endTimestamp: "+TimeConverter.oleMinutesToText(endTimestamp)+"  "+TimeConverter.oleMinutesToText(sourceTimeSeries[i].getLastTimestamp()));
 					return 0;
 				}
 				if(timeStep!=sourceTimeSeries[i].timeStep) {

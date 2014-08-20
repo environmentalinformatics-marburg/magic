@@ -80,4 +80,9 @@ public class VirtualBase extends Base  {
 	public Station getSourceStation() {
 		return null; // source unknown
 	}
+
+	@Override
+	public String[] getSchema() {
+		return schema;
+	}
 }

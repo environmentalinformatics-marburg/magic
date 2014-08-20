@@ -418,4 +418,14 @@ public class Util {
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
 		return Arrays.asList(names).stream().filter(name->sourceMap.containsKey(name)).toArray(String[]::new);
 	}
+	
+	public static boolean isContained(String[] names, String[] source) {
+		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
+		for(String name:names) {
+			if(!sourceMap.containsKey(name)) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

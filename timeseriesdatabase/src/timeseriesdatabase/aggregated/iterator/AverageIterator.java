@@ -18,7 +18,7 @@ import util.iterator.TimeSeriesIterator;
  */
 public class AverageIterator extends MoveIterator {
 
-	Map<String, Integer> schemaMap;
+	private Map<String, Integer> schemaMap;
 	private TimeSeriesIterator[] input_iterators;
 	private final int minCount;
 

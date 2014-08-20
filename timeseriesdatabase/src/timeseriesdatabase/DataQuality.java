@@ -7,9 +7,9 @@ package timeseriesdatabase;
  *
  */
 public enum DataQuality { 
-	Na,			//quality unknown 
-	NO,			//no quality check passed 
+	Na,			//quality unknown    for query: no check, no flag creation
+	NO,			//no quality check passed    for query: no check, but flag creation
 	PHYSICAL,	//physical range check passed and step and empirical not passed
-	STEP, 
-	EMPIRICAL
+	STEP,       //physical range check and step passed and empirical not passed
+	EMPIRICAL   //physical range check and step and empirical passed
 }

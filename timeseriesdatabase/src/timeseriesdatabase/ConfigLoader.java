@@ -55,6 +55,9 @@ public class ConfigLoader {
 			if(longName==null) {
 				longName = name;
 			}
+			if(group==null) {
+				group = name;
+			}
 			return new GeneralStation(name, region, longName, group);
 		}
 	}
@@ -353,14 +356,10 @@ public class ConfigLoader {
 		for(VirtualPlot virtualPlot:timeseriesdatabase.getVirtualPlots()) {
 			List<Object[]> differenceList = new ArrayList<Object[]>();
 
-			List<VirtualPlot> virtualPlots;
 			String group = virtualPlot.generalStation.group;
-			if(group==null) {
-				virtualPlots = virtualPlot.generalStation.virtualPlots;
-			} else {
-				virtualPlots = new ArrayList<VirtualPlot>();
-				timeseriesdatabase.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
-			}			
+			List<VirtualPlot> virtualPlots = new ArrayList<VirtualPlot>();
+			timeseriesdatabase.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
+			
 			for(VirtualPlot targetVirtualPlot:virtualPlots) {
 				if(virtualPlot!=targetVirtualPlot) {
 					double difference = getDifference(virtualPlot, targetVirtualPlot);

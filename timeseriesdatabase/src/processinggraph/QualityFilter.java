@@ -54,4 +54,9 @@ public class QualityFilter extends Node{
 	public Station getSourceStation() {
 		return source.getSourceStation();
 	}
+
+	@Override
+	public String[] getSchema() {
+		return source.getSchema();
+	}
 }

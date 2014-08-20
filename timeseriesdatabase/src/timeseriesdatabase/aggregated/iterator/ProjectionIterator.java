@@ -13,9 +13,20 @@ public class ProjectionIterator extends TimeSeriesIterator {
 
 	private TimeSeriesIterator input_iterator;
 	private int[] eventPos;
+	
+	public static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator, String[] outputSchema) {
+		TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
+		boolean constantTimeStep = input_schema.constantTimeStep;
+		int timeStep = input_schema.timeStep;
+		boolean isContinuous = input_schema.isContinuous;		
+		boolean hasQualityFlags = input_schema.hasQualityFlags;
+		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
+		boolean hasQualityCounters = input_schema.hasQualityCounters;
+		return new TimeSeriesSchema(outputSchema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	}
 
 	public ProjectionIterator(TimeSeriesIterator input_iterator, String[] outputSchema) {
-		super(TimeSeriesSchema.createJustSchema(outputSchema));
+		super(createSchema(input_iterator, outputSchema));
 		this.input_iterator = input_iterator;
 		this.eventPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getOutputSchema(), true, true);
 	}

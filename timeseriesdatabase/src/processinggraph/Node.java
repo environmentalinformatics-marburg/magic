@@ -16,6 +16,7 @@ public abstract class Node implements Iterable<TimeSeriesEntry> {
 	protected static final Logger log = Util.log;
 	
 	protected final TimeSeriesDatabase timeSeriesDatabase;
+	
 	public Node(TimeSeriesDatabase timeSeriesDatabase) {
 		this.timeSeriesDatabase = timeSeriesDatabase;
 	}
@@ -38,4 +39,6 @@ public abstract class Node implements Iterable<TimeSeriesEntry> {
 	}
 	
 	public abstract boolean isContinuous();
+	
+	public abstract String[] getSchema();
 }

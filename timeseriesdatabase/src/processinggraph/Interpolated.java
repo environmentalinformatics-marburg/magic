@@ -3,6 +3,7 @@ package processinggraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -42,23 +43,23 @@ public class Interpolated extends Node {
 		this.interpolationSchema = interpolationSchema;
 	}
 	
-	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema) {
-		return create(timeSeriesDatabase, plotID, querySchema, DataQuality.Na);
+	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, NodeFunc trainingSources) {
+		return create(timeSeriesDatabase, plotID, querySchema, DataQuality.Na, trainingSources);
 	}
 
-	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, DataQuality dataQuality) {
+	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, DataQuality dataQuality, NodeFunc trainingSources) {
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
-			return createFromVirtual(timeSeriesDatabase, virtualPlot, querySchema, dataQuality);
+			return createFromVirtual(timeSeriesDatabase, virtualPlot, querySchema, dataQuality, trainingSources);
 		} 
 		Station station = timeSeriesDatabase.getStation(plotID);
 		if(station!=null) {
-			return createFromStation(timeSeriesDatabase,station,querySchema,dataQuality);
+			return createFromStation(timeSeriesDatabase,station,querySchema,dataQuality, trainingSources);
 		}
 		throw new RuntimeException("station not found");
 	}
 
-	public static Node createFromStation(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, DataQuality dataQuality) {
+	public static Node createFromStation(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, DataQuality dataQuality, NodeFunc trainingSources) {
 		if(querySchema==null) {
 			querySchema = station.getSchema();
 		} else {
@@ -88,7 +89,7 @@ public class Interpolated extends Node {
 		}		
 	}
 	
-	public static Node createFromVirtual(TimeSeriesDatabase timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, DataQuality dataQuality) {
+	public static Node createFromVirtual(TimeSeriesDatabase timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, DataQuality dataQuality, NodeFunc trainingSources) {
 		if(querySchema==null) {
 			querySchema = virtualPlot.getSchema();
 		} else {
@@ -168,6 +169,11 @@ public class Interpolated extends Node {
 	@Override
 	public Station getSourceStation() {
 		return source.getSourceStation();
+	}
+
+	@Override
+	public String[] getSchema() {
+		return source.getSchema();
 	}
 
 

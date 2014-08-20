@@ -5,6 +5,7 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
 import timeseriesdatabase.aggregated.iterator.ManualFillIterator;
+import util.Util;
 import util.iterator.TimeSeriesIterator;
 
 public class StationBase extends Base {
@@ -23,9 +24,18 @@ public class StationBase extends Base {
 	}
 
 	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
-		Node node = RawSource.create(timeSeriesDatabase,stationName,querySchema, dataQuality);		
-		Station station = node.getSourceStation();
-		if(station!=null&&station.loggerType.typeName.equals("tfi")) {
+		Station station = timeSeriesDatabase.getStation(stationName);
+		if(station==null) {
+			throw new RuntimeException("station not found: "+stationName);
+		}
+		if(querySchema==null) {
+			querySchema = timeSeriesDatabase.getBaseAggregationSchema(station.loggerType.sensorNames);
+		}
+		if(!station.isValidBaseSchema(querySchema)) {
+			throw new RuntimeException("not valid base schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
+		}		
+		Node node = RawSource.create(timeSeriesDatabase,station,querySchema, dataQuality);
+		if(station.loggerType.typeName.equals("tfi")) {
 			System.out.println("is tfi");
 			return new StationBase(timeSeriesDatabase, node, true);
 		} else {
@@ -65,5 +75,10 @@ public class StationBase extends Base {
 	@Override
 	public boolean isContinuous() {
 		return false; // maybe todo
+	}
+
+	@Override
+	public String[] getSchema() {
+		return timeSeriesDatabase.getBaseAggregationSchema(source.getSchema());
 	}
 }

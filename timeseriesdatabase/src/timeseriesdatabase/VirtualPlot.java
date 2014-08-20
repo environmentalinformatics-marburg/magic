@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
 import de.umr.jepc.Attribute;
+import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
 import util.TimestampInterval;
 import util.Util;
 
@@ -28,17 +29,17 @@ import util.Util;
 public class VirtualPlot {
 
 	private static final Logger log = Util.log;
-	
+
 	private final TimeSeriesDatabase timeSeriesDatabase;
 
 	public final String plotID;
 	public final GeneralStation generalStation;
-	
+
 	public int geoPosEasting = -1;
 	public int geoPosNorthing = -1;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
-	
+
 	/**
 	 * This list is used for interpolation when similar stations are needed.
 	 */
@@ -66,13 +67,13 @@ public class VirtualPlot {
 						throw new RuntimeException("logger type not found: "+interval.value.get_logger_type_name());
 					}
 					return loggerType;
-					})
+				})
 				.distinct()
 				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
 				.distinct()
 				.toArray(String[]::new);
 	}
-	
+
 	public String[] getValidSchemaEntries(String[] querySchema) {
 		return Util.getValidEntries(querySchema, getSchema());
 	}
@@ -172,5 +173,33 @@ public class VirtualPlot {
 	@Override
 	public String toString() {
 		return plotID;
-	}	
+	}
+
+	public long[] getTimestampInterval() {
+		long[] result = null;
+		for(TimestampInterval<StationProperties> entry:intervalList) {
+			long[] interval = timeSeriesDatabase.getTimestampInterval(entry.value.get_serial());
+			if(interval!=null) {
+				if(result==null) {
+					result = interval;
+				} else {
+					if(interval[0]<result[0]) {
+						result[0] = interval[0];
+					}
+					if(result[1]<interval[1]) {
+						result[1] = interval[1];
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	public long[] getTimestampBaseInterval() {
+		long[] interval = getTimestampInterval();
+		if(interval==null) {
+			return null;
+		}
+		return new long[]{BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[0]),BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[1])};
+	}
 }

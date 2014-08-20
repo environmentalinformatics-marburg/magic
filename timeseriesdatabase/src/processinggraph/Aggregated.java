@@ -1,5 +1,7 @@
 package processinggraph;
 
+import java.util.function.Function;
+
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
@@ -32,16 +34,23 @@ public class Aggregated extends Node {
 		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
 	}
 	
+	public static Aggregated createFromBase(TimeSeriesDatabase timeSeriesDatabase, Base base, AggregationInterval aggregationInterval) {
+		Continuous node = Continuous.createFromBase(timeSeriesDatabase, base);		
+		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
+	}
+	
 	public static Aggregated createInterpolated(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval) {
-		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema);		
+		NodeFunc func = (plotID,schema) -> Continuous.create(timeSeriesDatabase, plotID, schema);
+		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, func);		
 		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
 	}
 	
 	public static Aggregated createInterpolated(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval, DataQuality dataQuality) {
-		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, dataQuality);		
+		NodeFunc func = (plotID,schema) -> Continuous.create(timeSeriesDatabase, plotID, schema);
+		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, dataQuality, func);		
 		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
 	}
-
+	
 	@Override
 	public TimeSeriesIterator get(Long start, Long end) {
 		TimeSeriesIterator continuous_iterator = source.get(start, end);
@@ -63,5 +72,10 @@ public class Aggregated extends Node {
 	@Override
 	public boolean isContinuous() {
 		return true;
+	}
+
+	@Override
+	public String[] getSchema() {
+		return source.getSchema();
 	}
 }

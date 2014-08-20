@@ -3,6 +3,8 @@ package gui.query;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.widgets.DateTime;
@@ -55,6 +57,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import processinggraph.Aggregated;
+import processinggraph.CacheBase;
 import processinggraph.Interpolated;
 import processinggraph.Node;
 
@@ -382,6 +385,8 @@ public class QueryDialog extends Dialog {
 		final DataQuality dataQuality = dq;
 
 		buttonUpdate.setEnabled(false);
+		
+		final boolean useCache = comboRegion.getText().equals("cache");
 
 
 		Thread worker = new Thread() {
@@ -397,7 +402,10 @@ public class QueryDialog extends Dialog {
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
 					Node node;
-					if(useInterpolation) {
+					if(useCache) {
+						String streamName = plotID;
+						node = Aggregated.createFromBase(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName, querySchema), agg);
+					} else if(useInterpolation) {
 						node = Aggregated.createInterpolated(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
 					} else {
 						node = Aggregated.create(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
@@ -450,7 +458,10 @@ public class QueryDialog extends Dialog {
 	}
 
 	void updateGUIregions() {
-		String[] longNames = timeSeriesDatabase.getRegionLongNames();
+		ArrayList<String> list = new ArrayList<String>();
+		timeSeriesDatabase.getRegionLongNames().forEach(x->list.add(x));
+		list.add("cache");
+		String[] longNames = list.toArray(new String[0]);
 
 		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
 		comboRegion.setItems(longNames);
@@ -459,7 +470,7 @@ public class QueryDialog extends Dialog {
 
 	void updateGUIgeneralstations() {
 
-		String regionLongName = comboRegion.getText();
+		String regionLongName = comboRegion.getText();		
 		Region region = timeSeriesDatabase.getRegionByLongName(regionLongName);
 		if(region!=null) {
 			String[] generalStationNames = timeSeriesDatabase.getGeneralStationLongNames(region);
@@ -469,6 +480,13 @@ public class QueryDialog extends Dialog {
 			} else {
 				comboGeneralStation.setText("");	
 			}
+		} else if(regionLongName.equals("cache")) {
+			System.out.println(regionLongName);
+			comboGeneralStation.setItems(new String[]{"cache"});
+			comboGeneralStation.setText("cache");			
+			String[] streams = timeSeriesDatabase.cacheStorage.getStreamNames().toArray(String[]::new);
+			comboPlotID.setItems(streams);
+			comboPlotID.setText(streams.length>0?streams[0]:"");
 		} else {
 			comboPlotID.setItems(new String[0]);
 		}
@@ -481,21 +499,24 @@ public class QueryDialog extends Dialog {
 
 	void updateGUIplotID() {
 		String generalStationName = comboGeneralStation.getText();
-		GeneralStation generalStation = timeSeriesDatabase.getGeneralStationByLongName(generalStationName);
-		//GeneralStation generalStation = timeSeriesDatabase.generalStationMap.get(generalStationName);
-		if(generalStation!=null) {
-			ArrayList<String> plotIDList = new ArrayList<String>();
-			generalStation.stationList.stream().forEach(station->plotIDList.add(station.stationID));
-			generalStation.virtualPlots.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
-			if(plotIDList.size()>0) {
-				String[] plotIDs = plotIDList.toArray(new String[0]);
-				comboPlotID.setItems(plotIDs);
-				comboPlotID.setText(plotIDs[0]);
+		if(!generalStationName.equals("cache")) {
+			GeneralStation generalStation = timeSeriesDatabase.getGeneralStationByLongName(generalStationName);
+			if(generalStation!=null) {
+				ArrayList<String> plotIDList = new ArrayList<String>();
+				generalStation.stationList.stream().forEach(station->plotIDList.add(station.stationID));
+				generalStation.virtualPlots.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
+				if(plotIDList.size()>0) {
+					String[] plotIDs = plotIDList.toArray(new String[0]);
+					comboPlotID.setItems(plotIDs);
+					comboPlotID.setText(plotIDs[0]);
+				} else {
+					comboPlotID.setItems(new String[0]);
+				}
 			} else {
 				comboPlotID.setItems(new String[0]);
 			}
 		} else {
-			comboPlotID.setItems(new String[0]);
+
 		}
 
 
@@ -521,7 +542,10 @@ public class QueryDialog extends Dialog {
 	}
 
 	void updateGUISensorName() {
+
 		String stationName = comboPlotID.getText();
+
+
 		System.out.println("updateGUISensorName "+stationName);
 		String[] schema = null;
 		VirtualPlot virtualplot = timeSeriesDatabase.getVirtualPlot(stationName);
@@ -531,10 +555,14 @@ public class QueryDialog extends Dialog {
 			Station station = timeSeriesDatabase.getStation(stationName);
 			if(station!=null) {
 				schema = station.loggerType.sensorNames;
-			}
+			} 
+		} 
+
+		if(comboGeneralStation.getText().equals("cache")) {
+			schema = timeSeriesDatabase.cacheStorage.getSchema(stationName).schema;
 		}
 		if(schema!=null) {
-			
+
 			String[] sensorNames = timeSeriesDatabase.getBaseAggregationSchema(schema);
 			if(sensorNames.length>0) {
 				String oldName = comboSensorName.getText();
@@ -553,7 +581,7 @@ public class QueryDialog extends Dialog {
 			comboSensorName.setText("");
 		}
 
-		updateGUIinterpolated(); 
+		updateGUIinterpolated();
 	}
 
 	protected void updateGUIinterpolated() {

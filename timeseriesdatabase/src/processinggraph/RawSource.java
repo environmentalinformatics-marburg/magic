@@ -12,34 +12,53 @@ import util.Util;
 import util.iterator.TimeSeriesIterator;
 
 public class RawSource extends Node {
-	public final Station station;
-	public final String[] schema;
+	public final Station station; // not null
+	public final String[] schema; //not null
 
-	protected RawSource(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
-		super(timeSeriesDatabase);
-		this.station = timeSeriesDatabase.getStation(stationName);
+	protected RawSource(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] schema) {
+		super(timeSeriesDatabase);	
+		this.station = station;
+		this.schema = schema;
 		if(this.station==null) {
-			throw new RuntimeException("station not found: "+stationName);
+			throw new RuntimeException("no station");
 		}
-		if(querySchema==null) {
-			this.schema = station.loggerType.sensorNames;
-		} else {
-			this.schema = station.getValidSchemaEntries(querySchema);
-			if(this.schema.length!=querySchema.length) {
-				throw new RuntimeException("not valid schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
-			}
-		}
-		if(this.schema.length==0) {
+		if(this.schema==null || this.schema.length==0) {
 			throw new RuntimeException("no schema");
+		}
+		if(!station.isValidSchema(schema)) {
+			throw new RuntimeException("not valid schema: "+Util.arrayToString(schema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
 		}
 	}
 
 	public static RawSource create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
-		return new RawSource(timeSeriesDatabase, stationName, querySchema);
+		Station station = timeSeriesDatabase.getStation(stationName);
+		if(station==null) {
+			throw new RuntimeException("station not found: "+stationName);
+		}
+		return create(timeSeriesDatabase, station, querySchema);
+	}
+	
+	public static RawSource create(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema) {
+		if(querySchema==null) {
+			querySchema = station.loggerType.sensorNames;
+		}
+		if(!station.isValidSchema(querySchema)) {
+			throw new RuntimeException("not valid schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
+		}
+		return new RawSource(timeSeriesDatabase, station, querySchema);
 	}
 	
 	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
 		RawSource node = create(timeSeriesDatabase, stationName, querySchema);
+		if(DataQuality.Na==dataQuality) {
+			return node;
+		} else {
+			return QualityFilter.create(timeSeriesDatabase, node, dataQuality);
+		}
+	}
+	
+	public static Node create(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, DataQuality dataQuality) {
+		RawSource node = create(timeSeriesDatabase, station, querySchema);
 		if(DataQuality.Na==dataQuality) {
 			return node;
 		} else {
@@ -70,4 +89,11 @@ public class RawSource extends Node {
 	public boolean isContinuous() {
 		return false;
 	}
+
+	@Override
+	public String[] getSchema() {
+		return schema;
+	}
+
+	
 }
