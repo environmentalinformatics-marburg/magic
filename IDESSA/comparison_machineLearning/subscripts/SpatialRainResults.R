@@ -46,6 +46,7 @@ base=raster(paste(datapath,"/baseRaster_de.tiff",sep=""))#load rastervorlage von
 #load obs raster
 #######
 mk.colors <- colorRampPalette(rev(brewer.pal(11,"Spectral")))
+modeldata=eval(parse(text=paste("prediction_",model[1],sep="")))
 for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep="")))))){
 
   obs=eval(parse(text=paste("prediction_",model[1],"$observed",sep="")))[prediction_rf$chDate==unique(prediction_rf$chDate)[scene]]
@@ -159,6 +160,15 @@ datp[[1]]=update(datp[[1]],strip = strip.custom(bg = "grey20",
                  main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
                             substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
 )
+
+datp[[2]]=update(datp[[2]],strip = strip.custom(bg = "grey20", 
+                                                factor.levels =paste0(model,"[mm/1h]"),
+                                                par.strip.text = list(
+                                                  col = "white", font = 2, cex = 1)),
+                 main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
+                            substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
+)
+
 
 
 diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20", 
