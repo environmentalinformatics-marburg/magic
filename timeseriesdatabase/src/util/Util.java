@@ -428,4 +428,12 @@ public class Util {
 		}
 		return true;
 	}
+	
+	public static void throwNull(Object ... o) {
+		for(Object x:o) {
+			if(x==null) {
+				throw new RuntimeException("null");
+			}
+		}
+	}
 }

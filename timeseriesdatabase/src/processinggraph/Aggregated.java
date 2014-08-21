@@ -8,49 +8,28 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.AggregationType;
 import timeseriesdatabase.aggregated.iterator.AggregationIterator;
+import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class Aggregated extends Node {
-	
-	private final Node source;
-	private final AggregationInterval aggregationInterval;
+public class Aggregated extends Continuous_temp.Abstract {
 
-	protected Aggregated(TimeSeriesDatabase timeSeriesDatabase, Node source, AggregationInterval aggregationInterval) {
+	private final Continuous_temp source; //not null
+	private final AggregationInterval aggregationInterval; //not null
+
+	protected Aggregated(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, AggregationInterval aggregationInterval) {
 		super(timeSeriesDatabase);
+		Util.throwNull(source,aggregationInterval);
 		this.source = source;
-		this.aggregationInterval = aggregationInterval;
+		this.aggregationInterval = aggregationInterval;		
 		if(!source.isContinuous()) {
 			throw new RuntimeException("source needs to be continuous");
 		}
 	}
-	
-	public static Aggregated create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval) {
-		Continuous node = Continuous.create(timeSeriesDatabase, stationName, querySchema);		
-		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
+
+	public static Aggregated create(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, AggregationInterval aggregationInterval) {
+		return new Aggregated(timeSeriesDatabase, source, aggregationInterval);
 	}
-	
-	public static Aggregated create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval, DataQuality dataQuality) {
-		Continuous node = Continuous.create(timeSeriesDatabase, stationName, querySchema, dataQuality);		
-		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
-	}
-	
-	public static Aggregated createFromBase(TimeSeriesDatabase timeSeriesDatabase, Base base, AggregationInterval aggregationInterval) {
-		Continuous node = Continuous.createFromBase(timeSeriesDatabase, base);		
-		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
-	}
-	
-	public static Aggregated createInterpolated(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval) {
-		NodeFunc func = (plotID,schema) -> Continuous.create(timeSeriesDatabase, plotID, schema);
-		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, func);		
-		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
-	}
-	
-	public static Aggregated createInterpolated(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, AggregationInterval aggregationInterval, DataQuality dataQuality) {
-		NodeFunc func = (plotID,schema) -> Continuous.create(timeSeriesDatabase, plotID, schema);
-		Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, dataQuality, func);		
-		return new Aggregated(timeSeriesDatabase, node, aggregationInterval);
-	}
-	
+
 	@Override
 	public TimeSeriesIterator get(Long start, Long end) {
 		TimeSeriesIterator continuous_iterator = source.get(start, end);
@@ -70,12 +49,32 @@ public class Aggregated extends Node {
 	}
 
 	@Override
-	public boolean isContinuous() {
-		return true;
+	public String[] getSchema() {
+		return source.getSchema();
 	}
 
 	@Override
-	public String[] getSchema() {
-		return source.getSchema();
+	public TimeSeriesIterator getExactly(long start, long end) {
+		return get(start, end);
+	}
+
+	@Override
+	public boolean isContinuous() {
+		return true;
+	}	
+
+	@Override
+	public boolean isConstantTimestep() {
+		switch(aggregationInterval) {
+		case HOUR:
+		case DAY:
+		case WEEK:
+			return true;
+		case MONTH:
+		case YEAR:
+			return false;
+		default:
+			throw new RuntimeException("unknown aggregation interval");	
+		}
 	}
 }

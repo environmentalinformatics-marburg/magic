@@ -1,7 +1,11 @@
 package timeseriesdatabase.run;
 
 import processinggraph.Base;
+import processinggraph.Node_temp;
+import processinggraph.NodeGen;
+import processinggraph.QueryPlan;
 import processinggraph.RawSource;
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
@@ -19,7 +23,8 @@ public class CreateStationCache {
 			TimeSeriesIterator input_iterator = null;
 			//TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
 			if(station.isPlot) {
-				input_iterator = Base.create(timeSeriesDatabase, station.stationID, null).get(null, null);
+				NodeGen stationGen = QueryPlan.getStationGen(timeSeriesDatabase, DataQuality.STEP);
+				input_iterator = Base.create(timeSeriesDatabase, station.stationID, null, stationGen).get(null, null);
 			}
 			if(input_iterator!=null&&input_iterator.hasNext()) {
 				System.out.println(station.stationID);

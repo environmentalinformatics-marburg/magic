@@ -7,13 +7,14 @@ import util.TimeSeriesSchema;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class CacheBase extends Base {
+public class CacheBase extends Base.Abstract {
 
 	private final String streamName; //not null
 	private final String[] schema; //not null
 
 	private CacheBase(TimeSeriesDatabase timeSeriesDatabase, String streamName, String[] schema) {
 		super(timeSeriesDatabase);
+		Util.throwNull(streamName,schema);
 		this.streamName = streamName;
 		this.schema = schema;
 	}
@@ -44,21 +45,16 @@ public class CacheBase extends Base {
 
 	@Override
 	public Station getSourceStation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isContinuous() {
-		// TODO Auto-generated method stub
-		return false;
+		return false; //TODO
 	}
 
 	@Override
 	public String[] getSchema() {
 		return schema;
 	}
-
-
-
 }

@@ -2,37 +2,22 @@ package timeseriesdatabase.run;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.print.attribute.HashAttributeSet;
 
 import processinggraph.Averaged;
 import processinggraph.Base;
-import processinggraph.Continuous;
+import processinggraph.Continuous_temp;
+import processinggraph.NodeGen;
+import processinggraph.QueryPlan;
 import processinggraph.RawSource;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.store.Event;
-import de.umr.jepc.util.enums.TimeRepresentation;
 import timeseriesdatabase.DataQuality;
-import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeConverter;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
-import timeseriesdatabase.aggregated.iterator.AverageIterator;
-import timeseriesdatabase.aggregated.iterator.NanRemoveIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
-import util.CSV;
-import util.CSVTimeType;
-import util.Util;
 import util.iterator.TimeSeriesIterator;
-import util.iterator.TimeSeriesIteratorIterator;
 
 /**
  * Generates time series for general stations with average of contained station values
@@ -59,7 +44,8 @@ public class CreateStationGroupAverageCache {
 			long generalMinTimestamp = Long.MAX_VALUE;
 			long generalMaxTimestamp = Long.MIN_VALUE;
 			for(String plotID:list) {
-				Base node = Base.create(timeSeriesDatabase, plotID, null);
+				NodeGen stationGen = QueryPlan.getStationGen(timeSeriesDatabase, DataQuality.STEP);
+				Base node = Base.create(timeSeriesDatabase, plotID, null, stationGen);
 				TimeSeriesIterator it = node.get(null, null);
 				if(it==null||!it.hasNext()) {
 					continue;
@@ -79,12 +65,12 @@ public class CreateStationGroupAverageCache {
 				System.out.println(group+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(generalMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(generalMaxTimestamp)+" **************************************************************** "+generalMinTimestamp+"\t-\t"+generalMaxTimestamp);
 				generalMinTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(generalMinTimestamp);
 				generalMaxTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(generalMaxTimestamp);
-				List<Continuous> sources = new ArrayList<Continuous>();
+				List<Continuous_temp> sources = new ArrayList<Continuous_temp>();
 				for(String plotID:list) {
-					Continuous continuous = Continuous.create(timeSeriesDatabase, plotID, null, dataquality);
+					Continuous_temp continuous = QueryPlan.getContinuousGen(timeSeriesDatabase, dataquality).get(plotID,null);
 					sources.add(continuous);
 				}				
-				Averaged averaged = Averaged.create(timeSeriesDatabase, sources);
+				Averaged averaged = Averaged.create(timeSeriesDatabase, sources, 3);
 				TimeSeriesIterator result_iterator = averaged.get(generalMinTimestamp, generalMaxTimestamp);
 				timeSeriesDatabase.cacheStorage.writeNew(group, result_iterator);
 				//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);

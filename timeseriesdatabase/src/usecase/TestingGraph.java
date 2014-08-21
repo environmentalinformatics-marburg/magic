@@ -2,18 +2,11 @@ package usecase;
 
 import processinggraph.Aggregated;
 import processinggraph.Base;
-import processinggraph.Interpolated;
-import processinggraph.StationBase;
-import processinggraph.Continuous;
-import processinggraph.Node;
-import processinggraph.RawSource;
+import processinggraph.Node_temp;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.iterator.AggregationIterator;
-import timeseriesdatabase.raw.TimeSeriesEntry;
-import util.iterator.TimeSeriesIterator;
 
 public class TestingGraph {
 	
@@ -35,13 +28,13 @@ public class TestingGraph {
 		//Node node = Continuous.create(timeSeriesDatabase, stationName, querySchema);
 		//Node node = Aggregated.create(timeSeriesDatabase, stationName, querySchema, aggregationInterval);
 		//Node node = Interpolated.create(timeSeriesDatabase, stationName, querySchema, DataQuality.EMPIRICAL);
-		Node node = Aggregated.createInterpolated(timeSeriesDatabase, stationName, querySchema, aggregationInterval, dataQuality);
+		//Node node = Aggregated.createInterpolated(timeSeriesDatabase, stationName, querySchema, aggregationInterval, dataQuality);
 		Long start = null;
 		Long end = null;
 		//TimeSeriesIterator it = node.get(start, end);
 		
 		//node.writeCSV(start, end, CSV_OUTPUT_PATH+"TestingGraph.csv");
-		node.writeConsole(start, end);
+		//node.writeConsole(start, end);
 
 		//it = new AggregationIterator(timeSeriesDatabase, it, aggregationInterval);
 		

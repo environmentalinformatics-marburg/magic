@@ -1,33 +1,36 @@
 package processinggraph;
 
 import timeseriesdatabase.DataQuality;
+import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.VirtualPlot;
+import util.Util;
 
-public abstract class Base extends Node {
+public interface Base extends Node_temp {
 	
-	protected Base(TimeSeriesDatabase timeSeriesDatabase) {
-		super(timeSeriesDatabase);
-	}
-
-	public static Base create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema) {
-		if(timeSeriesDatabase.virtualPlotExists(plotID)) {
-			return VirtualBase.create(timeSeriesDatabase, plotID, querySchema);
-		} else if(timeSeriesDatabase.stationExists(plotID)){
-			return StationBase.create(timeSeriesDatabase, plotID, querySchema);
-		} else {
-			throw new RuntimeException();
-		}
+	@Override
+	public default boolean isConstantTimestep() {
+		return true;
 	}
 	
-	public static Base create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, DataQuality dataQuality) {
-		if(timeSeriesDatabase.virtualPlotExists(plotID)) {
-			return VirtualBase.create(timeSeriesDatabase, plotID, querySchema, dataQuality);
-		} else if(timeSeriesDatabase.stationExists(plotID)){
-			return StationBase.create(timeSeriesDatabase, plotID, querySchema, dataQuality);
-		} else {
-			throw new RuntimeException();
+	public static Base create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, NodeGen stationGen) {
+		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return VirtualBase.create(timeSeriesDatabase, virtualPlot, querySchema, stationGen);
 		}
+		Station station = timeSeriesDatabase.getStation(plotID);
+		if(station!=null) {
+			return StationBase.create(timeSeriesDatabase, station, querySchema, stationGen);
+		}else {
+			throw new RuntimeException();
+		}	
 	}
-
+	
+	public abstract class Abstract implements Base {		
+		protected TimeSeriesDatabase timeSeriesDatabase; // not null		
+		Abstract(TimeSeriesDatabase timeSeriesDatabase) {
+			Util.throwNull(timeSeriesDatabase);
+			this.timeSeriesDatabase = timeSeriesDatabase;
+		}		
+	}
 }

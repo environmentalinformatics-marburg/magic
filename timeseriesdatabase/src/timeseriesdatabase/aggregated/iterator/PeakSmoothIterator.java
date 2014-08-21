@@ -16,7 +16,7 @@ import util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class ManualFillIterator extends InputProcessingIterator {
+public class PeakSmoothIterator extends InputProcessingIterator {
 
 	private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*2;
 
@@ -28,7 +28,7 @@ public class ManualFillIterator extends InputProcessingIterator {
 	private float[] fillData;
 	private long nextTimestamp;
 
-	public ManualFillIterator(TimeSeriesIterator input_iterator) {
+	public PeakSmoothIterator(TimeSeriesIterator input_iterator) {
 		super(input_iterator, input_iterator.getOutputTimeSeriesSchema()/*TODO*/);
 		columns = input_iterator.getOutputSchema().length;
 		if(input_iterator.hasNext()) {
@@ -56,12 +56,12 @@ public class ManualFillIterator extends InputProcessingIterator {
 				TimeSeriesEntry next = input_iterator.next();
 				nextTimestamp = next.timestamp;
 				long deltaTime = nextTimestamp-(currentTimestamp-timeStep);
-				System.out.println("delta time: "+deltaTime+" MAX_FILL_TIME_INTERVAL: "+MAX_FILL_TIME_INTERVAL);
+				//System.out.println("delta time: "+deltaTime+" MAX_FILL_TIME_INTERVAL: "+MAX_FILL_TIME_INTERVAL);
 				if(deltaTime<=MAX_FILL_TIME_INTERVAL) {
 					updateFillData(deltaTime,next.data);
 					return generateNext();
 				}
-				System.out.println("big gap");
+				//System.out.println("big gap");
 				currentTimestamp = nextTimestamp+timeStep;
 			}
 			return null;

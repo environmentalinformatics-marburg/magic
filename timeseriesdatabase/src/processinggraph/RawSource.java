@@ -11,18 +11,16 @@ import timeseriesdatabase.raw.iterator.EventConverterIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class RawSource extends Node {
+public class RawSource extends Node_temp.Abstract {
 	public final Station station; // not null
-	public final String[] schema; //not null
+	public final String[] schema; //not null, schema valid
 
 	protected RawSource(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] schema) {
-		super(timeSeriesDatabase);	
+		super(timeSeriesDatabase);
+		Util.throwNull(station,schema);
 		this.station = station;
 		this.schema = schema;
-		if(this.station==null) {
-			throw new RuntimeException("no station");
-		}
-		if(this.schema==null || this.schema.length==0) {
+		if(this.schema.length==0) {
 			throw new RuntimeException("no schema");
 		}
 		if(!station.isValidSchema(schema)) {
@@ -42,28 +40,7 @@ public class RawSource extends Node {
 		if(querySchema==null) {
 			querySchema = station.loggerType.sensorNames;
 		}
-		if(!station.isValidSchema(querySchema)) {
-			throw new RuntimeException("not valid schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
-		}
 		return new RawSource(timeSeriesDatabase, station, querySchema);
-	}
-	
-	public static Node create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
-		RawSource node = create(timeSeriesDatabase, stationName, querySchema);
-		if(DataQuality.Na==dataQuality) {
-			return node;
-		} else {
-			return QualityFilter.create(timeSeriesDatabase, node, dataQuality);
-		}
-	}
-	
-	public static Node create(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, DataQuality dataQuality) {
-		RawSource node = create(timeSeriesDatabase, station, querySchema);
-		if(DataQuality.Na==dataQuality) {
-			return node;
-		} else {
-			return QualityFilter.create(timeSeriesDatabase, node, dataQuality);
-		}
 	}
 	
 
@@ -86,14 +63,17 @@ public class RawSource extends Node {
 	}
 
 	@Override
-	public boolean isContinuous() {
-		return false;
-	}
-
-	@Override
 	public String[] getSchema() {
 		return schema;
 	}
 
+	@Override
+	public boolean isConstantTimestep() {
+		return false;
+	}
 	
+	@Override
+	public boolean isContinuous() {
+		return false;
+	}	
 }

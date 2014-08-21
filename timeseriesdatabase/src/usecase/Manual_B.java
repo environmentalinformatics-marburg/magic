@@ -7,7 +7,7 @@ import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;
 import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.iterator.ManualFillIterator;
+import timeseriesdatabase.aggregated.iterator.PeakSmoothIterator;
 import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.Builder;
@@ -38,7 +38,7 @@ public class Manual_B {
 		
 		//it.writeCSV(CSV_OUTPUT_PATH+"Manual_B_org.csv");
 
-		TimeSeriesIterator result_iterator = new ManualFillIterator(it);
+		TimeSeriesIterator result_iterator = new PeakSmoothIterator(it);
 		result_iterator = new NanGapIterator(result_iterator, null, null);
 		
 		result_iterator.writeCSV(CSV_OUTPUT_PATH+"Manual_B.csv");

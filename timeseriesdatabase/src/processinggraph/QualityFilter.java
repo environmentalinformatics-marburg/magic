@@ -5,20 +5,22 @@ import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.raw.iterator.BadQualityToNanIterator;
 import timeseriesdatabase.raw.iterator.QualityFlagIterator;
+import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class QualityFilter extends Node{
+public class QualityFilter extends Node_temp.Abstract{
 	
-	private final Node source;
+	private final Node_temp source;
 	private final DataQuality dataQuality;
 
-	protected QualityFilter(TimeSeriesDatabase timeSeriesDatabase, Node source, DataQuality dataQuality) {
+	protected QualityFilter(TimeSeriesDatabase timeSeriesDatabase, Node_temp source, DataQuality dataQuality) {
 		super(timeSeriesDatabase);
+		Util.throwNull(source, dataQuality);
 		this.source = source;
 		this.dataQuality = dataQuality;
 	}
 	
-	public static QualityFilter create(TimeSeriesDatabase timeSeriesDatabase, Node source, DataQuality dataQuality) {
+	public static QualityFilter create(TimeSeriesDatabase timeSeriesDatabase, Node_temp source, DataQuality dataQuality) {
 		if(DataQuality.Na==dataQuality) {
 			throw new RuntimeException();
 		}
@@ -46,11 +48,6 @@ public class QualityFilter extends Node{
 	}
 
 	@Override
-	public boolean isContinuous() {
-		return source.isContinuous();
-	}
-
-	@Override
 	public Station getSourceStation() {
 		return source.getSourceStation();
 	}
@@ -58,5 +55,15 @@ public class QualityFilter extends Node{
 	@Override
 	public String[] getSchema() {
 		return source.getSchema();
+	}
+	
+	@Override
+	public boolean isContinuous() {
+		return source.isContinuous();
+	}
+
+	@Override
+	public boolean isConstantTimestep() {
+		return source.isConstantTimestep();
 	}
 }

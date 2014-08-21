@@ -6,7 +6,7 @@ import gui.info.SensorsInfoDialog;
 import gui.info.SourceCatalogInfoDialog;
 import gui.info.StationsInfoDialog;
 import gui.info.VirtualPlotInfoDialog;
-import gui.query.DataGenerationDialog;
+import gui.query.SensorQueryDialog;
 import gui.query.QueryDialog;
 
 import java.time.LocalDateTime;
@@ -82,7 +82,7 @@ public class TimeSeriesManager {
 
 		Menu queryMenu = addMenuColumn(menuBar,"Query");
 		addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,timeSeriesDatabase)).open());
-		addMenuItem(queryMenu,"query sensors", new DataGenerationDialog(shell,timeSeriesDatabase));
+		addMenuItem(queryMenu,"query sensors", new SensorQueryDialog(shell,timeSeriesDatabase));
 		
 		Menu statisticsMenu = addMenuColumn(menuBar,"Statistics");
 		addMenuItem(statisticsMenu, "statistics", x->(new StatisticsDialog(shell, timeSeriesDatabase)).open());

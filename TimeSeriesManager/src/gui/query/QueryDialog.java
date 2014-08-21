@@ -2,21 +2,28 @@ package gui.query;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
-import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.wb.swt.SWTResourceManager;
 
+import processinggraph.Node_temp;
+import processinggraph.QueryPlan;
 import swing2swt.layout.BorderLayout;
+import swing2swt.layout.FlowLayout;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.LoggerType;
 import timeseriesdatabase.QueryProcessor;
 import timeseriesdatabase.Region;
 import timeseriesdatabase.Sensor;
@@ -26,40 +33,12 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.VirtualPlot;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
-import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.CSV;
 import util.CSVTimeType;
 import util.Pair;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
-
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.RowData;
-
-import swing2swt.layout.FlowLayout;
-
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.wb.swt.SWTResourceManager;
-
-import processinggraph.Aggregated;
-import processinggraph.CacheBase;
-import processinggraph.Interpolated;
-import processinggraph.Node;
 
 public class QueryDialog extends Dialog {
 
@@ -401,15 +380,22 @@ public class QueryDialog extends Dialog {
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
-					Node node;
+					Node_temp node;
+					
 					if(useCache) {
+						node = QueryPlan.cache(timeSeriesDatabase, plotID, querySchema[0], agg);
+					} else {
+						node = QueryPlan.plot(timeSeriesDatabase, plotID, querySchema[0], agg, dataQuality, useInterpolation);
+					}
+					
+					/*if(useCache) {
 						String streamName = plotID;
 						node = Aggregated.createFromBase(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName, querySchema), agg);
 					} else if(useInterpolation) {
 						node = Aggregated.createInterpolated(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
 					} else {
 						node = Aggregated.create(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
-					}
+					}*/
 					TimeSeriesIterator it = node.get(queryStart, queryEnd);
 					if(it!=null&&it.hasNext()) {
 						resultTimeSeries = it.toTimestampSeries();

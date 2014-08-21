@@ -1,47 +1,27 @@
 package processinggraph;
 
-import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.iterator.BaseAggregationIterator;
-import timeseriesdatabase.aggregated.iterator.ManualFillIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class StationBase extends Base {
+public class StationBase extends Base.Abstract {
 
-	private final Node source;	
-	private final boolean useManualFillIterator;
+	private final Node_temp source;	
 
-	protected StationBase(TimeSeriesDatabase timeSeriesDatabase, Node source, boolean useManualFillIterator) {
+	protected StationBase(TimeSeriesDatabase timeSeriesDatabase, Node_temp source) {
 		super(timeSeriesDatabase);
+		Util.throwNull(source);
 		this.source = source;
-		this.useManualFillIterator = useManualFillIterator;
-	}
-	
-	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
-		return create(timeSeriesDatabase, stationName, querySchema, DataQuality.Na);
 	}
 
-	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema, DataQuality dataQuality) {
-		Station station = timeSeriesDatabase.getStation(stationName);
-		if(station==null) {
-			throw new RuntimeException("station not found: "+stationName);
-		}
+	public static StationBase create(TimeSeriesDatabase timeSeriesDatabase,Station station, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
 			querySchema = timeSeriesDatabase.getBaseAggregationSchema(station.loggerType.sensorNames);
 		}
-		if(!station.isValidBaseSchema(querySchema)) {
-			throw new RuntimeException("not valid base schema: "+Util.arrayToString(querySchema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
-		}		
-		Node node = RawSource.create(timeSeriesDatabase,station,querySchema, dataQuality);
-		if(station.loggerType.typeName.equals("tfi")) {
-			System.out.println("is tfi");
-			return new StationBase(timeSeriesDatabase, node, true);
-		} else {
-			return new StationBase(timeSeriesDatabase, node, false);
-		}
-
+		Node_temp source = stationGen.get(station.stationID, querySchema);
+		return new StationBase(timeSeriesDatabase, source);
 	}
 
 	@Override
@@ -53,25 +33,16 @@ public class StationBase extends Base {
 		BaseAggregationIterator base_iterator = new BaseAggregationIterator(timeSeriesDatabase, input_iterator);
 		if(!base_iterator.hasNext()) {
 			return null;
-		}
-		
-		if(useManualFillIterator) {
-			ManualFillIterator manual_fill_iterator = new ManualFillIterator(base_iterator);
-			if(manual_fill_iterator==null||!manual_fill_iterator.hasNext()) {
-				return null;
-			}
-			return manual_fill_iterator;
-		} else {
-			return base_iterator;
-		}		
-	}
+		}	
 
+		return base_iterator;				
+	}
 
 	@Override
 	public Station getSourceStation() {
 		return source.getSourceStation();
 	}
-	
+
 	@Override
 	public boolean isContinuous() {
 		return false; // maybe todo
