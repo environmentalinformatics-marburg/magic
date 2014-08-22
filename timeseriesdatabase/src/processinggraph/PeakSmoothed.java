@@ -9,15 +9,15 @@ import util.iterator.TimeSeriesIterator;
 
 public class PeakSmoothed extends Base.Abstract {
 	
-	private Node_temp source;
+	private Node source;
 
-	protected PeakSmoothed(TimeSeriesDatabase timeSeriesDatabase, Node_temp source) {
+	protected PeakSmoothed(TimeSeriesDatabase timeSeriesDatabase, Node source) {
 		super(timeSeriesDatabase);
 		Util.throwNull(source);
 		this.source = source;
 	}
 	
-	public static PeakSmoothed create(TimeSeriesDatabase timeSeriesDatabase, Node_temp source) {
+	public static PeakSmoothed create(TimeSeriesDatabase timeSeriesDatabase, Node source) {
 		return new PeakSmoothed(timeSeriesDatabase, source);
 	}	
 

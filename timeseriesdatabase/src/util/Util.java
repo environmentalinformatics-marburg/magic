@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -435,5 +437,9 @@ public class Util {
 				throw new RuntimeException("null");
 			}
 		}
+	}
+	
+	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
+		return (ArrayList<T>) stream.collect(Collectors.toList());
 	}
 }

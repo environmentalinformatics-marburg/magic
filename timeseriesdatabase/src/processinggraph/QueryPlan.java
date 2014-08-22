@@ -8,12 +8,12 @@ import util.iterator.TimeSeriesIterator;
 
 public class QueryPlan {
 
-	public static Node_temp plot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+	public static Node plot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		String[] schema = new String[]{columnName};
 		ContinuousGen continuousGen = getContinuousGen(timeSeriesDatabase, dataQuality);
 		Continuous_temp continuous;
 		if(interpolated) {
-			continuous = Interpolated_temp.create(timeSeriesDatabase, plotID, schema, continuousGen); 
+			continuous = Interpolated.create(timeSeriesDatabase, plotID, schema, continuousGen); 
 		} else {
 			continuous = continuousGen.get(plotID, schema);
 		}
@@ -38,7 +38,7 @@ public class QueryPlan {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
-			Node_temp rawSource = RawSource.create(timeSeriesDatabase, stationID, schema);
+			Node rawSource = RawSource.create(timeSeriesDatabase, stationID, schema);
 			if(station.loggerType.typeName.equals("tfi")) {
 				rawSource = PeakSmoothed.create(timeSeriesDatabase,rawSource);
 			}			
@@ -50,7 +50,7 @@ public class QueryPlan {
 		};
 	}
 
-	public static Node_temp cache(TimeSeriesDatabase timeSeriesDatabase, String streamName, String columnName, AggregationInterval aggregationInterval) {		
+	public static Node cache(TimeSeriesDatabase timeSeriesDatabase, String streamName, String columnName, AggregationInterval aggregationInterval) {		
 		CacheBase base = CacheBase.create(timeSeriesDatabase, streamName, new String[]{columnName});
 		Continuous_temp continuous = Continuous_temp.create(timeSeriesDatabase, base);
 		return Aggregated.create(timeSeriesDatabase, continuous, aggregationInterval);		

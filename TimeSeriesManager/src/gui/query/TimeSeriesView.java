@@ -36,7 +36,7 @@ public class TimeSeriesView {
 	//*** range of time series data in output view
 	private double viewZoomFactor;
 	private double viewOffset;
-	
+
 	private double minTimestamp;
 	private double maxTimestamp;
 	private double timestampRange;
@@ -75,20 +75,20 @@ public class TimeSeriesView {
 		this.viewZoomFactor = 1;
 		this.viewOffset = 0;
 	}
-	
+
 	public double getZoomFactor() {
 		return viewZoomFactor;
 	}
-	
+
 	public void setZoomFactor(double zoomFactor) {
 		this.viewZoomFactor = zoomFactor;
 		updateRangeOfOutputView();
 	}
-	
+
 	public double getViewOffset() {
 		return viewOffset;
 	}
-	
+
 	public void setViewOffset(double viewOffset) {
 		this.viewOffset = viewOffset;
 		updateRangeOfOutputView();
@@ -106,7 +106,7 @@ public class TimeSeriesView {
 		return timeSeries;
 	}
 
-	void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval) {
+	public void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval) {
 
 		this.timeSeries = timeSeries;
 		this.aggregationInterval = aggregationInterval;
@@ -180,15 +180,27 @@ public class TimeSeriesView {
 		System.out.println(":"+minValue+" "+maxValue);
 
 	}
+	
+	public void updateWindow(int xPos, int yPos, int width, int height) {
+		updateRangeOfOutputWindow(xStart,xStart+width,yPos+height,yPos);
+	}
 
 	void updateRangeOfOutputWindow() {
 		xStart = (int) border;
 		xEnd = (int)(canvas.getSize().x-border);
 		yStart = (int) (canvas.getSize().y-border);
 		yEnd = (int) border;
+		updateRangeOfOutputWindow(xStart, xEnd, yStart, yEnd);
+	}
 
-		xRange = xEnd-xStart;
-		yRange = yStart-yEnd; //!!		
+	void updateRangeOfOutputWindow(int xStart, int xEnd, int yStart, int yEnd) {
+		this.xStart = xStart;
+		this.xEnd = xEnd;
+		this.yStart = yStart;
+		this.yEnd = yEnd;
+
+		this.xRange = xEnd-xStart;
+		this.yRange = yStart-yEnd; //!!		
 	}
 
 	void updateDataWindowConversionValues() {
@@ -262,7 +274,7 @@ public class TimeSeriesView {
 		} else if(factor>2) {
 			lineStep=10;		
 		}*/
-		
+
 		/*final double minLineInterval=20;
 		double minLineValueRange = valueRange/(yRange/minLineInterval);
 		System.out.println("valueRange: "+valueRange+"minLineValueRange: "+minLineValueRange);*/
@@ -352,12 +364,12 @@ public class TimeSeriesView {
 	}
 
 
-	public void paintCanvas(GC gc) {
+	public void paintCanvas(GC gc, boolean updatePaintPos) {
 		if(timeSeries!=null) {
 
-
-
-			updateRangeOfOutputWindow();
+			if(updatePaintPos) {
+				updateRangeOfOutputWindow();
+			}
 
 			updateDataWindowConversionValues();
 

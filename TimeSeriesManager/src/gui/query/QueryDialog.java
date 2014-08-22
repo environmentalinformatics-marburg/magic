@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import processinggraph.Node_temp;
+import processinggraph.Node;
 import processinggraph.QueryPlan;
 import swing2swt.layout.BorderLayout;
 import swing2swt.layout.FlowLayout;
@@ -39,6 +39,7 @@ import util.CSVTimeType;
 import util.Pair;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
+import org.eclipse.swt.layout.RowLayout;
 
 public class QueryDialog extends Dialog {
 
@@ -123,7 +124,7 @@ public class QueryDialog extends Dialog {
 
 		Composite composite = new Composite(shlAggregatedQuery, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
-		composite.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		composite.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		Group grpRegion = new Group(composite, SWT.NONE);
 		grpRegion.setText("Region");
@@ -380,7 +381,7 @@ public class QueryDialog extends Dialog {
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
-					Node_temp node;
+					Node node;
 					
 					if(useCache) {
 						node = QueryPlan.cache(timeSeriesDatabase, plotID, querySchema[0], agg);

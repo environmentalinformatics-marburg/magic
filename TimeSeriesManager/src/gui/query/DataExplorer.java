@@ -98,7 +98,7 @@ public class DataExplorer extends Composite {
 		canvas.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		canvas.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent e) {
-				dataView.paintCanvas(e.gc);
+				dataView.paintCanvas(e.gc, true);
 			}
 		});
 		canvas.setEnabled(false);

@@ -49,7 +49,7 @@ public class VirtualBase extends Base.Abstract  {
 			if(stationSchema.length>0) {
 				//Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
 				Station station = timeSeriesDatabase.getStation(interval.value.get_serial());
-				Node_temp node = StationBase.create(timeSeriesDatabase, station, stationSchema, stationGen);
+				Node node = StationBase.create(timeSeriesDatabase, station, stationSchema, stationGen);
 				TimeSeriesIterator it = node.get(interval.start, interval.end);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);

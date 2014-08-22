@@ -7,7 +7,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public interface Node_temp {
+public interface Node {
 	
 	static final Logger log = Util.log;
 	
@@ -36,7 +36,7 @@ public interface Node_temp {
 		get(start,end).writeConsole();
 	}
 	
-	public abstract class Abstract implements Node_temp {
+	public abstract class Abstract implements Node {
 		
 		protected final TimeSeriesDatabase timeSeriesDatabase; //not null
 		

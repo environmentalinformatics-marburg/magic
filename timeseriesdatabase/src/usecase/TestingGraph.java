@@ -2,7 +2,7 @@ package usecase;
 
 import processinggraph.Aggregated;
 import processinggraph.Base;
-import processinggraph.Node_temp;
+import processinggraph.Node;
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.TimeSeriesDatabaseFactory;

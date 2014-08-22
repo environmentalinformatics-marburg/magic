@@ -8,19 +8,19 @@ import timeseriesdatabase.raw.iterator.QualityFlagIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class QualityFilter extends Node_temp.Abstract{
+public class QualityFilter extends Node.Abstract{
 	
-	private final Node_temp source;
+	private final Node source;
 	private final DataQuality dataQuality;
 
-	protected QualityFilter(TimeSeriesDatabase timeSeriesDatabase, Node_temp source, DataQuality dataQuality) {
+	protected QualityFilter(TimeSeriesDatabase timeSeriesDatabase, Node source, DataQuality dataQuality) {
 		super(timeSeriesDatabase);
 		Util.throwNull(source, dataQuality);
 		this.source = source;
 		this.dataQuality = dataQuality;
 	}
 	
-	public static QualityFilter create(TimeSeriesDatabase timeSeriesDatabase, Node_temp source, DataQuality dataQuality) {
+	public static QualityFilter create(TimeSeriesDatabase timeSeriesDatabase, Node source, DataQuality dataQuality) {
 		if(DataQuality.Na==dataQuality) {
 			throw new RuntimeException();
 		}

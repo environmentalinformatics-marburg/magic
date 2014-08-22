@@ -8,7 +8,7 @@ import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public interface Continuous_temp extends Node_temp {
+public interface Continuous_temp extends Node {
 	
 	@Override
 	public default boolean isContinuous() {

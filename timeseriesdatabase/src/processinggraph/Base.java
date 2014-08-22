@@ -6,7 +6,7 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.VirtualPlot;
 import util.Util;
 
-public interface Base extends Node_temp {
+public interface Base extends Node {
 	
 	@Override
 	public default boolean isConstantTimestep() {
@@ -22,7 +22,7 @@ public interface Base extends Node_temp {
 		if(station!=null) {
 			return StationBase.create(timeSeriesDatabase, station, querySchema, stationGen);
 		}else {
-			throw new RuntimeException();
+			throw new RuntimeException("plotID / stationID not found: "+plotID);
 		}	
 	}
 	

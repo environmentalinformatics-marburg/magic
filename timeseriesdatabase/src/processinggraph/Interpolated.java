@@ -18,7 +18,7 @@ import timeseriesdatabase.aggregated.iterator.LinearIterpolationIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class Interpolated_temp extends Continuous_temp.Abstract {
+public class Interpolated extends Continuous_temp.Abstract {
 
 	final static int MIN_STATION_INTERPOLATION_COUNT = 2;
 	final static int STATION_INTERPOLATION_COUNT = 15;		
@@ -28,7 +28,7 @@ public class Interpolated_temp extends Continuous_temp.Abstract {
 	final Continuous_temp[] interpolationSources;  //not null
 	final String[] interpolationSchema;  //not null
 
-	protected Interpolated_temp(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, Continuous_temp[] interpolationSources, String[] interpolationSchema) {		
+	protected Interpolated(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, Continuous_temp[] interpolationSources, String[] interpolationSchema) {		
 		super(timeSeriesDatabase);
 		Util.throwNull(source,interpolationSources,interpolationSchema);
 		if(!source.isContinuous()) {
@@ -82,7 +82,7 @@ public class Interpolated_temp extends Continuous_temp.Abstract {
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;
 		} else {
-			return new Interpolated_temp(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
+			return new Interpolated(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
 		}		
 	}
 	
@@ -112,7 +112,7 @@ public class Interpolated_temp extends Continuous_temp.Abstract {
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;
 		} else {
-			return new Interpolated_temp(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
+			return new Interpolated(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
 		}
 	}
 

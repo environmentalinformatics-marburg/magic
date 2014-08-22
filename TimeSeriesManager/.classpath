@@ -22,5 +22,10 @@
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/opencsv-2.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jepc"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding_1.4.1.v20140214-0004.jar" sourcepath="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.source_1.4.1.v20140214-0004.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.beans_1.2.200.v20140214-0004.jar" sourcepath="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.beans.source_1.2.200.v20140214-0004.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.observable_1.4.1.v20140210-1835.jar" sourcepath="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.observable.source_1.4.1.v20140210-1835.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.property_1.4.200.v20140214-0004.jar" sourcepath="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.core.databinding.property.source_1.4.200.v20140214-0004.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.jface.databinding_1.6.200.v20140528-1422.jar" sourcepath="C:/eclipse-standard-luna-R-win32-x86_64/plugins/org.eclipse.jface.databinding.source_1.6.200.v20140528-1422.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -6,14 +6,16 @@ import gui.info.SensorsInfoDialog;
 import gui.info.SourceCatalogInfoDialog;
 import gui.info.StationsInfoDialog;
 import gui.info.VirtualPlotInfoDialog;
-import gui.query.SensorQueryDialog;
 import gui.query.QueryDialog;
+import gui.sensorquery.SensorQueryDialog;
 
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.core.databinding.observable.Realm;
+import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -57,6 +59,25 @@ public class TimeSeriesManager {
 	}	
 
 	public void run() {
+		Display display = new Display();
+		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
+			public void run() {
+				shell = new Shell(display);
+				init();
+				//shell.pack();
+				shell.open();
+				while (!shell.isDisposed()) {
+					if (!display.readAndDispatch())
+						display.sleep();
+				}
+				display.dispose();
+				System.out.println("...end");
+			}
+		});
+		display.dispose();	
+	}	
+	
+	private void init() {
 		System.out.println("start...");
 		String databaseDirectory = "c:/timeseriesdatabase_database/";
 		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
@@ -64,8 +85,6 @@ public class TimeSeriesManager {
 		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
 		//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 
-		Display display = new Display();
-		shell = new Shell(display);
 		shell.setText("time series database manager");
 		shell.setSize(300, 400);
 		shell.setLayout(new FillLayout());
@@ -93,15 +112,9 @@ public class TimeSeriesManager {
 		textBox.setEditable(false);		
 		printbox = new PrintBox(this);
 
-		shell.setMenuBar(menuBar);        
-		shell.open();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
-		}
-		display.dispose();
-		System.out.println("...end");		
-	}	
+		shell.setMenuBar(menuBar); 
+		
+	}
 	
 	private void addMenuItem(Menu menu,String title,Listener listener) {
 		MenuItem dataGenerationItem = new MenuItem(menu, SWT.PUSH);

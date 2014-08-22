@@ -1,5 +1,5 @@
 package processinggraph;
 
 public interface NodeGen {
-	public Node_temp get(String stationID, String[] schema);
+	public Node get(String stationID, String[] schema);
 }

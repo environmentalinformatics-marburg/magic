@@ -11,7 +11,7 @@ import timeseriesdatabase.raw.iterator.EventConverterIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class RawSource extends Node_temp.Abstract {
+public class RawSource extends Node.Abstract {
 	public final Station station; // not null
 	public final String[] schema; //not null, schema valid
 

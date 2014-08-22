@@ -8,9 +8,9 @@ import util.iterator.TimeSeriesIterator;
 
 public class StationBase extends Base.Abstract {
 
-	private final Node_temp source;	
+	private final Node source;	
 
-	protected StationBase(TimeSeriesDatabase timeSeriesDatabase, Node_temp source) {
+	protected StationBase(TimeSeriesDatabase timeSeriesDatabase, Node source) {
 		super(timeSeriesDatabase);
 		Util.throwNull(source);
 		this.source = source;
@@ -20,7 +20,7 @@ public class StationBase extends Base.Abstract {
 		if(querySchema==null) {
 			querySchema = timeSeriesDatabase.getBaseAggregationSchema(station.loggerType.sensorNames);
 		}
-		Node_temp source = stationGen.get(station.stationID, querySchema);
+		Node source = stationGen.get(station.stationID, querySchema);
 		return new StationBase(timeSeriesDatabase, source);
 	}
 
