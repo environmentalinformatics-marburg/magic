@@ -221,7 +221,7 @@ public class QueryDialog extends Dialog {
 
 		checkButtonInterpolated2 = new Button(grpTestgroup, SWT.CHECK);
 		checkButtonInterpolated2.setText("Interpolated");
-		checkButtonInterpolated2.setSelection(true);
+		//checkButtonInterpolated2.setSelection(true);
 		checkButtonInterpolated2.setBounds(0, 33, 85, 16);
 
 		//******************************

@@ -6,8 +6,23 @@ import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.aggregated.AggregationInterval;
 import util.iterator.TimeSeriesIterator;
 
+/**
+ * With QueryPlan query graphs for specific queries a are build
+ * @author woellauer
+ *
+ */
 public class QueryPlan {
 
+	/**
+	 * Creates a general purpose graph for queries over one plot
+	 * @param timeSeriesDatabase
+	 * @param plotID
+	 * @param columnName
+	 * @param aggregationInterval
+	 * @param dataQuality
+	 * @param interpolated
+	 * @return
+	 */
 	public static Node plot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		String[] schema = new String[]{columnName};
 		ContinuousGen continuousGen = getContinuousGen(timeSeriesDatabase, dataQuality);
@@ -24,6 +39,12 @@ public class QueryPlan {
 		}		
 	}
 
+	/**
+	 * creaets a generator of a continuous source
+	 * @param timeSeriesDatabase
+	 * @param dataQuality
+	 * @return
+	 */
 	public static ContinuousGen getContinuousGen(TimeSeriesDatabase timeSeriesDatabase, DataQuality dataQuality) {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(timeSeriesDatabase, dataQuality);		
@@ -32,6 +53,12 @@ public class QueryPlan {
 		};
 	}
 
+	/**
+	 * creates a generator of a station raw data with quality check
+	 * @param timeSeriesDatabase
+	 * @param dataQuality
+	 * @return
+	 */
 	public static NodeGen getStationGen(TimeSeriesDatabase timeSeriesDatabase, DataQuality dataQuality) {
 		return (String stationID, String[] schema)->{
 			Station station = timeSeriesDatabase.getStation(stationID);
@@ -50,6 +77,14 @@ public class QueryPlan {
 		};
 	}
 
+	/**
+	 * Creates a graph for a cache source
+	 * @param timeSeriesDatabase
+	 * @param streamName
+	 * @param columnName
+	 * @param aggregationInterval
+	 * @return
+	 */
 	public static Node cache(TimeSeriesDatabase timeSeriesDatabase, String streamName, String columnName, AggregationInterval aggregationInterval) {		
 		CacheBase base = CacheBase.create(timeSeriesDatabase, streamName, new String[]{columnName});
 		Continuous_temp continuous = Continuous_temp.create(timeSeriesDatabase, base);

@@ -1,13 +1,20 @@
 package gui.query;
 
 
+import gui.util.Painter;
+import gui.util.Painter.PosHorizontal;
+import gui.util.Painter.PosVerical;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Canvas;
 
 import timeseriesdatabase.TimeConverter;
@@ -45,7 +52,11 @@ public class TimeSeriesView {
 	private double valueRange;
 
 
-	static final float border = 40;
+	//static final float border = 40;
+	static final float borderTop = 10;
+	static final float borderBottom = 15;
+	static final float borderLeft = 40;
+	static final float borderRight = 10;
 
 	//*** range of output window
 	int xStart;
@@ -57,15 +68,17 @@ public class TimeSeriesView {
 	int yRange;
 
 	//*** conversion values
-	double valueOffset;
+	//double valueOffset;
 	double valueFactor;
-	double timestampOffset;
+	//double timestampOffset;
 	double timestampFactor;
 
 	//*** colors
 	Color color_black;
 	Color color_grey;
 	Color color_light;
+	
+	private String title;
 
 
 
@@ -106,10 +119,11 @@ public class TimeSeriesView {
 		return timeSeries;
 	}
 
-	public void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval) {
+	public void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title) {
 
 		this.timeSeries = timeSeries;
 		this.aggregationInterval = aggregationInterval;
+		this.title = title;
 
 		if(timeSeries!=null) {
 			updateRangeOfTimeSeriesData();
@@ -140,6 +154,13 @@ public class TimeSeriesView {
 		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;		
 	}
 
+	public void setTimeRange(long minTimestamp, long maxTimestamp) {
+		this.minTimestamp = minTimestamp;
+		this.maxTimestamp = maxTimestamp;
+		this.timestampRange = maxTimestamp-minTimestamp;
+		updateDataWindowConversionValues();
+	}
+
 	void updateRangeOfOutputView() {
 
 		minTimestamp = viewOffset+dataMinTimestamp;
@@ -151,10 +172,10 @@ public class TimeSeriesView {
 		valueRange = maxValue-minValue;
 
 		double scale = (int) (Math.log((dataValueRange))/Math.log(10));
-		System.out.println("scale"+scale+" -> "+Math.pow(10, scale));
+		//System.out.println("scale"+scale+" -> "+Math.pow(10, scale));
 		float grid = (float) Math.pow(10, scale);
 
-		System.out.println(";"+dataMinValue+" "+dataMaxValue+" "+Math.abs(dataMinValue%grid)+" "+Math.abs(dataMaxValue%grid));
+		//System.out.println(";"+dataMinValue+" "+dataMaxValue+" "+Math.abs(dataMinValue%grid)+" "+Math.abs(dataMaxValue%grid));
 
 		double absRestMin = Math.abs(dataMinValue%grid);
 		if(dataMinValue>0) {
@@ -177,43 +198,233 @@ public class TimeSeriesView {
 
 		valueRange = maxValue-minValue;
 
-		System.out.println(":"+minValue+" "+maxValue);
+		//System.out.println(":"+minValue+" "+maxValue);
 
 	}
-	
+
 	public void updateWindow(int xPos, int yPos, int width, int height) {
-		updateRangeOfOutputWindow(xStart,xStart+width,yPos+height,yPos);
+		//updateRangeOfOutputWindow(xStart,xStart+width,yPos+height,yPos,false);
+		updateRangeOfOutputWindow(xPos,yPos,xPos+width,yPos+height, true);
 	}
 
 	void updateRangeOfOutputWindow() {
-		xStart = (int) border;
-		xEnd = (int)(canvas.getSize().x-border);
-		yStart = (int) (canvas.getSize().y-border);
-		yEnd = (int) border;
-		updateRangeOfOutputWindow(xStart, xEnd, yStart, yEnd);
+		updateRangeOfOutputWindow(0, 0, canvas.getSize().x, canvas.getSize().y, true);
 	}
 
-	void updateRangeOfOutputWindow(int xStart, int xEnd, int yStart, int yEnd) {
-		this.xStart = xStart;
-		this.xEnd = xEnd;
-		this.yStart = yStart;
-		this.yEnd = yEnd;
+	void updateRangeOfOutputWindow(int xStart, int yStart, int xEnd, int yEnd, boolean withBorder) {
+		if(withBorder) {
+			this.xStart = (int) (xStart+borderLeft);
+			this.xEnd = (int) (xEnd-borderRight);
+			this.yStart = (int) (yStart+borderTop);
+			this.yEnd = (int) (yEnd-borderBottom);
 
-		this.xRange = xEnd-xStart;
-		this.yRange = yStart-yEnd; //!!		
+			this.xRange = this.xEnd-this.xStart;
+			this.yRange = this.yEnd-this.yStart;
+		} else {
+			this.xStart = xStart;
+			this.xEnd = xEnd;
+			this.yStart = yStart;
+			this.yEnd = yEnd;
+
+			this.xRange = this.xEnd-this.xStart;
+			this.yRange = this.yEnd-this.yStart;
+		}
 	}
 
 	void updateDataWindowConversionValues() {
-		valueOffset = -minValue;
+		/*valueOffset = -minValue;
 		valueFactor = yRange/valueRange;
 		timestampOffset = -minTimestamp;
-		timestampFactor = xRange/(timestampRange+1); //???		
+		timestampFactor = xRange/(timestampRange+1); //???*/
+
+		valueFactor = yRange/valueRange;
+		timestampFactor = xRange/timestampRange; //???? xRange/(timestampRange+1)
+
+
 	}
 
 
-	private void drawGrid(GC gc, double lineStep) {
+
+	private void drawGrid(GC gc) {
+
+		drawXGrid(gc);
+		drawYGrid(gc);
+
+
+	}
+
+	
+
+	private void drawXGrid(GC gc) {
+
+		final int minGap = 25;
+
+		//gc.setClipping(xStart, y, width, height);
 
 		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
+		
+		
+		Color color_year = new Color(canvas.getDisplay(),220-50,220-50,255-50);
+		Color color_half_year = new Color(canvas.getDisplay(),220-30,220-30,255-30);
+		
+		Color color_year_text = new Color(canvas.getDisplay(),0,0,0);
+		Color color_half_year_text = new Color(canvas.getDisplay(),100,100,100);
+		Color color_quarter_year_text = new Color(canvas.getDisplay(),150,150,150);
+
+		LocalDateTime minDateTime = timestampToDataTime(minTimestamp);
+		LocalDateTime maxDateTime = timestampToDataTime(maxTimestamp);
+
+
+		int yearStep = timestampToGraph(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-timestampToGraph(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
+
+
+
+
+		int minYear = minDateTime.getYear();
+		int maxYear = maxDateTime.getYear();
+
+		int year = minYear-1;
+
+		while(year<=maxYear) {
+			long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+			int x = timestampToGraph(timestamp);
+			gc.setForeground(color_year);
+			gc.drawLine(x , yStart, x, yEnd);
+			gc.setForeground(color_year_text);
+			Painter.drawText(""+year,gc, x, yEnd,PosHorizontal.CENTER,PosVerical.TOP);
+			year++;
+			
+			if(yearStep/2>=minGap) {
+
+			timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 7, 1, 0, 0));
+			x = timestampToGraph(timestamp);
+			gc.setForeground(color_half_year);
+			gc.drawLine(x , yStart, x, yEnd);
+			gc.setForeground(color_half_year_text);
+			Painter.drawText("jul", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+			
+			}
+
+			if(yearStep/4>=minGap) {
+
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 4, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				gc.setForeground(color_quarter_year_text);
+				Painter.drawText("apr", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 10, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				gc.setForeground(color_quarter_year_text);
+				Painter.drawText("oct", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+			}
+			
+			if(yearStep/12>=minGap) {
+
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 2, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("feb", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 3, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("mar", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 5, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("may", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 6, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("jun", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				
+				
+				
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 8, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("aug", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 9, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("sep", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				
+				
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 11, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("nov", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+				
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_light_blue);
+				gc.drawLine(x , yStart, x, yEnd);
+				Painter.drawText("dec", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);				
+			}
+
+		}
+
+
+	}
+
+
+	private void drawYGrid(GC gc) {
+		int maxLines = (int) (yRange/17);
+		double lineStep = valueRange/maxLines;
+
+		lineStep = lineStep+(10d-lineStep%10d);
+		double lineStart = minValue+(lineStep-minValue%lineStep);
+
+		if(valueRange/lineStep<=(maxLines/2d)) {
+			lineStep = lineStep/2d;
+		}		
+
+		drawYGrid(gc,lineStart,lineStep);
+	}
+
+
+	private void drawYGrid(GC gc, double lineStart, double lineStep) {
+		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
+
+		double line = minValue;
+
+		while(line<=maxValue) {			
+			int y = valueToGraph(line);
+			gc.setForeground(color_light_blue);
+			gc.drawLine(xStart , y, xEnd, y);
+			gc.setForeground(color_black);
+			Painter.drawText(Util.doubleToString(line), gc, xStart, y, PosHorizontal.RIGHT, PosVerical.CENTER);
+			line+=lineStep;
+		}
+
+
+	}
+
+
+
+	/*private void drawGrid(GC gc, double lineStep) {
+
+
 
 		double firstLine = minValue-minValue%lineStep;
 		double maxLines =  (int) ((maxValue-firstLine)/lineStep);
@@ -244,7 +455,7 @@ public class TimeSeriesView {
 
 		double lineStep = valueRange/maxLines;
 
-		System.out.println("lineStep "+lineStep);
+		//System.out.println("lineStep "+lineStep);
 
 		if(lineStep<1) {
 			lineStep=1;
@@ -275,11 +486,11 @@ public class TimeSeriesView {
 			lineStep=10;		
 		}*/
 
-		/*final double minLineInterval=20;
+	/*final double minLineInterval=20;
 		double minLineValueRange = valueRange/(yRange/minLineInterval);
 		System.out.println("valueRange: "+valueRange+"minLineValueRange: "+minLineValueRange);*/
 
-
+	/*
 		drawGrid(gc,lineStep);
 
 
@@ -302,22 +513,26 @@ public class TimeSeriesView {
 				gc.setForeground(color_black);
 				gc.drawText(""+y, x, yStart+20);
 			}
-			System.out.println(timestamp);
+			//System.out.println(timestamp);
 		}
 
 
-	}
+	}*/
 
 	private int timestampToGraph(double timestamp) {
 		//return (int) (xStart+(x*valueFactor));
 		//return -1;
 		//(int) (offset+border);
 		//double offset = (entry.timestamp-minTimestamp)*timestampFactor;
-		return (int) (xStart+(timestampOffset+timestamp)*timestampFactor);
+		//return (int) (xStart+(timestampOffset+timestamp)*timestampFactor);
+		return (int) (xStart + (timestamp-minTimestamp)*timestampFactor);
 	}
 
-	private int valueToGraph(double value) {
-		return (int) (yStart-((valueOffset+value)*valueFactor));
+	private int valueToGraph(double yValue) {
+		//return (int) (yStart-((valueOffset+value)*valueFactor));
+		int result = (int) (yEnd - ((yValue - minValue)*valueFactor));
+		System.out.println(yValue+ " -> "+result+"       yEnd: "+yEnd+"    minValue: "+minValue+" valueFactor: "+valueFactor+" yStart: "+yStart);
+		return result;
 	}
 
 	private static LocalDateTime timestampToDataTime(double timestamp) {
@@ -329,8 +544,8 @@ public class TimeSeriesView {
 
 		gc.setForeground(color_black);
 
-		gc.drawText(""+timestampToDataTime(dataMinTimestamp), xStart, yStart+2);
-		gc.drawText(""+timestampToDataTime(dataMaxTimestamp), xEnd-70, yStart+2);
+		//gc.drawText(""+timestampToDataTime(dataMinTimestamp), xStart, yStart+2);
+		//gc.drawText(""+timestampToDataTime(dataMaxTimestamp), xEnd-70, yStart+2);
 
 		//gc.drawText(Util.floatToString(minValue), 3, yStart-10);
 		//gc.drawText(Util.floatToString(maxValue), 3, yEnd-10);
@@ -339,9 +554,15 @@ public class TimeSeriesView {
 		gc.setForeground(color_grey);
 
 		gc.drawLine(xStart , yStart, xEnd, yStart); //x-Aches
-		gc.drawLine(xStart , yStart, xStart, yEnd); // y-Achse
 		gc.drawLine(xStart , yEnd, xEnd, yEnd); //x-Grenze
-		gc.drawLine(xEnd , yStart, xEnd, yEnd); // y-Grenze
+		gc.drawLine(xEnd , yStart, xEnd, yEnd); // y-Achse
+		gc.drawLine(xStart , yStart, xStart, yEnd); // y-Grenze
+
+		gc.setForeground(color_black);
+		int zeroY = valueToGraph(0d);
+		if(yStart<=zeroY&&zeroY<=yEnd) {
+			gc.drawLine(xStart , zeroY, xEnd, zeroY);
+		}
 
 
 
@@ -355,17 +576,26 @@ public class TimeSeriesView {
 		//(max-min)
 
 
-		int y = (int) ((yRange-(/*0f-*/minValue)*valueFactor)+border);
+		//int y = (int) ((yRange-(/*0f-*/minValue)*valueFactor)+border);
 
-		int zero_y = (int) ((int) yRange-(yRange*(/*0-*/minValue)/(maxValue-minValue))+border);
-		gc.drawLine(xStart , zero_y, xEnd, zero_y);
+		//int zero_y = (int) ((int) yRange-(yRange*(/*0-*/minValue)/(maxValue-minValue))+border);
+		//gc.drawLine(xStart , zero_y, xEnd, zero_y);
 
-		System.out.println(yStart+" "+zero_y+" "+y+" "+yEnd);
+		//System.out.println(yStart+" "+zero_y+" "+y+" "+yEnd);
 	}
 
 
 	public void paintCanvas(GC gc, boolean updatePaintPos) {
 		if(timeSeries!=null) {
+			
+			Font old = gc.getFont();
+			FontData fd = old.getFontData()[0];
+			fd.setHeight(20);
+			gc.setFont(new Font(canvas.getDisplay(), fd));
+			gc.setForeground(new Color(canvas.getDisplay(),200,200,200));
+			Painter.drawText(title, gc, 50, 20, PosHorizontal.LEFT, PosVerical.TOP);
+			gc.setFont(old);
+			
 
 			if(updatePaintPos) {
 				updateRangeOfOutputWindow();
@@ -441,7 +671,7 @@ public class TimeSeriesView {
 			//*** end drawing
 
 
-			System.out.println("data length: "+timeSeries.entryList.size());
+			//System.out.println("data length: "+timeSeries.entryList.size());
 		}
 
 	}

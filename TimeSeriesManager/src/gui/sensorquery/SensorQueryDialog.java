@@ -1,113 +1,23 @@
 package gui.sensorquery;
 
-import gui.query.TimeSeriesView;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListenerProxy;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import javax.management.Query;
-
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Text;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.LoggerType;
@@ -117,113 +27,42 @@ import timeseriesdatabase.aggregated.AggregationInterval;
 import timeseriesdatabase.raw.TimestampSeries;
 import util.Util;
 import swing2swt.layout.BorderLayout;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormAttachment;
-
-
-
-
-
-
-
 import org.eclipse.swt.layout.RowData;
 
-import swing2swt.layout.FlowLayout;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.beans.IBeanValueProperty;
-import org.eclipse.core.databinding.beans.PojoProperties;
-import org.eclipse.core.databinding.Binding;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
-import org.eclipse.jface.layout.RowDataFactory;
-import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Canvas;
-
 import processinggraph.Node;
 import processinggraph.QueryPlan;
 
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.custom.CLabel;
+
 public class SensorQueryDialog extends Dialog {
+	
+	@Override
+	  protected void configureShell(Shell newShell) {
+	    super.configureShell(newShell);
+	    newShell.setText("Sensor Query");
+	  }
+
+	@Override
+	protected Control createButtonBar(Composite parent) {
+		return null;
+		
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		
+	}
 
 	private static final Logger log = Util.log;	
 
@@ -234,6 +73,8 @@ public class SensorQueryDialog extends Dialog {
 	private ComboViewer comboViewerGeneralStation;
 	private ComboViewer comboViewerRegion;
 	private ComboViewer comboViewerSensor;
+	ProgressBar progressBar;
+	Button btnUpdate;
 
 	MultiTimeSeriesExplorer multiTimeSeriesExplorer;
 
@@ -241,6 +82,7 @@ public class SensorQueryDialog extends Dialog {
 
 	private DataBindingContext m_bindingContext;
 	private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
+	private CLabel lblQueryStatus;
 
 	/**
 	 * Create the dialog.
@@ -327,10 +169,10 @@ public class SensorQueryDialog extends Dialog {
 		});
 
 		Group grpQuery_1 = new Group(grpQuery, SWT.NONE);
-		grpQuery_1.setText("Query");
-		grpQuery_1.setLayout(new FillLayout(SWT.HORIZONTAL));
+		grpQuery_1.setText("query");
+		grpQuery_1.setLayout(new RowLayout(SWT.HORIZONTAL));
 
-		Button btnUpdate = new Button(grpQuery_1, SWT.NONE);
+		btnUpdate = new Button(grpQuery_1, SWT.NONE);
 		btnUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -338,6 +180,14 @@ public class SensorQueryDialog extends Dialog {
 			}
 		});
 		btnUpdate.setText("update");
+
+		lblQueryStatus = new CLabel(grpQuery_1, SWT.NONE);
+		//formToolkit.adapt(lblQueryStatus);
+		//formToolkit.paintBordersFor(lblQueryStatus);
+		lblQueryStatus.setText("---");
+
+		progressBar = new ProgressBar(grpQuery_1, SWT.NONE);
+		formToolkit.adapt(progressBar, true, true);
 
 		ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.H_SCROLL | SWT.V_SCROLL);
 		scrolledComposite.setBackground(SWTResourceManager.getColor(102, 205, 170));
@@ -361,6 +211,8 @@ public class SensorQueryDialog extends Dialog {
 		updateRegions();
 
 		//updateFromRegionCombo((Region) ((IStructuredSelection)comboRegionViewer.getSelection()).getFirstElement());
+
+		lblQueryStatus.setText("ready");
 		return container;
 	}
 
@@ -370,7 +222,7 @@ public class SensorQueryDialog extends Dialog {
 
 	private void runQuery() {
 		multiTimeSeriesExplorer.clearTimestampSeries();
-		
+
 		AggregationInterval aggregationInterval = AggregationInterval.DAY;
 
 		GeneralStation generalStation = model.getGeneralStation();
@@ -378,31 +230,64 @@ public class SensorQueryDialog extends Dialog {
 		if(generalStation==null||sensorName==null) {			
 			return;			
 		}
-		
+
 		Thread worker = new Thread(()->runQueryAsync(generalStation, aggregationInterval));
 		worker.start();
-		
-		
-	}
-	
-	private void runQueryAsync(GeneralStation generalStation, AggregationInterval aggregationInterval) {
-		ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
-		for(String name:names) {			
-			System.out.println(name+"  sensor name: "+model.getSensorName());
-			TimestampSeries ts = null;
-			try {
 
-				Node x = QueryPlan.plot(timeSeriesDatabase, name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
-				ts = x.get(null, null).toTimestampSeries();
-			} catch(Exception e) {
-				log.error(e.toString());
-			}
-			if(ts!=null) {
-				final TimestampSeries ts_new = ts;
-				getParentShell().getDisplay().asyncExec(()->multiTimeSeriesExplorer.addTimestampSeries(ts_new,aggregationInterval));				
-			}
-		}
+
 	}
+
+	private void runQueryAsync(GeneralStation generalStation, AggregationInterval aggregationInterval) {
+
+		try {
+
+			ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
+			
+			callAsync(()->{
+				btnUpdate.setEnabled(false);
+				lblQueryStatus.setText("running");
+				progressBar.setVisible(true);
+				progressBar.setMinimum(0);
+				progressBar.setMaximum(names.size());
+			});			
+
+			for(int i=0;i<names.size();i++) {
+				String name = names.get(i);			
+				System.out.println(name+"  sensor name: "+model.getSensorName());
+				TimestampSeries ts = null;
+				try {
+
+					Node x = QueryPlan.plot(timeSeriesDatabase, name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
+					ts = x.get(null, null).toTimestampSeries();
+				} catch(Exception e) {
+					log.error(e.toString());
+				}
+				if(ts!=null) {
+					final int progress=i;
+					final TimestampSeries ts_new = ts;
+					callAsync(()->multiTimeSeriesExplorer.addTimestampSeries(ts_new,aggregationInterval,name));
+					callAsync(()->progressBar.setSelection(progress));
+				}
+			}
+
+			callAsync(()->progressBar.setSelection(0));
+
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		callAsync(()->{
+			btnUpdate.setEnabled(true);
+			lblQueryStatus.setText("ready");
+			progressBar.setVisible(false);
+		});
+	}
+
+	private void callAsync(Runnable runnable) {
+		getParentShell().getDisplay().asyncExec(runnable);	
+	}
+
+
 
 	/**
 	 * Return the initial size of the dialog.
