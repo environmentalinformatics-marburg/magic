@@ -26,7 +26,7 @@ public class QueryPlan {
 	public static Node plot(TimeSeriesDatabase timeSeriesDatabase, String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		String[] schema = new String[]{columnName};
 		ContinuousGen continuousGen = getContinuousGen(timeSeriesDatabase, dataQuality);
-		Continuous_temp continuous;
+		Continuous continuous;
 		if(interpolated) {
 			continuous = Interpolated.create(timeSeriesDatabase, plotID, schema, continuousGen); 
 		} else {
@@ -49,7 +49,11 @@ public class QueryPlan {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(timeSeriesDatabase, dataQuality);		
 			Base base = Base.create(timeSeriesDatabase, plotID, schema, stationGen);
-			return Continuous_temp.create(timeSeriesDatabase, base);
+			Continuous continuous = Continuous.create(timeSeriesDatabase, base);
+			if(DataQuality.EMPIRICAL==dataQuality) {
+				continuous = EmpiricalFiltered.create(timeSeriesDatabase, continuous, plotID);
+			}
+			return continuous;
 		};
 	}
 
@@ -72,7 +76,7 @@ public class QueryPlan {
 			if(DataQuality.Na==dataQuality) {
 				return rawSource;
 			} else {
-				return QualityFilter.create(timeSeriesDatabase, rawSource, dataQuality);
+				return RangeStepFiltered.create(timeSeriesDatabase, rawSource, dataQuality);
 			}
 		};
 	}
@@ -87,7 +91,7 @@ public class QueryPlan {
 	 */
 	public static Node cache(TimeSeriesDatabase timeSeriesDatabase, String streamName, String columnName, AggregationInterval aggregationInterval) {		
 		CacheBase base = CacheBase.create(timeSeriesDatabase, streamName, new String[]{columnName});
-		Continuous_temp continuous = Continuous_temp.create(timeSeriesDatabase, base);
+		Continuous continuous = Continuous.create(timeSeriesDatabase, base);
 		return Aggregated.create(timeSeriesDatabase, continuous, aggregationInterval);		
 	}	
 

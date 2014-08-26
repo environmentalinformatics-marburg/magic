@@ -1,6 +1,5 @@
 package processinggraph;
 
-import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.GeneralStation;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
@@ -10,14 +9,14 @@ import timeseriesdatabase.aggregated.iterator.ProjectionIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class EmpiricalFiltered extends Continuous_temp.Abstract {
+public class EmpiricalFiltered extends Continuous.Abstract {
 
-	private final Continuous_temp source; //not null
-	private final Continuous_temp compareSource; //not null	
+	private final Continuous source; //not null
+	private final Continuous compareSource; //not null	
 	private final String stationName; //not null
 	
 
-	public EmpiricalFiltered(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, Continuous_temp compareSource, String stationName) {
+	public EmpiricalFiltered(TimeSeriesDatabase timeSeriesDatabase, Continuous source, Continuous compareSource, String stationName) {
 		super(timeSeriesDatabase);
 		Util.throwNull(source,compareSource,stationName);
 		if(!source.isContinuous()) {
@@ -31,8 +30,8 @@ public class EmpiricalFiltered extends Continuous_temp.Abstract {
 		this.stationName = stationName;
 	}
 
-	public static EmpiricalFiltered create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
-		Continuous_temp source = QueryPlan.getContinuousGen(timeSeriesDatabase, DataQuality.Na).get(stationName,null);
+	/*public static EmpiricalFiltered create(TimeSeriesDatabase timeSeriesDatabase, String stationName, String[] querySchema) {
+		Continuous source = QueryPlan.getContinuousGen(timeSeriesDatabase, DataQuality.Na).get(stationName,null);
 		GeneralStation generalStation = null;
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(stationName);
 		if(virtualPlot!=null) {
@@ -47,8 +46,27 @@ public class EmpiricalFiltered extends Continuous_temp.Abstract {
 			throw new RuntimeException("station not found: "+stationName);
 		}
 		String streamName = generalStation.group;
-		Continuous_temp compareSource = Continuous_temp.create(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName , querySchema));
+		Continuous compareSource = Continuous.create(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName , querySchema));
 		return new EmpiricalFiltered(timeSeriesDatabase,source,compareSource, stationName);
+	}*/
+	
+	public static Continuous create(TimeSeriesDatabase timeSeriesDatabase, Continuous continuous, String plotID) {
+		GeneralStation generalStation = null;
+		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			generalStation = virtualPlot.generalStation;
+		} else {
+			Station station = timeSeriesDatabase.getStation(plotID);
+			if(station!=null) {
+				generalStation = station.generalStation;
+			}
+		}
+		if(generalStation==null) {
+			throw new RuntimeException("station not found: "+plotID);
+		}
+		String streamName = generalStation.group;
+		Continuous compareSource = Continuous.create(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName , continuous.getSchema()));
+		return new EmpiricalFiltered(timeSeriesDatabase,continuous,compareSource, plotID);
 	}
 
 	@Override
@@ -100,5 +118,4 @@ public class EmpiricalFiltered extends Continuous_temp.Abstract {
 	public boolean isConstantTimestep() {
 		return source.isContinuous();
 	}
-
 }

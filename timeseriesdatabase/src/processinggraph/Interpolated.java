@@ -3,39 +3,33 @@ package processinggraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
-
-import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.Station;
 import timeseriesdatabase.TimeSeriesDatabase;
 import timeseriesdatabase.VirtualPlot;
 import timeseriesdatabase.aggregated.Interpolator;
 import timeseriesdatabase.aggregated.TimeSeries;
 import timeseriesdatabase.aggregated.iterator.BadInterpolatedRemoveIterator;
-import timeseriesdatabase.aggregated.iterator.LinearIterpolationIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class Interpolated extends Continuous_temp.Abstract {
+public class Interpolated extends Continuous.Abstract {
 
 	final static int MIN_STATION_INTERPOLATION_COUNT = 2;
 	final static int STATION_INTERPOLATION_COUNT = 15;		
 	final static int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 
-	final Continuous_temp source;  //not null
-	final Continuous_temp[] interpolationSources;  //not null
+	final Continuous source;  //not null
+	final Continuous[] interpolationSources;  //not null
 	final String[] interpolationSchema;  //not null
 
-	protected Interpolated(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, Continuous_temp[] interpolationSources, String[] interpolationSchema) {		
+	protected Interpolated(TimeSeriesDatabase timeSeriesDatabase, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema) {		
 		super(timeSeriesDatabase);
 		Util.throwNull(source,interpolationSources,interpolationSchema);
 		if(!source.isContinuous()) {
 			throw new RuntimeException("source not continuous");
 		}
 		this.source = source;
-		for(Continuous_temp interpolationSource:interpolationSources) {
+		for(Continuous interpolationSource:interpolationSources) {
 			if(!interpolationSource.isContinuous()) {
 				throw new RuntimeException("interpolation source not continuous");
 			}
@@ -44,7 +38,7 @@ public class Interpolated extends Continuous_temp.Abstract {
 		this.interpolationSchema = interpolationSchema;
 	}
 	
-	public static Continuous_temp create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous create(TimeSeriesDatabase timeSeriesDatabase, String plotID, String[] querySchema, ContinuousGen sourceGen) {
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return createFromVirtual(timeSeriesDatabase, virtualPlot, querySchema, sourceGen);
@@ -56,7 +50,7 @@ public class Interpolated extends Continuous_temp.Abstract {
 		throw new RuntimeException("station not found");
 	}
 
-	public static Continuous_temp createFromStation(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous createFromStation(TimeSeriesDatabase timeSeriesDatabase, Station station, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = station.getSchema();
 		} else {
@@ -65,19 +59,19 @@ public class Interpolated extends Continuous_temp.Abstract {
 		if(querySchema.length==0) {
 			throw new RuntimeException("empty schema");
 		}		
-		Continuous_temp source = sourceGen.get(station.stationID, querySchema);	
+		Continuous source = sourceGen.get(station.stationID, querySchema);	
 
 		String[] interpolationSchema = Arrays.asList(querySchema)
 				.stream()
 				.filter(sensorName -> timeSeriesDatabase.getSensor(sensorName).useInterpolation)
 				.toArray(String[]::new);
 
-		Concrete[] interpolationSources = station.nearestStations
+		Continuous[] interpolationSources = station.nearestStations
 				.stream()
 				.limit(STATION_INTERPOLATION_COUNT)
 				.filter(sourceStation -> sourceStation.getValidSchemaEntries(interpolationSchema).length>0)
 				.map(sourceStation -> sourceGen.get(sourceStation.stationID, sourceStation.getValidSchemaEntries(interpolationSchema)))
-				.toArray(Concrete[]::new);
+				.toArray(Continuous[]::new);
 
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;
@@ -86,7 +80,7 @@ public class Interpolated extends Continuous_temp.Abstract {
 		}		
 	}
 	
-	public static Continuous_temp createFromVirtual(TimeSeriesDatabase timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous createFromVirtual(TimeSeriesDatabase timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = virtualPlot.getSchema();
 		} else {
@@ -95,7 +89,7 @@ public class Interpolated extends Continuous_temp.Abstract {
 		if(querySchema.length==0) {
 			throw new RuntimeException("empty schema");
 		}		
-		Continuous_temp source = sourceGen.get(virtualPlot.plotID, querySchema);		
+		Continuous source = sourceGen.get(virtualPlot.plotID, querySchema);		
 
 		String[] interpolationSchema = Arrays.asList(querySchema)
 				.stream()
@@ -132,7 +126,7 @@ public class Interpolated extends Continuous_temp.Abstract {
 
 		List<TimeSeries> interpolationTimeSeriesTemp = new ArrayList<TimeSeries>();
 		int sourcesLinearInterpolationCount=0;
-		for(Continuous_temp interpolationSource:interpolationSources) {
+		for(Continuous interpolationSource:interpolationSources) {
 			TimeSeriesIterator it = interpolationSource.getExactly(interpolationStart, interpolationEnd);//TODO
 			if(it!=null&&it.hasNext()) {
 				TimeSeries timeSeries = it.toTimeSeries();

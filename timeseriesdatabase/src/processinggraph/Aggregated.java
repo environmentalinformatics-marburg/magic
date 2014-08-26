@@ -11,12 +11,12 @@ import timeseriesdatabase.aggregated.iterator.AggregationIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class Aggregated extends Continuous_temp.Abstract {
+public class Aggregated extends Continuous.Abstract {
 
-	private final Continuous_temp source; //not null
+	private final Continuous source; //not null
 	private final AggregationInterval aggregationInterval; //not null
 
-	protected Aggregated(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, AggregationInterval aggregationInterval) {
+	protected Aggregated(TimeSeriesDatabase timeSeriesDatabase, Continuous source, AggregationInterval aggregationInterval) {
 		super(timeSeriesDatabase);
 		Util.throwNull(source,aggregationInterval);
 		this.source = source;
@@ -26,7 +26,7 @@ public class Aggregated extends Continuous_temp.Abstract {
 		}
 	}
 
-	public static Aggregated create(TimeSeriesDatabase timeSeriesDatabase, Continuous_temp source, AggregationInterval aggregationInterval) {
+	public static Aggregated create(TimeSeriesDatabase timeSeriesDatabase, Continuous source, AggregationInterval aggregationInterval) {
 		return new Aggregated(timeSeriesDatabase, source, aggregationInterval);
 	}
 

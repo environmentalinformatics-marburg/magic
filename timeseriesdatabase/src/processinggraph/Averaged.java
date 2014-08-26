@@ -12,14 +12,14 @@ import timeseriesdatabase.aggregated.iterator.AverageIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public class Averaged extends Continuous_temp.Abstract {
+public class Averaged extends Continuous.Abstract {
 	
-	private final List<Continuous_temp> sources; //not null
+	private final List<Continuous> sources; //not null
 	private final String[] schema; //not null
 	private final int minCount;
 	private final boolean _constant_timestep;
 
-	public Averaged(TimeSeriesDatabase timeSeriesDatabase, List<Continuous_temp> sources, String[] schema, int minCount) {
+	public Averaged(TimeSeriesDatabase timeSeriesDatabase, List<Continuous> sources, String[] schema, int minCount) {
 		super(timeSeriesDatabase);
 		Util.throwNull(sources,schema);
 		if(sources.isEmpty()) {
@@ -33,7 +33,7 @@ public class Averaged extends Continuous_temp.Abstract {
 		}
 		this.minCount = minCount;
 		this._constant_timestep = sources.get(0).isConstantTimestep();
-		for(Continuous_temp source:sources) {
+		for(Continuous source:sources) {
 			if(!source.isContinuous() || source.isConstantTimestep()!=_constant_timestep) {
 				throw new RuntimeException("different source types");
 			}
@@ -42,9 +42,9 @@ public class Averaged extends Continuous_temp.Abstract {
 		this.schema = schema;
 	}
 
-	public static Averaged create(TimeSeriesDatabase timeSeriesDatabase, List<Continuous_temp> sources, int minCount) {		
+	public static Averaged create(TimeSeriesDatabase timeSeriesDatabase, List<Continuous> sources, int minCount) {		
 		Set<String> schemaSet = new LinkedHashSet<String>();		
-		for(Continuous_temp continuous:sources) {
+		for(Continuous continuous:sources) {
 			schemaSet.addAll(Arrays.asList(continuous.getSchema()));
 		}
 		return new Averaged(timeSeriesDatabase, sources, schemaSet.toArray(new String[0]), minCount);
@@ -57,7 +57,7 @@ public class Averaged extends Continuous_temp.Abstract {
 	
 	public TimeSeriesIterator getExactly(long start, long end) {		
 		List<TimeSeriesIterator> iteratorList = new ArrayList<>();		
-		for(Continuous_temp source:sources) {
+		for(Continuous source:sources) {
 			TimeSeriesIterator it = source.get(start, end);
 			if(it!=null&&it.hasNext()) {
 				iteratorList.add(it);				

@@ -27,7 +27,7 @@ import timeseriesdatabase.aggregated.iterator.VirtualPlotIterator;
 import timeseriesdatabase.raw.TimestampSeries;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import timeseriesdatabase.raw.iterator.QualityFlagIterator;
-import timeseriesdatabase.raw.iterator.BadQualityToNanIterator;
+import timeseriesdatabase.raw.iterator.LowQualityToNanIterator;
 import util.Util;
 import util.iterator.SchemaIterator;
 import util.iterator.TimeSeriesIterator;
@@ -88,7 +88,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_raw_with_bad_quality_removed(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator qualityFlagIterator = query_raw_with_quality_flags(plotID, querySchema, queryStart, queryEnd);
-		return Util.ifnull(qualityFlagIterator, x->new BadQualityToNanIterator(x,dataQuality));		
+		return Util.ifnull(qualityFlagIterator, x->new LowQualityToNanIterator(x,dataQuality));		
 	}
 
 	/**

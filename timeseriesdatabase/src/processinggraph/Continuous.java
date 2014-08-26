@@ -8,7 +8,7 @@ import timeseriesdatabase.aggregated.iterator.NanGapIterator;
 import util.Util;
 import util.iterator.TimeSeriesIterator;
 
-public interface Continuous_temp extends Node {
+public interface Continuous extends Node {
 	
 	@Override
 	public default boolean isContinuous() {
@@ -17,11 +17,11 @@ public interface Continuous_temp extends Node {
 	
 	public TimeSeriesIterator getExactly(long start, long end);
 	
-	public static Continuous_temp create(TimeSeriesDatabase timeSeriesDatabase, Base base) {
+	public static Continuous create(TimeSeriesDatabase timeSeriesDatabase, Base base) {
 		return new Concrete(timeSeriesDatabase, base);
 	}
 	
-	public abstract class Abstract implements Continuous_temp {
+	public abstract class Abstract implements Continuous {
 		protected TimeSeriesDatabase timeSeriesDatabase; //not null
 		protected Abstract(TimeSeriesDatabase timeSeriesDatabase) {
 			Util.throwNull(timeSeriesDatabase);

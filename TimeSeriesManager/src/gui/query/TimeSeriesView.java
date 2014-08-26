@@ -520,19 +520,11 @@ public class TimeSeriesView {
 	}*/
 
 	private int timestampToGraph(double timestamp) {
-		//return (int) (xStart+(x*valueFactor));
-		//return -1;
-		//(int) (offset+border);
-		//double offset = (entry.timestamp-minTimestamp)*timestampFactor;
-		//return (int) (xStart+(timestampOffset+timestamp)*timestampFactor);
 		return (int) (xStart + (timestamp-minTimestamp)*timestampFactor);
 	}
 
 	private int valueToGraph(double yValue) {
-		//return (int) (yStart-((valueOffset+value)*valueFactor));
-		int result = (int) (yEnd - ((yValue - minValue)*valueFactor));
-		System.out.println(yValue+ " -> "+result+"       yEnd: "+yEnd+"    minValue: "+minValue+" valueFactor: "+valueFactor+" yStart: "+yStart);
-		return result;
+		return (int) (yEnd - ((yValue - minValue)*valueFactor));
 	}
 
 	private static LocalDateTime timestampToDataTime(double timestamp) {

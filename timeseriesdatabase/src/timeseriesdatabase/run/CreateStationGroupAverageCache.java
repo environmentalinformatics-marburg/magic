@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import processinggraph.Averaged;
 import processinggraph.Base;
-import processinggraph.Continuous_temp;
+import processinggraph.Continuous;
 import processinggraph.NodeGen;
 import processinggraph.QueryPlan;
 import processinggraph.RawSource;
@@ -65,9 +65,9 @@ public class CreateStationGroupAverageCache {
 				System.out.println(group+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(generalMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(generalMaxTimestamp)+" **************************************************************** "+generalMinTimestamp+"\t-\t"+generalMaxTimestamp);
 				generalMinTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(generalMinTimestamp);
 				generalMaxTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(generalMaxTimestamp);
-				List<Continuous_temp> sources = new ArrayList<Continuous_temp>();
+				List<Continuous> sources = new ArrayList<Continuous>();
 				for(String plotID:list) {
-					Continuous_temp continuous = QueryPlan.getContinuousGen(timeSeriesDatabase, dataquality).get(plotID,null);
+					Continuous continuous = QueryPlan.getContinuousGen(timeSeriesDatabase, dataquality).get(plotID,null);
 					sources.add(continuous);
 				}				
 				Averaged averaged = Averaged.create(timeSeriesDatabase, sources, 3);

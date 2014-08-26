@@ -31,13 +31,9 @@ public class QualityFlagIterator extends MoveIterator {
 	String[] schema;
 
 	public QualityFlagIterator(TimeSeriesDatabase timeSeriesDatabase, TimeSeriesIterator input_iterator) {
-		//super(new TimeSeriesSchema(input_iterator.getOutputTimeSeriesSchema().schema));
 		super(TimeSeriesSchema.createWithQualityFlags(input_iterator.getOutputTimeSeriesSchema()));
-
-		
 		this.schema = input_iterator.getOutputSchema();		
 		sensors = timeSeriesDatabase.getSensors(input_iterator.getOutputTimeSeriesSchema());
-		
 		columns = schema.length;
 		this.input_iterator = input_iterator;
 		this.prevTimestamps = new long[columns];
@@ -66,9 +62,9 @@ public class QualityFlagIterator extends MoveIterator {
 						long timewindow = prevTimestamps[columnIndex]+MAX_TIME_STEP;
 						if( (!(currTimestamp<=timewindow))||sensor.checkStepRange(prevData[columnIndex], currValue)) {//step check
 							currQuality = DataQuality.STEP;
-							if(sensor.checkEmpiricalRange(currValue)) {
+							/*if(sensor.checkEmpiricalRange(currValue)) { // no empirical check here!
 								currQuality = DataQuality.EMPIRICAL;
-							}
+							}*/
 						} 					
 					}
 					//if value is not NaN store element in prev

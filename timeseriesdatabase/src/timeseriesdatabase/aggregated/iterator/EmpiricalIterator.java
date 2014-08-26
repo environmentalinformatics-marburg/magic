@@ -2,6 +2,7 @@ package timeseriesdatabase.aggregated.iterator;
 
 import java.util.List;
 
+import timeseriesdatabase.DataQuality;
 import timeseriesdatabase.raw.TimeSeriesEntry;
 import util.ProcessingChainEntry;
 import util.TimeSeriesSchema;
@@ -14,18 +15,21 @@ import util.iterator.TimeSeriesIterator;
  *
  */
 public class EmpiricalIterator extends TimeSeriesIterator {
-	
+
 	private TimeSeriesIterator input_iterator;
 	private TimeSeriesIterator compare_iterator;
 	private Float[] maxDiff;
-	
+
 	public static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator) {
 		TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
 		String[] schema = input_schema.schema;
 		boolean constantTimeStep = input_schema.constantTimeStep;
 		int timeStep = input_schema.timeStep;
-		boolean isContinuous = input_schema.isContinuous;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
+		boolean isContinuous = input_schema.isContinuous;
+		if(!input_schema.hasQualityFlags) {
+			throw new RuntimeException("no quality flags in schema");
+		}
+		boolean hasQualityFlags = true;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
@@ -51,9 +55,38 @@ public class EmpiricalIterator extends TimeSeriesIterator {
 		if(timestamp!= genElement.timestamp) {
 			throw new RuntimeException("iterator error");
 		}
+
+		float[] result = new float[outputTimeSeriesSchema.columns];
+		DataQuality[] resultQf = new DataQuality[outputTimeSeriesSchema.columns];
+		for(int colIndex=0;colIndex<outputTimeSeriesSchema.columns;colIndex++) {
+			if(element.qualityFlag[colIndex]==DataQuality.STEP) {
+				if(maxDiff[colIndex]!=null&&!Float.isNaN(genElement.data[colIndex])) {
+					if(Math.abs(element.data[colIndex]-genElement.data[colIndex])<=maxDiff[colIndex]) { // check successful
+						resultQf[colIndex] = DataQuality.EMPIRICAL;
+						result[colIndex] = element.data[colIndex];
+					} else { // remains STEP
+						resultQf[colIndex] = DataQuality.STEP;
+						result[colIndex] = Float.NaN;
+					}
+				} else { // no check possible
+					resultQf[colIndex] = DataQuality.EMPIRICAL;
+					result[colIndex] = element.data[colIndex];
+				}
+			} else {
+				resultQf[colIndex] = element.qualityFlag[colIndex]; // Na, NO or PYSICAL 
+				result[colIndex] = Float.NaN;
+			}
+			//System.out.println(element.qualityFlag[colIndex]+"  "+element.data[colIndex]+":  "+genElement.data[colIndex]+"  "+maxDiff[colIndex]+" -> "+Math.abs(result[colIndex]-genElement.data[colIndex])+"  "+resultQf[colIndex]+"  "+result[colIndex]);
+		}
+
+
+
+
+
+		/*
 		float[] result = new float[outputTimeSeriesSchema.columns];
 		for(int colIndex=0;colIndex<outputTimeSeriesSchema.columns;colIndex++) {
-			result[colIndex] = element.data[colIndex];
+			result[colIndex] = element.data[colIndex];			
 			if(!Float.isNaN(genElement.data[colIndex])) { // general values is not nan
 				if(!Float.isNaN(element.data[colIndex])) { // value is not nan
 					Float maxdiff = maxDiff[colIndex];
@@ -65,34 +98,16 @@ public class EmpiricalIterator extends TimeSeriesIterator {
 					} 
 				} 
 			}			
-			
-			/*if(!Float.isNaN(genElement.data[colIndex])) { // general values is not nan
-				if(!Float.isNaN(element.data[colIndex])) { // value is not nan
-					Float maxdiff = maxDiff[colIndex];
-					if(maxdiff!=null) { // maxDiff value is present
-					float diff = Math.abs(element.data[colIndex]-genElement.data[colIndex]);
-					if(diff<=maxdiff) { // passed empirical check
-						result[colIndex] = element.data[colIndex];
-					} else { // passed not empirical check
-						result[colIndex] = Float.NaN;
-					}
-					} else { // no max diff
-						result[colIndex] = element.data[colIndex];
-					}
-				} else { // value NaN
-					result[colIndex] = element.data[colIndex];
-				}
-			} else { // general value NaN -> empirical check not possible
-				result[colIndex] = element.data[colIndex];
-			}*/
-		}				
+		}*/
+		
+					
 		return new TimeSeriesEntry(timestamp,result);
 	}
 
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
+		@Override
+		public List<ProcessingChainEntry> getProcessingChain() {
+			List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
+			result.add(this);
+			return result;
+		}
 	}
-}
