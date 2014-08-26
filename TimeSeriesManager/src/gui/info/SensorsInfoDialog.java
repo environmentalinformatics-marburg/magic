@@ -12,20 +12,20 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import timeseriesdatabase.Sensor;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.aggregated.AggregationType;
+import tsdb.Sensor;
+import tsdb.TsDB;
+import tsdb.aggregated.AggregationType;
 
 public class SensorsInfoDialog extends Dialog {
 	
-	TimeSeriesDatabase timeSeriesDatabase; 
+	TsDB timeSeriesDatabase; 
 
-	public SensorsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public SensorsInfoDialog(Shell parent, TsDB timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 		
 	}
 	
-	public SensorsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	public SensorsInfoDialog(Shell parent, int style,TsDB timeSeriesDatabase) {
 	    super(parent, style);
 	    this.timeSeriesDatabase = timeSeriesDatabase;
 	    setText("Sensor Info");

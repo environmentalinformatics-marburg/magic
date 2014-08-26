@@ -14,7 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
-import timeseriesdatabase.VirtualPlot;
+import tsdb.VirtualPlot;
 
 public class TableViewBridge<E> extends ViewerComparator{
 

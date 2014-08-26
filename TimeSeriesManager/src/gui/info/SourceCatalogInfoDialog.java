@@ -16,10 +16,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.catalog.SourceEntry;
-import util.Util;
+import tsdb.TimeConverter;
+import tsdb.TsDB;
+import tsdb.catalog.SourceEntry;
+import tsdb.util.Util;
 
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -45,7 +45,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 
 	private static Logger log = Util.log;
 
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 	private Table table;
 	private TableViewer viewer;
 	
@@ -55,7 +55,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public SourceCatalogInfoDialog(Shell parentShell, TimeSeriesDatabase timeSeriesDatabase) {
+	public SourceCatalogInfoDialog(Shell parentShell, TsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		

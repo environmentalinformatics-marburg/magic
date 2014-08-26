@@ -9,13 +9,13 @@ import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.TimestampSeries;
-import util.Util;
-import util.iterator.TimeSeriesIterator;
+import tsdb.QueryProcessor;
+import tsdb.TimeConverter;
+import tsdb.TsDB;
+import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.Util;
+import tsdb.util.iterator.TimeSeriesIterator;
 import swing2swt.layout.BorderLayout;
 
 import org.eclipse.swt.widgets.Text;
@@ -28,7 +28,7 @@ import de.umr.jepc.util.Timer;
 
 public class StatisticsDialog extends Dialog {
 	
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 
 	protected Object result;
 	protected Shell shell;
@@ -39,7 +39,7 @@ public class StatisticsDialog extends Dialog {
 	 * @param parent
 	 * @param timeSeriesDatabase
 	 */
-	public StatisticsDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public StatisticsDialog(Shell parent, TsDB timeSeriesDatabase) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		setText("Statistics");
 		this.timeSeriesDatabase = timeSeriesDatabase;

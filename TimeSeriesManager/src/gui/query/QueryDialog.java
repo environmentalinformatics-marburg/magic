@@ -18,34 +18,35 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import processinggraph.Node;
-import processinggraph.QueryPlan;
 import swing2swt.layout.BorderLayout;
 import swing2swt.layout.FlowLayout;
-import timeseriesdatabase.DataQuality;
-import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.QueryProcessor;
-import timeseriesdatabase.Region;
-import timeseriesdatabase.Sensor;
-import timeseriesdatabase.Station;
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.VirtualPlot;
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.BaseAggregationTimeUtil;
-import timeseriesdatabase.raw.TimestampSeries;
-import util.CSV;
-import util.CSVTimeType;
-import util.Pair;
-import util.Util;
-import util.iterator.TimeSeriesIterator;
+import tsdb.DataQuality;
+import tsdb.GeneralStation;
+import tsdb.QueryProcessor;
+import tsdb.Region;
+import tsdb.Sensor;
+import tsdb.Station;
+import tsdb.TimeConverter;
+import tsdb.TsDB;
+import tsdb.VirtualPlot;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.aggregated.BaseAggregationTimeUtil;
+import tsdb.graph.Node;
+import tsdb.graph.QueryPlan;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.CSV;
+import tsdb.util.CSVTimeType;
+import tsdb.util.Pair;
+import tsdb.util.Util;
+import tsdb.util.iterator.TimeSeriesIterator;
+
 import org.eclipse.swt.layout.RowLayout;
 
 public class QueryDialog extends Dialog {
 
 	private static Logger log = Util.log;
 
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 	//private QueryProcessorOLD qp;
 	private QueryProcessor qp;
 
@@ -84,7 +85,7 @@ public class QueryDialog extends Dialog {
 	 * @param parent
 	 * @param timeSeriesDatabase
 	 */
-	public QueryDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public QueryDialog(Shell parent, TsDB timeSeriesDatabase) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		beginDateTime = null;
 		endDateTime = null;

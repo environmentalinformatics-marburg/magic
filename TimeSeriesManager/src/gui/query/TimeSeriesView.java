@@ -17,13 +17,13 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Canvas;
 
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.AggregationType;
-import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.raw.TimeSeriesEntry;
-import util.Util;
+import tsdb.TimeConverter;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.aggregated.AggregationType;
+import tsdb.aggregated.TimeSeries;
+import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.Util;
 
 public class TimeSeriesView {
 

@@ -14,17 +14,17 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.Sensor;
-import timeseriesdatabase.Station;
-import timeseriesdatabase.TimeSeriesDatabase;
-import util.Util;
+import tsdb.GeneralStation;
+import tsdb.Sensor;
+import tsdb.Station;
+import tsdb.TsDB;
+import tsdb.util.Util;
 
 public class GeneralStationsInfoDialogOLD extends Dialog {
 
-	TimeSeriesDatabase timeSeriesDatabase; 
+	TsDB timeSeriesDatabase; 
 
-	public GeneralStationsInfoDialogOLD(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public GeneralStationsInfoDialogOLD(Shell parent, TsDB timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);
 
 	}
@@ -32,7 +32,7 @@ public class GeneralStationsInfoDialogOLD extends Dialog {
 	/**
 	 * @wbp.parser.constructor
 	 */
-	public GeneralStationsInfoDialogOLD(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	public GeneralStationsInfoDialogOLD(Shell parent, int style,TsDB timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		setText("General Station Info");

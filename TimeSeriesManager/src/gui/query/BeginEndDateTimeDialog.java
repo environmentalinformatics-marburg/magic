@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import swing2swt.layout.BorderLayout;
 import swing2swt.layout.FlowLayout;
-import util.Pair;
+import tsdb.util.Pair;
 
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;

@@ -14,21 +14,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import timeseriesdatabase.Sensor;
-import timeseriesdatabase.Station;
-import timeseriesdatabase.TimeSeriesDatabase;
-import util.Util;
+import tsdb.Sensor;
+import tsdb.Station;
+import tsdb.TsDB;
+import tsdb.util.Util;
 
 public class StationsInfoDialog extends Dialog {
 
-	TimeSeriesDatabase timeSeriesDatabase; 
+	TsDB timeSeriesDatabase; 
 
-	public StationsInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public StationsInfoDialog(Shell parent, TsDB timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 
 	}
 
-	public StationsInfoDialog(Shell parent, int style,TimeSeriesDatabase timeSeriesDatabase) {
+	public StationsInfoDialog(Shell parent, int style,TsDB timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		setText("Station Info");
@@ -69,7 +69,7 @@ public class StationsInfoDialog extends Dialog {
 		for(Station station:timeSeriesDatabase.getStations()) {
 			TableItem item = new TableItem (table, SWT.NONE);
 			item.setText (0, station.stationID);
-			item.setText (1, util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
+			item.setText (1, tsdb.util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
 			item.setText (2, ""+ Util.ifNaN(station.geoPoslongitude,"---"));
 			item.setText (3, ""+ Util.ifNaN(station.geoPosLatitude,"---"));
 			item.setText (4, Util.ifnull(station.generalStation, x->x.name, ()->"---"));

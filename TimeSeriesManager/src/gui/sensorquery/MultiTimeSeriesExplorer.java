@@ -15,10 +15,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.raw.TimestampSeries;
-import util.Pair;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.aggregated.TimeSeries;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.Pair;
 
 import org.eclipse.swt.widgets.Slider;
 

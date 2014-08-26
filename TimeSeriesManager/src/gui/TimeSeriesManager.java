@@ -33,20 +33,20 @@ import org.eclipse.swt.widgets.Text;
 
 import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
-import timeseriesdatabase.Sensor;
-import timeseriesdatabase.Station;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.TimeSeriesDatabaseFactory;
-import timeseriesdatabase.aggregated.TimeSeries;
-import timeseriesdatabase.raw.TimestampSeries;
-import util.CSVTimeType;
-import util.Util;
+import tsdb.FactoryTsDB;
+import tsdb.Sensor;
+import tsdb.Station;
+import tsdb.TsDB;
+import tsdb.aggregated.TimeSeries;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.CSVTimeType;
+import tsdb.util.Util;
 
 public class TimeSeriesManager {
 	
 	private static Logger log = Util.log;
 
-	public TimeSeriesDatabase timeSeriesDatabase;
+	public TsDB timeSeriesDatabase;
 	
 	public Shell shell;
 	public Text textBox;
@@ -82,7 +82,7 @@ public class TimeSeriesManager {
 		String databaseDirectory = "c:/timeseriesdatabase_database/";
 		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 		String cacheDirectory = "c:/timeseriesdatabase_cache/";
-		timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+		timeSeriesDatabase = FactoryTsDB.createDefault(databaseDirectory, configDirectory, cacheDirectory);
 		//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
 
 		shell.setText("time series database manager");

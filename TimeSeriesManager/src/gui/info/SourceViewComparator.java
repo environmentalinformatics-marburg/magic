@@ -3,7 +3,7 @@ package gui.info;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import timeseriesdatabase.catalog.SourceEntry;
+import tsdb.catalog.SourceEntry;
 
 public class SourceViewComparator extends ViewerComparator {
 	

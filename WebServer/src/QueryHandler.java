@@ -32,16 +32,16 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 
 import org.json.JSONArray;
 
-import timeseriesdatabase.DataQuality;
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.raw.TimeSeriesEntry;
-import timeseriesdatabase.raw.TimestampSeries;
-import timeseriesdatabase.server.TSDServerInterface;
-import usecase.QualityFlag;
-import util.CSV;
-import util.CSVTimeType;
-import util.Util;
-import util.iterator.TimeSeriesIterator;
+import tsdb.DataQuality;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TimestampSeries;
+import tsdb.server.TSDServerInterface;
+import tsdb.usecase.QualityFlag;
+import tsdb.util.CSV;
+import tsdb.util.CSVTimeType;
+import tsdb.util.Util;
+import tsdb.util.iterator.TimeSeriesIterator;
 
 
 public class QueryHandler extends AbstractHandler {

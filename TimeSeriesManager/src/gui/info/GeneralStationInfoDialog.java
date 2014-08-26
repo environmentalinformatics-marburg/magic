@@ -19,14 +19,14 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ColumnPixelData;
 
-import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.VirtualPlot;
-import util.Util;
+import tsdb.GeneralStation;
+import tsdb.TsDB;
+import tsdb.VirtualPlot;
+import tsdb.util.Util;
 
 public class GeneralStationInfoDialog extends Dialog {
 	
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 	
 	private TableViewBridge<GeneralStation> tableViewBridge;
 	
@@ -36,7 +36,7 @@ public class GeneralStationInfoDialog extends Dialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public GeneralStationInfoDialog(Shell parent, TimeSeriesDatabase timeSeriesDatabase) {
+	public GeneralStationInfoDialog(Shell parent, TsDB timeSeriesDatabase) {
 		super(parent);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;

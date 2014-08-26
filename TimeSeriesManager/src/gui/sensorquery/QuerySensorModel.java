@@ -1,8 +1,8 @@
 package gui.sensorquery;
 
 import gui.util.AbstractModel;
-import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.Region;
+import tsdb.GeneralStation;
+import tsdb.Region;
 
 public class QuerySensorModel extends AbstractModel {
 

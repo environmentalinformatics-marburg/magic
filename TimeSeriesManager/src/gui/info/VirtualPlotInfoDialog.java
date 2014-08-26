@@ -17,11 +17,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import timeseriesdatabase.TimeConverter;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.VirtualPlot;
-import timeseriesdatabase.catalog.SourceEntry;
-import util.Util;
+import tsdb.TimeConverter;
+import tsdb.TsDB;
+import tsdb.VirtualPlot;
+import tsdb.catalog.SourceEntry;
+import tsdb.util.Util;
 
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -40,7 +40,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 	
 	private static Logger log = Util.log;
 
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 	private Table table;
 	private TableViewBridge<VirtualPlot> tableViewBridge;
 
@@ -48,7 +48,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public VirtualPlotInfoDialog(Shell parentShell, TimeSeriesDatabase timeSeriesDatabase) {
+	public VirtualPlotInfoDialog(Shell parentShell, TsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;

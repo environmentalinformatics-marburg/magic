@@ -10,8 +10,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
 import swing2swt.layout.FlowLayout;
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.raw.TimestampSeries;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.raw.TimestampSeries;
 
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.PaintEvent;

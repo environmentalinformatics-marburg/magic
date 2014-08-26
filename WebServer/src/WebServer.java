@@ -10,8 +10,8 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
-import timeseriesdatabase.server.StartServer;
-import timeseriesdatabase.server.TSDServerInterface;
+import tsdb.server.StartServer;
+import tsdb.server.TSDServerInterface;
 
 
 public class WebServer {

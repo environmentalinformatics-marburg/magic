@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.graphics.Point;
@@ -18,30 +19,30 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import timeseriesdatabase.DataQuality;
-import timeseriesdatabase.GeneralStation;
-import timeseriesdatabase.LoggerType;
-import timeseriesdatabase.Region;
-import timeseriesdatabase.TimeSeriesDatabase;
-import timeseriesdatabase.aggregated.AggregationInterval;
-import timeseriesdatabase.raw.TimestampSeries;
-import util.Util;
+
+import tsdb.DataQuality;
+import tsdb.GeneralStation;
+import tsdb.LoggerType;
+import tsdb.Region;
+import tsdb.TsDB;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.graph.Node;
+import tsdb.graph.QueryPlan;
+import tsdb.raw.TimestampSeries;
+import tsdb.util.Util;
 import swing2swt.layout.BorderLayout;
+
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
-
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
-import processinggraph.Node;
-import processinggraph.QueryPlan;
-
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.custom.CLabel;
 
@@ -66,7 +67,7 @@ public class SensorQueryDialog extends Dialog {
 
 	private static final Logger log = Util.log;	
 
-	private TimeSeriesDatabase timeSeriesDatabase;
+	private TsDB timeSeriesDatabase;
 
 	private Composite container;
 	private Group grpQuery;
@@ -89,7 +90,7 @@ public class SensorQueryDialog extends Dialog {
 	 * @param parentShell
 	 * @param timeSeriesDatabase 
 	 */
-	public SensorQueryDialog(Shell parentShell, TimeSeriesDatabase timeSeriesDatabase) {
+	public SensorQueryDialog(Shell parentShell, TsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;
