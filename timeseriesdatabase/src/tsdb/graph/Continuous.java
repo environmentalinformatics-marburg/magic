@@ -17,22 +17,22 @@ public interface Continuous extends Node {
 	
 	public TimeSeriesIterator getExactly(long start, long end);
 	
-	public static Continuous create(TsDB timeSeriesDatabase, Base base) {
-		return new Concrete(timeSeriesDatabase, base);
+	public static Continuous create(TsDB tsdb, Base base) {
+		return new Concrete(tsdb, base);
 	}
 	
 	public abstract class Abstract implements Continuous {
-		protected TsDB timeSeriesDatabase; //not null
-		protected Abstract(TsDB timeSeriesDatabase) {
-			Util.throwNull(timeSeriesDatabase);
-			this.timeSeriesDatabase = timeSeriesDatabase; 
+		protected TsDB tsdb; //not null
+		protected Abstract(TsDB tsdb) {
+			Util.throwNull(tsdb);
+			this.tsdb = tsdb; 
 		}	
 	}
 	
 	public class Concrete extends Abstract {
 		private final Base source;
-		protected Concrete(TsDB timeSeriesDatabase, Base source) {
-			super(timeSeriesDatabase); 
+		protected Concrete(TsDB tsdb, Base source) {
+			super(tsdb); 
 			Util.throwNull(source);
 			this.source = source;
 			if(!source.isConstantTimestep()) {

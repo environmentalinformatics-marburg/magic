@@ -1,6 +1,5 @@
 package tsdb.graph;
 
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
@@ -27,10 +26,10 @@ public interface Base extends Node {
 	}
 	
 	public abstract class Abstract implements Base {		
-		protected TsDB timeSeriesDatabase; // not null		
-		Abstract(TsDB timeSeriesDatabase) {
-			Util.throwNull(timeSeriesDatabase);
-			this.timeSeriesDatabase = timeSeriesDatabase;
+		protected TsDB tsdb; // not null		
+		Abstract(TsDB tsdb) {
+			Util.throwNull(tsdb);
+			this.tsdb = tsdb;
 		}		
 	}
 }

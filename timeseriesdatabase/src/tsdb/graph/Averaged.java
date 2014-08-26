@@ -19,8 +19,8 @@ public class Averaged extends Continuous.Abstract {
 	private final int minCount;
 	private final boolean _constant_timestep;
 
-	public Averaged(TsDB timeSeriesDatabase, List<Continuous> sources, String[] schema, int minCount) {
-		super(timeSeriesDatabase);
+	public Averaged(TsDB tsdb, List<Continuous> sources, String[] schema, int minCount) {
+		super(tsdb);
 		Util.throwNull(sources,schema);
 		if(sources.isEmpty()) {
 			throw new RuntimeException("no sources");	
@@ -42,12 +42,12 @@ public class Averaged extends Continuous.Abstract {
 		this.schema = schema;
 	}
 
-	public static Averaged create(TsDB timeSeriesDatabase, List<Continuous> sources, int minCount) {		
+	public static Averaged create(TsDB tsdb, List<Continuous> sources, int minCount) {		
 		Set<String> schemaSet = new LinkedHashSet<String>();		
 		for(Continuous continuous:sources) {
 			schemaSet.addAll(Arrays.asList(continuous.getSchema()));
 		}
-		return new Averaged(timeSeriesDatabase, sources, schemaSet.toArray(new String[0]), minCount);
+		return new Averaged(tsdb, sources, schemaSet.toArray(new String[0]), minCount);
 	}
 
 	@Override

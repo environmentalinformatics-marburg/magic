@@ -15,8 +15,8 @@ public class RawSource extends Node.Abstract {
 	public final Station station; // not null
 	public final String[] schema; //not null, schema valid
 
-	protected RawSource(TsDB timeSeriesDatabase, Station station, String[] schema) {
-		super(timeSeriesDatabase);
+	protected RawSource(TsDB tsdb, Station station, String[] schema) {
+		super(tsdb);
 		Util.throwNull(station,schema);
 		this.station = station;
 		this.schema = schema;
@@ -28,25 +28,25 @@ public class RawSource extends Node.Abstract {
 		}
 	}
 
-	public static RawSource create(TsDB timeSeriesDatabase, String stationName, String[] querySchema) {
-		Station station = timeSeriesDatabase.getStation(stationName);
+	public static RawSource create(TsDB tsdb, String stationName, String[] querySchema) {
+		Station station = tsdb.getStation(stationName);
 		if(station==null) {
 			throw new RuntimeException("station not found: "+stationName);
 		}
-		return create(timeSeriesDatabase, station, querySchema);
+		return create(tsdb, station, querySchema);
 	}
 	
-	public static RawSource create(TsDB timeSeriesDatabase, Station station, String[] querySchema) {
+	public static RawSource create(TsDB tsdb, Station station, String[] querySchema) {
 		if(querySchema==null) {
 			querySchema = station.loggerType.sensorNames;
 		}
-		return new RawSource(timeSeriesDatabase, station, querySchema);
+		return new RawSource(tsdb, station, querySchema);
 	}
 	
 
 	@Override
 	public TimeSeriesIterator get(Long start, Long end) {
-		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(station.stationID, start, end);
+		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
 		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
 			return null;
 		}

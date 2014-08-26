@@ -38,11 +38,11 @@ public interface Node {
 	
 	public abstract class Abstract implements Node {
 		
-		protected final TsDB timeSeriesDatabase; //not null
+		protected final TsDB tsdb; //not null
 		
-		Abstract(TsDB timeSeriesDatabase) {
-			Util.throwNull(timeSeriesDatabase);
-			this.timeSeriesDatabase = timeSeriesDatabase;
+		Abstract(TsDB tsdb) {
+			Util.throwNull(tsdb);
+			this.tsdb = tsdb;
 		}
 	}
 }

@@ -11,14 +11,14 @@ public class PeakSmoothed extends Base.Abstract {
 	
 	private Node source;
 
-	protected PeakSmoothed(TsDB timeSeriesDatabase, Node source) {
-		super(timeSeriesDatabase);
+	protected PeakSmoothed(TsDB tsdb, Node source) {
+		super(tsdb);
 		Util.throwNull(source);
 		this.source = source;
 	}
 	
-	public static PeakSmoothed create(TsDB timeSeriesDatabase, Node source) {
-		return new PeakSmoothed(timeSeriesDatabase, source);
+	public static PeakSmoothed create(TsDB tsdb, Node source) {
+		return new PeakSmoothed(tsdb, source);
 	}	
 
 	@Override

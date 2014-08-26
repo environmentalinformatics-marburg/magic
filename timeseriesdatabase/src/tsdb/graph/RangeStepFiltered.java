@@ -13,18 +13,18 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 	private final Node source;
 	private final DataQuality dataQuality;
 
-	protected RangeStepFiltered(TsDB timeSeriesDatabase, Node source, DataQuality dataQuality) {
-		super(timeSeriesDatabase);
+	protected RangeStepFiltered(TsDB tsdb, Node source, DataQuality dataQuality) {
+		super(tsdb);
 		Util.throwNull(source, dataQuality);
 		this.source = source;
 		this.dataQuality = dataQuality;
 	}
 	
-	public static RangeStepFiltered create(TsDB timeSeriesDatabase, Node source, DataQuality dataQuality) {
+	public static RangeStepFiltered create(TsDB tsdb, Node source, DataQuality dataQuality) {
 		if(DataQuality.Na==dataQuality) {
 			throw new RuntimeException();
 		}
-		return new RangeStepFiltered(timeSeriesDatabase, source, dataQuality);
+		return new RangeStepFiltered(tsdb, source, dataQuality);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}
-		QualityFlagIterator qf = new QualityFlagIterator(timeSeriesDatabase,input_iterator);
+		QualityFlagIterator qf = new QualityFlagIterator(tsdb,input_iterator);
 		if(qf==null||!qf.hasNext()) {
 			return null;
 		}

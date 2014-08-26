@@ -31,8 +31,8 @@ public class EmpiricalDiff {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
-		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
+		TsDB tsdb = FactoryTsDB.createDefault();
+		QueryProcessor qp = new QueryProcessor(tsdb);
 
 
 		String basePlotID = "HEW08";
@@ -49,7 +49,7 @@ public class EmpiricalDiff {
 
 
 
-		List<Station> nearList = timeSeriesDatabase.getStation(basePlotID).getNearestStationsWithSensor(sensorName);
+		List<Station> nearList = tsdb.getStation(basePlotID).getNearestStationsWithSensor(sensorName);
 		
 		Stream<Station> stream = nearList.stream();
 		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));

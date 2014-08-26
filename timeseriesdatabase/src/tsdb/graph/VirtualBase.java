@@ -19,32 +19,32 @@ public class VirtualBase extends Base.Abstract  {
 	private final String[] schema; // not null
 	private final NodeGen stationGen; // not null
 
-	protected VirtualBase(TsDB timeSeriesDatabase, VirtualPlot virtualPlot, String[] schema, NodeGen stationGen) {
-		super(timeSeriesDatabase);
+	protected VirtualBase(TsDB tsdb, VirtualPlot virtualPlot, String[] schema, NodeGen stationGen) {
+		super(tsdb);
 		Util.throwNull(virtualPlot, schema, stationGen);
 		if(schema.length==0) {
 			throw new RuntimeException("no schema");
 		}
-		if(!Util.isContained(schema, timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema()))) {
-			throw new RuntimeException("schema not valid  "+schema+"  in  "+timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema()));
+		if(!Util.isContained(schema, tsdb.getBaseAggregationSchema(virtualPlot.getSchema()))) {
+			throw new RuntimeException("schema not valid  "+schema+"  in  "+tsdb.getBaseAggregationSchema(virtualPlot.getSchema()));
 		}
 		this.virtualPlot = virtualPlot;
 		this.schema = schema;
 		this.stationGen = stationGen;
 	}
 	
-	public static VirtualBase create(TsDB timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, NodeGen stationGen) {
+	public static VirtualBase create(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
 			String[] schema = virtualPlot.getSchema();
 			if(schema==null) {
 				throw new RuntimeException("empty VirtualPlot: "+virtualPlot.plotID);
 			}			
-			querySchema = timeSeriesDatabase.getBaseAggregationSchema(schema);
+			querySchema = tsdb.getBaseAggregationSchema(schema);
 			if(querySchema==null) {
 				throw new RuntimeException("empty base schema in VirtualPlot: "+virtualPlot.plotID);
 			}
 		}
-		return new VirtualBase(timeSeriesDatabase, virtualPlot, querySchema, stationGen);		
+		return new VirtualBase(tsdb, virtualPlot, querySchema, stationGen);		
 	}
 
 	@Override
@@ -52,11 +52,11 @@ public class VirtualBase extends Base.Abstract  {
 		List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(start, end, schema);			 
 		List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
 		for(TimestampInterval<StationProperties> interval:intervalList) {
-			String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.get_serial(), schema);
+			String[] stationSchema = tsdb.getValidSchema(interval.value.get_serial(), schema);
 			if(stationSchema.length>0) {
 				//Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
-				Station station = timeSeriesDatabase.getStation(interval.value.get_serial());
-				Node node = StationBase.create(timeSeriesDatabase, station, stationSchema, stationGen);
+				Station station = tsdb.getStation(interval.value.get_serial());
+				Node node = StationBase.create(tsdb, station, stationSchema, stationGen);
 				TimeSeriesIterator it = node.get(interval.start, interval.end);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);

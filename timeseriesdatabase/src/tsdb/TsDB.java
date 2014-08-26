@@ -545,6 +545,10 @@ public class TsDB {
 		}
 		return sensorNames.toArray(new String[0]);
 	}
+	
+	public Set<String> getBaseAggregationSensorNames() {
+		return baseAggregationSensorNameSet;
+	}
 
 	//*********************************************** end base aggregation *************************************************************************
 

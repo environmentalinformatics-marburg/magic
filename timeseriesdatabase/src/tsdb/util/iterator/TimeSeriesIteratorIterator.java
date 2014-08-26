@@ -12,16 +12,16 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 
-public class TimeSeriesIteratorIterator<T> extends MoveIterator {
+public class TimeSeriesIteratorIterator extends MoveIterator {
 
 	private Iterator<TimeSeriesIterator> input_iterator;
 	private SchemaConverterIterator current_iterator;
 	
-	public static <T> TimeSeriesIteratorIterator<T> create(Iterable<T> input, Function<T,TimeSeriesIterator> function) {
+	public static <T> TimeSeriesIteratorIterator create(Iterable<T> input, Function<T,TimeSeriesIterator> function) {
 		return create(input.iterator(),function);
 	}
 
-	public static <T> TimeSeriesIteratorIterator<T> create(Iterator<T> input_iterator, Function<T,TimeSeriesIterator> function) {
+	public static <T> TimeSeriesIteratorIterator create(Iterator<T> input_iterator, Function<T,TimeSeriesIterator> function) {
 		Set<String> schemaSet = new HashSet<String>();
 		List<TimeSeriesIterator> list = new ArrayList<TimeSeriesIterator>();
 		while(input_iterator.hasNext()) {
@@ -32,7 +32,7 @@ public class TimeSeriesIteratorIterator<T> extends MoveIterator {
 			System.out.println("schemaSet: "+schemaSet);
 			list.add(timeSeriesIterator);
 		}			
-		return new TimeSeriesIteratorIterator<T>(list,schemaSet.toArray(new String[0]));
+		return new TimeSeriesIteratorIterator(list,schemaSet.toArray(new String[0]));
 	}
 	
 	public TimeSeriesIteratorIterator(Iterable<TimeSeriesIterator> input, String[] outputSchema) {
@@ -51,7 +51,7 @@ public class TimeSeriesIteratorIterator<T> extends MoveIterator {
 			if(input_iterator.hasNext()) {
 				TimeSeriesIterator next = input_iterator.next();
 				current_iterator = new SchemaConverterIterator(next, outputTimeSeriesSchema.schema, true);
-				System.out.println("get next iterator");
+				//System.out.println("get next iterator");
 				return getNext();
 			} else {
 				return null;

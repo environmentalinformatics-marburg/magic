@@ -12,27 +12,27 @@ public class CacheBase extends Base.Abstract {
 	private final String streamName; //not null
 	private final String[] schema; //not null
 
-	private CacheBase(TsDB timeSeriesDatabase, String streamName, String[] schema) {
-		super(timeSeriesDatabase);
+	private CacheBase(TsDB tsdb, String streamName, String[] schema) {
+		super(tsdb);
 		Util.throwNull(streamName,schema);
 		this.streamName = streamName;
 		this.schema = schema;
 	}
 
-	public static CacheBase create(TsDB timeSeriesDatabase, String streamName, String[] schema) {
-		TimeSeriesSchema tsSchema = timeSeriesDatabase.cacheStorage.getSchema(streamName);
+	public static CacheBase create(TsDB tsdb, String streamName, String[] schema) {
+		TimeSeriesSchema tsSchema = tsdb.cacheStorage.getSchema(streamName);
 		if(schema==null) {
 			schema = tsSchema.schema;
 		}		
 		if(schema.length==0 || !Util.isContained(schema, tsSchema.schema)) {
 			throw new RuntimeException("not valid schema: "+Util.arrayToString(schema)+"   "+Util.arrayToString(tsSchema.schema));
 		}
-		return new CacheBase(timeSeriesDatabase, streamName, schema);
+		return new CacheBase(tsdb, streamName, schema);
 	}
 
 	@Override
 	public TimeSeriesIterator get(Long start, Long end) {
-		TimeSeriesIterator it = timeSeriesDatabase.cacheStorage.query(streamName, start, end);
+		TimeSeriesIterator it = tsdb.cacheStorage.query(streamName, start, end);
 		if(it==null || !it.hasNext()) {
 			return null;
 		}

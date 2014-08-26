@@ -23,8 +23,8 @@ public class Interpolated extends Continuous.Abstract {
 	final Continuous[] interpolationSources;  //not null
 	final String[] interpolationSchema;  //not null
 
-	protected Interpolated(TsDB timeSeriesDatabase, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema) {		
-		super(timeSeriesDatabase);
+	protected Interpolated(TsDB tsdb, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema) {		
+		super(tsdb);
 		Util.throwNull(source,interpolationSources,interpolationSchema);
 		if(!source.isContinuous()) {
 			throw new RuntimeException("source not continuous");
@@ -39,19 +39,19 @@ public class Interpolated extends Continuous.Abstract {
 		this.interpolationSchema = interpolationSchema;
 	}
 	
-	public static Continuous create(TsDB timeSeriesDatabase, String plotID, String[] querySchema, ContinuousGen sourceGen) {
-		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+	public static Continuous create(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen sourceGen) {
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
-			return createFromVirtual(timeSeriesDatabase, virtualPlot, querySchema, sourceGen);
+			return createFromVirtual(tsdb, virtualPlot, querySchema, sourceGen);
 		} 
-		Station station = timeSeriesDatabase.getStation(plotID);
+		Station station = tsdb.getStation(plotID);
 		if(station!=null) {
-			return createFromStation(timeSeriesDatabase,station,querySchema, sourceGen);
+			return createFromStation(tsdb,station,querySchema, sourceGen);
 		}
 		throw new RuntimeException("station not found");
 	}
 
-	public static Continuous createFromStation(TsDB timeSeriesDatabase, Station station, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous createFromStation(TsDB tsdb, Station station, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = station.getSchema();
 		} else {
@@ -64,7 +64,7 @@ public class Interpolated extends Continuous.Abstract {
 
 		String[] interpolationSchema = Arrays.asList(querySchema)
 				.stream()
-				.filter(sensorName -> timeSeriesDatabase.getSensor(sensorName).useInterpolation)
+				.filter(sensorName -> tsdb.getSensor(sensorName).useInterpolation)
 				.toArray(String[]::new);
 
 		Continuous[] interpolationSources = station.nearestStations
@@ -77,11 +77,11 @@ public class Interpolated extends Continuous.Abstract {
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;
 		} else {
-			return new Interpolated(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
+			return new Interpolated(tsdb, source, interpolationSources, interpolationSchema);
 		}		
 	}
 	
-	public static Continuous createFromVirtual(TsDB timeSeriesDatabase, VirtualPlot virtualPlot, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous createFromVirtual(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = virtualPlot.getSchema();
 		} else {
@@ -94,7 +94,7 @@ public class Interpolated extends Continuous.Abstract {
 
 		String[] interpolationSchema = Arrays.asList(querySchema)
 				.stream()
-				.filter(sensorName -> timeSeriesDatabase.getSensor(sensorName).useInterpolation)
+				.filter(sensorName -> tsdb.getSensor(sensorName).useInterpolation)
 				.toArray(String[]::new);
 
 		Concrete[] interpolationSources = virtualPlot.nearestVirtualPlots
@@ -107,7 +107,7 @@ public class Interpolated extends Continuous.Abstract {
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;
 		} else {
-			return new Interpolated(timeSeriesDatabase, source, interpolationSources, interpolationSchema);
+			return new Interpolated(tsdb, source, interpolationSources, interpolationSchema);
 		}
 	}
 
@@ -148,7 +148,7 @@ public class Interpolated extends Continuous.Abstract {
 		TimeSeriesIterator clipIterator = sourceTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
 		TimeSeriesIterator resultIterator = clipIterator;
 		if(interpolatedCount>0) {
-			resultIterator = new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
+			resultIterator = new BadInterpolatedRemoveIterator(tsdb, clipIterator);
 		}
 		return resultIterator;
 	}

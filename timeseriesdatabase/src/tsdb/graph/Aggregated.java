@@ -36,7 +36,7 @@ public class Aggregated extends Continuous.Abstract {
 		if(continuous_iterator==null||!continuous_iterator.hasNext()) {
 			return null;
 		}
-		AggregationIterator aggregation_iterator = new AggregationIterator(timeSeriesDatabase, continuous_iterator, aggregationInterval);
+		AggregationIterator aggregation_iterator = new AggregationIterator(tsdb, continuous_iterator, aggregationInterval);
 		if(aggregation_iterator==null||!aggregation_iterator.hasNext()) {
 			return null;
 		}

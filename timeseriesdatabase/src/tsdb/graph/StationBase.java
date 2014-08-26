@@ -10,18 +10,18 @@ public class StationBase extends Base.Abstract {
 
 	private final Node source;	
 
-	protected StationBase(TsDB timeSeriesDatabase, Node source) {
-		super(timeSeriesDatabase);
+	protected StationBase(TsDB tsdb, Node source) {
+		super(tsdb);
 		Util.throwNull(source);
 		this.source = source;
 	}
 
-	public static StationBase create(TsDB timeSeriesDatabase,Station station, String[] querySchema, NodeGen stationGen) {
+	public static StationBase create(TsDB tsdb,Station station, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
-			querySchema = timeSeriesDatabase.getBaseAggregationSchema(station.loggerType.sensorNames);
+			querySchema = tsdb.getBaseAggregationSchema(station.loggerType.sensorNames);
 		}
 		Node source = stationGen.get(station.stationID, querySchema);
-		return new StationBase(timeSeriesDatabase, source);
+		return new StationBase(tsdb, source);
 	}
 
 	@Override
@@ -30,7 +30,7 @@ public class StationBase extends Base.Abstract {
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}
-		BaseAggregationIterator base_iterator = new BaseAggregationIterator(timeSeriesDatabase, input_iterator);
+		BaseAggregationIterator base_iterator = new BaseAggregationIterator(tsdb, input_iterator);
 		if(!base_iterator.hasNext()) {
 			return null;
 		}	
@@ -50,6 +50,6 @@ public class StationBase extends Base.Abstract {
 
 	@Override
 	public String[] getSchema() {
-		return timeSeriesDatabase.getBaseAggregationSchema(source.getSchema());
+		return tsdb.getBaseAggregationSchema(source.getSchema());
 	}
 }
