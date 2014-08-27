@@ -261,7 +261,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_empirical_diff_check(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		if(queryStart==null||queryEnd==null) {
-			long[] interval = timeSeriesDatabase.getTimestampInterval(plotID);
+			long[] interval = timeSeriesDatabase.getTimeInterval(plotID);
 			if(queryStart==null) {
 				queryStart = interval[0];
 			}

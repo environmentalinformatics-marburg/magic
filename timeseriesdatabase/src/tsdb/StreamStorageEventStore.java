@@ -160,4 +160,13 @@ public class StreamStorageEventStore implements StreamStorage {
 			System.out.println(streamName);
 		}
 	}
+
+	@Override
+	public long[] getTimeInterval(String streamName) {
+		Iterator<Event> it = store.getHistory(streamName);
+		if(it==null||!it.hasNext()) {
+			return null;
+		}
+		return new long[]{it.next().getTimestamp(),store.getLastTimestamp(streamName)};
+	}
 }

@@ -196,4 +196,10 @@ public class StreamStorageMapDB implements StreamStorage {
 		throw new RuntimeException("TODO");
 		
 	}
+
+	@Override
+	public long[] getTimeInterval(String streamName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

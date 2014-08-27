@@ -134,7 +134,7 @@ public class CacheStorage {
 					return "cache query iterator";
 				}				
 			};
-			System.out.println(it2.getOutputTimeSeriesSchema());
+			//System.out.println(it2.getOutputTimeSeriesSchema());
 			return it2;
 		} else {
 			log.error("stream not in database: "+streamName);

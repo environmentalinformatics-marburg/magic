@@ -430,6 +430,7 @@ public class Util {
 	}
 	
 	public static boolean isContained(String[] names, String[] source) {
+		Util.throwNull(names,source);		
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
 		for(String name:names) {
 			if(!sourceMap.containsKey(name)) {
@@ -440,9 +441,9 @@ public class Util {
 	}
 	
 	public static void throwNull(Object ... o) {
-		for(Object x:o) {
-			if(x==null) {
-				throw new RuntimeException("null");
+		for(int i=0;i<o.length;i++) {				
+			if(o[i]==null) {
+				throw new RuntimeException("null in "+(i+1)+".");
 			}
 		}
 	}

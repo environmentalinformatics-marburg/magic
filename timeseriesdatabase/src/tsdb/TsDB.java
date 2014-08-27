@@ -290,12 +290,12 @@ public class TsDB {
 	 * @param stationName
 	 * @return null if empty
 	 */
-	public long[] getTimestampInterval(String stationName) {
+	public long[] getTimeInterval(String stationName) {
 		VirtualPlot virtualPlot = getVirtualPlot(stationName);
 		if(virtualPlot!=null) {
 			return virtualPlot.getTimestampInterval();
 		}
-		Iterator<Event> it = streamStorage.queryRawEvents(stationName, null, null);
+		/*Iterator<Event> it = streamStorage.queryRawEvents(stationName, null, null);
 		if(it==null || !it.hasNext()) {
 			return null;
 		}
@@ -304,7 +304,8 @@ public class TsDB {
 		while (it.hasNext()) {
 			end = it.next().getTimestamp();
 		}
-		return new long[]{start,end};
+		return new long[]{start,end};*/
+		return streamStorage.getTimeInterval(stationName);
 	}
 	
 	/**
@@ -312,8 +313,8 @@ public class TsDB {
 	 * @param stationName
 	 * @return null if empty
 	 */
-	public long[] getTimestampBaseInterval(String stationName) {
-		long[] interval = getTimestampInterval(stationName);
+	public long[] getBaseTimeInterval(String stationName) {
+		long[] interval = getTimeInterval(stationName);
 		if(interval==null) {
 			return null;
 		}

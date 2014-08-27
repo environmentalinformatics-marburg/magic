@@ -196,6 +196,24 @@ public class TimeSeriesSchema implements Serializable {
 		return s;
 	}
 	
+	public static boolean isSameSchemaNames(String[] schema1, String[] schema2) {
+		Util.throwNull(schema1, schema2);
+		if(schema1.length!=schema2.length) {
+			return false;
+		}
+		if(schema1.length==0) {
+			throw new RuntimeException("empty schema");
+		}
+		for(int i=0;i<schema1.length;i++) {
+			if(!schema1[i].equals(schema2[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+
+	
 	
 
 }

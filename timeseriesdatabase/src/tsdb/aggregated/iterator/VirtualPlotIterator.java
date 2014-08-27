@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jfree.util.Log;
 
+import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
@@ -22,7 +23,7 @@ public class VirtualPlotIterator extends MoveIterator {
 		boolean constantTimeStep = input_iterator[0].getOutputTimeSeriesSchema().constantTimeStep;
 		int timeStep = input_iterator[0].getOutputTimeSeriesSchema().timeStep;
 		boolean isContinuous = input_iterator[0].getOutputTimeSeriesSchema().isContinuous;		
-		boolean hasQualityFlags = false; // TODO
+		boolean hasQualityFlags = input_iterator[0].getOutputTimeSeriesSchema().hasQualityFlags; // TODO
 		boolean hasInterpolatedFlags = false; // TODO
 		boolean hasQualityCounters = false; // TODO
 		for(TimeSeriesIterator it:input_iterator) {
@@ -32,6 +33,9 @@ public class VirtualPlotIterator extends MoveIterator {
 			}
 			if(!it.getOutputTimeSeriesSchema().isContinuous) {
 				isContinuous = false;
+			}
+			if(!it.getOutputTimeSeriesSchema().hasQualityFlags) {
+				hasQualityFlags = false;
 			}
 		}
 		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
@@ -43,6 +47,8 @@ public class VirtualPlotIterator extends MoveIterator {
 	private long currentTimestamp;
 	private TimeSeriesEntry[] processing_current;
 	private int[][] processing_position_index;
+	
+	private boolean processQualityFlags;
 
 	public VirtualPlotIterator(String[] result_schema, TimeSeriesIterator[] input_iterator, String debugTextplotID) {
 		super(createSchema(result_schema, input_iterator));
@@ -51,6 +57,7 @@ public class VirtualPlotIterator extends MoveIterator {
 		this.processing_iterator = input_iterator;
 		this.processing_current = new TimeSeriesEntry[processing_iterator.length];
 		this.processing_position_index = new int[processing_iterator.length][];
+		this.processQualityFlags = getOutputTimeSeriesSchema().hasQualityFlags;
 
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) {
 			processing_position_index[iterator_index] = Util.stringArrayToPositionIndexArray(processing_iterator[iterator_index].getOutputSchema(), result_schema, true, true);
@@ -85,17 +92,25 @@ public class VirtualPlotIterator extends MoveIterator {
 		}
 
 		float[] resultData = TimeSeriesEntry.getNanData(result_schema.length);
+		DataQuality[] resultFlags = null;
+		if(processQualityFlags) {
+			resultFlags = TimeSeriesEntry.getNanQuality(result_schema.length);
+		}
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) { //loop over iterators with iterator_index
 			if(processing_current[iterator_index]!=null) {
 				if(processing_current[iterator_index].timestamp == currentTimestamp) { // insert data into resultData
 					float[] data = processing_current[iterator_index].data;
+					DataQuality[] qualityFlags = processing_current[iterator_index].qualityFlag;
 					final int[] x = processing_position_index[iterator_index];					
 
 					for(int colIndex=0;colIndex<data.length;colIndex++) {
 						final float value = data[colIndex];
-						if(!Float.isNaN(value)) {							
-							final int resultIndex = x[colIndex];
+						final int resultIndex = x[colIndex];
+						if(!Float.isNaN(value)) {// ??						
 							resultData[resultIndex] = value;
+						}
+						if(processQualityFlags) {
+							resultFlags[resultIndex] = qualityFlags[colIndex];
 						}
 					}
 					if(processing_iterator[iterator_index].hasNext()) {
@@ -108,7 +123,7 @@ public class VirtualPlotIterator extends MoveIterator {
 			}
 		}
 		//result element
-		TimeSeriesEntry resultTimeSeriesEntry = new TimeSeriesEntry(currentTimestamp, resultData);
+		TimeSeriesEntry resultTimeSeriesEntry = new TimeSeriesEntry(currentTimestamp, resultData, resultFlags);
 
 		//set next element timestamp
 		currentTimestamp=Long.MAX_VALUE;

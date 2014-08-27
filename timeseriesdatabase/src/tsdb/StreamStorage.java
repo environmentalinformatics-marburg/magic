@@ -58,4 +58,6 @@ public interface StreamStorage {
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end);
 	
 	public void getInfo();
+
+	long[] getTimeInterval(String streamName);
 }

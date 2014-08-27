@@ -37,7 +37,7 @@ public class CreateStationGroupAverageCache {
 			long groupMinTimestamp = Long.MAX_VALUE;
 			long groupMaxTimestamp = Long.MIN_VALUE;
 			for(String plotID:list) {				
-				long[] interval = tsdb.getTimestampBaseInterval(plotID);				
+				long[] interval = tsdb.getBaseTimeInterval(plotID);				
 				if(interval!=null) {
 					if(interval[0]<groupMinTimestamp) {
 						groupMinTimestamp = interval[0];

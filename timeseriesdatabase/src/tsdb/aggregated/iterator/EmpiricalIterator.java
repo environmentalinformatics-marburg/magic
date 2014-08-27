@@ -27,7 +27,7 @@ public class EmpiricalIterator extends TimeSeriesIterator {
 		int timeStep = input_schema.timeStep;
 		boolean isContinuous = input_schema.isContinuous;
 		if(!input_schema.hasQualityFlags) {
-			throw new RuntimeException("no quality flags in schema");
+			throw new RuntimeException("EmpiricalIterator: no quality flags in schema");
 		}
 		boolean hasQualityFlags = true;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;

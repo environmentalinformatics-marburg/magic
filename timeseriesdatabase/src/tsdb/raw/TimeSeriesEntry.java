@@ -16,12 +16,13 @@ import tsdb.util.Util;
  *
  */
 public class TimeSeriesEntry implements Serializable {
-
+	//private static final long serialVersionUID = -4568612556987905958L;
+	
 	public final long timestamp;	
 	public final float[] data;
-	public final DataQuality[] qualityFlag;
-	public final int[][] qualityCounter;
-	public final boolean[] interpolated;
+	public final DataQuality[] qualityFlag; // maybe null
+	public final int[][] qualityCounter; // maybe null
+	public final boolean[] interpolated; // maybe null
 	
 	public TimeSeriesEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter) {
 		this(timestamp, data, qualityFlag, qualityCounter, null);

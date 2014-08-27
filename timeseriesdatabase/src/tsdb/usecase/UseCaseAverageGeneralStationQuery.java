@@ -113,7 +113,7 @@ public class UseCaseAverageGeneralStationQuery {
 		String[] querySchema = new String[]{sensorName};
 		//Long queryStart = 56936340l;
 		//Long queryEnd = 59809800l;
-		long[] interval = timeSeriesDatabase.getTimestampBaseInterval(plotID);
+		long[] interval = timeSeriesDatabase.getBaseTimeInterval(plotID);
 		Long queryStart = interval[0];
 		Long queryEnd = interval[1];
 		DataQuality dataQuality = DataQuality.STEP;

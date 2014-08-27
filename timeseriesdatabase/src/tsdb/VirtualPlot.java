@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
 import de.umr.jepc.Attribute;
+import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
@@ -181,7 +182,7 @@ public class VirtualPlot {
 	public long[] getTimestampInterval() {
 		long[] result = null;
 		for(TimestampInterval<StationProperties> entry:intervalList) {
-			long[] interval = timeSeriesDatabase.getTimestampInterval(entry.value.get_serial());
+			long[] interval = timeSeriesDatabase.getTimeInterval(entry.value.get_serial());
 			if(interval!=null) {
 				if(result==null) {
 					result = interval;
@@ -204,5 +205,26 @@ public class VirtualPlot {
 			return null;
 		}
 		return new long[]{BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[0]),BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[1])};
+	}
+	
+	public boolean isValidSchema(String[] querySchema) {
+		Util.throwNull((Object)querySchema);
+		String[] schema = getSchema();
+		if(schema==null) {
+			return false;
+		}
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, schema));
+	}
+	
+	public boolean isValidBaseSchema(String[] querySchema) {
+		if(!isValidSchema(querySchema)) {
+			return false;
+		}
+		for(String name:querySchema) {
+			if(timeSeriesDatabase.getSensor(name).baseAggregationType==AggregationType.NONE) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
