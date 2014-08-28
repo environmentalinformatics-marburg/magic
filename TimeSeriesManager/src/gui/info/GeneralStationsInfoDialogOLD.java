@@ -4,6 +4,7 @@ package gui.info;
 
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -21,8 +22,10 @@ import tsdb.TsDB;
 import tsdb.util.Util;
 
 public class GeneralStationsInfoDialogOLD extends Dialog {
+	
+	private static Logger log = Util.log;
 
-	TsDB timeSeriesDatabase; 
+	private TsDB timeSeriesDatabase; 
 
 	public GeneralStationsInfoDialogOLD(Shell parent, TsDB timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL, timeSeriesDatabase);

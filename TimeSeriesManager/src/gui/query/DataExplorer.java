@@ -119,7 +119,7 @@ public class DataExplorer extends Composite {
 	}
 
 	public void setData(TimestampSeries resultTimeSeries, AggregationInterval aggregationInterval) {
-		dataView.updateViewData(resultTimeSeries, aggregationInterval," ");
+		dataView.updateViewData(resultTimeSeries, aggregationInterval," ",null);
 		canvas.redraw();
 
 	}

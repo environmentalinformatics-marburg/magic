@@ -77,8 +77,10 @@ public class TimeSeriesView {
 	Color color_black;
 	Color color_grey;
 	Color color_light;
-	
+
 	private String title;
+
+	private TimestampSeries compare_timeSeries;
 
 
 
@@ -119,11 +121,12 @@ public class TimeSeriesView {
 		return timeSeries;
 	}
 
-	public void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title) {
+	public void updateViewData(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title, TimestampSeries compare_timeSeries) {
 
 		this.timeSeries = timeSeries;
 		this.aggregationInterval = aggregationInterval;
 		this.title = title;
+		this.compare_timeSeries = compare_timeSeries;
 
 		if(timeSeries!=null) {
 			updateRangeOfTimeSeriesData();
@@ -253,7 +256,7 @@ public class TimeSeriesView {
 
 	}
 
-	
+
 
 	private void drawXGrid(GC gc) {
 
@@ -262,11 +265,11 @@ public class TimeSeriesView {
 		//gc.setClipping(xStart, y, width, height);
 
 		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
-		
-		
+
+
 		Color color_year = new Color(canvas.getDisplay(),220-50,220-50,255-50);
 		Color color_half_year = new Color(canvas.getDisplay(),220-30,220-30,255-30);
-		
+
 		Color color_year_text = new Color(canvas.getDisplay(),0,0,0);
 		Color color_half_year_text = new Color(canvas.getDisplay(),100,100,100);
 		Color color_quarter_year_text = new Color(canvas.getDisplay(),150,150,150);
@@ -293,16 +296,16 @@ public class TimeSeriesView {
 			gc.setForeground(color_year_text);
 			Painter.drawText(""+year,gc, x, yEnd,PosHorizontal.CENTER,PosVerical.TOP);
 			year++;
-			
+
 			if(yearStep/2>=minGap) {
 
-			timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 7, 1, 0, 0));
-			x = timestampToGraph(timestamp);
-			gc.setForeground(color_half_year);
-			gc.drawLine(x , yStart, x, yEnd);
-			gc.setForeground(color_half_year_text);
-			Painter.drawText("jul", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-			
+				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 7, 1, 0, 0));
+				x = timestampToGraph(timestamp);
+				gc.setForeground(color_half_year);
+				gc.drawLine(x , yStart, x, yEnd);
+				gc.setForeground(color_half_year_text);
+				Painter.drawText("jul", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
+
 			}
 
 			if(yearStep/4>=minGap) {
@@ -321,7 +324,7 @@ public class TimeSeriesView {
 				gc.setForeground(color_quarter_year_text);
 				Painter.drawText("oct", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
 			}
-			
+
 			if(yearStep/12>=minGap) {
 
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 2, 1, 0, 0));
@@ -329,52 +332,52 @@ public class TimeSeriesView {
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("feb", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 3, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("mar", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
-				
-				
+
+
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 5, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("may", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 6, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("jun", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
-				
-				
-				
-				
+
+
+
+
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 8, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("aug", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 9, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("sep", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
-				
-				
-				
+
+
+
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 11, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
 				gc.drawLine(x , yStart, x, yEnd);
 				Painter.drawText("nov", gc, x, yEnd, PosHorizontal.CENTER, PosVerical.TOP);
-				
+
 				timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 1, 0, 0));
 				x = timestampToGraph(timestamp);
 				gc.setForeground(color_light_blue);
@@ -579,7 +582,7 @@ public class TimeSeriesView {
 
 	public void paintCanvas(GC gc, boolean updatePaintPos) {
 		if(timeSeries!=null) {
-			
+
 			Font old = gc.getFont();
 			FontData fd = old.getFontData()[0];
 			fd.setHeight(20);
@@ -587,7 +590,7 @@ public class TimeSeriesView {
 			gc.setForeground(new Color(canvas.getDisplay(),200,200,200));
 			Painter.drawText(title, gc, 50, 20, PosHorizontal.LEFT, PosVerical.TOP);
 			gc.setFont(old);
-			
+
 
 			if(updatePaintPos) {
 				updateRangeOfOutputWindow();
@@ -595,77 +598,91 @@ public class TimeSeriesView {
 
 			updateDataWindowConversionValues();
 
-			int aggregationTimeInterval = 60;
-			switch(aggregationInterval) {
-			case HOUR:
-				aggregationTimeInterval=60;
-				break;
-			case DAY:
-				aggregationTimeInterval=1*24*60;
-				break;
-			case WEEK:
-				aggregationTimeInterval=7*24*60;
-				break;
-			case MONTH:
-				aggregationTimeInterval=28*24*60;
-				break;
-			case YEAR:
-				aggregationTimeInterval=365*24*60;
-				break;
-			default:
-				System.out.println("error in agg");
+			if(compare_timeSeries!=null) {
+
+				Color color_red = new Color(canvas.getDisplay(),240,0,0);
+				Color color_redgrey = new Color(canvas.getDisplay(),240,190,190);
+
+				drawTimeSeries(gc, compare_timeSeries, color_red, color_redgrey);
 			}
 
-			Integer prevX = null;
-			Integer prevY = null;
-
-			List<int[]> connectLineList = new ArrayList<int[]>(timeSeries.entryList.size());
-			List<int[]> valueLineList = new ArrayList<int[]>(timeSeries.entryList.size());
-
-			for(TimeSeriesEntry entry:timeSeries) {	
-				float value = entry.data[0];
-				double timestamp = entry.timestamp;
-				if(!Float.isNaN(value)) {				
-					int x0 = timestampToGraph(timestamp);
-					int x1 = timestampToGraph(timestamp+aggregationTimeInterval);
-					int y = valueToGraph(value);
-					if(prevX!=null) {
-						connectLineList.add(new int[]{x0, prevY, x0, y});
-					}
-					valueLineList.add(new int[]{x0, y, x1, y});
-					prevX = x1;
-					prevY = y;
-				} else {
-					prevX = null;
-					prevY = null;
-				}
-
-			}
-
-			//*** start drawing
-
-			drawGrid(gc);
-
-			drawXYAxis(gc);
-
-
-			gc.setForeground(color_grey);
-			for(int[] e:connectLineList) {
-				gc.drawLine(e[0], e[1], e[2], e[3]);
-			}
-
-			gc.setForeground(color_black);
-			for(int[] e:valueLineList) {
-				gc.drawLine(e[0], e[1], e[2], e[3]);
-			}
-
-
-			//*** end drawing
-
-
-			//System.out.println("data length: "+timeSeries.entryList.size());
+			drawTimeSeries(gc,timeSeries,color_black,color_grey);			
 		}
 
 	}
+
+	private void drawTimeSeries(GC gc, TimestampSeries used_timeseries, Color clrValues, Color clrConnections) {
+		int aggregationTimeInterval = 60;
+		switch(aggregationInterval) {
+		case HOUR:
+			aggregationTimeInterval=60;
+			break;
+		case DAY:
+			aggregationTimeInterval=1*24*60;
+			break;
+		case WEEK:
+			aggregationTimeInterval=7*24*60;
+			break;
+		case MONTH:
+			aggregationTimeInterval=28*24*60;
+			break;
+		case YEAR:
+			aggregationTimeInterval=365*24*60;
+			break;
+		default:
+			System.out.println("error in agg");
+		}
+
+		Integer prevX = null;
+		Integer prevY = null;
+
+		List<int[]> connectLineList = new ArrayList<int[]>(used_timeseries.entryList.size());
+		List<int[]> valueLineList = new ArrayList<int[]>(used_timeseries.entryList.size());
+
+		for(TimeSeriesEntry entry:used_timeseries) {	
+			float value = entry.data[0];
+			double timestamp = entry.timestamp;
+			if(!Float.isNaN(value)) {				
+				int x0 = timestampToGraph(timestamp);
+				int x1 = timestampToGraph(timestamp+aggregationTimeInterval);
+				int y = valueToGraph(value);
+				if(prevX!=null) {
+					connectLineList.add(new int[]{x0, prevY, x0, y});
+				}
+				valueLineList.add(new int[]{x0, y, x1, y});
+				prevX = x1;
+				prevY = y;
+			} else {
+				prevX = null;
+				prevY = null;
+			}
+
+		}
+
+		//*** start drawing
+
+		drawGrid(gc);
+
+		drawXYAxis(gc);
+
+
+		gc.setForeground(clrConnections);
+		for(int[] e:connectLineList) {
+			gc.drawLine(e[0], e[1], e[2], e[3]);
+		}
+
+		gc.setForeground(clrValues);
+		for(int[] e:valueLineList) {
+			gc.drawLine(e[0], e[1], e[2], e[3]);
+		}
+
+
+		//*** end drawing
+
+
+		//System.out.println("data length: "+timeSeries.entryList.size());		
+	}
+
+
 
 }

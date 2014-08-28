@@ -1,5 +1,6 @@
 package gui.sensorquery;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +30,9 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
+import tsdb.remote.GeneralStationInfo;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 import swing2swt.layout.BorderLayout;
 
@@ -47,27 +51,27 @@ import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.custom.CLabel;
 
 public class SensorQueryDialog extends Dialog {
-	
+
 	@Override
-	  protected void configureShell(Shell newShell) {
-	    super.configureShell(newShell);
-	    newShell.setText("Sensor Query");
-	  }
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText("Sensor Query");
+	}
 
 	@Override
 	protected Control createButtonBar(Composite parent) {
 		return null;
-		
+
 	}
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		
+
 	}
 
 	private static final Logger log = Util.log;	
 
-	private TsDB timeSeriesDatabase;
+	private RemoteTsDB timeSeriesDatabase;
 
 	private Composite container;
 	private Group grpQuery;
@@ -90,7 +94,7 @@ public class SensorQueryDialog extends Dialog {
 	 * @param parentShell
 	 * @param timeSeriesDatabase 
 	 */
-	public SensorQueryDialog(Shell parentShell, TsDB timeSeriesDatabase) {
+	public SensorQueryDialog(Shell parentShell, RemoteTsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;
@@ -148,7 +152,7 @@ public class SensorQueryDialog extends Dialog {
 				return gs.longName;
 			}});
 		comboViewerGeneralStation.addSelectionChangedListener(event->{			
-			model.setGeneralStation((GeneralStation) ((IStructuredSelection)event.getSelection()).getFirstElement());
+			model.setGeneralStationInfo((GeneralStationInfo) ((IStructuredSelection)event.getSelection()).getFirstElement());
 		});
 
 
@@ -226,47 +230,50 @@ public class SensorQueryDialog extends Dialog {
 
 		AggregationInterval aggregationInterval = AggregationInterval.DAY;
 
-		GeneralStation generalStation = model.getGeneralStation();
+		GeneralStationInfo generalStationInfo = model.getGeneralStationInfo();
 		String sensorName = model.getSensorName();
-		if(generalStation==null||sensorName==null) {			
+		if(generalStationInfo==null||sensorName==null) {			
 			return;			
 		}
 
-		Thread worker = new Thread(()->runQueryAsync(generalStation, aggregationInterval));
+		Thread worker = new Thread(()->runQueryAsync(generalStationInfo, aggregationInterval));
 		worker.start();
 
 
 	}
 
-	private void runQueryAsync(GeneralStation generalStation, AggregationInterval aggregationInterval) {
+	private void runQueryAsync(GeneralStationInfo generalStationInfo, AggregationInterval aggregationInterval) {
 
 		try {
 
-			ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
-			
+			//ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
+			String[] names = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationInfo.longname);
+
 			callAsync(()->{
 				btnUpdate.setEnabled(false);
 				lblQueryStatus.setText("running");
 				progressBar.setVisible(true);
 				progressBar.setMinimum(0);
-				progressBar.setMaximum(names.size());
+				progressBar.setMaximum(names.length);
 			});			
 
-			for(int i=0;i<names.size();i++) {
-				String name = names.get(i);			
+			for(int i=0;i<names.length;i++) {
+				String name = names[i];			
 				System.out.println(name+"  sensor name: "+model.getSensorName());
 				TimestampSeries ts = null;
+				TimestampSeries ts_compare = null;
 				try {
 
-					Node x = QueryPlan.plot(timeSeriesDatabase, name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
-					ts = x.get(null, null).toTimestampSeries();
+					ts = timeSeriesDatabase.plot(name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
+					ts_compare = timeSeriesDatabase.plot(name, model.getSensorName(), aggregationInterval, DataQuality.NO, false);				
 				} catch(Exception e) {
 					log.error(e.toString());
 				}
 				if(ts!=null) {
 					final int progress=i;
 					final TimestampSeries ts_new = ts;
-					callAsync(()->multiTimeSeriesExplorer.addTimestampSeries(ts_new,aggregationInterval,name));
+					final TimestampSeries ts_compare_new = ts_compare;
+					callAsync(()->multiTimeSeriesExplorer.addTimestampSeries(ts_new,aggregationInterval,name,ts_compare_new));
 					callAsync(()->progressBar.setSelection(progress));
 				}
 			}
@@ -299,13 +306,17 @@ public class SensorQueryDialog extends Dialog {
 	}
 
 	private void updateRegions() {
-		Region[] regions = timeSeriesDatabase.getRegions().toArray(new Region[0]);
-		model.setRegions(regions);
-		//comboViewerRegion.setInput(regions);
-		//comboViewerRegion.getCombo().select(0);
-		//model.setRegions(regions);
-		//updateFromRegionCombo(regions[0]);
-		//grpQuery.pack();
+		try {
+			Region[] regions = timeSeriesDatabase.getRegions();
+			model.setRegions(regions);
+			//comboViewerRegion.setInput(regions);
+			//comboViewerRegion.getCombo().select(0);
+			//model.setRegions(regions);
+			//updateFromRegionCombo(regions[0]);
+			//grpQuery.pack();
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}
 
 	/*private void updateFromRegionCombo(Region region) {
@@ -327,7 +338,7 @@ public class SensorQueryDialog extends Dialog {
 
 		model.addPropertyChangeListener("regions",event -> regionsChange((Region[])event.getNewValue()));
 		model.addPropertyChangeListener("region", event -> regionChange((Region)event.getNewValue()));		
-		model.addPropertyChangeListener("generalStations",event -> generalStationsChange((GeneralStation[])event.getNewValue()));
+		model.addPropertyChangeListener("generalStations",event -> generalStationsChange((GeneralStationInfo[])event.getNewValue()));
 		model.addPropertyChangeListener("generalStation",event -> generalStationChange((GeneralStation)event.getNewValue()));
 		model.addPropertyChangeListener("sensorNames",event -> sensorNamesChange((String[])event.getNewValue()));
 		model.addPropertyChangeListener("sensorName", event -> sensorNameChange((String)event.getNewValue()));
@@ -348,47 +359,62 @@ public class SensorQueryDialog extends Dialog {
 	}	
 
 	private void regionChange(Region region) {
-		System.out.println("region select change");
-		if(region!=null) {
-			comboViewerRegion.setSelection(new StructuredSelection(region));			
-			model.setGeneralStations(timeSeriesDatabase.getGeneralStations(region).toArray(GeneralStation[]::new));
-		} else {
-			comboViewerRegion.setSelection(null);
-			model.setGeneralStations(null);
-		}		
+		try {
+			System.out.println("region select change");
+			if(region!=null) {
+				comboViewerRegion.setSelection(new StructuredSelection(region));			
+				model.setGeneralStationInfos(timeSeriesDatabase.getGeneralStationInfos(region.name));
+			} else {
+				comboViewerRegion.setSelection(null);
+				model.setGeneralStationInfos(null);
+			}
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}
 
-	private void generalStationsChange(GeneralStation[] generalStations) {
+	private void generalStationsChange(GeneralStationInfo[] generalStationInfos) {
 		System.out.println("generalStations");
-		if(generalStations!=null&&generalStations.length>0) {
-			comboViewerGeneralStation.setInput(generalStations);
-			model.setGeneralStation(generalStations[0]);
+		if(generalStationInfos!=null&&generalStationInfos.length>0) {
+			comboViewerGeneralStation.setInput(generalStationInfos);
+			model.setGeneralStationInfo(generalStationInfos[0]);
 		} else {
 			comboViewerGeneralStation.setInput(null);
-			model.setGeneralStation(null);
+			model.setGeneralStationInfo(null);
 		}
 		grpQuery.layout();
 	}
 
 	private void generalStationChange(GeneralStation generalStation) {
-		System.out.println("generalStation select change");
-		if(generalStation!=null) {
-			comboViewerGeneralStation.setSelection(new StructuredSelection(generalStation));			
-			Set<LoggerType> loggerTypes = new HashSet<LoggerType>();			
-			generalStation.stationList.forEach(station->loggerTypes.add(station.loggerType));
-			generalStation.virtualPlots.stream()
-			.flatMap(virtualPlot->virtualPlot.intervalList.stream())
-			.map(i->timeSeriesDatabase.getLoggerType(i.value.get_logger_type_name()))
-			.forEach(lt->loggerTypes.add(lt));
-			Set<String> sensorNames = new TreeSet<String>();
-			loggerTypes.stream()
-			.map(lt->timeSeriesDatabase.getBaseAggregationSchema(lt.sensorNames))
-			.forEach(s->{for(String n:s){sensorNames.add(n);}});			
-			model.setSensorNames(sensorNames.toArray(new String[0]));
-		} else {
-			comboViewerGeneralStation.setSelection(null);
-			model.setSensorNames(null);
-		}		
+			System.out.println("generalStation select change");
+			if(generalStation!=null) {
+				comboViewerGeneralStation.setSelection(new StructuredSelection(generalStation));			
+				Set<LoggerType> loggerTypes = new HashSet<LoggerType>();			
+				generalStation.stationList.forEach(station->loggerTypes.add(station.loggerType));
+				generalStation.virtualPlots.stream()
+				.flatMap(virtualPlot->virtualPlot.intervalList.stream())
+				.map(i->{try{
+					return timeSeriesDatabase.getLoggerType(i.value.get_logger_type_name());}
+				catch(RemoteException e) {
+					log.error(e);
+					return null; //??
+				}})
+				.forEach(lt->loggerTypes.add(lt));
+				Set<String> sensorNames = new TreeSet<String>();
+				loggerTypes.stream()
+				.map(lt->{					
+					try {
+						return timeSeriesDatabase.getBaseSchema(lt.sensorNames);
+					} catch (Exception e) {
+						log.error(e);
+						return null;
+					}})
+					.forEach(s->{for(String n:s){sensorNames.add(n);}});			
+				model.setSensorNames(sensorNames.toArray(new String[0]));
+			} else {
+				comboViewerGeneralStation.setSelection(null);
+				model.setSensorNames(null);
+			}
 	}
 
 	private void sensorNamesChange(String[] sensorNames) {

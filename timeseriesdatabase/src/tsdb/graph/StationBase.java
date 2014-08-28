@@ -18,7 +18,7 @@ public class StationBase extends Base.Abstract {
 
 	public static StationBase create(TsDB tsdb,Station station, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
-			querySchema = tsdb.getBaseAggregationSchema(station.loggerType.sensorNames);
+			querySchema = tsdb.getBaseSchema(station.loggerType.sensorNames);
 		}
 		Node source = stationGen.get(station.stationID, querySchema);
 		return new StationBase(tsdb, source);
@@ -50,6 +50,6 @@ public class StationBase extends Base.Abstract {
 
 	@Override
 	public String[] getSchema() {
-		return tsdb.getBaseAggregationSchema(source.getSchema());
+		return tsdb.getBaseSchema(source.getSchema());
 	}
 }

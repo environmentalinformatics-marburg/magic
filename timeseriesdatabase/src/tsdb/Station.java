@@ -1,44 +1,17 @@
 package tsdb;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.aggregated.AggregationType;
-import tsdb.aggregated.BaseAggregationProcessor;
-import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.aggregated.TimeSeries;
-import tsdb.aggregated.iterator.BaseAggregationIterator;
-import tsdb.aggregated.iterator.NanGapIterator;
-import tsdb.catalog.SourceEntry;
-import tsdb.loader.SensorHeader;
-import tsdb.loader.UDBFTimestampSeries;
-import tsdb.loader.UniversalDataBinFile;
-import tsdb.raw.RawDataProcessor;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
-import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
 /**

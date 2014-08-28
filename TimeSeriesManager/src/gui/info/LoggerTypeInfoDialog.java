@@ -2,8 +2,9 @@ package gui.info;
 
 
 
-import java.util.Map.Entry;
+import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -14,22 +15,24 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import tsdb.GeneralStation;
 import tsdb.LoggerType;
-import tsdb.Sensor;
-import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
+import tsdb.util.Util;
 
 public class LoggerTypeInfoDialog extends Dialog {
+	
+	private static Logger log = Util.log;
 
-	TsDB timeSeriesDatabase; 
+	RemoteTsDB timeSeriesDatabase; 
 
-	public LoggerTypeInfoDialog(Shell parent, TsDB timeSeriesDatabase) {
+	public LoggerTypeInfoDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
 
 	}
 
-	public LoggerTypeInfoDialog(Shell parent, int style,TsDB timeSeriesDatabase) {
+	public LoggerTypeInfoDialog(Shell parent, int style,RemoteTsDB timeSeriesDatabase) {
 		super(parent, style);
 		this.timeSeriesDatabase = timeSeriesDatabase;
 		setText("General Station Info");
@@ -53,7 +56,7 @@ public class LoggerTypeInfoDialog extends Dialog {
 	}
 
 	private void createContents(final Shell shell) {
-		;
+		try {
 		shell.setLayout(new GridLayout());
 		Table table = new Table (shell, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
 		table.setLinesVisible (true);
@@ -102,6 +105,9 @@ public class LoggerTypeInfoDialog extends Dialog {
 		}
 		
 		shell.setMaximized(true);
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}	
 
 }

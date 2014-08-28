@@ -3,22 +3,23 @@ package gui.sensorquery;
 import gui.util.AbstractModel;
 import tsdb.GeneralStation;
 import tsdb.Region;
+import tsdb.remote.GeneralStationInfo;
 
 public class QuerySensorModel extends AbstractModel {
 
 	private Region[] regions;
-	private GeneralStation[] generalStations;
+	private GeneralStationInfo[] generalStationInfos;
 	private String[] sensorNames;
 
 	private Region region;
-	private GeneralStation generalStation;
+	private GeneralStationInfo generalStationInfo;
 	private String sensorName;
 
 	public void setRegions(Region[] regions) {
 		changeSupport.firePropertyChange("regions", this.regions, this.regions=regions);
 	}
-	public void setGeneralStations(GeneralStation[] generalStations) {
-		changeSupport.firePropertyChange("generalStations", this.generalStations, this.generalStations=generalStations);
+	public void setGeneralStationInfos(GeneralStationInfo[] generalStationInfos) {
+		changeSupport.firePropertyChange("generalStationInfos", this.generalStationInfos, this.generalStationInfos=generalStationInfos);
 	}
 	public void setSensorNames(String[] sensorNames) {
 		changeSupport.firePropertyChange("sensorNames", this.sensorNames, this.sensorNames=sensorNames);
@@ -28,8 +29,8 @@ public class QuerySensorModel extends AbstractModel {
 	public void setRegion(Region region) {
 		changeSupport.firePropertyChange("region", this.region, this.region=region);
 	}
-	public void setGeneralStation(GeneralStation generalStation) {
-		changeSupport.firePropertyChange("generalStation", this.generalStation, this.generalStation=generalStation);
+	public void setGeneralStationInfo(GeneralStationInfo generalStationInfo) {
+		changeSupport.firePropertyChange("generalStationInfo", this.generalStationInfo, this.generalStationInfo=generalStationInfo);
 	}
 	public void setSensorName(String sensorName) {
 		changeSupport.firePropertyChange("sensorName", this.sensorName, this.sensorName=sensorName);
@@ -39,8 +40,8 @@ public class QuerySensorModel extends AbstractModel {
 	public Region[] getRegions() {
 		return regions;
 	}
-	public GeneralStation[] getGeneralStations() {
-		return generalStations;
+	public GeneralStationInfo[] getGeneralStationInfos() {
+		return generalStationInfos;
 	}
 	public String[] getSensorNames() {
 		return sensorNames;
@@ -50,8 +51,8 @@ public class QuerySensorModel extends AbstractModel {
 	public Region getRegion() {
 		return region;
 	}
-	public GeneralStation getGeneralStation() {
-		return generalStation;
+	public GeneralStationInfo getGeneralStationInfo() {
+		return generalStationInfo;
 	}
 	public String getSensorName() {
 		return sensorName;

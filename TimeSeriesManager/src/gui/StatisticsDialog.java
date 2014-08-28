@@ -1,9 +1,11 @@
 package gui;
 
+import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
@@ -14,6 +16,8 @@ import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 import swing2swt.layout.BorderLayout;
@@ -28,7 +32,9 @@ import de.umr.jepc.util.Timer;
 
 public class StatisticsDialog extends Dialog {
 	
-	private TsDB timeSeriesDatabase;
+	private static Logger log = Util.log;
+	
+	private RemoteTsDB timeSeriesDatabase;
 
 	protected Object result;
 	protected Shell shell;
@@ -39,7 +45,7 @@ public class StatisticsDialog extends Dialog {
 	 * @param parent
 	 * @param timeSeriesDatabase
 	 */
-	public StatisticsDialog(Shell parent, TsDB timeSeriesDatabase) {
+	public StatisticsDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		setText("Statistics");
 		this.timeSeriesDatabase = timeSeriesDatabase;
@@ -110,15 +116,14 @@ public class StatisticsDialog extends Dialog {
 	}
 	
 	private void process() {
-		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
-		
+		try {
 		long station_counter = 0;
 		long total_entry_counter = 0;
 		long total_data_values_counter = 0;
 		
 		for(String stationName:timeSeriesDatabase.getStationNames()) {
 			
-			TimeSeriesIterator it = qp.query_raw(stationName, null, null, null);
+			TimeSeriesIterator it = timeSeriesDatabase.query_raw(stationName, null, null, null);
 			if(it==null) {
 				//println(null);
 			} else {
@@ -159,6 +164,9 @@ public class StatisticsDialog extends Dialog {
 		println("stations with data entries: "+Util.bigNumberToString(station_counter));
 		println("total data entries: "+Util.bigNumberToString(total_entry_counter));
 		println("total data values: "+Util.bigNumberToString(total_data_values_counter));
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 
 	}	
 }

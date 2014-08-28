@@ -1,5 +1,7 @@
 package tsdb;
 
+import java.io.Serializable;
+
 import tsdb.aggregated.AggregationType;
 
 /**
@@ -8,8 +10,10 @@ import tsdb.aggregated.AggregationType;
  * @author woellauer
  *
  */
-public class Sensor {
+public class Sensor implements Serializable {
 	
+	private static final long serialVersionUID = -4139931796468207965L;
+
 	/**
 	 * parameter name of this sensor
 	 */

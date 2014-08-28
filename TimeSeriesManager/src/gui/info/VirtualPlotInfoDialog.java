@@ -2,6 +2,7 @@ package gui.info;
 
 
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -21,6 +22,8 @@ import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 import org.eclipse.swt.widgets.Table;
@@ -40,7 +43,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 	
 	private static Logger log = Util.log;
 
-	private TsDB timeSeriesDatabase;
+	private RemoteTsDB timeSeriesDatabase;
 	private Table table;
 	private TableViewBridge<VirtualPlot> tableViewBridge;
 
@@ -48,7 +51,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public VirtualPlotInfoDialog(Shell parentShell, TsDB timeSeriesDatabase) {
+	public VirtualPlotInfoDialog(Shell parentShell, RemoteTsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;
@@ -80,10 +83,15 @@ public class VirtualPlotInfoDialog extends Dialog {
 		table.setBounds(74, 10, 300, 171);
 		//formToolkit.paintBordersFor(table);
 
+		try {
 		// set the content provider
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setInput(timeSeriesDatabase.getVirtualPlots());		
 		tableViewer.setComparator(tableViewBridge);
+		} catch(RemoteException e) {
+			log.error(e);
+		}
+		
 		return container;
 	}
 

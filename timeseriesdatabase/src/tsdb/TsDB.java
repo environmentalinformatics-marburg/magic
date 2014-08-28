@@ -361,8 +361,8 @@ public class TsDB {
 		return generalStationMap.keySet().stream().toArray(String[]::new);
 	}
 
-	public Stream<GeneralStation> getGeneralStations(Region region) {
-		return generalStationMap.values().stream().filter(x->x.region==region);
+	public Stream<GeneralStation> getGeneralStations(String regionName) {
+		return generalStationMap.values().stream().filter(x->regionName.equals(x.region.name));
 	}
 	
 	public Set<String> getGeneralStationGroups() {
@@ -507,8 +507,8 @@ public class TsDB {
 
 
 
-	public String[] getGeneralStationLongNames(Region region) {
-		return getGeneralStations(region).map(x -> x.longName).sorted().toArray(String[]::new);
+	public String[] getGeneralStationLongNames(String regionName) {
+		return getGeneralStations(regionName).map(x -> x.longName).sorted().toArray(String[]::new);
 	}
 
 	//*********************************************** end Region *************************************************************************
@@ -534,7 +534,7 @@ public class TsDB {
 		}
 	}
 
-	public String[] getBaseAggregationSchema(String[] rawSchema) {
+	public String[] getBaseSchema(String[] rawSchema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		for(String name:rawSchema) {
 			if(this.baseAggregationExists(name)) {

@@ -281,7 +281,7 @@ public class QueryProcessor {
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			if(querySchema==null) {
-				querySchema = timeSeriesDatabase.getBaseAggregationSchema(virtualPlot.getSchema());
+				querySchema = timeSeriesDatabase.getBaseSchema(virtualPlot.getSchema());
 			}
 			List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, querySchema);			 
 			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				

@@ -9,6 +9,10 @@ import gui.info.VirtualPlotInfoDialog;
 import gui.query.QueryDialog;
 import gui.sensorquery.SensorQueryDialog;
 
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -41,12 +45,18 @@ import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Util;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
+import tsdb.run.StartServerTsDB;
+import tsdb.server.StartServer;
+import tsdb.server.TSDServerInterface;
 
 public class TimeSeriesManager {
 	
 	private static Logger log = Util.log;
 
-	public TsDB timeSeriesDatabase;
+	
+	public RemoteTsDB remoteTsDB;
 	
 	public Shell shell;
 	public Text textBox;
@@ -63,7 +73,11 @@ public class TimeSeriesManager {
 		Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
 			public void run() {
 				shell = new Shell(display);
-				init();
+				try {
+					init();
+				} catch (RemoteException | NotBoundException e) {
+					e.printStackTrace();
+				}
 				//shell.pack();
 				shell.open();
 				while (!shell.isDisposed()) {
@@ -77,13 +91,18 @@ public class TimeSeriesManager {
 		display.dispose();	
 	}	
 	
-	private void init() {
+	private void init() throws RemoteException, NotBoundException {
 		System.out.println("start...");
-		String databaseDirectory = "c:/timeseriesdatabase_database/";
+		/*String databaseDirectory = "c:/timeseriesdatabase_database/";
 		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 		String cacheDirectory = "c:/timeseriesdatabase_cache/";
-		timeSeriesDatabase = FactoryTsDB.createDefault(databaseDirectory, configDirectory, cacheDirectory);
-		//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();
+		TsDB tsDB = FactoryTsDB.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+		//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
+		this.remoteTsDB =  new ServerTsDB(tsDB);*/
+		
+		System.out.println("start RemoteTsDB...");
+		 Registry registry = LocateRegistry.getRegistry("localhost");
+		 remoteTsDB = (RemoteTsDB) registry.lookup(StartServerTsDB.SERVERTSDB_NAME);
 
 		shell.setText("time series database manager");
 		shell.setSize(300, 400);
@@ -92,19 +111,19 @@ public class TimeSeriesManager {
 		Menu menuBar = new Menu(shell, SWT.BAR);
 		
 		Menu infoMenu = addMenuColumn(menuBar,"info");
-		addMenuItem(infoMenu,"sensors",x->(new SensorsInfoDialog(shell,timeSeriesDatabase)).open());
-		addMenuItem(infoMenu,"stations",x->(new StationsInfoDialog(shell,timeSeriesDatabase)).open());
-		addMenuItem(infoMenu,"virtual plots",x->(new VirtualPlotInfoDialog(shell,timeSeriesDatabase).open()));
-		addMenuItem(infoMenu,"general stations",x->(new gui.info.GeneralStationInfoDialog(shell, timeSeriesDatabase)).open());
-		addMenuItem(infoMenu,"logger types",x->(new LoggerTypeInfoDialog(shell, timeSeriesDatabase)).open());
-		addMenuItem(infoMenu,"source catalog",x->(new SourceCatalogInfoDialog(shell, timeSeriesDatabase)).open());
+		addMenuItem(infoMenu,"sensors",x->(new SensorsInfoDialog(shell,remoteTsDB)).open());
+		addMenuItem(infoMenu,"stations",x->(new StationsInfoDialog(shell,remoteTsDB)).open());
+		addMenuItem(infoMenu,"virtual plots",x->(new VirtualPlotInfoDialog(shell,remoteTsDB).open()));
+		addMenuItem(infoMenu,"general stations",x->(new gui.info.GeneralStationInfoDialog(shell, remoteTsDB)).open());
+		addMenuItem(infoMenu,"logger types",x->(new LoggerTypeInfoDialog(shell, remoteTsDB)).open());
+		addMenuItem(infoMenu,"source catalog",x->(new SourceCatalogInfoDialog(shell, remoteTsDB)).open());
 
 		Menu queryMenu = addMenuColumn(menuBar,"Query");
-		addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,timeSeriesDatabase)).open());
-		addMenuItem(queryMenu,"query sensors", new SensorQueryDialog(shell,timeSeriesDatabase));
+		addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,remoteTsDB)).open());
+		addMenuItem(queryMenu,"query sensors", new SensorQueryDialog(shell,remoteTsDB));
 		
 		Menu statisticsMenu = addMenuColumn(menuBar,"Statistics");
-		addMenuItem(statisticsMenu, "statistics", x->(new StatisticsDialog(shell, timeSeriesDatabase)).open());
+		addMenuItem(statisticsMenu, "statistics", x->(new StatisticsDialog(shell, remoteTsDB)).open());
 
 
 		textBox = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);

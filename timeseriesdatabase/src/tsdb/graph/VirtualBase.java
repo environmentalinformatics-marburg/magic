@@ -25,8 +25,8 @@ public class VirtualBase extends Base.Abstract  {
 		if(schema.length==0) {
 			throw new RuntimeException("no schema");
 		}
-		if(!Util.isContained(schema, tsdb.getBaseAggregationSchema(virtualPlot.getSchema()))) {
-			throw new RuntimeException("schema not valid  "+schema+"  in  "+tsdb.getBaseAggregationSchema(virtualPlot.getSchema()));
+		if(!Util.isContained(schema, tsdb.getBaseSchema(virtualPlot.getSchema()))) {
+			throw new RuntimeException("schema not valid  "+schema+"  in  "+tsdb.getBaseSchema(virtualPlot.getSchema()));
 		}
 		this.virtualPlot = virtualPlot;
 		this.schema = schema;
@@ -39,7 +39,7 @@ public class VirtualBase extends Base.Abstract  {
 			if(schema==null) {
 				throw new RuntimeException("empty VirtualPlot: "+virtualPlot.plotID);
 			}			
-			querySchema = tsdb.getBaseAggregationSchema(schema);
+			querySchema = tsdb.getBaseSchema(schema);
 			if(querySchema==null) {
 				throw new RuntimeException("empty base schema in VirtualPlot: "+virtualPlot.plotID);
 			}

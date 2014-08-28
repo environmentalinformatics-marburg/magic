@@ -1,7 +1,9 @@
 package gui.query;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -34,6 +36,9 @@ import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
+import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Pair;
@@ -46,9 +51,9 @@ public class QueryDialog extends Dialog {
 
 	private static Logger log = Util.log;
 
-	private TsDB timeSeriesDatabase;
+	private RemoteTsDB timeSeriesDatabase;
 	//private QueryProcessorOLD qp;
-	private QueryProcessor qp;
+	//private QueryProcessor qp;
 
 
 	protected Shell shlAggregatedQuery;
@@ -85,13 +90,13 @@ public class QueryDialog extends Dialog {
 	 * @param parent
 	 * @param timeSeriesDatabase
 	 */
-	public QueryDialog(Shell parent, TsDB timeSeriesDatabase) {
+	public QueryDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		beginDateTime = null;
 		endDateTime = null;
 		setText("SWT Dialog");
 		this.timeSeriesDatabase = timeSeriesDatabase;
-		this.qp = new QueryProcessor(timeSeriesDatabase);
+		//this.qp = new QueryProcessor(timeSeriesDatabase);
 		//this.dataView = new DataView();		
 	}
 
@@ -366,7 +371,7 @@ public class QueryDialog extends Dialog {
 		final DataQuality dataQuality = dq;
 
 		buttonUpdate.setEnabled(false);
-		
+
 		final boolean useCache = comboRegion.getText().equals("cache");
 
 
@@ -383,13 +388,13 @@ public class QueryDialog extends Dialog {
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
 					Node node;
-					
+
 					if(useCache) {
-						node = QueryPlan.cache(timeSeriesDatabase, plotID, querySchema[0], agg);
+						resultTimeSeries = timeSeriesDatabase.cache(plotID, querySchema[0], agg);
 					} else {
-						node = QueryPlan.plot(timeSeriesDatabase, plotID, querySchema[0], agg, dataQuality, useInterpolation);
+						resultTimeSeries = timeSeriesDatabase.plot(plotID, querySchema[0], agg, dataQuality, useInterpolation);
 					}
-					
+
 					/*if(useCache) {
 						String streamName = plotID;
 						node = Aggregated.createFromBase(timeSeriesDatabase, CacheBase.create(timeSeriesDatabase, streamName, querySchema), agg);
@@ -398,10 +403,6 @@ public class QueryDialog extends Dialog {
 					} else {
 						node = Aggregated.create(timeSeriesDatabase, plotID, querySchema, agg, dataQuality);
 					}*/
-					TimeSeriesIterator it = node.get(queryStart, queryEnd);
-					if(it!=null&&it.hasNext()) {
-						resultTimeSeries = it.toTimestampSeries();
-					}
 				} catch (Exception e) {
 
 					e.printStackTrace();
@@ -446,71 +447,71 @@ public class QueryDialog extends Dialog {
 	}
 
 	void updateGUIregions() {
-		ArrayList<String> list = new ArrayList<String>();
-		timeSeriesDatabase.getRegionLongNames().forEach(x->list.add(x));
-		list.add("cache");
-		String[] longNames = list.toArray(new String[0]);
+		try {
+			String[] longNames = timeSeriesDatabase.getRegionLongNames();
+			String[] items = Arrays.copyOf(longNames, longNames.length+1);
+			items[longNames.length] = "cache";
 
-		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
-		comboRegion.setItems(longNames);
-		comboRegion.setText(longNames[0]);
+			//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
+			comboRegion.setItems(items);
+			comboRegion.setText(items[0]);
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}
 
 	void updateGUIgeneralstations() {
-
-		String regionLongName = comboRegion.getText();		
-		Region region = timeSeriesDatabase.getRegionByLongName(regionLongName);
-		if(region!=null) {
-			String[] generalStationNames = timeSeriesDatabase.getGeneralStationLongNames(region);
-			comboGeneralStation.setItems(generalStationNames);
-			if(generalStationNames.length>0) {
-				comboGeneralStation.setText(generalStationNames[0]);
-			} else {
-				comboGeneralStation.setText("");	
-			}
-		} else if(regionLongName.equals("cache")) {
-			System.out.println(regionLongName);
-			comboGeneralStation.setItems(new String[]{"cache"});
-			comboGeneralStation.setText("cache");			
-			String[] streams = timeSeriesDatabase.cacheStorage.getStreamNames().toArray(String[]::new);
-			comboPlotID.setItems(streams);
-			comboPlotID.setText(streams.length>0?streams[0]:"");
-		} else {
-			comboPlotID.setItems(new String[0]);
-		}
-
-		/*String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
-		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
-		comboGeneralStation.setItems(generalStations);
-		comboGeneralStation.setText(generalStations[0]);*/
-	}
-
-	void updateGUIplotID() {
-		String generalStationName = comboGeneralStation.getText();
-		if(!generalStationName.equals("cache")) {
-			GeneralStation generalStation = timeSeriesDatabase.getGeneralStationByLongName(generalStationName);
-			if(generalStation!=null) {
-				ArrayList<String> plotIDList = new ArrayList<String>();
-				generalStation.stationList.stream().forEach(station->plotIDList.add(station.stationID));
-				generalStation.virtualPlots.stream().forEach(virtualPlot->plotIDList.add(virtualPlot.plotID));
-				if(plotIDList.size()>0) {
-					String[] plotIDs = plotIDList.toArray(new String[0]);
-					comboPlotID.setItems(plotIDs);
-					comboPlotID.setText(plotIDs[0]);
+		try {
+			String regionLongName = comboRegion.getText();		
+			Region region = timeSeriesDatabase.getRegionByLongName(regionLongName);
+			if(region!=null) {
+				String[] generalStationNames = timeSeriesDatabase.getGeneralStationLongNames(region.name);
+				comboGeneralStation.setItems(generalStationNames);
+				if(generalStationNames.length>0) {
+					comboGeneralStation.setText(generalStationNames[0]);
 				} else {
-					comboPlotID.setItems(new String[0]);
+					comboGeneralStation.setText("");	
 				}
+			} else if(regionLongName.equals("cache")) {
+				System.out.println(regionLongName);
+				comboGeneralStation.setItems(new String[]{"cache"});
+				comboGeneralStation.setText("cache");			
+				String[] streams = timeSeriesDatabase.cacheStorageGetStreamNames();
+				comboPlotID.setItems(streams);
+				comboPlotID.setText(streams.length>0?streams[0]:"");
 			} else {
 				comboPlotID.setItems(new String[0]);
 			}
-		} else {
 
+			/*String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
+		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
+		comboGeneralStation.setItems(generalStations);
+		comboGeneralStation.setText(generalStations[0]);*/
+		} catch(RemoteException e) {
+			log.error(e);
 		}
+	}
+
+	void updateGUIplotID() {
+		try {
+			String generalStationName = comboGeneralStation.getText();
+			if(!generalStationName.equals("cache")) {				
+				String[] plotIDs = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationName);
+					if(plotIDs!=null) {
+						comboPlotID.setItems(plotIDs);
+						comboPlotID.setText(plotIDs[0]);
+					} else {
+						comboPlotID.setItems(new String[0]);
+					}
+
+			} else {
+
+			}
 
 
 
 
-		/*
+			/*
 		if(generalStation!=null) {
 			java.util.List<Station> list = generalStation.stationList;
 			if(list.size()>0) {
@@ -526,62 +527,72 @@ public class QueryDialog extends Dialog {
 		} else {
 			comboPlotID.setItems(new String[0]);
 		}*/
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 
 	}
 
 	void updateGUISensorName() {
 
-		String stationName = comboPlotID.getText();
+		try {
+
+			String stationName = comboPlotID.getText();
 
 
-		System.out.println("updateGUISensorName "+stationName);
-		String[] schema = null;
-		VirtualPlot virtualplot = timeSeriesDatabase.getVirtualPlot(stationName);
-		if(virtualplot!=null) {
-			schema = virtualplot.getSchema();
-		} else {
-			Station station = timeSeriesDatabase.getStation(stationName);
-			if(station!=null) {
-				schema = station.loggerType.sensorNames;
-			} 
-		} 
+			System.out.println("updateGUISensorName "+stationName);
+			String[] schema = null;
+			/*VirtualPlotInfo virtualplotInfo = timeSeriesDatabase.getVirtualPlotInfo(stationName);
+			if(virtualplotInfo!=null) {
+				//schema = virtualplotInfo.getSchema();
+			} else {*/
+					schema = timeSeriesDatabase.getPlotSchema(stationName);
+			//} 
 
-		if(comboGeneralStation.getText().equals("cache")) {
-			schema = timeSeriesDatabase.cacheStorage.getSchema(stationName).schema;
-		}
-		if(schema!=null) {
+			if(comboGeneralStation.getText().equals("cache")) {
+				schema = timeSeriesDatabase.getCacheSchemaNames(stationName);
+			}
+			if(schema!=null) {
 
-			String[] sensorNames = timeSeriesDatabase.getBaseAggregationSchema(schema);
-			if(sensorNames.length>0) {
-				String oldName = comboSensorName.getText();
-				comboSensorName.setItems(sensorNames);
-				int indexPos = Util.getIndexInArray(oldName, sensorNames);				
-				if(indexPos<0) {
-					indexPos = 0;					
+				String[] sensorNames = timeSeriesDatabase.getBaseSchema(schema);
+				if(sensorNames.length>0) {
+					String oldName = comboSensorName.getText();
+					comboSensorName.setItems(sensorNames);
+					int indexPos = Util.getIndexInArray(oldName, sensorNames);				
+					if(indexPos<0) {
+						indexPos = 0;					
+					}
+					comboSensorName.setText(sensorNames[indexPos]);
+				} else {
+					comboSensorName.setItems(new String[0]);
+					comboSensorName.setText("");
 				}
-				comboSensorName.setText(sensorNames[indexPos]);
 			} else {
 				comboSensorName.setItems(new String[0]);
 				comboSensorName.setText("");
 			}
-		} else {
-			comboSensorName.setItems(new String[0]);
-			comboSensorName.setText("");
-		}
 
-		updateGUIinterpolated();
+			updateGUIinterpolated();
+
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}
 
 	protected void updateGUIinterpolated() {
-		String sensorName = comboSensorName.getText();
-		if(sensorName!=null && !sensorName.isEmpty()) {
-			Sensor sensor = timeSeriesDatabase.getSensor(sensorName);
-			if(sensor != null) {
-				checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
-				return;
+		try {
+			String sensorName = comboSensorName.getText();
+			if(sensorName!=null && !sensorName.isEmpty()) {
+				Sensor sensor = timeSeriesDatabase.getSensor(sensorName);
+				if(sensor != null) {
+					checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
+					return;
+				}
 			}
+			checkButtonInterpolated2.setEnabled(false);
+		} catch(RemoteException e) {
+			log.error(e);
 		}
-		checkButtonInterpolated2.setEnabled(false);
 	}
 
 	void updateGUIAggregation() {
@@ -592,29 +603,7 @@ public class QueryDialog extends Dialog {
 		comboAggregation.setText("day");
 	}
 
-	void updateViewData() {
-		/*if(queryResult!=null) {
-			float[] data = queryResult.data[0];
 
-			minValue = Float.MAX_VALUE;
-			maxValue = -Float.MAX_VALUE;
-
-			for(int offset=0;offset<data.length;offset++) {
-				float value = data[offset];
-				if(!Float.isNaN(value)) {
-					if(value<minValue) {
-						minValue = value;						
-					}
-					if(value>maxValue) {
-						maxValue = value;						
-					}
-				}
-			}
-		} else {
-			minValue = Float.NaN;
-			maxValue = -Float.NaN;
-		}*/
-	}
 
 	void updateGUIInfo() {
 		/*if(queryResult!=null) {

@@ -1,5 +1,8 @@
 package gui.info;
 
+import java.rmi.RemoteException;
+
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Point;
@@ -19,24 +22,29 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ColumnPixelData;
 
+import sun.util.logging.resources.logging;
 import tsdb.GeneralStation;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 public class GeneralStationInfoDialog extends Dialog {
-	
-	private TsDB timeSeriesDatabase;
-	
+
+	private static Logger log = Util.log;
+
+	private RemoteTsDB timeSeriesDatabase;
+
 	private TableViewBridge<GeneralStation> tableViewBridge;
-	
+
 	private Table table;
 
 	/**
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public GeneralStationInfoDialog(Shell parent, TsDB timeSeriesDatabase) {
+	public GeneralStationInfoDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
 		super(parent);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 		this.timeSeriesDatabase = timeSeriesDatabase;
@@ -52,10 +60,10 @@ public class GeneralStationInfoDialog extends Dialog {
 		GridLayout gridLayout = (GridLayout) container.getLayout();*/
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
-		
+
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		tableViewBridge = new TableViewBridge<GeneralStation>(tableViewer);
-		
+
 		/*
 		 * String[] titles = {"ID", "Name","Region","Group","Stations and Virtual Plots"};
 		 * 
@@ -64,11 +72,11 @@ public class GeneralStationInfoDialog extends Dialog {
 		item.setText (1, Util.ifnull(generalStation.longName, "---"));
 		item.setText (2, Util.ifnull(generalStation.region,x->""+x.longName+" ("+x.name+")","---"));
 		item.setText (3, Util.ifnull(generalStation.group,"---"));
-		
+
 		int pCount = generalStation.stationList.size()+generalStation.virtualPlotList.size();
 		item.setText (4, ""+pCount);
-		*/
-		
+		 */
+
 		tableViewBridge.addColumn("ID",50,g->g.name);
 		tableViewBridge.addColumn("Name",200,g->Util.ifnull(g.longName, "---"));
 		tableViewBridge.addColumn("Region",200,g->Util.ifnull(g.region,x->""+x.longName+" ("+x.name+")","---"));
@@ -85,7 +93,11 @@ public class GeneralStationInfoDialog extends Dialog {
 
 		// set the content provider
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-		tableViewer.setInput(timeSeriesDatabase.getGeneralStations());		
+		try {
+			tableViewer.setInput(timeSeriesDatabase.getGeneralStations());
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 		tableViewer.setComparator(tableViewBridge);
 		return container;
 	}

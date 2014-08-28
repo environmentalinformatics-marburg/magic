@@ -77,7 +77,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 		// Disable the check that prevents subclassing of SWT components
 	}
 
-	public void addTimestampSeries(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title) {
+	public void addTimestampSeries(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title, TimestampSeries compare_timeSeries) {
 
 		TimeSeriesView timeSeriesView = new TimeSeriesView();
 		if(timeSeries.getFirstTimestamp()<minTimestamp) {
@@ -87,7 +87,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 			maxTimestamp = timeSeries.getLastTimestamp();
 		}
 		timeSeriesView.setCanvas(canvas);
-		timeSeriesView.updateViewData(timeSeries, aggregationInterval, title);
+		timeSeriesView.updateViewData(timeSeries, aggregationInterval, title, compare_timeSeries);
 		timeSeriesViews.add(timeSeriesView);
 		timeSeriesCache.add(null);
 		int selection = 0;
