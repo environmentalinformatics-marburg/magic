@@ -1,7 +1,10 @@
 package tsdb.util;
 
-public class TimestampInterval<T> {
+import java.io.Serializable;
+
+public class TimestampInterval<T extends Serializable> implements Serializable {
 	
+	private static final long serialVersionUID = 1733091691391404002L;
 	public final T value;
 	public final Long start;
 	public final Long end;

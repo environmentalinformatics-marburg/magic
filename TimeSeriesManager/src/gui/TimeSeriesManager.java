@@ -1,6 +1,5 @@
 package gui;
 
-import gui.info.GeneralStationsInfoDialogOLD;
 import gui.info.LoggerTypeInfoDialog;
 import gui.info.SensorsInfoDialog;
 import gui.info.SourceCatalogInfoDialog;
@@ -9,47 +8,32 @@ import gui.info.VirtualPlotInfoDialog;
 import gui.query.QueryDialog;
 import gui.sensorquery.SensorQueryDialog;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.time.LocalDateTime;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
-
 import tsdb.FactoryTsDB;
-import tsdb.Sensor;
-import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimestampSeries;
-import tsdb.util.CSVTimeType;
 import tsdb.util.Util;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.run.StartServerTsDB;
-import tsdb.server.StartServer;
-import tsdb.server.TSDServerInterface;
 
 public class TimeSeriesManager {
 	
@@ -92,8 +76,8 @@ public class TimeSeriesManager {
 	}	
 	
 	private void init() throws RemoteException, NotBoundException {
-		System.out.println("start...");
-		/*String databaseDirectory = "c:/timeseriesdatabase_database/";
+		/*System.out.println("start...");
+		String databaseDirectory = "c:/timeseriesdatabase_database/";
 		String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 		String cacheDirectory = "c:/timeseriesdatabase_cache/";
 		TsDB tsDB = FactoryTsDB.createDefault(databaseDirectory, configDirectory, cacheDirectory);
@@ -101,8 +85,30 @@ public class TimeSeriesManager {
 		this.remoteTsDB =  new ServerTsDB(tsDB);*/
 		
 		System.out.println("start RemoteTsDB...");
-		 Registry registry = LocateRegistry.getRegistry("localhost");
-		 remoteTsDB = (RemoteTsDB) registry.lookup(StartServerTsDB.SERVERTSDB_NAME);
+		 //Registry registry = LocateRegistry.getRegistry("localhost",StartServerTsDB.REGISTRY_PORT);
+		 Registry registry = LocateRegistry.getRegistry("192.168.191.183",StartServerTsDB.REGISTRY_PORT);
+		 System.out.println("list: "+Util.arrayToString(registry.list()));
+		 
+		 
+		String hostname = null;
+		try {
+			hostname = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 System.out.println("this host IP is " + hostname);
+		 
+		 //String server_url = "rmi://137.248.191.180:16826/ServerTsDB";
+		 String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
+		 
+		 remoteTsDB = (RemoteTsDB) registry.lookup(server_url);
+		 
+		 System.out.println("remoteTsDB: "+remoteTsDB.toString()+"  "+remoteTsDB.getClass());
+		 
+		
+		 
+		 
 
 		shell.setText("time series database manager");
 		shell.setSize(300, 400);

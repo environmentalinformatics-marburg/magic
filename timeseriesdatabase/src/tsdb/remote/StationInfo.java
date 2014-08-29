@@ -5,15 +5,16 @@ import java.io.Serializable;
 import tsdb.GeneralStation;
 import tsdb.LoggerType;
 import tsdb.Station;
+import tsdb.util.Util;
 
 public class StationInfo implements Serializable {
 
-	
+	private static final long serialVersionUID = -5759969271465519328L;
 	public final String stationID;
 	public final LoggerType loggerType;
 	public final double geoPoslongitude;
 	public final double geoPosLatitude;
-	public final GeneralStation generalStation;
+	public final GeneralStationInfo generalStationInfo;
 	public final String alternativeID;
 
 	public StationInfo(Station station) {
@@ -21,7 +22,7 @@ public class StationInfo implements Serializable {
 		loggerType=station.loggerType;
 		geoPoslongitude= station.geoPoslongitude;
 		geoPosLatitude= station.geoPosLatitude;
-		generalStation= station.generalStation;
+		generalStationInfo= Util.ifnull(station.generalStation, gs->new GeneralStationInfo(gs));
 		alternativeID=station.alternativeID;
 	}		
 }

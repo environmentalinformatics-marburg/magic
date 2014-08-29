@@ -3,7 +3,9 @@ package tsdb.remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import tsdb.DataQuality;
@@ -179,5 +181,34 @@ public class ServerTsDB implements RemoteTsDB {
 	public TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		QueryProcessor qp = new QueryProcessor(tsdb);
 		return qp.query_raw(plotID, querySchema, queryStart, queryEnd);
+	}
+	
+	@Override
+	public String[] getGeneralStationSensorNames(String generalStationName) {
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+		if(generalStation==null) {
+			return null;
+		}
+				
+		Set<LoggerType> loggerTypes = new HashSet<LoggerType>();
+		
+		generalStation.stationList.forEach(station->loggerTypes.add(station.loggerType));
+		
+		generalStation.virtualPlots.stream()
+				.flatMap(virtualPlot->virtualPlot.intervalList.stream())
+				.map(i->tsdb.getLoggerType(i.value.get_logger_type_name()))
+				.forEach(lt->loggerTypes.add(lt));
+		
+		Set<String> sensorNames = new TreeSet<String>();
+		
+		loggerTypes.stream()
+			.map(lt->tsdb.getBaseSchema(lt.sensorNames))
+			.forEach(s->{ for(String n:s){sensorNames.add(n);}});
+		
+		if(sensorNames.isEmpty()) {
+			return null;
+		}
+		
+		return sensorNames.toArray(new String[0]);		
 	}
 }

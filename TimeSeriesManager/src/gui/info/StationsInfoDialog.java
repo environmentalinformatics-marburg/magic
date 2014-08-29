@@ -79,7 +79,7 @@ public class StationsInfoDialog extends Dialog {
 				item.setText (1, tsdb.util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));
 				item.setText (2, ""+ Util.ifNaN(station.geoPoslongitude,"---"));
 				item.setText (3, ""+ Util.ifNaN(station.geoPosLatitude,"---"));
-				item.setText (4, Util.ifnull(station.generalStation, x->x.name, ()->"---"));
+				item.setText (4, Util.ifnull(station.generalStationInfo, x->x.name, ()->"---"));
 				item.setText (5, Util.ifnull(station.alternativeID,"---"));
 			}
 

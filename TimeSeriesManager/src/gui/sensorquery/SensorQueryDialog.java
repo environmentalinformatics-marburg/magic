@@ -148,7 +148,7 @@ public class SensorQueryDialog extends Dialog {
 		comboViewerGeneralStation.setLabelProvider(new LabelProvider(){
 			@Override
 			public String getText(Object element) {
-				GeneralStation gs = (GeneralStation) element;
+				GeneralStationInfo gs = (GeneralStationInfo) element;
 				return gs.longName;
 			}});
 		comboViewerGeneralStation.addSelectionChangedListener(event->{			
@@ -247,7 +247,7 @@ public class SensorQueryDialog extends Dialog {
 		try {
 
 			//ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
-			String[] names = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationInfo.longname);
+			String[] names = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationInfo.longName);
 
 			callAsync(()->{
 				btnUpdate.setEnabled(false);
@@ -309,37 +309,18 @@ public class SensorQueryDialog extends Dialog {
 		try {
 			Region[] regions = timeSeriesDatabase.getRegions();
 			model.setRegions(regions);
-			//comboViewerRegion.setInput(regions);
-			//comboViewerRegion.getCombo().select(0);
-			//model.setRegions(regions);
-			//updateFromRegionCombo(regions[0]);
-			//grpQuery.pack();
 		} catch(RemoteException e) {
 			log.error(e);
 		}
 	}
-
-	/*private void updateFromRegionCombo(Region region) {
-		System.out.println("region: "+region);
-		GeneralStation[] generalStations = timeSeriesDatabase.getGeneralStations(region).toArray(GeneralStation[]::new);
-		comboViewerGeneralStation.setInput(generalStations);
-		comboViewerGeneralStation.getCombo().select(0);
-		grpQuery.pack();
-	}
-
-	private void updateFromGeneralStationCombo(GeneralStation generalStation) {
-
-	}*/
-
-
 
 	protected DataBindingContext initDataBindings() {
 		DataBindingContext dbc = new DataBindingContext();
 
 		model.addPropertyChangeListener("regions",event -> regionsChange((Region[])event.getNewValue()));
 		model.addPropertyChangeListener("region", event -> regionChange((Region)event.getNewValue()));		
-		model.addPropertyChangeListener("generalStations",event -> generalStationsChange((GeneralStationInfo[])event.getNewValue()));
-		model.addPropertyChangeListener("generalStation",event -> generalStationChange((GeneralStation)event.getNewValue()));
+		model.addPropertyChangeListener("generalStationInfos",event -> generalStationsChange((GeneralStationInfo[])event.getNewValue()));
+		model.addPropertyChangeListener("generalStationInfo",event -> generalStationChange((GeneralStationInfo)event.getNewValue()));
 		model.addPropertyChangeListener("sensorNames",event -> sensorNamesChange((String[])event.getNewValue()));
 		model.addPropertyChangeListener("sensorName", event -> sensorNameChange((String)event.getNewValue()));
 
@@ -347,7 +328,7 @@ public class SensorQueryDialog extends Dialog {
 	}
 
 	private void regionsChange(Region[] regions) {
-		System.out.println("regions");
+		System.out.println("regionsChange");
 		if(regions!=null&&regions.length>0) {
 			comboViewerRegion.setInput(regions);
 			model.setRegion(regions[0]);
@@ -360,10 +341,12 @@ public class SensorQueryDialog extends Dialog {
 
 	private void regionChange(Region region) {
 		try {
-			System.out.println("region select change");
 			if(region!=null) {
-				comboViewerRegion.setSelection(new StructuredSelection(region));			
-				model.setGeneralStationInfos(timeSeriesDatabase.getGeneralStationInfos(region.name));
+				System.out.println("region select change: "+region.name);
+				comboViewerRegion.setSelection(new StructuredSelection(region));
+				GeneralStationInfo[] generalStationInfos = timeSeriesDatabase.getGeneralStationInfos(region.name);
+				System.out.println(generalStationInfos.length);
+				model.setGeneralStationInfos(generalStationInfos);
 			} else {
 				comboViewerRegion.setSelection(null);
 				model.setGeneralStationInfos(null);
@@ -385,13 +368,14 @@ public class SensorQueryDialog extends Dialog {
 		grpQuery.layout();
 	}
 
-	private void generalStationChange(GeneralStation generalStation) {
-			System.out.println("generalStation select change");
-			if(generalStation!=null) {
-				comboViewerGeneralStation.setSelection(new StructuredSelection(generalStation));			
-				Set<LoggerType> loggerTypes = new HashSet<LoggerType>();			
-				generalStation.stationList.forEach(station->loggerTypes.add(station.loggerType));
-				generalStation.virtualPlots.stream()
+	private void generalStationChange(GeneralStationInfo generalStationInfo) {
+		System.out.println("generalStation select change");
+		try {
+			if(generalStationInfo!=null) {
+				comboViewerGeneralStation.setSelection(new StructuredSelection(generalStationInfo));			
+				/*Set<LoggerType> loggerTypes = new HashSet<LoggerType>();			
+				generalStationInfo.stationList.forEach(station->loggerTypes.add(station.loggerType));
+				generalStationInfo.virtualPlots.stream()
 				.flatMap(virtualPlot->virtualPlot.intervalList.stream())
 				.map(i->{try{
 					return timeSeriesDatabase.getLoggerType(i.value.get_logger_type_name());}
@@ -410,11 +394,16 @@ public class SensorQueryDialog extends Dialog {
 						return null;
 					}})
 					.forEach(s->{for(String n:s){sensorNames.add(n);}});			
-				model.setSensorNames(sensorNames.toArray(new String[0]));
+				model.setSensorNames(sensorNames.toArray(new String[0]));*/
+				String[] sensorNames = timeSeriesDatabase.getGeneralStationSensorNames(generalStationInfo.name);
+				model.setSensorNames(sensorNames);
 			} else {
 				comboViewerGeneralStation.setSelection(null);
 				model.setSensorNames(null);
 			}
+		} catch(RemoteException e) {
+			log.error(e);
+		}
 	}
 
 	private void sensorNamesChange(String[] sensorNames) {

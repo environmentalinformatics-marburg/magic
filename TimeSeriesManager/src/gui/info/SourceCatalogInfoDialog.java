@@ -103,6 +103,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 			viewer.setComparator(sourceViewComparator);
 
 		} catch(RemoteException e) {
+			e.printStackTrace();
 			log.error(e);
 		}
 

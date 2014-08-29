@@ -2,6 +2,8 @@ package tsdb;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,17 +23,27 @@ public class FactoryTsDB {
 
 	private static final Logger log = Util.log;
 	
-	final static String CONFIG_DIRECTORY = "config/";
-
+	static String CONFIG_DIRECTORY = "config/";
+	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
+	static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
+	
+	public static String SOURCE_BE_STRUCTURE_ONE_PATH = "c:/timeseriesdatabase_data_source_structure_one";
+	public static String SOURCE_BE_STRUCTURE_TWO_PATH = "c:/timeseriesdatabase_data_source_structure_two";
+	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
 	
 	public static TsDB createDefault() {
-		System.out.println("JVM bits: "+System.getProperty("sun.arch.data.model"));
-		String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
+		//System.out.println("JVM bits: "+System.getProperty("sun.arch.data.model"));		
 		
-		String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
 		
 		try {
-			Wini ini = new Wini(new File(CONFIG_DIRECTORY+"database_paths.ini"));
+			Wini ini;
+			if(Files.exists(Paths.get("database_paths.ini"))) {
+				System.out.println("read from root: database_paths.ini");
+				ini = new Wini(new File("database_paths.ini"));
+			} else {
+				System.out.println("read from config: database_paths.ini");
+				ini = new Wini(new File(CONFIG_DIRECTORY+"database_paths.ini"));
+			}			
 			Section section = ini.get("database_paths");
 			Map<String, String> pathMap = Util.readIniSectionMap(section);
 			if(pathMap.containsKey("DATABASE_DIRECTORY")) {
@@ -39,6 +51,15 @@ public class FactoryTsDB {
 			}
 			if(pathMap.containsKey("CACHE_DIRECTORY")) {
 				CACHE_DIRECTORY = pathMap.get("CACHE_DIRECTORY");
+			}
+			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_ONE_PATH")) {
+				SOURCE_BE_STRUCTURE_ONE_PATH = pathMap.get("SOURCE_BE_STRUCTURE_ONE_PATH");
+			}
+			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_TWO_PATH")) {
+				SOURCE_BE_STRUCTURE_TWO_PATH = pathMap.get("SOURCE_BE_STRUCTURE_TWO_PATH");
+			}
+			if(pathMap.containsKey("SOURCE_KILI_PATH")) {
+				SOURCE_KILI_PATH = pathMap.get("SOURCE_KILI_PATH");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

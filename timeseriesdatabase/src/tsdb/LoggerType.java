@@ -1,5 +1,6 @@
 package tsdb;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,8 +11,9 @@ import de.umr.jepc.Attribute;
  * @author woellauer
  *
  */
-public class LoggerType {
+public class LoggerType implements Serializable {
 	
+	private static final long serialVersionUID = -8623721500856325122L;
 	public String typeName;
 	public Attribute[] schema;
 	public String[] sensorNames;

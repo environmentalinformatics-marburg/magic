@@ -24,6 +24,7 @@ import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
+import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.Util;
 
 import org.eclipse.swt.widgets.Table;
@@ -45,7 +46,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 
 	private RemoteTsDB timeSeriesDatabase;
 	private Table table;
-	private TableViewBridge<VirtualPlot> tableViewBridge;
+	private TableViewBridge<VirtualPlotInfo> tableViewBridge;
 
 	/**
 	 * Create the dialog.
@@ -67,10 +68,10 @@ public class VirtualPlotInfoDialog extends Dialog {
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		tableViewBridge = new TableViewBridge<VirtualPlot>(tableViewer);
+		tableViewBridge = new TableViewBridge<VirtualPlotInfo>(tableViewer);
 		
 		tableViewBridge.addColumn("plotID",100,v->v.plotID);		
-		tableViewBridge.addColumnText("General Station",100,v->v.generalStation.longName+" ("+v.generalStation.name+")");
+		tableViewBridge.addColumnText("General Station",100,v->v.generalStationInfo.longName+" ("+v.generalStationInfo.name+")");
 		tableViewBridge.addColumnInteger("Easting", 100,v->v.geoPosEasting);
 		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
 		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
