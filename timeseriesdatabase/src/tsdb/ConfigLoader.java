@@ -34,10 +34,10 @@ public class ConfigLoader {
 
 	private static final Logger log = Util.log;
 
-	private TsDB timeseriesdatabase;
+	private TsDB tsdb;
 
-	public ConfigLoader(TsDB timeseriesdatabase) {
-		this.timeseriesdatabase = timeseriesdatabase;
+	public ConfigLoader(TsDB tsdb) {
+		this.tsdb = tsdb;
 	}
 
 	private class GeneralStationBuilder {
@@ -75,7 +75,7 @@ public class ConfigLoader {
 			for(Entry<String, String> entry:section_general_stations.entrySet()) {
 				GeneralStationBuilder generalStationBuilder = new GeneralStationBuilder(entry.getKey());
 				String regionName = entry.getValue();
-				generalStationBuilder.region = timeseriesdatabase.getRegion(regionName);
+				generalStationBuilder.region = tsdb.getRegion(regionName);
 				if(generalStationBuilder.region == null) {
 					log.warn("region not found: "+regionName);
 				}
@@ -105,7 +105,7 @@ public class ConfigLoader {
 			}
 
 			for(GeneralStationBuilder e:creationMap.values()) {
-				timeseriesdatabase.insertGeneralStation(e.create());
+				tsdb.insertGeneralStation(e.create());
 			}
 
 		} catch (Exception e) {
@@ -134,14 +134,14 @@ public class ConfigLoader {
 					String sensorName = names.get(i);
 					sensorNames[i] = sensorName;
 					schema[i] =  new Attribute(sensorName,DataType.FLOAT);
-					if(timeseriesdatabase.sensorExists(sensorName)) {
+					if(tsdb.sensorExists(sensorName)) {
 						// log.info("sensor already exists: "+sensorName+" new in "+typeName);
 					} else {
-						timeseriesdatabase.insertSensor(new Sensor(sensorName));
+						tsdb.insertSensor(new Sensor(sensorName));
 					}
 				}
 				//schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?   //removed !!!
-				timeseriesdatabase.insertLoggerType(new LoggerType(typeName, sensorNames,schema));
+				tsdb.insertLoggerType(new LoggerType(typeName, sensorNames,schema));
 			}
 		} catch (Exception e) {
 			log.error(e);
@@ -161,14 +161,14 @@ public class ConfigLoader {
 			} else {
 				String plotID = entryMap.getKey();
 				String generalStationName = plotID.substring(0, 3);
-				GeneralStation generalStation = timeseriesdatabase.getGeneralStation(generalStationName);
+				GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 				if(generalStation==null) {
 					log.warn("general station not found: "+generalStation);
 				}
-				LoggerType loggerType = timeseriesdatabase.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
+				LoggerType loggerType = tsdb.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
 				if(loggerType!=null) {
-					Station station = new Station(timeseriesdatabase, generalStation, plotID, loggerType, entryMap.getValue(), true);
-					timeseriesdatabase.insertStation(station);
+					Station station = new Station(tsdb, generalStation, plotID, loggerType, entryMap.getValue(), true);
+					tsdb.insertStation(station);
 				} else {
 					log.error("logger type not found: "+entryMap.getValue().get(0).get_logger_type_name()+" -> station not created: "+plotID);
 				}				
@@ -238,7 +238,7 @@ public class ConfigLoader {
 		final String SENSOR_NAME_CONVERSION_HEADER_SUFFIX = "_header_0000";		
 		try {
 			Wini ini = new Wini(new File(configFile));
-			for(LoggerType loggerType:timeseriesdatabase.getLoggerTypes()) {
+			for(LoggerType loggerType:tsdb.getLoggerTypes()) {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_NAME_CONVERSION_HEADER_SUFFIX);
 				if(section!=null) {
@@ -251,7 +251,7 @@ public class ConfigLoader {
 			final String NAME_CONVERSION_HEADER_SOIL_SUFFIX = "_soil_parameters_header_0000";
 			for(Section section:ini.values()) {
 				String sectionName = section.getName();
-				for(GeneralStation generalStation:timeseriesdatabase.getGeneralStations()) {
+				for(GeneralStation generalStation:tsdb.getGeneralStations()) {
 					String prefix = "000"+generalStation.name;
 					if(sectionName.startsWith(prefix)) {
 						String general_section = prefix+"xx"+NAME_CONVERSION_HEADER_SOIL_SUFFIX;
@@ -259,7 +259,7 @@ public class ConfigLoader {
 							generalStation.sensorNameTranlationMap = Util.readIniSectionMap(section);
 						} else if(sectionName.endsWith(NAME_CONVERSION_HEADER_SOIL_SUFFIX)) {
 							String plotID = sectionName.substring(3, 8);
-							Station station = timeseriesdatabase.getStation(plotID);
+							Station station = tsdb.getStation(plotID);
 							if(station!=null) {
 								station.sensorNameTranlationMap = Util.readIniSectionMap(section);
 							} else {
@@ -292,7 +292,7 @@ public class ConfigLoader {
 			for(String[] row:table.rows) {
 				String plotID = row[epplotidIndex];
 				if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
-					Station station = timeseriesdatabase.getStation(plotID);
+					Station station = tsdb.getStation(plotID);
 					if(station!=null) {					
 						try {					
 							double lon = Double.parseDouble(row[lonIndex]);
@@ -319,8 +319,8 @@ public class ConfigLoader {
 	}
 
 	public void calcNearestStations() {
-		timeseriesdatabase.updateGeneralStations();
-		for(Station station:timeseriesdatabase.getStations()) {
+		tsdb.updateGeneralStations();
+		for(Station station:tsdb.getStations()) {
 			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
 			List<Station> stationList = station.generalStation.stationList;
@@ -351,14 +351,14 @@ public class ConfigLoader {
 	}
 
 	public void calcNearestVirtualPlots() {
-		timeseriesdatabase.updateGeneralStations();
+		tsdb.updateGeneralStations();
 
-		for(VirtualPlot virtualPlot:timeseriesdatabase.getVirtualPlots()) {
+		for(VirtualPlot virtualPlot:tsdb.getVirtualPlots()) {
 			List<Object[]> differenceList = new ArrayList<Object[]>();
 
 			String group = virtualPlot.generalStation.group;
 			List<VirtualPlot> virtualPlots = new ArrayList<VirtualPlot>();
-			timeseriesdatabase.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
+			tsdb.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
 			
 			for(VirtualPlot targetVirtualPlot:virtualPlots) {
 				if(virtualPlot!=targetVirtualPlot) {
@@ -399,7 +399,7 @@ public class ConfigLoader {
 		String SENSOR_TRANSLATION_HEADER_SUFFIX = "_sensor_translation";
 		try {
 			Wini ini = new Wini(new File(configFile));
-			for(LoggerType loggerType:timeseriesdatabase.getLoggerTypes()) {
+			for(LoggerType loggerType:tsdb.getLoggerTypes()) {
 				log.trace("read config for "+loggerType.typeName);
 				Section section = ini.get(loggerType.typeName+SENSOR_TRANSLATION_HEADER_SUFFIX);
 				if(section!=null) {
@@ -433,7 +433,7 @@ public class ConfigLoader {
 						generalStationName = "cof";
 					}
 
-					GeneralStation generalStation = timeseriesdatabase.getGeneralStation(generalStationName);					
+					GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);					
 					if(generalStation==null) {
 						log.warn("unknown general station in: "+plotID+"\t"+generalStationName+"   in config file: "+config_file);
 					}
@@ -461,7 +461,7 @@ public class ConfigLoader {
 						geoPosNorthing = Integer.parseInt(northing);							
 					} catch(Exception e) {}
 
-					timeseriesdatabase.insertVirtualPlot(new VirtualPlot(timeseriesdatabase, plotID, generalStation, geoPosEasting, geoPosNorthing));					
+					tsdb.insertVirtualPlot(new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing));					
 				} else {
 					log.warn("not valid plotID name: "+plotID+"  VirtualPlot not inserted"+"   in config file: "+config_file);;
 				}
@@ -542,12 +542,12 @@ public class ConfigLoader {
 		for(Entry<String, List<StationProperties>> entry:serialNameMap.entrySet()) {
 			String serialName = entry.getKey();
 			List<StationProperties> propertiesList = entry.getValue();
-			if(!timeseriesdatabase.stationExists(serialName)) {
+			if(!tsdb.stationExists(serialName)) {
 				LoggerType loggerType = null;
 				for(StationProperties properties:propertiesList) {
 					String newloggerName = loggerPropertyKiLiToLoggerName(properties.get_logger_type_name());
 					if(newloggerName!=null) {
-						LoggerType newloggerType = timeseriesdatabase.getLoggerType(newloggerName);
+						LoggerType newloggerType = tsdb.getLoggerType(newloggerName);
 						if(newloggerType!=null) {
 							if(loggerType!=null&&loggerType!=newloggerType) {
 								log.warn("different logger types defined: "+loggerType+"  "+newloggerType+"   in "+serialName+"   in config file: "+configFile);
@@ -561,11 +561,11 @@ public class ConfigLoader {
 					}
 				}
 				if(loggerType!=null) {
-					Station station = new Station(timeseriesdatabase,null,serialName,loggerType,propertiesList, false);
-					timeseriesdatabase.insertStation(station);				
+					Station station = new Station(tsdb,null,serialName,loggerType,propertiesList, false);
+					tsdb.insertStation(station);				
 					for(StationProperties properties:propertiesList) {
 						String virtualPlotID = properties.get_plotid();
-						VirtualPlot virtualPlot = timeseriesdatabase.getVirtualPlot(virtualPlotID);
+						VirtualPlot virtualPlot = tsdb.getVirtualPlot(virtualPlotID);
 						if(virtualPlot!=null) {
 							virtualPlot.addStationEntry(station, properties);
 						} else {
@@ -695,7 +695,7 @@ public class ConfigLoader {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("ignore_sensors");
 			for(String name:section.keySet()) {				
-				timeseriesdatabase.insertIgnoreSensorName(name);
+				tsdb.insertIgnoreSensorName(name);
 			}
 
 		} catch (Exception e) {
@@ -711,7 +711,7 @@ public class ConfigLoader {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_physical_range");
 		if(list!=null) {
 			for(FloatRange entry:list) {
-				Sensor sensor =  timeseriesdatabase.getSensor(entry.name);
+				Sensor sensor =  tsdb.getSensor(entry.name);
 				if(sensor != null) {
 					sensor.physicalMin = entry.min;
 					sensor.physicalMax = entry.max;
@@ -726,7 +726,7 @@ public class ConfigLoader {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_empirical_range");
 		if(list!=null) {
 			for(FloatRange entry:list) {
-				Sensor sensor = timeseriesdatabase.getSensor(entry.name);
+				Sensor sensor = tsdb.getSensor(entry.name);
 				if(sensor != null) {
 					sensor.empiricalMin = entry.min;
 					sensor.empiricalMax = entry.max;
@@ -741,7 +741,7 @@ public class ConfigLoader {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"paramter_step_range");
 		if(list!=null) {
 			for(FloatRange entry:list) {
-				Sensor sensor = timeseriesdatabase.getSensor(entry.name);
+				Sensor sensor = tsdb.getSensor(entry.name);
 				if(sensor != null) {
 					sensor.stepMin = entry.min;
 					sensor.stepMax = entry.max;
@@ -765,7 +765,7 @@ public class ConfigLoader {
 					String aggregateTypeText = section.get(sensorName);					
 					AggregationType aggregateType = AggregationType.getAggregationType(aggregateTypeText);
 					if(aggregateType!=null) {
-						timeseriesdatabase.insertBaseAggregation(sensorName, aggregateType);
+						tsdb.insertBaseAggregation(sensorName, aggregateType);
 					} else {
 						log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
 					}
@@ -785,7 +785,7 @@ public class ConfigLoader {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("interpolation_sensors");
 			for(String name:section.keySet()) {
-				Sensor sensor = timeseriesdatabase.getSensor(name);
+				Sensor sensor = tsdb.getSensor(name);
 				if(sensor!=null) {
 					sensor.useInterpolation = true;
 				} else {
@@ -804,7 +804,7 @@ public class ConfigLoader {
 			Section section = ini.get("parameter_empirical_diff");
 			if(section!=null) {
 				for(String sensorName:section.keySet()) {
-					Sensor sensor = timeseriesdatabase.getSensor(sensorName);
+					Sensor sensor = tsdb.getSensor(sensorName);
 					if(sensor!=null) {
 						String sensorDiff = section.get(sensorName);
 						float diff = Float.parseFloat(sensorDiff);
@@ -831,10 +831,60 @@ public class ConfigLoader {
 				for(Entry<String, String> entry:regionNameMap.entrySet()) {
 					String regionName = entry.getKey();
 					String regionLongName = entry.getValue();
-					timeseriesdatabase.insertRegion(new Region(regionName, regionLongName));
+					tsdb.insertRegion(new Region(regionName, regionLongName));
 				}
 			} else {
 				log.warn("region section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void readSensorDescriptionConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+
+			Section section = ini.get("sensor_description");
+			if(section!=null) {
+				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:regionNameMap.entrySet()) {
+					String sensorName = entry.getKey();
+					String sensorDescription = entry.getValue();
+					Sensor sensor = tsdb.getSensor(sensorName);
+					if(sensor!=null) {
+						sensor.description = sensorDescription;
+					} else {
+						log.warn("read sensor info; sensor not found: "+sensorName);
+					}
+				}
+			} else {
+				log.warn("sensor_info section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void readSensorUnitConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+
+			Section section = ini.get("sensor_unit");
+			if(section!=null) {
+				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:regionNameMap.entrySet()) {
+					String sensorName = entry.getKey();
+					String sensorUnit = entry.getValue();
+					Sensor sensor = tsdb.getSensor(sensorName);
+					if(sensor!=null) {
+						sensor.unitDescription = sensorUnit;
+					} else {
+						log.warn("read sensor unit; sensor not found: "+sensorName);
+					}
+				}
+			} else {
+				log.warn("sensor_unit section not found");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

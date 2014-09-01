@@ -105,6 +105,10 @@ public class FactoryTsDB {
 			configLoader.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini"); // (TODO change) read empirical max diff and insert it in sensor objects
 			//*** sensor config end
 			
+			//*** global config start
+			configLoader.readSensorDescriptionConfig(configDirectory+"sensor_description.ini");
+			configLoader.readSensorUnitConfig(configDirectory+"sensor_unit.ini");
+			//*** global config end
 			
 			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
 			

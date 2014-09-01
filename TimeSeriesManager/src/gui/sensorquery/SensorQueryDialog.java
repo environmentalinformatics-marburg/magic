@@ -25,6 +25,7 @@ import tsdb.DataQuality;
 import tsdb.GeneralStation;
 import tsdb.LoggerType;
 import tsdb.Region;
+import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
@@ -49,6 +50,8 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.widgets.Label;
+import swing2swt.layout.FlowLayout;
 
 public class SensorQueryDialog extends Dialog {
 
@@ -71,7 +74,7 @@ public class SensorQueryDialog extends Dialog {
 
 	private static final Logger log = Util.log;	
 
-	private RemoteTsDB timeSeriesDatabase;
+	private RemoteTsDB tsdb;
 
 	private Composite container;
 	private Group grpQuery;
@@ -88,6 +91,9 @@ public class SensorQueryDialog extends Dialog {
 	private DataBindingContext m_bindingContext;
 	private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
 	private CLabel lblQueryStatus;
+	private Group grpInfo;
+	private Label lblInfoText;
+	private Label lblUnitText;
 
 	/**
 	 * Create the dialog.
@@ -97,7 +103,7 @@ public class SensorQueryDialog extends Dialog {
 	public SensorQueryDialog(Shell parentShell, RemoteTsDB timeSeriesDatabase) {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
-		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.tsdb = timeSeriesDatabase;
 	}
 
 	/**
@@ -122,7 +128,9 @@ public class SensorQueryDialog extends Dialog {
 
 		Group grpRegion = new Group(grpQuery, SWT.NONE);
 		grpRegion.setText("Region");
-		grpRegion.setLayout(new FillLayout(SWT.HORIZONTAL));
+		RowLayout rl_grpRegion = new RowLayout(SWT.HORIZONTAL);
+		rl_grpRegion.center = true;
+		grpRegion.setLayout(rl_grpRegion);
 
 		comboViewerRegion = new ComboViewer(new Combo(grpRegion, SWT.READ_ONLY));
 
@@ -175,7 +183,9 @@ public class SensorQueryDialog extends Dialog {
 
 		Group grpQuery_1 = new Group(grpQuery, SWT.NONE);
 		grpQuery_1.setText("query");
-		grpQuery_1.setLayout(new RowLayout(SWT.HORIZONTAL));
+		RowLayout rl_grpQuery_1 = new RowLayout(SWT.HORIZONTAL);
+		rl_grpQuery_1.center = true;
+		grpQuery_1.setLayout(rl_grpQuery_1);
 
 		btnUpdate = new Button(grpQuery_1, SWT.NONE);
 		btnUpdate.addSelectionListener(new SelectionAdapter() {
@@ -192,7 +202,7 @@ public class SensorQueryDialog extends Dialog {
 		lblQueryStatus.setText("---");
 
 		progressBar = new ProgressBar(grpQuery_1, SWT.NONE);
-		formToolkit.adapt(progressBar, true, true);
+		//formToolkit.adapt(progressBar, true, true);
 
 		ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.H_SCROLL | SWT.V_SCROLL);
 		scrolledComposite.setBackground(SWTResourceManager.getColor(102, 205, 170));
@@ -205,6 +215,21 @@ public class SensorQueryDialog extends Dialog {
 		formToolkit.paintBordersFor(multiTimeSeriesExplorer);
 		scrolledComposite.setContent(multiTimeSeriesExplorer);
 		scrolledComposite.setMinSize(multiTimeSeriesExplorer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		grpInfo = new Group(grpQuery, SWT.NONE);
+		grpInfo.setText("Info");
+		grpInfo.setLayout(new RowLayout(SWT.VERTICAL));
+		//formToolkit.adapt(grpInfo);
+		//formToolkit.paintBordersFor(grpInfo);
+		
+		lblInfoText = new Label(grpInfo, SWT.CENTER);
+		lblInfoText.setAlignment(SWT.CENTER);
+		//formToolkit.adapt(lblNewLabel, true, true);
+		lblInfoText.setText("New Label");
+		
+		lblUnitText = new Label(grpInfo, SWT.NONE);
+		//formToolkit.adapt(lblUnitText, true, true);
+		lblUnitText.setText("2New Label2");
 
 
 		//***************************************************
@@ -218,6 +243,8 @@ public class SensorQueryDialog extends Dialog {
 		//updateFromRegionCombo((Region) ((IStructuredSelection)comboRegionViewer.getSelection()).getFirstElement());
 
 		lblQueryStatus.setText("ready");
+		
+		
 		return container;
 	}
 
@@ -247,7 +274,7 @@ public class SensorQueryDialog extends Dialog {
 		try {
 
 			//ArrayList<String> names = Util.streamToList(generalStation.getStationAndVirtualPlotNames());
-			String[] names = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationInfo.longName);
+			String[] names = tsdb.getPlotIDsByGeneralStationByLongName(generalStationInfo.longName);
 
 			callAsync(()->{
 				btnUpdate.setEnabled(false);
@@ -264,8 +291,8 @@ public class SensorQueryDialog extends Dialog {
 				TimestampSeries ts_compare = null;
 				try {
 
-					ts = timeSeriesDatabase.plot(name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
-					ts_compare = timeSeriesDatabase.plot(name, model.getSensorName(), aggregationInterval, DataQuality.NO, false);				
+					ts = tsdb.plot(name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
+					ts_compare = tsdb.plot(name, model.getSensorName(), aggregationInterval, DataQuality.NO, false);				
 				} catch(Exception e) {
 					log.error(e.toString());
 				}
@@ -307,7 +334,7 @@ public class SensorQueryDialog extends Dialog {
 
 	private void updateRegions() {
 		try {
-			Region[] regions = timeSeriesDatabase.getRegions();
+			Region[] regions = tsdb.getRegions();
 			model.setRegions(regions);
 		} catch(RemoteException e) {
 			log.error(e);
@@ -322,7 +349,9 @@ public class SensorQueryDialog extends Dialog {
 		model.addPropertyChangeListener("generalStationInfos",event -> generalStationsChange((GeneralStationInfo[])event.getNewValue()));
 		model.addPropertyChangeListener("generalStationInfo",event -> generalStationChange((GeneralStationInfo)event.getNewValue()));
 		model.addPropertyChangeListener("sensorNames",event -> sensorNamesChange((String[])event.getNewValue()));
-		model.addPropertyChangeListener("sensorName", event -> sensorNameChange((String)event.getNewValue()));
+		//model.addPropertyChangeListener("sensorName", event -> sensorNameChange((String)event.getNewValue()));
+		//model.addPropertyChangeCallback("sensorName", (String x)->sensorNameChange(x));
+		model.addPropertyChangeCallback("sensorName", this::sensorNameChange);
 
 		return dbc;
 	}
@@ -344,7 +373,7 @@ public class SensorQueryDialog extends Dialog {
 			if(region!=null) {
 				System.out.println("region select change: "+region.name);
 				comboViewerRegion.setSelection(new StructuredSelection(region));
-				GeneralStationInfo[] generalStationInfos = timeSeriesDatabase.getGeneralStationInfos(region.name);
+				GeneralStationInfo[] generalStationInfos = tsdb.getGeneralStationInfos(region.name);
 				System.out.println(generalStationInfos.length);
 				model.setGeneralStationInfos(generalStationInfos);
 			} else {
@@ -395,7 +424,7 @@ public class SensorQueryDialog extends Dialog {
 					}})
 					.forEach(s->{for(String n:s){sensorNames.add(n);}});			
 				model.setSensorNames(sensorNames.toArray(new String[0]));*/
-				String[] sensorNames = timeSeriesDatabase.getGeneralStationSensorNames(generalStationInfo.name);
+				String[] sensorNames = tsdb.getGeneralStationSensorNames(generalStationInfo.name);
 				model.setSensorNames(sensorNames);
 			} else {
 				comboViewerGeneralStation.setSelection(null);
@@ -421,9 +450,27 @@ public class SensorQueryDialog extends Dialog {
 	private void sensorNameChange(String sensorName) {
 		System.out.println("sensorName change: "+sensorName);
 		if(sensorName!=null) {
-			comboViewerSensor.setSelection(new StructuredSelection(sensorName));			
+			comboViewerSensor.setSelection(new StructuredSelection(sensorName));
+			String sensorInfoText = "";
+			String sensorUnitText = "";
+			try {
+				Sensor sensor = tsdb.getSensor(sensorName);
+				if(sensor!=null) {
+					System.out.println("get sensor: "+sensorName+"  "+sensor.description);
+					sensorInfoText = Util.ifnull(sensor.description,"---");
+					sensorUnitText = Util.ifnull(sensor.unitDescription,"---");
+				}
+			} catch (RemoteException e) {
+				log.error(e);
+			}
+			lblInfoText.setText(sensorInfoText);
+			lblUnitText.setText(sensorUnitText);
+			
 		} else {
 			comboViewerSensor.setSelection(null);
-		}		
+			lblInfoText.setText("");
+			lblUnitText.setText("");
+		}
+		grpQuery.layout();
 	}
 }

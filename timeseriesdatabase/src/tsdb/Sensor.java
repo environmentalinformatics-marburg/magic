@@ -64,6 +64,10 @@ public class Sensor implements Serializable {
 	 */
 	public Float empiricalDiff;
 	
+	public String description;
+	
+	public String unitDescription;
+	
 	public Sensor(String name) {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;

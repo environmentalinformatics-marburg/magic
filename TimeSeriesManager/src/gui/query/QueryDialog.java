@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -84,6 +85,14 @@ public class QueryDialog extends Dialog {
 
 	private LocalDateTime beginDateTime;
 	private LocalDateTime endDateTime;
+	private Group grpAction;
+	private Group grpInfo;
+	private Label lblSensorInfo;
+	private Label lblSensorUnitInfo;
+	
+	private Composite composite;
+
+	private QueryModel model;
 
 	/**
 	 * Create the dialog.
@@ -96,6 +105,7 @@ public class QueryDialog extends Dialog {
 		endDateTime = null;
 		setText("SWT Dialog");
 		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.model = new QueryModel();
 		//this.qp = new QueryProcessor(timeSeriesDatabase);
 		//this.dataView = new DataView();		
 	}
@@ -109,8 +119,14 @@ public class QueryDialog extends Dialog {
 		shlAggregatedQuery.open();
 		shlAggregatedQuery.layout();
 		Display display = getParent().getDisplay();
+
+		bind();
+		updateRegionLongNames();
+		model.setAggregationNames(new String[]{"hour","day","week","month","year"});
+		model.setAggregationName("day");
+
 		//dataView.canvas = canvasDataView;
-		updateGUI();
+		//updateGUI();
 		while (!shlAggregatedQuery.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -124,13 +140,15 @@ public class QueryDialog extends Dialog {
 	 */
 	private void createContents() {
 		shlAggregatedQuery = new Shell(getParent(), getStyle());
-		shlAggregatedQuery.setSize(1479, 306);
+		shlAggregatedQuery.setSize(781, 454);
 		shlAggregatedQuery.setText("Aggregated Query");
 		shlAggregatedQuery.setLayout(new BorderLayout(0, 0));
 
-		Composite composite = new Composite(shlAggregatedQuery, SWT.NONE);
+		composite = new Composite(shlAggregatedQuery, SWT.NONE);
 		composite.setLayoutData(BorderLayout.NORTH);
-		composite.setLayout(new RowLayout(SWT.HORIZONTAL));
+		RowLayout rl_composite = new RowLayout(SWT.HORIZONTAL);
+		rl_composite.center = true;
+		composite.setLayout(rl_composite);
 
 		Group grpRegion = new Group(composite, SWT.NONE);
 		grpRegion.setText("Region");
@@ -141,9 +159,10 @@ public class QueryDialog extends Dialog {
 		comboRegion.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateGUIgeneralstations();
+				/*updateGUIgeneralstations();
 				updateGUIplotID();
-				updateGUISensorName();
+				updateGUISensorName();*/
+				model.setRegionLongName(comboRegion.getText());
 			}
 		});
 
@@ -156,8 +175,9 @@ public class QueryDialog extends Dialog {
 		comboGeneralStation.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateGUIplotID();
-				updateGUISensorName();
+				/*updateGUIplotID();
+				updateGUISensorName();*/
+				model.setGeneralStationLongName(comboGeneralStation.getText());
 			}
 		});
 
@@ -169,7 +189,8 @@ public class QueryDialog extends Dialog {
 		comboPlotID.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateGUISensorName();
+				//updateGUISensorName();
+				model.setPlotID(comboPlotID.getText());
 			}
 		});
 
@@ -181,7 +202,8 @@ public class QueryDialog extends Dialog {
 		comboSensorName.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateGUIinterpolated();
+				//updateGUIinterpolated();
+				model.setSensorName(comboSensorName.getText());
 			}
 		});
 
@@ -214,6 +236,12 @@ public class QueryDialog extends Dialog {
 		grpAggregation.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		comboAggregation = new Combo(grpAggregation, SWT.READ_ONLY);
+		comboAggregation.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.setAggregationName(comboAggregation.getText());				
+			}
+		});
 
 		//**************************
 		grpTestgroup = new Group(composite, SWT.NONE);
@@ -254,9 +282,13 @@ public class QueryDialog extends Dialog {
 		CheckButtonInterpolated.setSelection(true);
 		CheckButtonInterpolated.setText("Interpolated");
 		 */
+
+		grpAction = new Group(composite, SWT.NONE);
+		grpAction.setText("Action");
+		grpAction.setLayout(new RowLayout(SWT.HORIZONTAL));
 		//***************************************************
 
-		buttonUpdate = new Button(composite, SWT.NONE);
+		buttonUpdate = new Button(grpAction, SWT.NONE);
 		buttonUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -265,7 +297,7 @@ public class QueryDialog extends Dialog {
 		});
 		buttonUpdate.setText("update");
 
-		btnSaveInCsv = new Button(composite, SWT.NONE);
+		btnSaveInCsv = new Button(grpAction, SWT.NONE);
 		btnSaveInCsv.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -273,6 +305,16 @@ public class QueryDialog extends Dialog {
 			}
 		});
 		btnSaveInCsv.setText("export to CSV file");
+
+		grpInfo = new Group(composite, SWT.NONE);
+		grpInfo.setText("Info");
+		grpInfo.setLayout(new RowLayout(SWT.VERTICAL));
+
+		lblSensorInfo = new Label(grpInfo, SWT.NONE);
+		lblSensorInfo.setText("New Label");
+
+		lblSensorUnitInfo = new Label(grpInfo, SWT.NONE);
+		lblSensorUnitInfo.setText("New Label");
 
 		Label labelStatus = new Label(shlAggregatedQuery, SWT.NONE);
 		labelStatus.setLayoutData(BorderLayout.SOUTH);
@@ -497,12 +539,12 @@ public class QueryDialog extends Dialog {
 			String generalStationName = comboGeneralStation.getText();
 			if(!generalStationName.equals("cache")) {				
 				String[] plotIDs = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationName);
-					if(plotIDs!=null) {
-						comboPlotID.setItems(plotIDs);
-						comboPlotID.setText(plotIDs[0]);
-					} else {
-						comboPlotID.setItems(new String[0]);
-					}
+				if(plotIDs!=null) {
+					comboPlotID.setItems(plotIDs);
+					comboPlotID.setText(plotIDs[0]);
+				} else {
+					comboPlotID.setItems(new String[0]);
+				}
 
 			} else {
 
@@ -546,7 +588,7 @@ public class QueryDialog extends Dialog {
 			if(virtualplotInfo!=null) {
 				//schema = virtualplotInfo.getSchema();
 			} else {*/
-					schema = timeSeriesDatabase.getPlotSchema(stationName);
+			schema = timeSeriesDatabase.getPlotSchema(stationName);
 			//} 
 
 			if(comboGeneralStation.getText().equals("cache")) {
@@ -636,5 +678,202 @@ public class QueryDialog extends Dialog {
 			}
 		}
 
+	}
+
+	private void bind() {
+		model.addPropertyChangeCallback("regionLongNames", this::onChangeRegionLongNames);
+		model.addPropertyChangeCallback("regionLongName", this::onChangeRegionLongName);
+		model.addPropertyChangeCallback("generalStationLongNames", this::onChangeGeneralStationLongNames);
+		model.addPropertyChangeCallback("generalStationLongName", this::onChangeGeneralStationLongName);
+		model.addPropertyChangeCallback("plotIDs", this::onChangePlotIDs);
+		model.addPropertyChangeCallback("plotID", this::onChangePlotID);
+		model.addPropertyChangeCallback("sensorNames", this::onChangeSensorNames);
+		model.addPropertyChangeCallback("sensorName", this::onChangeSensorName);
+		model.addPropertyChangeCallback("aggregationNames", this::onChangeAggregationNames);
+		model.addPropertyChangeCallback("aggregationName", this::onChangeAggregationName);
+	}
+
+	void updateRegionLongNames() {
+		String[] regionLongNames = null;
+		try {
+			String[] longNames = timeSeriesDatabase.getRegionLongNames();
+			regionLongNames = Arrays.copyOf(longNames, longNames.length+1);
+			regionLongNames[longNames.length] = "cache";
+		} catch(RemoteException e) {
+			log.error(e);
+		}
+		model.setRegionLongNames(regionLongNames);
+	}
+
+	private void onChangeRegionLongNames(String[] regionLongNames) {
+		if(regionLongNames!=null&&regionLongNames.length>0) {
+			comboRegion.setItems(regionLongNames);
+			model.setRegionLongName(regionLongNames[0]);
+		} else {
+			comboRegion.setItems(new String[0]);
+			model.setRegionLongName(null);
+		}
+	}
+
+	private void onChangeRegionLongName(String regionLongName) {
+		System.out.println("onChangeRegionLongName: "+regionLongName);
+		String[] generalStationLongNames = null;
+		if(regionLongName!=null) {
+			comboRegion.setText(regionLongName);
+			Region region = null;
+			try {
+				region = timeSeriesDatabase.getRegionByLongName(regionLongName);
+			} catch (RemoteException e) {
+				log.error(e);
+			}
+			if(region!=null) {
+				try {
+					generalStationLongNames = timeSeriesDatabase.getGeneralStationLongNames(region.name);
+				} catch (RemoteException e) {
+					log.error(e);
+				}
+			} else if(regionLongName.equals("cache")) {
+				generalStationLongNames = new String[]{"cache"};
+			}
+		} else {
+			comboRegion.setText("");
+		}
+		model.setGeneralStationLongNames(generalStationLongNames);
+	}
+
+	private void onChangeGeneralStationLongNames(String[] generalStationLongNames) {
+		if(generalStationLongNames!=null&&generalStationLongNames.length>0) {
+			comboGeneralStation.setItems(generalStationLongNames);
+			model.setGeneralStationLongName(generalStationLongNames[0]);
+		} else {
+			comboGeneralStation.setItems(new String[0]);
+			model.setGeneralStationLongName(null);
+		}		
+	}
+
+	private void onChangeGeneralStationLongName(String generalStationLongName) {
+		String[] plotIDs = null;
+		if(generalStationLongName!=null) {
+			comboGeneralStation.setText(generalStationLongName);
+			if(generalStationLongName.equals("cache")) {
+				try {
+					plotIDs = timeSeriesDatabase.cacheStorageGetStreamNames();
+				} catch (RemoteException e) {
+					log.error(e);
+				}				
+			} else {
+				try {
+					plotIDs = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationLongName);
+				} catch (RemoteException e) {
+					log.error(e);
+				}
+			}
+		} else {
+			comboGeneralStation.setText("");
+		}
+		model.setPlotIDs(plotIDs);
+	}
+
+	private void onChangePlotIDs(String[] plotIDs) {
+		if(plotIDs!=null&&plotIDs.length>0) {
+			comboPlotID.setItems(plotIDs);
+			model.setPlotID(plotIDs[0]);
+		} else {
+			comboPlotID.setItems(new String[0]);
+			model.setPlotID(null);
+		}
+
+	}
+
+	private void onChangePlotID(String plotID) {
+		String[] sensorNames = null;
+		if(plotID!=null) {
+			comboPlotID.setText(plotID);			
+			if("cache".equals(model.getGeneralStationLongName())) {
+				try {
+					sensorNames = timeSeriesDatabase.getCacheSchemaNames(plotID);
+				} catch (RemoteException e) {
+					log.error(e);
+				}
+			} else {
+				try {
+					sensorNames = timeSeriesDatabase.getPlotSchema(plotID);
+				} catch (RemoteException e) {
+					log.error(e);
+				}
+			}
+
+		} else {
+			comboPlotID.setText("");
+		}
+		if(sensorNames!=null) {
+			try {
+				sensorNames = timeSeriesDatabase.getBaseSchema(sensorNames);
+			} catch (RemoteException e) {
+				log.error(e);
+				sensorNames = null;
+			}
+		}
+		model.setSensorNames(sensorNames);
+	}
+
+	private void onChangeSensorNames(String[] sensorNames) {
+		System.out.println("onChangeSensorNames: "+sensorNames.length);
+		String sensorName = null;
+		if(sensorNames!=null&&sensorNames.length>0) {
+			comboSensorName.setItems(sensorNames);
+			sensorName = model.getSensorName();
+			if(sensorName==null||!Util.containsString(sensorNames, sensorName)) {
+				sensorName = sensorNames[0];
+			}			
+		} else {
+			comboSensorName.setItems(new String[0]);
+		}
+		System.out.println("onChangeSensorNames sensorName: "+sensorName);
+		model.setSensorName(null);
+		model.setSensorName(sensorName);
+	}
+
+	private void onChangeSensorName(String sensorName) {
+		String sensorInfoText = "";
+		String sensorUnitText = "";
+		System.out.println("onChangeSensorName: "+sensorName);
+		if(sensorName!=null) {
+			comboSensorName.setText(sensorName);
+			Sensor sensor = null;
+			try {
+				sensor = timeSeriesDatabase.getSensor(sensorName);
+			} catch (RemoteException e) {
+				log.error(e);
+			}
+			if(sensor!=null) {
+				sensorInfoText = Util.ifnull(sensor.description,"---");
+				sensorUnitText = Util.ifnull(sensor.unitDescription,"---");
+			}
+		} else {
+			comboSensorName.setText("");
+		}
+		lblSensorInfo.setText(sensorInfoText);
+		lblSensorUnitInfo.setText(sensorUnitText);
+		composite.layout();
+	}
+
+	private void onChangeAggregationNames(String[] aggregationNames) {
+		String aggregationName=null;
+		if(aggregationNames!=null&&aggregationNames.length>0) {
+			comboAggregation.setItems(aggregationNames);
+			aggregationName = aggregationNames[0];
+		} else {
+			comboAggregation.setItems(new String[0]);
+		}
+		model.setAggregationName(aggregationName);
+	}
+
+	private void onChangeAggregationName(String aggregationName) {
+		if(aggregationName!=null) {
+			comboAggregation.setText(aggregationName);
+		} else {
+			comboAggregation.setText("");
+		}
 	}
 }
