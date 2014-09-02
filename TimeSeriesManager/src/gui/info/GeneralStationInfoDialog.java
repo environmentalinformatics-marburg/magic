@@ -26,6 +26,7 @@ import sun.util.logging.resources.logging;
 import tsdb.GeneralStation;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
@@ -36,7 +37,7 @@ public class GeneralStationInfoDialog extends Dialog {
 
 	private RemoteTsDB timeSeriesDatabase;
 
-	private TableViewBridge<GeneralStation> tableViewBridge;
+	private TableViewBridge<GeneralStationInfo> tableViewBridge;
 
 	private Table table;
 
@@ -62,7 +63,7 @@ public class GeneralStationInfoDialog extends Dialog {
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		tableViewBridge = new TableViewBridge<GeneralStation>(tableViewer);
+		tableViewBridge = new TableViewBridge<GeneralStationInfo>(tableViewer);
 
 		/*
 		 * String[] titles = {"ID", "Name","Region","Group","Stations and Virtual Plots"};
@@ -81,7 +82,7 @@ public class GeneralStationInfoDialog extends Dialog {
 		tableViewBridge.addColumn("Name",200,g->Util.ifnull(g.longName, "---"));
 		tableViewBridge.addColumn("Region",200,g->Util.ifnull(g.region,x->""+x.longName+" ("+x.name+")","---"));
 		tableViewBridge.addColumn("Group",70,g->g.group);
-		tableViewBridge.addColumn("Stations and Virtual Plots",100,g->""+(g.stationList.size()+g.virtualPlots.size()));
+		//tableViewBridge.addColumn("Stations and Virtual Plots",100,g->""+(g.stationList.size()+g.virtualPlots.size()));
 
 
 		tableViewBridge.createColumns();

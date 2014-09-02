@@ -1,57 +1,44 @@
 package gui.sensorquery;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.wb.swt.SWTResourceManager;
 
+import swing2swt.layout.BorderLayout;
 import tsdb.DataQuality;
-import tsdb.GeneralStation;
-import tsdb.LoggerType;
 import tsdb.Region;
 import tsdb.Sensor;
-import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.graph.Node;
-import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
-import swing2swt.layout.BorderLayout;
-
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.wb.swt.SWTResourceManager;
-import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.widgets.Label;
-import swing2swt.layout.FlowLayout;
 
 public class SensorQueryDialog extends Dialog {
 
@@ -94,6 +81,8 @@ public class SensorQueryDialog extends Dialog {
 	private Group grpInfo;
 	private Label lblInfoText;
 	private Label lblUnitText;
+	private Group grpAggregation;
+	private ComboViewer comboViewerAggregation;
 
 	/**
 	 * Create the dialog.
@@ -129,7 +118,6 @@ public class SensorQueryDialog extends Dialog {
 		Group grpRegion = new Group(grpQuery, SWT.NONE);
 		grpRegion.setText("Region");
 		RowLayout rl_grpRegion = new RowLayout(SWT.HORIZONTAL);
-		rl_grpRegion.center = true;
 		grpRegion.setLayout(rl_grpRegion);
 
 		comboViewerRegion = new ComboViewer(new Combo(grpRegion, SWT.READ_ONLY));
@@ -149,7 +137,7 @@ public class SensorQueryDialog extends Dialog {
 
 		Group grpGeneralStation = new Group(grpQuery, SWT.NONE);
 		grpGeneralStation.setText("General Station");
-		grpGeneralStation.setLayout(new FillLayout(SWT.HORIZONTAL));
+		grpGeneralStation.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboViewerGeneralStation = new ComboViewer(grpGeneralStation, SWT.READ_ONLY);		
 		comboViewerGeneralStation.setContentProvider(ArrayContentProvider.getInstance());
@@ -168,7 +156,7 @@ public class SensorQueryDialog extends Dialog {
 
 		Group grpSensor = new Group(grpQuery, SWT.NONE);
 		grpSensor.setText("Sensor");
-		grpSensor.setLayout(new FillLayout(SWT.HORIZONTAL));
+		grpSensor.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboViewerSensor = new ComboViewer(grpSensor, SWT.READ_ONLY);		
 		comboViewerSensor.setContentProvider(ArrayContentProvider.getInstance());
@@ -177,9 +165,25 @@ public class SensorQueryDialog extends Dialog {
 			public String getText(Object element) {
 				return (String) element;
 			}});
-		comboViewerSensor.addSelectionChangedListener(event->{			
+		comboViewerSensor.addSelectionChangedListener(event->{
 			model.setSensorName((String) ((IStructuredSelection)event.getSelection()).getFirstElement());
 		});
+
+		grpAggregation = new Group(grpQuery, SWT.NONE);
+		grpAggregation.setText("Aggregation");
+		grpAggregation.setLayout(new RowLayout(SWT.HORIZONTAL));
+
+		comboViewerAggregation = new ComboViewer(grpAggregation, SWT.READ_ONLY);
+		comboViewerAggregation.setContentProvider(ArrayContentProvider.getInstance());
+		comboViewerAggregation.setLabelProvider(new LabelProvider(){
+			@Override
+			public String getText(Object element) {
+				return (String)element;
+			}});
+		comboViewerAggregation.addSelectionChangedListener(event->{
+			model.setAggregationName((String) ((IStructuredSelection)event.getSelection()).getFirstElement());
+		});
+
 
 		Group grpQuery_1 = new Group(grpQuery, SWT.NONE);
 		grpQuery_1.setText("query");
@@ -201,7 +205,8 @@ public class SensorQueryDialog extends Dialog {
 		//formToolkit.paintBordersFor(lblQueryStatus);
 		lblQueryStatus.setText("---");
 
-		progressBar = new ProgressBar(grpQuery_1, SWT.NONE);
+		progressBar = new ProgressBar(grpQuery_1, SWT.SMOOTH);
+		progressBar.setVisible(false);
 		//formToolkit.adapt(progressBar, true, true);
 
 		ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.H_SCROLL | SWT.V_SCROLL);
@@ -215,18 +220,21 @@ public class SensorQueryDialog extends Dialog {
 		formToolkit.paintBordersFor(multiTimeSeriesExplorer);
 		scrolledComposite.setContent(multiTimeSeriesExplorer);
 		scrolledComposite.setMinSize(multiTimeSeriesExplorer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		
+
 		grpInfo = new Group(grpQuery, SWT.NONE);
 		grpInfo.setText("Info");
-		grpInfo.setLayout(new RowLayout(SWT.VERTICAL));
+		RowLayout rl_grpInfo = new RowLayout(SWT.VERTICAL);
+		rl_grpInfo.marginTop = 0;
+		rl_grpInfo.marginBottom = 0;
+		grpInfo.setLayout(rl_grpInfo);
 		//formToolkit.adapt(grpInfo);
 		//formToolkit.paintBordersFor(grpInfo);
-		
+
 		lblInfoText = new Label(grpInfo, SWT.CENTER);
 		lblInfoText.setAlignment(SWT.CENTER);
 		//formToolkit.adapt(lblNewLabel, true, true);
 		lblInfoText.setText("New Label");
-		
+
 		lblUnitText = new Label(grpInfo, SWT.NONE);
 		//formToolkit.adapt(lblUnitText, true, true);
 		lblUnitText.setText("2New Label2");
@@ -242,9 +250,13 @@ public class SensorQueryDialog extends Dialog {
 
 		//updateFromRegionCombo((Region) ((IStructuredSelection)comboRegionViewer.getSelection()).getFirstElement());
 
-		lblQueryStatus.setText("ready");
+		lblQueryStatus.setText("ready        ");
 		
-		
+		String[] aggregationNames = new String[]{"hour","day","week","month","year"};
+		model.setAggregationNames(aggregationNames);
+		model.setAggregationName("day");
+
+
 		return container;
 	}
 
@@ -256,6 +268,25 @@ public class SensorQueryDialog extends Dialog {
 		multiTimeSeriesExplorer.clearTimestampSeries();
 
 		AggregationInterval aggregationInterval = AggregationInterval.DAY;
+		switch(model.getAggregationName()) {
+		case "hour":
+			aggregationInterval = AggregationInterval.HOUR;
+			break;
+		case "day":
+			aggregationInterval = AggregationInterval.DAY;
+			break;
+		case "week":
+			aggregationInterval = AggregationInterval.WEEK;
+			break;
+		case "month":
+			aggregationInterval = AggregationInterval.MONTH;
+			break;
+		case "year":
+			aggregationInterval = AggregationInterval.YEAR;
+			break;
+			default:
+				log.warn("unknown aggregate: "+model.getAggregationName());
+		}
 
 		GeneralStationInfo generalStationInfo = model.getGeneralStationInfo();
 		String sensorName = model.getSensorName();
@@ -263,7 +294,8 @@ public class SensorQueryDialog extends Dialog {
 			return;			
 		}
 
-		Thread worker = new Thread(()->runQueryAsync(generalStationInfo, aggregationInterval));
+		final AggregationInterval agg = aggregationInterval;
+		Thread worker = new Thread(()->runQueryAsync(generalStationInfo, agg));
 		worker.start();
 
 
@@ -282,6 +314,7 @@ public class SensorQueryDialog extends Dialog {
 				progressBar.setVisible(true);
 				progressBar.setMinimum(0);
 				progressBar.setMaximum(names.length);
+				this.container.layout();
 			});			
 
 			for(int i=0;i<names.length;i++) {
@@ -352,6 +385,8 @@ public class SensorQueryDialog extends Dialog {
 		//model.addPropertyChangeListener("sensorName", event -> sensorNameChange((String)event.getNewValue()));
 		//model.addPropertyChangeCallback("sensorName", (String x)->sensorNameChange(x));
 		model.addPropertyChangeCallback("sensorName", this::sensorNameChange);
+		model.addPropertyChangeCallback("aggregationNames", this::aggregationNamesChange);
+		model.addPropertyChangeCallback("aggregationName", this::aggregationNameChange);
 
 		return dbc;
 	}
@@ -437,13 +472,18 @@ public class SensorQueryDialog extends Dialog {
 
 	private void sensorNamesChange(String[] sensorNames) {
 		System.out.println("sensorNames");
+		String sensorName = null;
 		if(sensorNames!=null&&sensorNames.length>0) {
 			comboViewerSensor.setInput(sensorNames);
-			model.setSensorName(sensorNames[0]);
+			sensorName = model.getSensorName();
+			if(sensorName==null||!Util.containsString(sensorNames, sensorName)) {
+				sensorName = sensorNames[0];
+			}	
 		} else {
 			comboViewerSensor.setInput(null);
-			model.setSensorName(null);
 		}
+		model.setSensorName(null);
+		model.setSensorName(sensorName);
 		grpQuery.layout();
 	}
 
@@ -465,11 +505,31 @@ public class SensorQueryDialog extends Dialog {
 			}
 			lblInfoText.setText(sensorInfoText);
 			lblUnitText.setText(sensorUnitText);
-			
+
 		} else {
 			comboViewerSensor.setSelection(null);
 			lblInfoText.setText("");
 			lblUnitText.setText("");
+		}
+		grpQuery.layout();
+	}
+
+	private void aggregationNamesChange(String[] aggregationNames) {
+		if(aggregationNames!=null&&aggregationNames.length>0) {
+			comboViewerAggregation.setInput(aggregationNames);
+			model.setAggregationName(aggregationNames[0]);
+		} else {
+			comboViewerAggregation.setInput(null);
+			model.setAggregationName(null);
+		}
+		grpQuery.layout();
+	}
+
+	private void aggregationNameChange(String aggregationName) {
+		if(aggregationName!=null) {
+			comboViewerAggregation.setSelection(new StructuredSelection(aggregationName));
+		} else {
+			comboViewerAggregation.setSelection(null);
 		}
 		grpQuery.layout();
 	}

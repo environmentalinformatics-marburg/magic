@@ -98,7 +98,6 @@ public class FactoryTsDB {
 			//*** sensor config	start		
 			configLoader.readIgnoreSensorNameConfig(configDirectory+"ignore_sensors.ini"); // read and insert sensor names that should be not inserted in database
 			configLoader.readSensorPhysicalRangeConfig(configDirectory+"parameter_physical_range.ini"); // read and insert physical range to sensor objects
-			configLoader.readSensorEmpiricalRangeConfig(configDirectory+"parameter_empirical_range.ini"); // (TODO change/remove)  read and insert empirical range to sensor objects
 			configLoader.readSensorStepRangeConfig(configDirectory+"parameter_step_range.ini"); // read and insert step range to sensor objects
 			configLoader.readBaseAggregationConfig(configDirectory+"base_aggregation.ini"); // read and insert type of aggregation to sensor objects
 			configLoader.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini"); // read list of sensor names for interpolation and mark sensor objects

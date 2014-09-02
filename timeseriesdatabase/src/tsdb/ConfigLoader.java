@@ -722,21 +722,6 @@ public class ConfigLoader {
 		}
 	}
 
-	public void readSensorEmpiricalRangeConfig(String configFile) {
-		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"parameter_empirical_range");
-		if(list!=null) {
-			for(FloatRange entry:list) {
-				Sensor sensor = tsdb.getSensor(entry.name);
-				if(sensor != null) {
-					sensor.empiricalMin = entry.min;
-					sensor.empiricalMax = entry.max;
-				} else {
-					log.warn("sensor not found: "+entry.name);
-				}
-			}
-		}
-	}
-
 	public void readSensorStepRangeConfig(String configFile) {
 		List<FloatRange> list = Util.readIniSectionFloatRange(configFile,"paramter_step_range");
 		if(list!=null) {

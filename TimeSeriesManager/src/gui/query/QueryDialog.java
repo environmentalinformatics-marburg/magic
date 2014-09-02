@@ -52,10 +52,7 @@ public class QueryDialog extends Dialog {
 
 	private static Logger log = Util.log;
 
-	private RemoteTsDB timeSeriesDatabase;
-	//private QueryProcessorOLD qp;
-	//private QueryProcessor qp;
-
+	private RemoteTsDB tsdb;
 
 	protected Shell shlAggregatedQuery;
 
@@ -65,14 +62,7 @@ public class QueryDialog extends Dialog {
 	private Combo comboSensorName;
 	private Combo comboAggregation;
 
-	/*private Button CheckButtonPhysical;
-	private Button CheckButtonEmpirical;
-	private Button CheckButtonStep;
-	private Button CheckButtonInterpolated;*/
-
 	private Button buttonUpdate;
-
-	//private Canvas canvasDataView;
 
 	DataExplorer dataExplorer;
 
@@ -104,10 +94,8 @@ public class QueryDialog extends Dialog {
 		beginDateTime = null;
 		endDateTime = null;
 		setText("SWT Dialog");
-		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.tsdb = timeSeriesDatabase;
 		this.model = new QueryModel();
-		//this.qp = new QueryProcessor(timeSeriesDatabase);
-		//this.dataView = new DataView();		
 	}
 
 	/**
@@ -125,8 +113,6 @@ public class QueryDialog extends Dialog {
 		model.setAggregationNames(new String[]{"hour","day","week","month","year"});
 		model.setAggregationName("day");
 
-		//dataView.canvas = canvasDataView;
-		//updateGUI();
 		while (!shlAggregatedQuery.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -152,7 +138,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpRegion = new Group(composite, SWT.NONE);
 		grpRegion.setText("Region");
-		grpRegion.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpRegion.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboRegion = new Combo(grpRegion, SWT.READ_ONLY);
 		comboRegion.setItems(new String[]{"----------------"});		
@@ -168,7 +154,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpGeneral = new Group(composite, SWT.NONE);
 		grpGeneral.setText("General");
-		grpGeneral.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpGeneral.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboGeneralStation = new Combo(grpGeneral, SWT.READ_ONLY);
 		comboGeneralStation.setItems(new String[]{"-------------------------------"});
@@ -183,7 +169,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpPlot = new Group(composite, SWT.NONE);
 		grpPlot.setText("Plot");
-		grpPlot.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpPlot.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboPlotID = new Combo(grpPlot, SWT.READ_ONLY);
 		comboPlotID.addSelectionListener(new SelectionAdapter() {
@@ -196,7 +182,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpSensor = new Group(composite, SWT.NONE);
 		grpSensor.setText("Sensor");
-		grpSensor.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpSensor.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboSensorName = new Combo(grpSensor, SWT.READ_ONLY);
 		comboSensorName.addSelectionListener(new SelectionAdapter() {
@@ -209,7 +195,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpTime = new Group(composite, SWT.NONE);
 		grpTime.setText("Time");
-		grpTime.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpTime.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		label = new Label(grpTime, SWT.NONE);
 		label.setText("________________________________________");
@@ -233,7 +219,7 @@ public class QueryDialog extends Dialog {
 
 		Group grpAggregation = new Group(composite, SWT.NONE);
 		grpAggregation.setText("Aggregation");
-		grpAggregation.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpAggregation.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboAggregation = new Combo(grpAggregation, SWT.READ_ONLY);
 		comboAggregation.addSelectionListener(new SelectionAdapter() {
@@ -246,7 +232,7 @@ public class QueryDialog extends Dialog {
 		//**************************
 		grpTestgroup = new Group(composite, SWT.NONE);
 		grpTestgroup.setText("Quality");
-		grpTestgroup.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		grpTestgroup.setLayout(new RowLayout(SWT.HORIZONTAL));
 
 		comboQuality = new Combo(grpTestgroup, SWT.READ_ONLY);
 		comboQuality.setItems(new String[] {"no check", "physical range", "physical range + step range", "physical range + step range + empirical range"});
@@ -308,7 +294,10 @@ public class QueryDialog extends Dialog {
 
 		grpInfo = new Group(composite, SWT.NONE);
 		grpInfo.setText("Info");
-		grpInfo.setLayout(new RowLayout(SWT.VERTICAL));
+		RowLayout rl_grpInfo = new RowLayout(SWT.VERTICAL);
+		rl_grpInfo.marginTop = 0;
+		rl_grpInfo.marginBottom = 0;
+		grpInfo.setLayout(rl_grpInfo);
 
 		lblSensorInfo = new Label(grpInfo, SWT.NONE);
 		lblSensorInfo.setText("New Label");
@@ -432,9 +421,9 @@ public class QueryDialog extends Dialog {
 					Node node;
 
 					if(useCache) {
-						resultTimeSeries = timeSeriesDatabase.cache(plotID, querySchema[0], agg);
+						resultTimeSeries = tsdb.cache(plotID, querySchema[0], agg);
 					} else {
-						resultTimeSeries = timeSeriesDatabase.plot(plotID, querySchema[0], agg, dataQuality, useInterpolation);
+						resultTimeSeries = tsdb.plot(plotID, querySchema[0], agg, dataQuality, useInterpolation);
 					}
 
 					/*if(useCache) {
@@ -490,7 +479,7 @@ public class QueryDialog extends Dialog {
 
 	void updateGUIregions() {
 		try {
-			String[] longNames = timeSeriesDatabase.getRegionLongNames();
+			String[] longNames = tsdb.getRegionLongNames();
 			String[] items = Arrays.copyOf(longNames, longNames.length+1);
 			items[longNames.length] = "cache";
 
@@ -505,9 +494,9 @@ public class QueryDialog extends Dialog {
 	void updateGUIgeneralstations() {
 		try {
 			String regionLongName = comboRegion.getText();		
-			Region region = timeSeriesDatabase.getRegionByLongName(regionLongName);
+			Region region = tsdb.getRegionByLongName(regionLongName);
 			if(region!=null) {
-				String[] generalStationNames = timeSeriesDatabase.getGeneralStationLongNames(region.name);
+				String[] generalStationNames = tsdb.getGeneralStationLongNames(region.name);
 				comboGeneralStation.setItems(generalStationNames);
 				if(generalStationNames.length>0) {
 					comboGeneralStation.setText(generalStationNames[0]);
@@ -518,7 +507,7 @@ public class QueryDialog extends Dialog {
 				System.out.println(regionLongName);
 				comboGeneralStation.setItems(new String[]{"cache"});
 				comboGeneralStation.setText("cache");			
-				String[] streams = timeSeriesDatabase.cacheStorageGetStreamNames();
+				String[] streams = tsdb.cacheStorageGetStreamNames();
 				comboPlotID.setItems(streams);
 				comboPlotID.setText(streams.length>0?streams[0]:"");
 			} else {
@@ -538,7 +527,7 @@ public class QueryDialog extends Dialog {
 		try {
 			String generalStationName = comboGeneralStation.getText();
 			if(!generalStationName.equals("cache")) {				
-				String[] plotIDs = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationName);
+				String[] plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationName);
 				if(plotIDs!=null) {
 					comboPlotID.setItems(plotIDs);
 					comboPlotID.setText(plotIDs[0]);
@@ -588,15 +577,15 @@ public class QueryDialog extends Dialog {
 			if(virtualplotInfo!=null) {
 				//schema = virtualplotInfo.getSchema();
 			} else {*/
-			schema = timeSeriesDatabase.getPlotSchema(stationName);
+			schema = tsdb.getPlotSchema(stationName);
 			//} 
 
 			if(comboGeneralStation.getText().equals("cache")) {
-				schema = timeSeriesDatabase.getCacheSchemaNames(stationName);
+				schema = tsdb.getCacheSchemaNames(stationName);
 			}
 			if(schema!=null) {
 
-				String[] sensorNames = timeSeriesDatabase.getBaseSchema(schema);
+				String[] sensorNames = tsdb.getBaseSchema(schema);
 				if(sensorNames.length>0) {
 					String oldName = comboSensorName.getText();
 					comboSensorName.setItems(sensorNames);
@@ -625,7 +614,7 @@ public class QueryDialog extends Dialog {
 		try {
 			String sensorName = comboSensorName.getText();
 			if(sensorName!=null && !sensorName.isEmpty()) {
-				Sensor sensor = timeSeriesDatabase.getSensor(sensorName);
+				Sensor sensor = tsdb.getSensor(sensorName);
 				if(sensor != null) {
 					checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
 					return;
@@ -696,7 +685,7 @@ public class QueryDialog extends Dialog {
 	void updateRegionLongNames() {
 		String[] regionLongNames = null;
 		try {
-			String[] longNames = timeSeriesDatabase.getRegionLongNames();
+			String[] longNames = tsdb.getRegionLongNames();
 			regionLongNames = Arrays.copyOf(longNames, longNames.length+1);
 			regionLongNames[longNames.length] = "cache";
 		} catch(RemoteException e) {
@@ -722,13 +711,13 @@ public class QueryDialog extends Dialog {
 			comboRegion.setText(regionLongName);
 			Region region = null;
 			try {
-				region = timeSeriesDatabase.getRegionByLongName(regionLongName);
+				region = tsdb.getRegionByLongName(regionLongName);
 			} catch (RemoteException e) {
 				log.error(e);
 			}
 			if(region!=null) {
 				try {
-					generalStationLongNames = timeSeriesDatabase.getGeneralStationLongNames(region.name);
+					generalStationLongNames = tsdb.getGeneralStationLongNames(region.name);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
@@ -757,13 +746,13 @@ public class QueryDialog extends Dialog {
 			comboGeneralStation.setText(generalStationLongName);
 			if(generalStationLongName.equals("cache")) {
 				try {
-					plotIDs = timeSeriesDatabase.cacheStorageGetStreamNames();
+					plotIDs = tsdb.cacheStorageGetStreamNames();
 				} catch (RemoteException e) {
 					log.error(e);
 				}				
 			} else {
 				try {
-					plotIDs = timeSeriesDatabase.getPlotIDsByGeneralStationByLongName(generalStationLongName);
+					plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationLongName);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
@@ -791,13 +780,13 @@ public class QueryDialog extends Dialog {
 			comboPlotID.setText(plotID);			
 			if("cache".equals(model.getGeneralStationLongName())) {
 				try {
-					sensorNames = timeSeriesDatabase.getCacheSchemaNames(plotID);
+					sensorNames = tsdb.getCacheSchemaNames(plotID);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
 			} else {
 				try {
-					sensorNames = timeSeriesDatabase.getPlotSchema(plotID);
+					sensorNames = tsdb.getPlotSchema(plotID);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
@@ -808,7 +797,7 @@ public class QueryDialog extends Dialog {
 		}
 		if(sensorNames!=null) {
 			try {
-				sensorNames = timeSeriesDatabase.getBaseSchema(sensorNames);
+				sensorNames = tsdb.getBaseSchema(sensorNames);
 			} catch (RemoteException e) {
 				log.error(e);
 				sensorNames = null;
@@ -842,7 +831,7 @@ public class QueryDialog extends Dialog {
 			comboSensorName.setText(sensorName);
 			Sensor sensor = null;
 			try {
-				sensor = timeSeriesDatabase.getSensor(sensorName);
+				sensor = tsdb.getSensor(sensorName);
 			} catch (RemoteException e) {
 				log.error(e);
 			}

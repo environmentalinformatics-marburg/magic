@@ -30,16 +30,6 @@ public class Sensor implements Serializable {
 	public float physicalMax;
 	
 	/**
-	 * empirical minimum
-	 */
-	public float empiricalMin;
-	
-	/**
-	 * empirical maximum
-	 */
-	public float empiricalMax;
-	
-	/**
 	 * minimal change within a base aggregation time interval
 	 */
 	public float stepMin;
@@ -72,8 +62,6 @@ public class Sensor implements Serializable {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;
 		physicalMax = Float.MAX_VALUE;
-		empiricalMin = -Float.MAX_VALUE;
-		empiricalMax = Float.MAX_VALUE;
 		stepMin = 0.0f;
 		stepMax = Float.MAX_VALUE;
 		baseAggregationType = AggregationType.NONE;
@@ -91,13 +79,6 @@ public class Sensor implements Serializable {
 			return false;
 		}
 		return physicalMin<=value&&value<=physicalMax;		
-	}
-
-	public boolean checkEmpiricalRange(float value) {
-		if(Float.isNaN(value)) {
-			return false;
-		}
-		return empiricalMin<=value&&value<=empiricalMax;
 	}
 
 	/**

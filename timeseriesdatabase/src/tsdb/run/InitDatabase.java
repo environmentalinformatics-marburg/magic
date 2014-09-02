@@ -2,11 +2,13 @@ package tsdb.run;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.FactoryTsDB;
+import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.loader.TimeSeriesLoaderBE;
 import tsdb.loader.TimeSeriesLoaderKiLi;
@@ -37,7 +39,8 @@ public class InitDatabase {
 		
 		timeSeriesDatabase = FactoryTsDB.createDefault();
 		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
-		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase);
+		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
+		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase, minTimestamp);
 		
 		
 		

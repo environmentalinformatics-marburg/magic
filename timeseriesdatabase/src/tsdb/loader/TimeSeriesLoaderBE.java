@@ -29,11 +29,14 @@ import tsdb.util.Util;
  */
 public class TimeSeriesLoaderBE {
 	
-	protected static final Logger log = Util.log;	
-	protected TsDB timeseriesdatabase;
+	private static final Logger log = Util.log;	
+	private TsDB timeseriesdatabase;
 	
-	public TimeSeriesLoaderBE(TsDB timeseriesdatabase) {
+	private final long minTimestamp;
+	
+	public TimeSeriesLoaderBE(TsDB timeseriesdatabase, long minTimestamp) {
 		this.timeseriesdatabase = timeseriesdatabase;
+		this.minTimestamp = minTimestamp;
 	}
 	
 	/**
@@ -154,7 +157,7 @@ public class TimeSeriesLoaderBE {
 			for(Path path:pathList) {
 				try {
 					UDBFTimestampSeries timeSeries = readUDBFTimeSeries(station.stationID, path);
-					List<Event> eventList = translateToEvents(station, timeSeries);
+					List<Event> eventList = translateToEvents(station, timeSeries, minTimestamp);
 					if(eventList!=null) {
 						eventsList.add(eventList);
 						
@@ -265,9 +268,10 @@ public class TimeSeriesLoaderBE {
 	/**
 	 * Convertes rows of input file data into events with matching schema of the event stream of this plotID 
 	 * @param udbfTimeSeries
+	 * @param minTimestamp minimal timestamp that should be included in result
 	 * @return List of Events, time stamp ordered 
 	 */
-	public List<Event> translateToEvents(Station station, UDBFTimestampSeries udbfTimeSeries) {
+	public List<Event> translateToEvents(Station station, UDBFTimestampSeries udbfTimeSeries, long minTimestamp) {
 		List<Event> resultList = new ArrayList<Event>(); // result list of events	
 
 		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
@@ -325,7 +329,12 @@ public class TimeSeriesLoaderBE {
 		Object[] payload = new Object[station.loggerType.schema.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
 		//iterate over input rows
-		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {
+		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {			
+			long timestamp = udbfTimeSeries.time[rowIndex];
+			if(timestamp<minTimestamp) {
+				continue;
+			}
+			
 			// one input row
 			float[] row = udbfTimeSeries.data[rowIndex];
 
@@ -343,8 +352,7 @@ public class TimeSeriesLoaderBE {
 			if(udbfTimeSeries.time[rowIndex]==58508670) {
 				System.out.println("write time 58508670 in "+station.stationID+"\t"+udbfTimeSeries.filename);
 			}
-			long timestamp = udbfTimeSeries.time[rowIndex];
-			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
+				resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
 		}
 
 		return resultList;

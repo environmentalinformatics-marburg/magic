@@ -65,7 +65,7 @@ public class SensorsInfoDialog extends Dialog {
 			GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 			data.heightHint = 400;
 			table.setLayoutData(data);
-			String[] titles = {"name", "physical min", "physical max", "empirical min", "empirical max", "step min", "step max", "aggregation type", "interpolation"};
+			String[] titles = {"name", "physical min", "physical max", "step min", "step max", "empirical diff", "aggregation type", "interpolation"};
 			for (int i=0; i<titles.length; i++) {
 				TableColumn column = new TableColumn (table, SWT.NONE);
 				column.setText (titles [i]);
@@ -74,12 +74,11 @@ public class SensorsInfoDialog extends Dialog {
 			for(Sensor sensor:timeSeriesDatabase.getSensors()) {
 				TableItem item = new TableItem (table, SWT.NONE);
 				item.setText (0, sensor.name);
-				item.setText (1, ""+sensor.physicalMin);
-				item.setText (2, ""+sensor.physicalMax);
-				item.setText (3, ""+sensor.empiricalMin);
-				item.setText (4, ""+sensor.empiricalMax);
-				item.setText (5, ""+sensor.stepMin);
-				item.setText (6, ""+sensor.stepMax);
+				item.setText (1, ""+(-Float.MAX_VALUE!=sensor.physicalMin?sensor.physicalMin:"---"));
+				item.setText (2, ""+(Float.MAX_VALUE!=sensor.physicalMax?sensor.physicalMax:"---"));
+				item.setText (3, ""+sensor.stepMin);
+				item.setText (4, ""+(Float.MAX_VALUE!=sensor.stepMax?sensor.stepMax:"---"));
+				item.setText (5, ""+Util.ifnull(sensor.empiricalDiff,"---"));
 
 				String agg="";
 				if(sensor.baseAggregationType == AggregationType.NONE) {
@@ -88,8 +87,8 @@ public class SensorsInfoDialog extends Dialog {
 					agg += sensor.baseAggregationType;
 				}
 
-				item.setText (7, agg);
-				item.setText (8, (sensor.useInterpolation?"interpolation":"---"));
+				item.setText (6, agg);
+				item.setText (7, (sensor.useInterpolation?"interpolation":"---"));
 			}
 
 

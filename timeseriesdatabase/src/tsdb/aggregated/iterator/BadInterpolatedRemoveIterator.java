@@ -112,9 +112,6 @@ public class BadInterpolatedRemoveIterator extends MoveIterator {
 		if(!sensors[columnIndex].checkStepRange(prev, value)) {
 			return false;
 		}
-		if(!sensors[columnIndex].checkEmpiricalRange(value)) {
-			return false;
-		}		
 		return true;
 	}
 

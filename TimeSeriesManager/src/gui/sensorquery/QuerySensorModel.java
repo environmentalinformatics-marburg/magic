@@ -10,10 +10,14 @@ public class QuerySensorModel extends AbstractModel {
 	private Region[] regions;
 	private GeneralStationInfo[] generalStationInfos;
 	private String[] sensorNames;
+	private String[] aggregationNames;
 
 	private Region region;
 	private GeneralStationInfo generalStationInfo;
 	private String sensorName;
+	private String aggregationName;
+	
+	
 
 	public void setRegions(Region[] regions) {
 		changeSupport.firePropertyChange("regions", this.regions, this.regions=regions);
@@ -24,6 +28,9 @@ public class QuerySensorModel extends AbstractModel {
 	public void setSensorNames(String[] sensorNames) {
 		changeSupport.firePropertyChange("sensorNames", this.sensorNames, this.sensorNames=sensorNames);
 	}
+	public void setAggregationNames(String[] aggregationNames) {
+		changeSupport.firePropertyChange("aggregationNames", this.aggregationNames, this.aggregationNames=aggregationNames);
+	}
 
 
 	public void setRegion(Region region) {
@@ -32,8 +39,14 @@ public class QuerySensorModel extends AbstractModel {
 	public void setGeneralStationInfo(GeneralStationInfo generalStationInfo) {
 		changeSupport.firePropertyChange("generalStationInfo", this.generalStationInfo, this.generalStationInfo=generalStationInfo);
 	}
-	public void setSensorName(String sensorName) {
+	public void setSensorName(String sensorName) {		
+		if(this.sensorName==null&&sensorName==null) {
+			return;
+		}		
 		changeSupport.firePropertyChange("sensorName", this.sensorName, this.sensorName=sensorName);
+	}
+	public void setAggregationName(String aggregationName) {			
+		changeSupport.firePropertyChange("aggregationName", this.aggregationName, this.aggregationName=aggregationName);
 	}
 
 
@@ -46,6 +59,9 @@ public class QuerySensorModel extends AbstractModel {
 	public String[] getSensorNames() {
 		return sensorNames;
 	}
+	public String[] getAggregationNames() {
+		return aggregationNames;
+	}
 
 
 	public Region getRegion() {
@@ -56,5 +72,8 @@ public class QuerySensorModel extends AbstractModel {
 	}
 	public String getSensorName() {
 		return sensorName;
-	}		
+	}
+	public String getAggregationName() {
+		return aggregationName;
+	}	
 }

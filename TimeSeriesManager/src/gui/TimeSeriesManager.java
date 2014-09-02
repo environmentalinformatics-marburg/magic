@@ -131,7 +131,7 @@ public class TimeSeriesManager {
 
 	Menu queryMenu = addMenuColumn(menuBar,"Query");
 	addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,remoteTsDB)).open());
-	addMenuItem(queryMenu,"query sensors", new SensorQueryDialog(shell,remoteTsDB));
+	addMenuItem(queryMenu,"query sensors", x->(new SensorQueryDialog(shell,remoteTsDB)).open());
 
 	Menu statisticsMenu = addMenuColumn(menuBar,"Statistics");
 	addMenuItem(statisticsMenu, "statistics", x->(new StatisticsDialog(shell, remoteTsDB)).open());
@@ -145,15 +145,11 @@ public class TimeSeriesManager {
 	shell.setMenuBar(menuBar); 
 
 }
-
+	
 private void addMenuItem(Menu menu,String title,Listener listener) {
 	MenuItem dataGenerationItem = new MenuItem(menu, SWT.PUSH);
 	dataGenerationItem.setText(title);
 	dataGenerationItem.addListener(SWT.Selection, listener);	
-}
-
-private void addMenuItem(Menu menu,String title, Window window) {
-	addMenuItem(menu,title,x->window.open());
 }
 
 private Menu addMenuColumn(Menu menuBar, String title) {

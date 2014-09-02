@@ -54,12 +54,10 @@ public class BaseAggregationProcessor {
 	//***
 
 	boolean checkPhysicalRange;
-	boolean checkEmpiricalRange;
 	boolean checkStepRange;
 
-	public BaseAggregationProcessor(TsDB timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames, boolean checkPhysicalRange, boolean checkEmpiricalRange,boolean checkStepRange) {
+	public BaseAggregationProcessor(TsDB timeSeriesDatabase, String[] schemaSensorNames, String[] querySensorNames, boolean checkPhysicalRange, boolean checkStepRange) {
 		this.checkPhysicalRange = checkPhysicalRange;
-		this.checkEmpiricalRange = checkEmpiricalRange;
 		this.checkStepRange = checkStepRange;
 		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
 		sensors = timeSeriesDatabase.getSensors(new TimeSeriesSchema(parameterNames));		
@@ -223,16 +221,13 @@ public class BaseAggregationProcessor {
 					value = 0;
 				}
 				if(!checkPhysicalRange || sensors[i].checkPhysicalRange(value)) {
-					if(!checkEmpiricalRange || sensors[i].checkEmpiricalRange(value)) {
-						if(!checkStepRange || sensors[i].checkStepRange(prevValue, value)) {
-							aggCnt[i] ++;					
-							aggSum[i] += value;
-							if(value>aggMax[i]) {
-								aggMax[i] = value;
-							}
+					if(!checkStepRange || sensors[i].checkStepRange(prevValue, value)) {
+						aggCnt[i] ++;					
+						aggSum[i] += value;
+						if(value>aggMax[i]) {
+							aggMax[i] = value;
 						}
 					}
-
 				}
 			}			
 			if(aggregate_wind_direction) {
