@@ -104,9 +104,9 @@ public class TimeSeriesSchema implements Serializable {
 		} else if(timeStep!=NO_CONSTANT_TIMESTEP){
 			return "!constantTimeStep && timeStep!=NO_CONSTANT_TIMESTEP";
 		}
-		if(isContinuous&&!constantTimeStep) {
+		/*if(isContinuous&&!constantTimeStep) { // ???
 			return "isContinuous&&!constantTimeStep";
-		}
+		}*/
 		return null;
 	}
 
@@ -210,6 +210,10 @@ public class TimeSeriesSchema implements Serializable {
 			}
 		}
 		return true;
+	}
+	
+	public void throwNotContinuous() {
+		Util.throwFalse(isContinuous, "iterator needs to be continuous");
 	}
 	
 

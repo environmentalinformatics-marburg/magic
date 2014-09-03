@@ -1,8 +1,8 @@
 package gui;
 
 import gui.info.LoggerTypeInfoDialog;
-import gui.info.SensorsInfoDialog;
-import gui.info.SourceCatalogInfoDialog;
+import gui.info.NewSensorInfoDialog;
+import gui.info.NewSourceCatalogInfoDialog;
 import gui.info.StationsInfoDialog;
 import gui.info.VirtualPlotInfoDialog;
 import gui.query.QueryDialog;
@@ -15,10 +15,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import org.apache.logging.log4j.Logger;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.databinding.swt.SWTObservables;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -30,15 +28,13 @@ import org.eclipse.swt.widgets.Text;
 
 import tsdb.FactoryTsDB;
 import tsdb.TsDB;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.run.StartServerTsDB;
 
-public class TimeSeriesManager {
-
-	private static Logger log = Util.log;
-
+public class TimeSeriesManager implements TsDBLogger {
 
 	public RemoteTsDB remoteTsDB;
 
@@ -115,19 +111,20 @@ public class TimeSeriesManager {
 
 
 
-	shell.setText("time series database manager");
+	shell.setText("Time Series Database Manager");
 	shell.setSize(300, 400);
 	shell.setLayout(new FillLayout());
 
 	Menu menuBar = new Menu(shell, SWT.BAR);
 
-	Menu infoMenu = addMenuColumn(menuBar,"info");
-	addMenuItem(infoMenu,"sensors",x->(new SensorsInfoDialog(shell,remoteTsDB)).open());
+	Menu infoMenu = addMenuColumn(menuBar,"Info");
+	
+	addMenuItem(infoMenu,"sensors",x->(new NewSensorInfoDialog(shell,remoteTsDB)).open());
 	addMenuItem(infoMenu,"stations",x->(new StationsInfoDialog(shell,remoteTsDB)).open());
 	addMenuItem(infoMenu,"virtual plots",x->(new VirtualPlotInfoDialog(shell,remoteTsDB).open()));
 	addMenuItem(infoMenu,"general stations",x->(new gui.info.GeneralStationInfoDialog(shell, remoteTsDB)).open());
 	addMenuItem(infoMenu,"logger types",x->(new LoggerTypeInfoDialog(shell, remoteTsDB)).open());
-	addMenuItem(infoMenu,"source catalog",x->(new SourceCatalogInfoDialog(shell, remoteTsDB)).open());
+	addMenuItem(infoMenu,"source catalog",x->(new NewSourceCatalogInfoDialog(shell, remoteTsDB)).open());
 
 	Menu queryMenu = addMenuColumn(menuBar,"Query");
 	addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,remoteTsDB)).open());

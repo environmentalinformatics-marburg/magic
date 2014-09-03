@@ -1,43 +1,20 @@
 package gui.info;
 
-
-
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import tsdb.TimeConverter;
-import tsdb.TsDB;
-import tsdb.VirtualPlot;
-import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.Util;
 
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.FillLayout;
 
 public class VirtualPlotInfoDialog extends Dialog {
@@ -86,9 +63,9 @@ public class VirtualPlotInfoDialog extends Dialog {
 
 		try {
 		// set the content provider
-		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
-		tableViewer.setInput(timeSeriesDatabase.getVirtualPlots());		
-		tableViewer.setComparator(tableViewBridge);
+		//tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		tableViewBridge.setInput(timeSeriesDatabase.getVirtualPlots());		
+		//tableViewer.setComparator(tableViewBridge);
 		} catch(RemoteException e) {
 			log.error(e);
 		}

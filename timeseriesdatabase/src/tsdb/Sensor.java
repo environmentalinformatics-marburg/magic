@@ -17,7 +17,7 @@ public class Sensor implements Serializable {
 	/**
 	 * parameter name of this sensor
 	 */
-	public String name;
+	public final String name;
 	
 	/**
 	 * physical minimum
@@ -90,5 +90,29 @@ public class Sensor implements Serializable {
 	public boolean checkStepRange(float prevValue, float value) {
 		float step = Math.abs(value-prevValue);		
 		return stepMin<=step&&step<=stepMax;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public float getPhysicalMin() {
+		return physicalMin;
+	}
+	
+	public float getPhysicalMax() {
+		return physicalMax;
+	}
+	
+	public float getStepMin() {
+		return physicalMin;
+	}
+	
+	public float getStepMax() {
+		return physicalMax;
+	}
+	
+	public Float getEmpiricalDiff() {
+		return empiricalDiff;
 	}
 }

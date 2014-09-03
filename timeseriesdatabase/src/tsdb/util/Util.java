@@ -67,7 +67,7 @@ public class Util {
 		}
 		return String.format("%.2f", value);
 	}
-	
+
 	public static Map<String,Integer> stringArrayToMap(String[] entries) {
 		return stringArrayToMap(entries, false);
 	}
@@ -276,7 +276,7 @@ public class Util {
 			return funcArg.apply(a);
 		}
 	}
-	
+
 	public static <A, B> B  ifnull(A a, Function<A,B> funcArg, B nullValue){
 		if(a==null) {
 			return nullValue;
@@ -375,7 +375,7 @@ public class Util {
 		}
 		return result;
 	}
-	
+
 	public static String arrayToString(int[] array) {
 		String result = "";
 		for(int s:array) {
@@ -398,7 +398,7 @@ public class Util {
 		}	
 		return resultSet;
 	}
-	
+
 	public String ifNaN(float value, String text) {
 		if(Float.isNaN(value)) {
 			return text;
@@ -406,7 +406,7 @@ public class Util {
 			return ""+value;
 		}
 	}
-	
+
 	public static String ifNaN(double value, String text) {
 		if(Double.isNaN(value)) {
 			return text;
@@ -414,7 +414,7 @@ public class Util {
 			return ""+value;
 		}
 	}
-	
+
 	public static boolean containsString(String[] array, String text) {
 		for(String s:array) {
 			if(s.equals(text)) {
@@ -423,12 +423,12 @@ public class Util {
 		}
 		return false;
 	}
-	
+
 	public static String[] getValidEntries(String[] names, String[] source) {
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
 		return Arrays.asList(names).stream().filter(name->sourceMap.containsKey(name)).toArray(String[]::new);
 	}
-	
+
 	public static boolean isContained(String[] names, String[] source) {
 		Util.throwNull(names,source);		
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
@@ -439,7 +439,7 @@ public class Util {
 		}
 		return true;
 	}
-	
+
 	public static void throwNull(Object ... o) {
 		for(int i=0;i<o.length;i++) {				
 			if(o[i]==null) {
@@ -447,7 +447,19 @@ public class Util {
 			}
 		}
 	}
-	
+
+	public static void throwFalse(boolean check) {
+		if(!check) {
+			throw new RuntimeException("check false");
+		}
+	}
+
+	public static void throwFalse(boolean check, String errorText) {
+		if(!check) {
+			throw new RuntimeException(errorText);
+		}
+	}
+
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
 	}

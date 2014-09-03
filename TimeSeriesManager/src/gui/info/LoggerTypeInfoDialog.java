@@ -5,6 +5,7 @@ package gui.info;
 import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -16,26 +17,27 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import tsdb.LoggerType;
-import tsdb.TsDB;
+import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 public class LoggerTypeInfoDialog extends Dialog {
 	
 	private static Logger log = Util.log;
 
-	RemoteTsDB timeSeriesDatabase; 
+	private RemoteTsDB tsdb;
+	
+	private TableViewBridge<LoggerType> tableViewBridge;
 
-	public LoggerTypeInfoDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, timeSeriesDatabase);
+	public LoggerTypeInfoDialog(Shell parent, RemoteTsDB tsdb) {
+		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, tsdb);
 
 	}
 
 	public LoggerTypeInfoDialog(Shell parent, int style,RemoteTsDB timeSeriesDatabase) {
 		super(parent, style);
-		this.timeSeriesDatabase = timeSeriesDatabase;
-		setText("General Station Info");
+		this.tsdb = timeSeriesDatabase;
+		setText("Logger Type Info");
 	}
 
 	public String open() {
@@ -45,6 +47,7 @@ public class LoggerTypeInfoDialog extends Dialog {
 		createContents(shell);
 		shell.pack();
 		shell.open();
+		shell.setMaximized(true);
 		Display display = getParent().getDisplay();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -56,60 +59,28 @@ public class LoggerTypeInfoDialog extends Dialog {
 	}
 
 	private void createContents(final Shell shell) {
+		shell.setSize(450, 300);
+		shell.setText(getText());
+		shell.setLayout(new GridLayout(1, false));
+		
+		TableViewer tableViewer = new TableViewer(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.FILL);
+		Table table = tableViewer.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));		
+		tableViewBridge = new TableViewBridge<LoggerType>(tableViewer);
+		
+		tableViewBridge.addColumnText("Name", 100, l->l.typeName);
+		tableViewBridge.addColumnText("Sensor Names", 100, l->Util.arrayToString(l.sensorNames));
+		
+		tableViewBridge.createColumns();
+		
 		try {
-		shell.setLayout(new GridLayout());
-		Table table = new Table (shell, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
-		table.setLinesVisible (true);
-		table.setHeaderVisible (true);
-		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-		data.heightHint = 200;
-		table.setLayoutData(data);
-		
-		int maxColumnCount=0;
-		for(LoggerType loggertype:timeSeriesDatabase.getLoggerTypes()) {
-			if(loggertype.sensorNames.length>maxColumnCount) {
-				maxColumnCount = loggertype.sensorNames.length;
-			}
-		}
-		
-		String[] titles = new String[2+maxColumnCount];
-		titles[0] = "type name";
-		titles[1] = "Attributes";
-		for(int i=0;i<maxColumnCount;i++) {
-			titles[2+i] = ""+(i+1);
-		}		
-		for (int i=0; i<titles.length; i++) {
-			TableColumn column = new TableColumn (table, SWT.NONE);
-			column.setText (titles [i]);
-		}
-		
-		for(LoggerType loggertype:timeSeriesDatabase.getLoggerTypes()) {
-			TableItem item = new TableItem (table, SWT.NONE);
-			item.setText(0, loggertype.typeName);
-			item.setText(1, ""+loggertype.sensorNames.length);
-			
-			/*String sensorNames="";
-			for(String name:loggertype.sensorNames) {
-				sensorNames += name+" ";
-			}			
-			item.setText(1, sensorNames);*/
-			
-			for(int i=0;i<loggertype.sensorNames.length;i++) {
-				item.setText(2+i, loggertype.sensorNames[i]);
-			}
-			
-		}
-
-		for (int i=0; i<titles.length; i++) {
-			table.getColumn (i).pack ();
-		}
-		
-		shell.setMaximized(true);
-		} catch(RemoteException e) {
+			LoggerType[] loggerTypes = tsdb.getLoggerTypes();
+			tableViewBridge.setInput(loggerTypes);
+		} catch (RemoteException e) {
 			log.error(e);
 		}
-	}	
 
+	}
 }
 
 

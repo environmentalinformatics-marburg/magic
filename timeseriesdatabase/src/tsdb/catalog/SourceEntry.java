@@ -35,5 +35,9 @@ public class SourceEntry implements Serializable {
 	public String toString() {
 		return filename+"\t"+stationName+"\t"+TimeConverter.oleMinutesToText(firstTimestamp)+"\t"+TimeConverter.oleMinutesToText(lastTimestamp);
 	}
+	
+	public String getStationName() {
+		return stationName;
+	}
 
 }

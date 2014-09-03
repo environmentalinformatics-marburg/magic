@@ -13,12 +13,24 @@ public class GeneralStationInfo implements Serializable{
 	public final String longName;
 	public final String group;
 	public final Region region;
+	public final int stationCount;
+	public final int virtualPlotCount;
 	
 	public GeneralStationInfo(GeneralStation generalStation) {
 		this.name = generalStation.name;
 		this.longName = generalStation.longName;
 		this.group = generalStation.group;
 		this.region = generalStation.region;
+		this.stationCount = generalStation.stationList.size();
+		this.virtualPlotCount = generalStation.virtualPlots.size();
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getGroup() {
+		return group;
 	}
 
 }

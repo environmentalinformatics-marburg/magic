@@ -57,32 +57,17 @@ public class GeneralStationInfoDialog extends Dialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		/*Composite container = (Composite) super.createDialogArea(parent);
-		GridLayout gridLayout = (GridLayout) container.getLayout();*/
 		Composite container = (Composite) super.createDialogArea(parent);
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		tableViewBridge = new TableViewBridge<GeneralStationInfo>(tableViewer);
 
-		/*
-		 * String[] titles = {"ID", "Name","Region","Group","Stations and Virtual Plots"};
-		 * 
-		 * 
-		item.setText (0, Util.ifnull(generalStation.name, "---"));
-		item.setText (1, Util.ifnull(generalStation.longName, "---"));
-		item.setText (2, Util.ifnull(generalStation.region,x->""+x.longName+" ("+x.name+")","---"));
-		item.setText (3, Util.ifnull(generalStation.group,"---"));
-
-		int pCount = generalStation.stationList.size()+generalStation.virtualPlotList.size();
-		item.setText (4, ""+pCount);
-		 */
-
-		tableViewBridge.addColumn("ID",50,g->g.name);
-		tableViewBridge.addColumn("Name",200,g->Util.ifnull(g.longName, "---"));
-		tableViewBridge.addColumn("Region",200,g->Util.ifnull(g.region,x->""+x.longName+" ("+x.name+")","---"));
-		tableViewBridge.addColumn("Group",70,g->g.group);
-		//tableViewBridge.addColumn("Stations and Virtual Plots",100,g->""+(g.stationList.size()+g.virtualPlots.size()));
+		tableViewBridge.addColumnText("ID",50,GeneralStationInfo::getName);
+		tableViewBridge.addColumnText("Name",200,g->Util.ifnull(g.longName, "---"));
+		tableViewBridge.addColumnText("Region",200,g->Util.ifnull(g.region,x->""+x.longName+" ("+x.name+")","---"));
+		tableViewBridge.addColumnText("Group",70,GeneralStationInfo::getGroup);
+		tableViewBridge.addColumnInteger("Stations and Virtual Plots",100,g->(g.stationCount+g.virtualPlotCount));
 
 
 		tableViewBridge.createColumns();
@@ -90,10 +75,8 @@ public class GeneralStationInfoDialog extends Dialog {
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 		table.setBounds(74, 10, 300, 171);
-		//formToolkit.paintBordersFor(table);
 
-		// set the content provider
-		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		//tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		try {
 			tableViewer.setInput(timeSeriesDatabase.getGeneralStations());
 		} catch(RemoteException e) {
