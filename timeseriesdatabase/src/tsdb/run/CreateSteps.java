@@ -58,7 +58,6 @@ public class CreateSteps {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				//TimeSeriesIterator it = Difference.createFromGroupAverage(tsdb, source, stationName).get(null, null);
 				TimeSeriesIterator it = Differential.create(tsdb, source).get(null, null);
 				if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
@@ -68,7 +67,6 @@ public class CreateSteps {
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {
 				TimeSeriesIteratorIterator result_iterator = new TimeSeriesIteratorIterator(iterator_list,schema);
-				//result_iterator.writeCSV(CSV_OUTPUT_PATH+"AverageDiff/"+sensorName+".csv");
 				FileOutputStream out = new FileOutputStream(CSV_OUTPUT_PATH+"Steps/"+sensorName);
 				PrintStream printStream = new PrintStream(out);
 				
