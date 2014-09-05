@@ -20,20 +20,19 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.layout.FillLayout;
 
 public class Reg1 extends TitleAreaDialog {
-	
-	
-	
-	private String[] regionNames;
+
+
+	private CollectorModel model;	
 	private String regionName;
 
 	/**
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public Reg1(Shell parentShell, String[] regionNames, String regionName) {
+	public Reg1(Shell parentShell, CollectorModel model) {
 		super(parentShell);
-		this.regionNames = regionNames;
-		this.regionName = regionName;
+		this.model = model;
+		this.regionName = model.getRegionLongName();
 	}
 
 	/**
@@ -47,14 +46,13 @@ public class Reg1 extends TitleAreaDialog {
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
-		
+
 		ListViewer listViewer = new ListViewer(container, SWT.BORDER | SWT.V_SCROLL);
-		List list = listViewer.getList();
 		listViewer.addSelectionChangedListener((SelectionChangedEvent event) ->
 		regionName = (String)((StructuredSelection)event.getSelection()).getFirstElement()
-		);
+				);
 		listViewer.setContentProvider(ArrayContentProvider.getInstance());
-		listViewer.setInput(regionNames);
+		listViewer.setInput(model.getAllRegionLongNames());
 		listViewer.setSelection(new StructuredSelection(regionName));
 
 		return area;
@@ -66,16 +64,16 @@ public class Reg1 extends TitleAreaDialog {
 	 */
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+		Button button_1 = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
 				true);
-		Button button = createButton(parent, IDialogConstants.CANCEL_ID,
-				IDialogConstants.CANCEL_LABEL, false);
-		button.addSelectionListener(new SelectionAdapter() {
+		button_1.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-
+				model.setRegionLongName(regionName);
 			}
 		});
+		createButton(parent, IDialogConstants.CANCEL_ID,
+				IDialogConstants.CANCEL_LABEL, false);
 	}
 
 	/**
@@ -85,8 +83,5 @@ public class Reg1 extends TitleAreaDialog {
 	protected Point getInitialSize() {
 		return new Point(278, 268);
 	}
-	
-	public String getRegionName() {
-		return regionName;
-	}
+
 }

@@ -18,25 +18,27 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Text;
 
+import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.TsDBLogger;
 
 public class CollDialog extends TitleAreaDialog implements TsDBLogger {
-	
+
+	private CollectorController controller;
 	private CollectorModel model;
 
 	private final RemoteTsDB tsdb;
 
 	protected Object result;
 	protected Shell shell;
-	private Text txtDfsdfsfdf;
+	private Text txtSensorNames;
 	private Group grpRegion;
 	private Label lblRegion;
 	private Button button;
 	private Group grpGoup;
 	private Group grpGroup;
 	private Button button_1;
-	private Text txtHegHegHeg;
+	private Text txtQueryPlotInfos;
 	private Text txtInterpolated;
 	private Button button_2;
 
@@ -47,7 +49,8 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 	public CollDialog(Shell parentShell, RemoteTsDB tsdb) {
 		super(parentShell);
 		this.tsdb = tsdb;
-		this.model = new CollectorModel();
+		this.controller = new CollectorController(tsdb);
+		this.model = controller.getModel();
 	}
 
 	/**
@@ -56,6 +59,7 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+		setMessage("Saves a set of time series in one zip-file");
 		setTitle("Export Time Series");
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
@@ -78,7 +82,7 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 		button.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				onChooseRegion();				
+				new Reg1(shell, model).open();				
 			}
 		});
 		button.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
@@ -89,11 +93,19 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 		grpSensors.setText("Sensors");
 		grpSensors.setLayout(new GridLayout(1, false));
 
-		txtDfsdfsfdf = new Text(grpSensors, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
-		txtDfsdfsfdf.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-		txtDfsdfsfdf.setText("Ta_200\r\nrH_200");
+		txtSensorNames = new Text(grpSensors, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
+		GridData gd_txtQueryPlotInfos = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_txtQueryPlotInfos.minimumWidth = 150;
+		txtSensorNames.setLayoutData(gd_txtQueryPlotInfos);
+		txtSensorNames.setText("Ta_200\r\nrH_200");
 
 		Button btnChange = new Button(grpSensors, SWT.NONE);
+		btnChange.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				new SensorDialog(shell, model).open();	
+			}
+		});
 		btnChange.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		btnChange.setText("...");
 
@@ -102,11 +114,19 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 		grpGoup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
 		grpGoup.setText("Plots");
 
-		txtHegHegHeg = new Text(grpGoup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
-		txtHegHegHeg.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 3));
-		txtHegHegHeg.setText("HEG01\r\nHEG02\r\nHEG03\r\nHEG04");
+		txtQueryPlotInfos = new Text(grpGoup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
+		GridData gd_txtHegHegHeg = new GridData(SWT.LEFT, SWT.FILL, true, true, 1, 3);
+		gd_txtHegHegHeg.minimumWidth = 100;
+		txtQueryPlotInfos.setLayoutData(gd_txtHegHegHeg);
+		txtQueryPlotInfos.setText("HEG01\r\nHEG02\r\nHEG03\r\nHEG04");
 
 		button_1 = new Button(grpGoup, SWT.NONE);
+		button_1.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				new PlotDialog(shell, model).open();
+			}
+		});
 		button_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		button_1.setText("...");
 
@@ -126,7 +146,7 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 
 
 		bindModel();
-		initModel();
+		controller.initModel();
 
 		return area;
 	}
@@ -143,6 +163,7 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 		btnExport.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				controller.createZipFile();
 			}
 		});
 
@@ -155,41 +176,38 @@ public class CollDialog extends TitleAreaDialog implements TsDBLogger {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 407);
+		return new Point(446, 532);
+	}
+
+	private void bindModel() {
+		model.addPropertyChangeCallback("regionLongName", lblRegion::setText);		
+		model.addPropertyChangeCallback("querySensorNames", this::onChangeQuerySensorNames);
+		model.addPropertyChangeCallback("queryPlotInfos", this::onChangeQueryPlotInfos);
 	}
 	
-	private void bindModel() {		
-		model.addPropertyChangeCallback("regionLongName", this::onChangeRegionLongName);		
-	}
-	
-	private void initModel() {
-		String[] regionLongNames = null;		
-		try {
-			regionLongNames = tsdb.getRegionLongNames();
-		} catch (RemoteException e) {
-			log.error(e);
+	private void onChangeQuerySensorNames(String[] SensorNames) {
+		if(SensorNames!=null&&SensorNames.length>0) {
+			txtSensorNames.setText("");
+			for(String name:SensorNames) {
+				txtSensorNames.append(name+"\n");
+			}
+		} else {
+			txtSensorNames.setText("[empty]");
 		}
-		if(regionLongNames!=null&&regionLongNames.length>0) {
-			model.setRegionLongName(regionLongNames[0]);
+	}
+	
+	private void onChangeQueryPlotInfos(PlotInfo[] queryPlotInfos) {
+		System.out.println("onChangeQueryPlotInfos");
+		if(queryPlotInfos!=null&&queryPlotInfos.length>0) {
+			txtQueryPlotInfos.setText("");
+			for(PlotInfo p:queryPlotInfos) {
+				txtQueryPlotInfos.append(p.name+"\n");
+			}
+		} else {
+			txtQueryPlotInfos.setText("[empty]");
 		}
 	}
 
-	private void onChooseRegion() {		
-		String[] regionLongNames = null;		
-		try {
-			regionLongNames = tsdb.getRegionLongNames();
-		} catch (RemoteException e) {
-			log.error(e);
-		}
-		if(regionLongNames!=null&&regionLongNames.length>0) {
-			Reg1 dialog = new Reg1(shell, regionLongNames,model.getRegionLongName());
-			if(IDialogConstants.OK_ID==dialog.open()) {
-				model.setRegionLongName(dialog.getRegionName());
-			}
-		}
-	}
-	
-	private void onChangeRegionLongName(String regionLongName) {
-		lblRegion.setText(regionLongName);
-	}
+
+
 }

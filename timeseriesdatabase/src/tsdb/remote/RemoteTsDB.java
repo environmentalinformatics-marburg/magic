@@ -15,10 +15,10 @@ import tsdb.util.iterator.TimeSeriesIterator;
 public interface RemoteTsDB extends Remote {
 	
 	//ok
-	TimestampSeries plot(String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) throws RemoteException;
+	TimestampSeries plot(String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) throws RemoteException;
 
 	//ok
-	TimestampSeries cache(String streamName, String columnName, AggregationInterval aggregationInterval) throws RemoteException;
+	TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) throws RemoteException;
 
 	//ok
 	Region[] getRegions() throws RemoteException;
@@ -64,5 +64,11 @@ public interface RemoteTsDB extends Remote {
 	String[] getPlotSchema(String stationName) throws RemoteException;
 
 	//ok
-	String[] getGeneralStationSensorNames(String generalStationName) throws RemoteException;	
+	String[] getGeneralStationSensorNames(String generalStationName) throws RemoteException;
+
+	PlotInfo[] getPlotInfos() throws RemoteException;
+
+	String[] getValidSchema(String plotID, String[] sensorNames) throws RemoteException;
+	
+	
 }

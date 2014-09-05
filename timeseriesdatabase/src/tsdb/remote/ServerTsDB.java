@@ -6,7 +6,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.sun.xml.internal.txw2.output.StreamSerializer;
 
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
@@ -34,8 +37,8 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
-	public TimestampSeries plot(String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
-		Node node = QueryPlan.plot(tsdb, plotID, columnName, aggregationInterval, dataQuality, interpolated);
+	public TimestampSeries plot(String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+		Node node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
 		if(node==null) {
 			return null;
 		}
@@ -47,8 +50,8 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
-	public TimestampSeries cache(String streamName, String columnName, AggregationInterval aggregationInterval) {
-		Node node =  QueryPlan.cache(tsdb, streamName, columnName, aggregationInterval);
+	public TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) {
+		Node node =  QueryPlan.cache(tsdb, streamName, columnNames, aggregationInterval);
 		if(node==null) {
 			return null;
 		}
@@ -182,33 +185,46 @@ public class ServerTsDB implements RemoteTsDB {
 		QueryProcessor qp = new QueryProcessor(tsdb);
 		return qp.query_raw(plotID, querySchema, queryStart, queryEnd);
 	}
-	
+
 	@Override
 	public String[] getGeneralStationSensorNames(String generalStationName) {
 		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 		if(generalStation==null) {
 			return null;
 		}
-				
+
 		Set<LoggerType> loggerTypes = new HashSet<LoggerType>();
-		
+
 		generalStation.stationList.forEach(station->loggerTypes.add(station.loggerType));
-		
+
 		generalStation.virtualPlots.stream()
-				.flatMap(virtualPlot->virtualPlot.intervalList.stream())
-				.map(i->tsdb.getLoggerType(i.value.get_logger_type_name()))
-				.forEach(lt->loggerTypes.add(lt));
-		
+		.flatMap(virtualPlot->virtualPlot.intervalList.stream())
+		.map(i->tsdb.getLoggerType(i.value.get_logger_type_name()))
+		.forEach(lt->loggerTypes.add(lt));
+
 		Set<String> sensorNames = new TreeSet<String>();
-		
+
 		loggerTypes.stream()
-			.map(lt->tsdb.getBaseSchema(lt.sensorNames))
-			.forEach(s->{ for(String n:s){sensorNames.add(n);}});
-		
+		.map(lt->tsdb.getBaseSchema(lt.sensorNames))
+		.forEach(s->{ for(String n:s){sensorNames.add(n);}});
+
 		if(sensorNames.isEmpty()) {
 			return null;
 		}
-		
+
 		return sensorNames.toArray(new String[0]);		
+	}
+
+	@Override
+	public PlotInfo[] getPlotInfos() {
+		return Stream.concat(
+				tsdb.getStations().stream().filter(s->s.isPlot).map(s->new PlotInfo(s)), 
+				tsdb.getVirtualPlots().stream().map(v->new PlotInfo(v))
+				).toArray(PlotInfo[]::new);
+	}
+	
+	@Override
+	public String[] getValidSchema(String plotID, String[] sensorNames) {
+		return tsdb.getValidSchema(plotID, sensorNames);
 	}
 }

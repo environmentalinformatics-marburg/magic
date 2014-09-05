@@ -463,4 +463,8 @@ public class Util {
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
 	}
+	
+	public static boolean empty(Object[] array) {
+		return array==null||array.length==0;
+	}
 }

@@ -23,8 +23,8 @@ public class QueryPlan {
 	 * @param interpolated
 	 * @return
 	 */
-	public static Node plot(TsDB tsdb, String plotID, String columnName, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
-		String[] schema = new String[]{columnName};
+	public static Node plot(TsDB tsdb, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+		String[] schema = columnNames;
 		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
 		Continuous continuous;
 		if(interpolated) {
@@ -89,8 +89,8 @@ public class QueryPlan {
 	 * @param aggregationInterval
 	 * @return
 	 */
-	public static Node cache(TsDB tsdb, String streamName, String columnName, AggregationInterval aggregationInterval) {		
-		CacheBase base = CacheBase.create(tsdb, streamName, new String[]{columnName});
+	public static Node cache(TsDB tsdb, String streamName, String[] columnNames, AggregationInterval aggregationInterval) {		
+		CacheBase base = CacheBase.create(tsdb, streamName, columnNames);
 		Continuous continuous = Continuous.create(tsdb, base);
 		return Aggregated.create(tsdb, continuous, aggregationInterval);		
 	}	

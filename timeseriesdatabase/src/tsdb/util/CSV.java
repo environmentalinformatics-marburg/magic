@@ -209,7 +209,7 @@ public class CSV {
 
 				printStream.println();
 			}
-			printStream.close();
+			//printStream.close();
 
 	}
 

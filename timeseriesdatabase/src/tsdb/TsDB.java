@@ -553,7 +553,19 @@ public class TsDB {
 
 	//*********************************************** end base aggregation *************************************************************************
 
-	public String[] getValidSchema(String stationID, String[] schema) {
+	public String[] getValidSchema(String plotID, String[] schema) {
+		
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.getValidSchemaEntries(schema);
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.getValidSchemaEntries(schema);
+		}
+		throw new RuntimeException("plotID not found: "+plotID);
+		
+		/*
 		ArrayList<String> sensorNames = new ArrayList<String>();
 		Map<String, Integer> map = Util.stringArrayToMap(getStation(stationID).loggerType.sensorNames);
 		for(String name:schema) {
@@ -561,7 +573,7 @@ public class TsDB {
 				sensorNames.add(name);
 			}
 		}
-		return sensorNames.toArray(new String[0]);
+		return sensorNames.toArray(new String[0]);*/
 	}
 
 

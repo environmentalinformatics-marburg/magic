@@ -324,8 +324,8 @@ public class SensorQueryDialog extends Dialog {
 				TimestampSeries ts_compare = null;
 				try {
 
-					ts = tsdb.plot(name, model.getSensorName(), aggregationInterval, DataQuality.EMPIRICAL, false);
-					ts_compare = tsdb.plot(name, model.getSensorName(), aggregationInterval, DataQuality.NO, false);				
+					ts = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.EMPIRICAL, false);
+					ts_compare = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.NO, false);				
 				} catch(Exception e) {
 					log.error(e.toString());
 				}

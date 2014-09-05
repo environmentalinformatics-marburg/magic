@@ -421,9 +421,9 @@ public class QueryDialog extends Dialog {
 					Node node;
 
 					if(useCache) {
-						resultTimeSeries = tsdb.cache(plotID, querySchema[0], agg);
+						resultTimeSeries = tsdb.cache(plotID, querySchema, agg);
 					} else {
-						resultTimeSeries = tsdb.plot(plotID, querySchema[0], agg, dataQuality, useInterpolation);
+						resultTimeSeries = tsdb.plot(plotID, querySchema, agg, dataQuality, useInterpolation);
 					}
 
 					/*if(useCache) {
