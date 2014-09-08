@@ -90,6 +90,7 @@ public class PlotDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+		setMessage("Plots on the left side will be exported");
 		setTitle("Plots");
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
@@ -108,7 +109,8 @@ public class PlotDialog extends TitleAreaDialog {
 			public void mouseDoubleClick(MouseEvent e) {
 				StructuredSelection selection = (StructuredSelection) listViewerChosenSensors.getSelection();
 				chosenPlots.removeAll(selection.toList());
-				listViewerAvailableSensors.refresh();				
+				listViewerAvailableSensors.refresh();
+				validate();
 			}
 		});
 		listViewerChosenSensors.setContentProvider(new ObservableListContentProvider());
@@ -292,6 +294,12 @@ public class PlotDialog extends TitleAreaDialog {
 	@Override
 	protected Point getInitialSize() {
 		return new Point(450, 659);
+	}
+	
+	private void validate() {
+		System.out.println("validate");
+		//setErrorMessage("error");
+		
 	}
 
 

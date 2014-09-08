@@ -1,6 +1,6 @@
 package gui;
 
-import gui.export.CollDialog;
+import gui.export.CollectorDialog;
 import gui.info.LoggerTypeInfoDialog;
 import gui.info.NewSensorInfoDialog;
 import gui.info.NewSourceCatalogInfoDialog;
@@ -130,7 +130,7 @@ public class TimeSeriesManager implements TsDBLogger {
 	Menu queryMenu = addMenuColumn(menuBar,"Query");
 	addMenuItem(queryMenu,"query", x->(new QueryDialog(shell,remoteTsDB)).open());
 	addMenuItem(queryMenu,"query sensors", x->(new SensorQueryDialog(shell,remoteTsDB)).open());
-	addMenuItem(queryMenu,"export", x->(new CollDialog(shell,remoteTsDB)).open());
+	addMenuItem(queryMenu,"export", x->(new CollectorDialog(shell,remoteTsDB)).open());
 
 	Menu statisticsMenu = addMenuColumn(menuBar,"Statistics");
 	addMenuItem(statisticsMenu, "statistics", x->(new StatisticsDialog(shell, remoteTsDB)).open());

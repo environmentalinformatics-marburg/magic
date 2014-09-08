@@ -73,6 +73,7 @@ public class SensorDialog extends TitleAreaDialog {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
+		setMessage("Sensors on the left side will be exported");
 		setTitle("Sensors");
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);

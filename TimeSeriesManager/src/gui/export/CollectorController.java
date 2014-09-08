@@ -1,9 +1,7 @@
 package gui.export;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Map;
