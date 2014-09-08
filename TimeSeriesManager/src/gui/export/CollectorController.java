@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -26,6 +27,9 @@ public class CollectorController implements TsDBLogger {
 	private CollectorModel model;
 
 	private RemoteTsDB tsdb;
+	
+	private Consumer<String> cbPrintLine = null;
+	
 
 	public CollectorController(RemoteTsDB tsdb) {
 		this.tsdb = tsdb;
@@ -119,11 +123,10 @@ public class CollectorController implements TsDBLogger {
 		model.setQueryPlotInfos(plotInfos);
 	}
 
-	public void createZipFile() {
-		System.out.println("start createZipFile ...");
-
+	public void createZipFile(String filename) {
+		printLine("start export...");
 		String[] sensorNames = model.getQuerySensorNames();
-		System.out.println("sensorNames: "+Util.arrayToString(sensorNames));
+		printLine("sensorNames: "+Util.arrayToString(sensorNames));
 		if(Util.empty(sensorNames)) {
 			return;
 		}
@@ -135,7 +138,8 @@ public class CollectorController implements TsDBLogger {
 
 		FileOutputStream fileOutputStream;
 		try {
-			fileOutputStream = new FileOutputStream("c:/testing/file.zip");
+			printLine("create file: "+filename);
+			fileOutputStream = new FileOutputStream(filename);
 
 
 			ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
@@ -148,6 +152,7 @@ public class CollectorController implements TsDBLogger {
 
 			for(PlotInfo plotInfo:plotInfos) {
 				String plotID = plotInfo.name;
+				printLine("process plotID: "+plotID);
 				AggregationInterval aggregationInterval = AggregationInterval.DAY;
 				DataQuality dataQuality = DataQuality.NO;
 				boolean interpolated = false;
@@ -173,8 +178,20 @@ public class CollectorController implements TsDBLogger {
 			
 		} catch (IOException e1) {
 		}
-		System.out.println("... end");
+		printLine("...finished");
 	}
+	
+	public void setPrintCallback(Consumer<String> callback) {
+		this.cbPrintLine = callback;
+	}
+	
+	private void printLine(String s) {
+		if(cbPrintLine!=null) {
+			cbPrintLine.accept(s);
+		}
+	}
+	
+	
 
 
 

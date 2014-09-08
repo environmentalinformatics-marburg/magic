@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import tsdb.DataQuality;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.CSV;
@@ -31,7 +32,6 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 	private final RemoteTsDB tsdb;
 
 	protected Object result;
-	protected Shell shell;
 	private Text txtSensorNames;
 	private Group grpRegion;
 	private Label lblRegion;
@@ -40,7 +40,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 	private Group grpGroup;
 	private Button button_1;
 	private Text txtQueryPlotInfos;
-	private Text txtInterpolated;
+	private Text txtDetails;
 	private Button button_2;
 
 	/**
@@ -83,7 +83,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		button.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				new Region(shell, model).open();				
+				new Region(getShell(), model).open();				
 			}
 		});
 		button.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
@@ -104,7 +104,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		btnChange.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				new SensorDialog(shell, model).open();	
+				new SensorDialog(getShell(), model).open();	
 			}
 		});
 		btnChange.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -125,7 +125,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		button_1.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				new PlotDialog(shell, model).open();
+				new PlotDialog(getShell(), model).open();
 			}
 		});
 		button_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -136,15 +136,18 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		grpGroup.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
 		grpGroup.setText("Details");
 
-		txtInterpolated = new Text(grpGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
-		txtInterpolated.setText("Interpolated\r\nQuality: Empirical");
-		txtInterpolated.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+		txtDetails = new Text(grpGroup, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CANCEL | SWT.MULTI);
+		txtDetails.setText("Interpolated\r\nQuality: Empirical");
+		GridData gd_txtDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+		gd_txtDetails.widthHint = 134;
+		txtDetails.setLayoutData(gd_txtDetails);
 
 		button_2 = new Button(grpGroup, SWT.NONE);
 		button_2.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				new DetailDialog(shell).open();
+				System.out.println(getShell());
+				new DetailDialog(getShell(),model).open();
 			}
 		});
 		button_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -154,6 +157,8 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 
 		bindModel();
 		controller.initModel();
+		
+		onChangeDetail();
 
 		return area;
 	}
@@ -181,7 +186,14 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 				String filename = filedialog.open();
 				if(filename!=null) {
 					System.out.println("Save to: " + filename);
-					controller.createZipFile();
+					
+					//controller.createZipFile(filename);
+					
+		
+					new Processing1Dialog(getShell(), controller, filename).open();
+					
+					
+					
 				}				
 			}
 		});
@@ -195,13 +207,15 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(446, 532);
+		return new Point(486, 532);
 	}
 
 	private void bindModel() {
 		model.addPropertyChangeCallback("regionLongName", lblRegion::setText);		
 		model.addPropertyChangeCallback("querySensorNames", this::onChangeQuerySensorNames);
 		model.addPropertyChangeCallback("queryPlotInfos", this::onChangeQueryPlotInfos);
+		model.addPropertyChangeNotify("useInterpolation", this::onChangeDetail);
+		model.addPropertyChangeNotify("dataQuality", this::onChangeDetail);
 	}
 	
 	private void onChangeQuerySensorNames(String[] SensorNames) {
@@ -224,9 +238,18 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 			}
 		} else {
 			txtQueryPlotInfos.setText("[empty]");
-		}
+		}		
 	}
-
-
-
+	
+	private void onChangeDetail() {
+		txtDetails.setText("");
+		if(model.getUseInterpolation()) {
+			txtDetails.append("interpolate\n");
+		}
+		DataQuality dataQuality = model.getDataQuality();
+		if(dataQuality!=DataQuality.NO) {
+			txtDetails.append("quality check: "+dataQuality.getText()+"\n");
+		}
+		txtDetails.append("time steps: "+model.getAggregationInterval().getText()+"\n");
+	}
 }

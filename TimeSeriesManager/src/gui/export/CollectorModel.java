@@ -1,18 +1,24 @@
 package gui.export;
 
+import tsdb.DataQuality;
+import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.PlotInfo;
 import gui.util.AbstractModel;
 
 public class CollectorModel extends AbstractModel {
 	
-	private String[] allRegionLongNames;
+	private String[] allRegionLongNames = null;
 	private String regionLongName = null;
 	
-	private String[] allSensorNames;
-	private String[] querySensorNames;
+	private String[] allSensorNames = null;
+	private String[] querySensorNames = null;
 	
-	private PlotInfo[] allPlotInfos;
-	private PlotInfo[] queryPlotInfos;
+	private PlotInfo[] allPlotInfos = null;
+	private PlotInfo[] queryPlotInfos = null;
+	
+	private boolean useInterpolation = false;	
+	private DataQuality dataQuality = DataQuality.NO;
+	private AggregationInterval aggregationInterval = AggregationInterval.HOUR;
 	
 	public void setRegionLongName(String regionLongName) {
 		changeSupport.firePropertyChange("regionLongName", this.regionLongName, this.regionLongName=regionLongName);
@@ -60,6 +66,30 @@ public class CollectorModel extends AbstractModel {
 	
 	public PlotInfo[] getQueryPlotInfos() {
 		return queryPlotInfos;
-	}	
+	}
+	
+	public void setUseInterpolation(boolean useInterpolation) {
+		changeSupport.firePropertyChange("useInterpolation", this.useInterpolation, this.useInterpolation=useInterpolation);
+	}
+	
+	public boolean getUseInterpolation() {
+		return useInterpolation;
+	}
+	
+	public void setDataQuality(DataQuality dataQuality) {
+		changeSupport.firePropertyChange("dataQuality", this.dataQuality, this.dataQuality=dataQuality);
+	}
+	
+	public DataQuality getDataQuality() {
+		return dataQuality;
+	}
+	
+	public void setAggregationInterval(AggregationInterval aggregationInterval) {
+		changeSupport.firePropertyChange("aggregationInterval", this.aggregationInterval, this.aggregationInterval=aggregationInterval);
+	}
+	
+	public AggregationInterval getAggregationInterval() {
+		return aggregationInterval;
+	}
 
 }
