@@ -36,22 +36,65 @@ centerscale=TRUE#center and scale the predictor variables?
 transformResponse=FALSE#Transform Rain rates?
 rainAreaFromRadar=TRUE#If false all cloudy pixels are considered as potentially raining. If true only pixels
 #where radar says it rains are considered for rain rate assignment
+
+##################################################################################################################
+#                                          Predictor variables
+##################################################################################################################
+#extract predictor variables according to daytime
+#if (substr(inputTable,14,14)=="d"){
+#  predictorVariables=c("B01","B02","B03","B05","B06","B07","B09","B10","B0709","B0910","B0509","B0610")
+#}
+
+#if (substr(inputTable,14,14)=="n"){
+#  predictorVariables=c("B04","B05","B06","B07","B09","B10","B0709","B0910","B0509","B0610","B0409","B0406")
+#}
+
+#if (substr(inputTable,14,14)=="i"){
+#  predictorVariables=c("B05","B06","B07","B09","B10","B0709","B0910","B0509","B0610")
+#}
+if (substr(inputTable,14,14)=="d"){
+  predictorVariables=c("SZen",
+                      "B01","B02","B03", "B0103", #remove them for night data sets!!
+                     "B04","B05","B06","B07","B08","B09","B10","B11",
+                     #"Tau",
+                     #"Aef","CWP",
+                     "B0409","B0406","B0709","B0910","B0509","B0610"
+  )
+}
+
+if (substr(inputTable,14,14)=="i"){
+  predictorVariables=c("SZen",
+                       # "B01","B02","B03", "B0103", #remove them for night data sets!!
+                       "B04","B05","B06","B07","B08","B09","B10","B11",
+                       #"Tau",
+                       #"Aef","CWP",
+                       "B0409","B0406","B0709","B0910","B0509","B0610"
+  )
+}
+
+if (substr(inputTable,14,14)=="n"){
+  predictorVariables=c(# "B01","B02","B03", "B0103", #remove them for night data sets!!
+                       "B04","B05","B06","B07","B08","B09","B10","B11",
+                       #"Tau",
+                       #"Aef","CWP",
+                       "B0409","B0406","B0709","B0910","B0509","B0610"
+  )
+}
+
+
 ##################################################################################################################
 #                                Data splitting adjustments
 ##################################################################################################################
 SizeOfTrainingSet=0.33 #how many percent of scenes will be used for training?
 cvNumber=10 # number of cross validation samples (cVNumber fold CV)
-sampsize=0.05 #how many percent of training scene pixels from the training data should actually be used for training? 
-##################################################################################################################
-#                                      Choose Predictors (must be included in "inputTable")
-##################################################################################################################
-predictorVariables=c("SZen",
-                    # "B01","B02","B03", "B0103", #remove them for night data sets!!
-                     "B04","B05","B06","B07","B08","B09","B10","B11",
-                     #"Tau",
-                     #"Aef","CWP",
-                     "B0409","B0406","B0709","B0910","B0509","B0610"
-)
+if (response=="Rain"){
+  sampsize=0.10 #how many percent of training scene pixels from the training data should actually be used for training? 
+}
+if (response=="RInfo"){
+  sampsize=0.05 #how many percent of training scene pixels from the training data should actually be used for training? 
+}
+fixedSampsize=100000 #use fixed sampsize instead? if not then put it on FALSE
+
 ##################################################################################################################
 #                                      Learning adjustments
 ##################################################################################################################
@@ -71,7 +114,7 @@ nnet_decay=seq(0.01,0.1,0.02)
 nnet_size=seq(2,length(predictorVariables),2)
 ##### SVM Settings:
 svm_sigma="sigest(as.matrix(predictors))[2]" #analyticaly solved with sigest. vector is also allowed
-svm_cost=c(0.25, 0.50, 1.00, 2.00, 4.00, 8.00, 16.00, 32.00, 46.00, 128.00)
+svm_cost=c(0.50, 2.00, 8.00, 16.00, 32.00, 128.00, 512.00, 2048.00, 8192.00)
 ##################################################################################################################
 ##################################################################################################################
 ##################################################################################################################
@@ -88,6 +131,7 @@ if (response=="Rain"){
 if (type=="regression"){
   tuneThreshold=FALSE
 }
+
 ##################################################################################################################
 #                                   Initialize "shortTest"
 ##################################################################################################################
@@ -129,7 +173,7 @@ dir.create(resultpath)
 #                                          Load functions and packages
 ##################################################################################################################
 usedPackages=c("caret","kernlab","ROCR","raster","latticeExtra","fields","reshape2",
-               "grid","maps","mapdata","sp","rgdal","RColorBrewer","lattice","doParallel","hydroGOF")
+               "grid","maps","mapdata","sp","rgdal","RColorBrewer","lattice","doParallel","hydroGOF","corrplot")
 
 
 
@@ -158,7 +202,7 @@ if (doParallel){
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-source("Preprocessing.R",echo=TRUE)
+source("Preprocessing.R",echo=TRUE,echo=TRUE)
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################

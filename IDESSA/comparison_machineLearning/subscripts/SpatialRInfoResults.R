@@ -138,8 +138,8 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
 #            datp[[2]]+ as.layer(lmplot, under = T),
 #            datp[[3]]+ as.layer(lmplot, under = T), 
 #            x.same=T, y.same=T, layout = c(3, 1))
-  pdf(paste(resultpath,"/Spatial_comp/SpatialComparison_",
-            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".pdf",sep=""),width=15,height=4.5)
+  png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
    print(comb)
   dev.off()
 }

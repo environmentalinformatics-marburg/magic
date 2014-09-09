@@ -32,6 +32,11 @@ if (centerscale){
 
 data=data[(rowSums(is.na(data[,which(names(data) %in% predictorVariables)])))==0,]#rm rows with na in predictors
 
+tmp=data[,predictorVariables]
+M <- cor(tmp)
+png(paste0(resultpath,"CorrelationVariables.png"),res=300)
+corrplot(M, method = "circle",type="lower",tl.col="black",tl.cex=0.75)
+dev.off()
 
 ############################################################################################################
 ################################## SPLIT DATA #######################################
@@ -57,6 +62,11 @@ gc()
 ############################## Cut to sampsize ##############################
 ############################################################################################################
 #training data are reduced to the defined sampsize with respect to the distribution of the response
+
+if (fixedSampsize!=FALSE){
+  sampsize=fixedSampsize/nrow(training)
+}
+
 if(useSeeds) set.seed(20)
 samples<-createDataPartition(eval(parse(text=paste("training$",response,sep=""))),
                              p = sampsize,list=FALSE)
