@@ -4,35 +4,30 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
-import de.umr.jepc.store.Event;
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
+import tsdb.TsDBClient;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
+import de.umr.jepc.store.Event;
 
 /**
  * This class contains methods to read time series from input files in "KiLi"-Format and stores data into database.
  * @author woellauer
  *
  */
-public class TimeSeriesLoaderKiLi {
-
-	protected static final Logger log = Util.log;	
-	protected TsDB timeseriesdatabase;
+public class TimeSeriesLoaderKiLi extends TsDBClient {
 	
-	public TimeSeriesLoaderKiLi(TsDB timeseriesdatabase) {
-		this.timeseriesdatabase = timeseriesdatabase;
+	public TimeSeriesLoaderKiLi(TsDB tsdb) {
+		super(tsdb);
 	}
 	
 	/**
@@ -76,7 +71,7 @@ public class TimeSeriesLoaderKiLi {
 
 					if(!timestampSeries.entryList.isEmpty()) {
 
-						Station station = timeseriesdatabase.getStation(csvtimeSeries.serialnumber);
+						Station station = tsdb.getStation(csvtimeSeries.serialnumber);
 						if(station!=null) {									
 							
 							String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
@@ -155,9 +150,9 @@ public class TimeSeriesLoaderKiLi {
 		if(loader!=null) {
 			List<Event> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);			
 			if(eventList!=null) {
-				timeseriesdatabase.streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd);
+				tsdb.streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd);
 				String[] resultSchema = loader.getResultSchema();				
-				timeseriesdatabase.sourceCatalog.insert(new SourceEntry(csvtimeSeries.filename,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, resultSchema, csvtimeSeries.timeStep));
+				tsdb.sourceCatalog.insert(new SourceEntry(csvtimeSeries.filename,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, resultSchema, csvtimeSeries.timeStep));
 			} else {
 				log.warn("no events inserted: "+csvtimeSeries.filename);
 			}			

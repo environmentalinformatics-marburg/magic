@@ -19,11 +19,7 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
-public class Station {
-
-	private static final Logger log = Util.log;
-
-	public TsDB timeSeriesDatabase;
+public class Station extends TsDBClient {
 	
 	/**
 	 * Stream name of this station
@@ -66,10 +62,10 @@ public class Station {
 	public String alternativeID = null;
 	//*** end of fields that are used if this station is identical to one plot ***
 	
-	public Station(TsDB timeSeriesDatabase, GeneralStation generalStation, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
+	public Station(TsDB tsdb, GeneralStation generalStation, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
+		super(tsdb);
 		this.isPlot = isPlot;
 		this.generalStation = generalStation;
-		this.timeSeriesDatabase = timeSeriesDatabase;
 		this.stationID = stationID;
 		this.propertiesList = StationProperties.createIntervalList(propertyMapList);
 		this.geoPoslongitude = Float.NaN;
@@ -135,7 +131,7 @@ public class Station {
 	}
 
 	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
-		Iterator<Event> rawEventIterator = timeSeriesDatabase.streamStorage.queryRawEvents(stationID,start,end);
+		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(stationID,start,end);
 		if(rawEventIterator==null) {
 			return null;
 		}		
@@ -174,7 +170,7 @@ public class Station {
 			return false;
 		}
 		for(String name:querySchema) {
-			if(timeSeriesDatabase.getSensor(name).baseAggregationType==AggregationType.NONE) {
+			if(tsdb.getSensor(name).baseAggregationType==AggregationType.NONE) {
 				return false;
 			}
 		}

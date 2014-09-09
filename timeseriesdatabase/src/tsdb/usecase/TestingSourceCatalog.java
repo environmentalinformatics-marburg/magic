@@ -1,7 +1,5 @@
 package tsdb.usecase;
 
-import java.nio.file.Paths;
-
 import tsdb.FactoryTsDB;
 import tsdb.TsDB;
 import tsdb.catalog.SourceEntry;

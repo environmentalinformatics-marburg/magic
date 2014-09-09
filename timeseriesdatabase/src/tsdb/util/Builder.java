@@ -1,11 +1,8 @@
 package tsdb.util;
 
-import java.sql.Time;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
 import tsdb.DataQuality;
 import tsdb.QueryProcessor;

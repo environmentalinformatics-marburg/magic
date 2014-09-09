@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.jfree.util.Log;
-
 import tsdb.util.TimestampInterval;
-import tsdb.util.Util;
+import tsdb.util.TsDBLogger;
 
-public class StationProperties implements Serializable {
+public class StationProperties implements Serializable, TsDBLogger {
 
 	private static final long serialVersionUID = -4558930650676952510L;
 	private final static String PROPERTY_START = "DATE_START";
@@ -39,11 +37,11 @@ public class StationProperties implements Serializable {
 			try {
 				return Integer.parseInt(text);
 			} catch(Exception e) {
-				Log.warn("error in read int: "+e);
+				log.warn("error in read int: "+e);
 				return null;
 			}
 		} else {
-			Log.warn("error in read int: not found");
+			log.warn("error in read int: not found");
 			return null;
 		}
 	}
@@ -54,11 +52,11 @@ public class StationProperties implements Serializable {
 			try {
 				return Float.parseFloat(text);
 			} catch(Exception e) {
-				Log.warn("error in read float: "+e);
+				log.warn("error in read float: "+e);
 				return Float.NaN;
 			}
 		} else {
-			Log.warn("error in read float: not found");
+			log.warn("error in read float: not found");
 			return Float.NaN;
 		}
 	}

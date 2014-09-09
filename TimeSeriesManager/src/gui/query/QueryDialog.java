@@ -2,14 +2,13 @@ package gui.query;
 
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -22,31 +21,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import swing2swt.layout.BorderLayout;
-import swing2swt.layout.FlowLayout;
 import tsdb.DataQuality;
-import tsdb.GeneralStation;
-import tsdb.QueryProcessor;
 import tsdb.Region;
 import tsdb.Sensor;
-import tsdb.Station;
 import tsdb.TimeConverter;
-import tsdb.TsDB;
-import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.graph.Node;
-import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
-import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Pair;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
-
-import org.eclipse.swt.layout.RowLayout;
 
 public class QueryDialog extends Dialog {
 

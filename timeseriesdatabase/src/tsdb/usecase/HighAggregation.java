@@ -1,13 +1,10 @@
 package tsdb.usecase;
 
-import javafx.scene.chart.PieChart.Data;
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.iterator.TimeSeriesIterator;

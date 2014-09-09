@@ -8,6 +8,7 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -15,9 +16,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class Interpolator {
-
-	private static final Logger log = Util.log;
+public class Interpolator implements TsDBLogger {
 
 	/**
 	 * count of values for training to fill one gap

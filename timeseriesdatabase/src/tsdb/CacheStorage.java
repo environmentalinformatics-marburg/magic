@@ -5,28 +5,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
-import org.mapdb.BTreeKeySerializer;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
-import org.mapdb.DB.BTreeMapMaker;
 import org.mapdb.DBMaker;
 import org.mapdb.Fun.Tuple2;
 
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 
-public class CacheStorage {
-
-	private static final Logger log = Util.log;
+public class CacheStorage implements TsDBLogger {
 
 	private static final String DB_NAME_METADATA_SCHEMA = "schema";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";

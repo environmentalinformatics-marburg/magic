@@ -1,25 +1,18 @@
 package gui.query;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 import swing2swt.layout.BorderLayout;
-
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-
-import swing2swt.layout.FlowLayout;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
-
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.wb.swt.SWTResourceManager;
-import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseMoveListener;
 
 public class DataExplorer extends Composite {
 

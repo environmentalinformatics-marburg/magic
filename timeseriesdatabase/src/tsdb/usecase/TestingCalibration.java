@@ -2,18 +2,14 @@ package tsdb.usecase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
-import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TimestampInterval;

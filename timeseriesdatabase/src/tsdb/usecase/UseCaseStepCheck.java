@@ -1,19 +1,13 @@
 package tsdb.usecase;
 
-import java.util.Iterator;
-
-import de.umr.jepc.store.Event;
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
-import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
-import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
 
 public class UseCaseStepCheck {

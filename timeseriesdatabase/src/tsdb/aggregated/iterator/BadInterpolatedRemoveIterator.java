@@ -3,7 +3,6 @@ package tsdb.aggregated.iterator;
 import java.util.Arrays;
 import java.util.List;
 
-import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;

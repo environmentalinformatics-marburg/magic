@@ -1,8 +1,8 @@
 package tsdb.graph;
 
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.TsDBClient;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.util.Util;
@@ -21,11 +21,9 @@ public interface Continuous extends Node {
 		return new Concrete(tsdb, base);
 	}
 	
-	public abstract class Abstract implements Continuous {
-		protected TsDB tsdb; //not null
+	public abstract class Abstract extends TsDBClient implements Continuous {
 		protected Abstract(TsDB tsdb) {
-			Util.throwNull(tsdb);
-			this.tsdb = tsdb; 
+			super(tsdb);
 		}	
 	}
 	

@@ -8,7 +8,6 @@ import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.iterator.TimeSeriesIterator;

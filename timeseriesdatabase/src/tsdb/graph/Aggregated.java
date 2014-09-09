@@ -1,12 +1,8 @@
 package tsdb.graph;
 
-import java.util.function.Function;
-
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.iterator.AggregationIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;

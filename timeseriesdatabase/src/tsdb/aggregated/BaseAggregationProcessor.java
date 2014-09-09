@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -13,6 +12,7 @@ import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
@@ -32,9 +32,7 @@ import de.umr.jepc.store.Event;
  *
  */
 @Deprecated
-public class BaseAggregationProcessor {
-
-	private static final Logger log = Util.log;
+public class BaseAggregationProcessor implements TsDBLogger {
 
 	String[] parameterNames;
 	Sensor[] sensors;

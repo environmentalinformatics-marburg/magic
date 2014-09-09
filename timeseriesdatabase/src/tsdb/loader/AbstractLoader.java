@@ -9,11 +9,10 @@ import de.umr.jepc.store.Event;
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.raw.TimestampSeries;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
-public abstract class AbstractLoader {
-
-	protected static final Logger log = Util.log;
+public abstract class AbstractLoader implements TsDBLogger {
 
 	protected final String[] inputSchema;
 	protected final StationProperties properties;

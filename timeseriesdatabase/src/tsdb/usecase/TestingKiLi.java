@@ -1,20 +1,16 @@
 package tsdb.usecase;
 
-import java.io.IOException;
 import java.nio.file.Paths;
-import java.text.ParseException;
 
 import org.apache.logging.log4j.Logger;
 
 import tsdb.FactoryTsDB;
 import tsdb.TsDB;
-import tsdb.loader.KiLiCSV;
 import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
-public class TestingKiLi {
-	
-	private static final Logger log = Util.log;
+public class TestingKiLi implements TsDBLogger{
 
 	public static void main(String[] args) {
 		System.out.println("begin...");

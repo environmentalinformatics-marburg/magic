@@ -21,7 +21,7 @@ import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
 import tsdb.aggregated.AggregationType;
 import tsdb.util.Table;
-import tsdb.util.Triple;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.Util.FloatRange;
 
@@ -30,14 +30,10 @@ import tsdb.util.Util.FloatRange;
  * @author woellauer
  *
  */
-public class ConfigLoader {
-
-	private static final Logger log = Util.log;
-
-	private TsDB tsdb;
+public class ConfigLoader extends TsDBClient {
 
 	public ConfigLoader(TsDB tsdb) {
-		this.tsdb = tsdb;
+		super(tsdb);
 	}
 
 	private class GeneralStationBuilder {
@@ -183,7 +179,8 @@ public class ConfigLoader {
 	static Map<String,List<StationProperties>> readStationConfigInternal(String config_file) {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(config_file));
-			List<String[]> list = reader.readAll();			
+			List<String[]> list = reader.readAll();
+			reader.close();
 			String[] names = list.get(0);			
 			final String NAN_TEXT = "NaN";			
 			Map<String,Integer> nameMap = new HashMap<String,Integer>();			

@@ -1,11 +1,9 @@
 package tsdb;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -15,8 +13,6 @@ import java.util.stream.Stream;
  */
 public class GeneralStation {
 	
-	private static final long serialVersionUID = 789136661256243685L;
-
 	public String name;
 	
 	public final Region region;

@@ -7,7 +7,6 @@ import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.AggregationType;
 import tsdb.util.CSV;
 import tsdb.util.iterator.TimeSeriesIterator;
 

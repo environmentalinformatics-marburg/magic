@@ -1,14 +1,8 @@
 package tsdb.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,15 +21,8 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
-
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
-
-import tsdb.Sensor;
-import tsdb.Station;
-import tsdb.StationProperties;
-import tsdb.TimeConverter;
+import org.ini4j.Wini;
 
 /**
  * Some utilities

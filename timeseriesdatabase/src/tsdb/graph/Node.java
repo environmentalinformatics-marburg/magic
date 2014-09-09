@@ -1,15 +1,12 @@
 package tsdb.graph;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.util.Util;
+import tsdb.TsDBClient;
+import tsdb.util.TsDBLogger;
 import tsdb.util.iterator.TimeSeriesIterator;
 
-public interface Node {
-	
-	static final Logger log = Util.log;
+public interface Node extends TsDBLogger {
 	
 	public TimeSeriesIterator get(Long start, Long end);	
 	public Station getSourceStation();
@@ -36,13 +33,9 @@ public interface Node {
 		get(start,end).writeConsole();
 	}
 	
-	public abstract class Abstract implements Node {
-		
-		protected final TsDB tsdb; //not null
-		
+	public abstract class Abstract extends TsDBClient implements Node {
 		Abstract(TsDB tsdb) {
-			Util.throwNull(tsdb);
-			this.tsdb = tsdb;
+			super(tsdb);
 		}
 	}
 }

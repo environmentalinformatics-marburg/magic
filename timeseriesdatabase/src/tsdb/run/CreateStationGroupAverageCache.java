@@ -14,6 +14,7 @@ import tsdb.graph.Averaged;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -22,8 +23,8 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class CreateStationGroupAverageCache {
-	private static final Logger log = Util.log;
+public class CreateStationGroupAverageCache implements TsDBLogger{
+
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";	
 
 	public static void main(String[] args) {

@@ -14,7 +14,7 @@ public class Loader_pu1 extends AbstractLoader {
 
 	private ProcessingType[] processingTypes = null;
 	private float calib_coefficient_P_RT_NRT = Float.NaN;
-	private int pos_P_RT_NRT = -1;
+	//private int pos_P_RT_NRT = -1;
 
 	public Loader_pu1(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
 		super(inputSchema,properties, csvtimeSeries);

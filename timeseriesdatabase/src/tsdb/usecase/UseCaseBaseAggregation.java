@@ -1,9 +1,6 @@
 package tsdb.usecase;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
@@ -12,15 +9,7 @@ import tsdb.TsDB;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
-import de.umr.eventstore.Stream;
-import de.umr.eventstore.processors.CSVProcessor;
-import de.umr.eventstore.processors.ProcessingEngine;
-import de.umr.eventstore.processors.Processor;
-import de.umr.eventstore.queries.Query;
-import de.umr.eventstore.queries.SQLQuery;
-import de.umr.eventstore.storage.Schema;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.store.Event;
+
 
 /**
  * use case for base aggregation

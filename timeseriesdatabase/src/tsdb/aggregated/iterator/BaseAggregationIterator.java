@@ -1,22 +1,16 @@
 package tsdb.aggregated.iterator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.Sensor;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
@@ -24,7 +18,6 @@ import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
-import de.umr.jepc.store.Event;
 
 /**
  * BaseAggregationIterator aggregates input elements to aggregated output elements with base aggregation time intervals

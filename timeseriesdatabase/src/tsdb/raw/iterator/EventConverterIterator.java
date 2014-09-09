@@ -5,12 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.OutputSchema;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.ProcessingChainTitle;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
 import de.umr.jepc.store.Event;
 

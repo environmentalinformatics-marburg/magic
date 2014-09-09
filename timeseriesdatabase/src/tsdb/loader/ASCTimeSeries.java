@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,19 +15,11 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-
-
-
-
-
-
-
-
-import de.umr.jepc.store.Event;
 import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
+import de.umr.jepc.store.Event;
 
 public class ASCTimeSeries {
 

@@ -1,10 +1,8 @@
 package tsdb.run;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.FactoryTsDB;
@@ -12,6 +10,7 @@ import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.loader.TimeSeriesLoaderBE;
 import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -19,9 +18,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class InitDatabase {
-
-	private static final Logger log = Util.log;
+public class InitDatabase implements TsDBLogger {
 
 	public static void main(String[] args) {
 		System.out.println("begin...");

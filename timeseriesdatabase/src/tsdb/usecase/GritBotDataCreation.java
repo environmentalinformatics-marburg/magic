@@ -3,22 +3,14 @@ package tsdb.usecase;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.List;
 
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
-import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
-import tsdb.Station;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.NanRemoveIterator;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
 import tsdb.util.iterator.TimeSeriesIterator;
-import tsdb.util.iterator.TimeSeriesIteratorIterator;
 
 public class GritBotDataCreation {
 

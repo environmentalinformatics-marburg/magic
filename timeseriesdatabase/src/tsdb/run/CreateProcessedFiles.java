@@ -15,6 +15,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 
@@ -23,9 +24,8 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class CreateProcessedFiles {
+public class CreateProcessedFiles implements TsDBLogger {
 
-	protected static final Logger log = Util.log;
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
 
 	public static void main(String[] args) {

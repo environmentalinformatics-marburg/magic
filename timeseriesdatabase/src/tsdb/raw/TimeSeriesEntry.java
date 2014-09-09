@@ -1,9 +1,6 @@
 package tsdb.raw;
 
 import java.io.Serializable;
-import java.sql.Time;
-
-import org.omg.CORBA.DATA_CONVERSION;
 
 import tsdb.DataQuality;
 import tsdb.TimeConverter;
@@ -16,8 +13,7 @@ import tsdb.util.Util;
  *
  */
 public class TimeSeriesEntry implements Serializable {
-	//private static final long serialVersionUID = -4568612556987905958L;
-	
+	private static final long serialVersionUID = -4568612556987905958L;
 	public final long timestamp;	
 	public final float[] data;
 	public final DataQuality[] qualityFlag; // maybe null

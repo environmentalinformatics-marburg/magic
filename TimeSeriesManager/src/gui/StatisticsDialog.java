@@ -1,38 +1,32 @@
 package gui;
 
 import java.rmi.RemoteException;
-import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-
-import tsdb.QueryProcessor;
-import tsdb.TimeConverter;
-import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
-import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
-import swing2swt.layout.BorderLayout;
-
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+
+import swing2swt.layout.BorderLayout;
+import tsdb.TimeConverter;
+import tsdb.raw.TimeSeriesEntry;
+import tsdb.remote.RemoteTsDB;
+import tsdb.util.Util;
+import tsdb.util.iterator.TimeSeriesIterator;
 
 public class StatisticsDialog extends Dialog {
 	
 	private static Logger log = Util.log;
 	
-	private RemoteTsDB timeSeriesDatabase;
+	private RemoteTsDB tsdb;
 
 	protected Object result;
 	protected Shell shell;
@@ -41,12 +35,12 @@ public class StatisticsDialog extends Dialog {
 	/**
 	 * Create the dialog.
 	 * @param parent
-	 * @param timeSeriesDatabase
+	 * @param tsdb
 	 */
-	public StatisticsDialog(Shell parent, RemoteTsDB timeSeriesDatabase) {
+	public StatisticsDialog(Shell parent, RemoteTsDB tsdb) {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		setText("Statistics");
-		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.tsdb = tsdb;
 	}
 
 	/**
@@ -119,9 +113,9 @@ public class StatisticsDialog extends Dialog {
 		long total_entry_counter = 0;
 		long total_data_values_counter = 0;
 		
-		for(String stationName:timeSeriesDatabase.getStationNames()) {
+		for(String stationName:tsdb.getStationNames()) {
 			
-			TimeSeriesIterator it = timeSeriesDatabase.query_raw(stationName, null, null, null);
+			TimeSeriesIterator it = tsdb.query_raw(stationName, null, null, null);
 			if(it==null) {
 				//println(null);
 			} else {

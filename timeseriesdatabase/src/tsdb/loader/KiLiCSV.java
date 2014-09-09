@@ -1,56 +1,29 @@
 package tsdb.loader;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.spi.FileSystemProvider;
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.TreeMap;
 import java.util.stream.Stream;
-
-import javax.management.RuntimeErrorException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-
-
-
-
-
-
-
-
-
-import de.umr.jepc.store.Event;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
+import de.umr.jepc.store.Event;
 
-public class KiLiCSV {
+public class KiLiCSV implements TsDBLogger {
 	
-	private static final Logger log = Util.log;
-
 	public final String serial;
 	public final TreeMap<Long, Event> eventMap;
 	public final long timestampStart;

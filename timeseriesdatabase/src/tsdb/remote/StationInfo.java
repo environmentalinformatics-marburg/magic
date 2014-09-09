@@ -2,7 +2,6 @@ package tsdb.remote;
 
 import java.io.Serializable;
 
-import tsdb.GeneralStation;
 import tsdb.LoggerType;
 import tsdb.Station;
 import tsdb.util.Util;

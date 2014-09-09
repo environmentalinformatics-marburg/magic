@@ -2,6 +2,7 @@ package tsdb.usecase;
 
 import org.apache.logging.log4j.Logger;
 
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 
@@ -10,9 +11,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class UseCaseStartDatabase {
-	
-	private static final Logger log = Util.log;
+public class UseCaseStartDatabase implements TsDBLogger {
 
 	public static void main(String[] args) {
 		/*System.out.println("begin...");

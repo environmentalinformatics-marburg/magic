@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -14,9 +12,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author woellauer
  *
  */
-public class Table {
-
-	private static final Logger log = Util.log;
+public class Table implements TsDBLogger {
 
 	/**
 	 * header names in csv file

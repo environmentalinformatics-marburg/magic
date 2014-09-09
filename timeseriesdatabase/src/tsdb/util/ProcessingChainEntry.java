@@ -1,8 +1,5 @@
 package tsdb.util;
 
-public interface ProcessingChainEntry {
-	
+public interface ProcessingChainEntry {	
 	String getProcessingTitle();
-	
-
 }

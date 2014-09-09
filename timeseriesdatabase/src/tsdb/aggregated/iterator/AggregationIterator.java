@@ -2,7 +2,6 @@ package tsdb.aggregated.iterator;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -17,6 +16,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Pair;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.SchemaIterator;
@@ -28,9 +28,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class AggregationIterator extends MoveIterator {
-
-	private static final Logger log = Util.log;
+public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 
 	private static final int QUALITY_COUNTERS = 5;
 	
@@ -52,7 +50,7 @@ public class AggregationIterator extends MoveIterator {
 	//timestamp of aggreates of currently collected data
 	private long aggregation_timestamp;
 
-	private boolean inputHasQualityFlags;
+	//private boolean inputHasQualityFlags;
 	private int[][] aggQualityCounter;
 
 	private int collectedRowsInCurrentAggregate;
@@ -97,7 +95,7 @@ public class AggregationIterator extends MoveIterator {
 	 */
 	public AggregationIterator(TsDB timeSeriesDatabase, TimeSeriesIterator input_iterator, AggregationInterval aggregationInterval) {
 		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
-		this.inputHasQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
+		//this.inputHasQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
 		this.input_iterator = input_iterator;
 		this.aggregationInterval = aggregationInterval;
 		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		

@@ -1,17 +1,10 @@
 package tsdb.usecase;
 
-import java.util.function.Supplier;
-
-import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.LinearIterpolationIterator;
 import tsdb.util.Builder;
-import tsdb.util.CSV;
-import tsdb.util.iterator.TimeSeriesIterator;
 
 public class TestingLinearIterpolationIterator {
 	

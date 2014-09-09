@@ -1,34 +1,25 @@
 package gui.sensorquery;
 
+import gui.query.TimeSeriesView;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import gui.query.TimeSeriesView;
-
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Slider;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import swing2swt.layout.BorderLayout;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
-
-import org.eclipse.swt.widgets.Slider;
-
-import swing2swt.layout.BorderLayout;
-
-import org.eclipse.swt.widgets.Scale;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.MouseWheelListener;
-import org.eclipse.swt.events.MouseEvent;
 
 public class MultiTimeSeriesExplorer extends Composite {
 

@@ -4,7 +4,6 @@ import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.util.iterator.TimeSeriesIterator;
 
 /**
  * With QueryPlan query graphs for specific queries a are build

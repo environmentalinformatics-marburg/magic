@@ -1,24 +1,19 @@
 package tsdb.aggregated;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
-import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.CSVTimeType;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.ProcessingChainTitle;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterable;
 import tsdb.util.iterator.TimeSeriesIterator;
 
@@ -27,9 +22,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class TimeSeries implements TimeSeriesIterable {
-
-	private static final Logger log = Util.log;
+public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 
 	//used for metadata, may be null
 	private final List<ProcessingChainEntry> processingChain;

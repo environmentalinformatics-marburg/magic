@@ -1,7 +1,6 @@
 package gui.info;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -17,8 +16,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
-
-import tsdb.VirtualPlot;
 
 public class TableViewBridge<E> extends ViewerComparator{
 

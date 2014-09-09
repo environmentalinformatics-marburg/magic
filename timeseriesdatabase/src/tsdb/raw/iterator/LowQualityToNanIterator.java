@@ -8,8 +8,8 @@ import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
 
 /**
@@ -17,9 +17,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class LowQualityToNanIterator extends TimeSeriesIterator {
-
-	private static final Logger log = Util.log;
+public class LowQualityToNanIterator extends TimeSeriesIterator implements TsDBLogger {
 
 	TimeSeriesIterator input_iterator;
 	private DataQuality targetDataQuality;

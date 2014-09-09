@@ -88,7 +88,4 @@ public class Loader_gp1 extends AbstractLoader {
 		}
 		return eventList;
 	}
-
-	
-
 }

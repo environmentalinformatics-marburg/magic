@@ -1,15 +1,10 @@
 package tsdb.usecase;
 
-import java.util.Iterator;
-
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
 import tsdb.util.iterator.TimeSeriesIterator;
 
 public class TestingCache {

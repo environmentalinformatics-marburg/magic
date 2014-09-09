@@ -9,18 +9,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Canvas;
 
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.AggregationType;
-import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;

@@ -17,15 +17,12 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
-public class StreamStorageMapDB implements StreamStorage {
-	
-	private static final Logger log = Util.log;
+public class StreamStorageMapDB implements StreamStorage, TsDBLogger {
 	
 	private static final String DB_NAME_STREAM_METADATA = "StreamMetadata";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";
@@ -56,6 +53,9 @@ public class StreamStorageMapDB implements StreamStorage {
 	private static final EventSerializer eventSerializer = new EventSerializer();
 	
 	private static class EventSerializer implements Serializer<Event>, Serializable {
+
+		private static final long serialVersionUID = 4445560340458017667L;
+
 		@Override
 		public void serialize(DataOutput out, Event event)
 				throws IOException {

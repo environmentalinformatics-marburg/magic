@@ -2,6 +2,7 @@ package gui.export;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import tsdb.DataQuality;
+import tsdb.Sensor;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
@@ -27,9 +29,9 @@ public class CollectorController implements TsDBLogger {
 	private CollectorModel model;
 
 	private RemoteTsDB tsdb;
-	
+
 	private Consumer<String> cbPrintLine = null;
-	
+
 
 	public CollectorController(RemoteTsDB tsdb) {
 		this.tsdb = tsdb;
@@ -146,16 +148,33 @@ public class CollectorController implements TsDBLogger {
 			zipOutputStream.setComment("new comment");
 			zipOutputStream.setLevel(9);
 
-			
-			
-			
+
+
+
+			zipOutputStream.putNextEntry(new ZipEntry("sensor_description.txt"));
+			PrintStream printStream = new PrintStream(zipOutputStream, true);
+			printStream.println("sensors:\t"+sensorNames.length);
+			printStream.println();
+			for(int i=0;i<sensorNames.length;i++) {
+				printStream.println((i+1)+". sensor:\t"+sensorNames[i]);
+				try {
+					Sensor sensor = tsdb.getSensor(sensorNames[i]);
+					printStream.println("description:\t"+sensor.description);
+					printStream.println("unit:\t\t"+sensor.unitDescription);
+				} catch (RemoteException e) {
+					log.error(e);
+				}
+				printStream.println();
+			}
+
+
 
 			for(PlotInfo plotInfo:plotInfos) {
 				String plotID = plotInfo.name;
 				printLine("process plotID: "+plotID);
-				AggregationInterval aggregationInterval = AggregationInterval.DAY;
-				DataQuality dataQuality = DataQuality.NO;
-				boolean interpolated = false;
+				AggregationInterval aggregationInterval = model.getAggregationInterval();
+				DataQuality dataQuality = model.getDataQuality();
+				boolean interpolated = model.getUseInterpolation();
 				try {
 					System.out.println(Util.arrayToString(sensorNames));
 					String[] schema = tsdb.getValidSchema(plotID, sensorNames);
@@ -167,31 +186,33 @@ public class CollectorController implements TsDBLogger {
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
 							CSV.write(timeseries.timeSeriesIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
+						} else {
+							printLine("not processed: "+plotID);
 						}
 					}
 				} catch (RemoteException e) {
 					log.error(e);
 				}
 			}
-			
+
 			zipOutputStream.close();
-			
+
 		} catch (IOException e1) {
 		}
 		printLine("...finished");
 	}
-	
+
 	public void setPrintCallback(Consumer<String> callback) {
 		this.cbPrintLine = callback;
 	}
-	
+
 	private void printLine(String s) {
 		if(cbPrintLine!=null) {
 			cbPrintLine.accept(s);
 		}
 	}
-	
-	
+
+
 
 
 

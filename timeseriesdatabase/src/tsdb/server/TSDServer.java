@@ -5,21 +5,19 @@ import java.rmi.RemoteException;
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
-import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.TsDBClient;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TimeSeriesIterator;
 
-public class TSDServer implements TSDServerInterface {
+public class TSDServer extends TsDBClient implements TSDServerInterface {
 	
-	private TsDB timeSeriesDatabase;
 	private QueryProcessor qp;
 	
-	public TSDServer(TsDB timeSeriesDatabase) throws RemoteException {
-		super();
-		this.timeSeriesDatabase = timeSeriesDatabase;
-		this.qp = new QueryProcessor(timeSeriesDatabase);
+	public TSDServer(TsDB tsdb) throws RemoteException {
+		super(tsdb);
+		this.qp = new QueryProcessor(tsdb);
 	}
 	
 	@Override
@@ -31,12 +29,12 @@ public class TSDServer implements TSDServerInterface {
 
 	@Override
 	public String[] queryGeneralStations() {
-		return timeSeriesDatabase.getGeneralStationNames();
+		return tsdb.getGeneralStationNames();
 	}
 
 	@Override
 	public String[] queryPlotIds(String generalStationName) {
-		GeneralStation generalStation = timeSeriesDatabase.getGeneralStation(generalStationName);
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 		if(generalStation!=null) {
 			String[] names = new String[generalStation.stationList.size()];
 			for(int i=0;i<generalStation.stationList.size();i++) {

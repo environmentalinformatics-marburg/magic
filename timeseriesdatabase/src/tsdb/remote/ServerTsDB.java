@@ -2,14 +2,10 @@ package tsdb.remote;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.sun.xml.internal.txw2.output.StreamSerializer;
 
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
@@ -19,21 +15,19 @@ import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.TsDBClient;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 
-public class ServerTsDB implements RemoteTsDB {
-
-	private final TsDB tsdb;
+public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 
 	public ServerTsDB(TsDB tsdb) throws RemoteException { // !!
-		this.tsdb = tsdb;
+		super(tsdb);
 	}
 
 	@Override

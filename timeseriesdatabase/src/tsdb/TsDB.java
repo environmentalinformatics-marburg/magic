@@ -1,77 +1,28 @@
 package tsdb;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ini4j.BasicMultiMap;
-import org.ini4j.Wini;
-import org.ini4j.Profile.Section;
-import org.ini4j.spi.BeanAccess;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.aggregated.Interpolator;
-import tsdb.aggregated.TimeSeries;
-import tsdb.aggregated.iterator.AggregationIterator;
-import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.catalog.SourceCatalog;
-import tsdb.loader.ASCTimeSeries;
-import tsdb.loader.KiLiCSV;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.util.Table;
 import tsdb.util.TimeSeriesSchema;
-import tsdb.util.TimestampInterval;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.Util.FloatRange;
-import tsdb.util.iterator.SchemaIterator;
-import au.com.bytecode.opencsv.CSVReader;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.Attribute.DataType;
-import de.umr.jepc.store.Event;
-import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
-import de.umr.jepc.util.enums.TimeRepresentation;
 
 /**
  * This is the main class of the timeseries database.
  * @author woellauer
  *
  */
-public class TsDB {
-
-	private static final Logger log = Util.log;
+public class TsDB implements TsDBLogger {
 
 	/**
 	 * map regionName -> Region
@@ -575,6 +526,4 @@ public class TsDB {
 		}
 		return sensorNames.toArray(new String[0]);*/
 	}
-
-
 }

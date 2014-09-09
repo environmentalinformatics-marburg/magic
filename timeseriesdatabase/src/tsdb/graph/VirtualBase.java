@@ -3,7 +3,6 @@ package tsdb.graph;
 import java.util.ArrayList;
 import java.util.List;
 
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;

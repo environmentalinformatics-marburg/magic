@@ -6,12 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
 
-import tsdb.aggregated.AggregationType;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -19,9 +18,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class FactoryTsDB {
-
-	private static final Logger log = Util.log;
+public class FactoryTsDB implements TsDBLogger {
 	
 	static String CONFIG_DIRECTORY = "config/";
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
@@ -122,7 +119,7 @@ public class FactoryTsDB {
 		}		
 	}
 	
-	private static void read_database_paths(String configFile) {
+	/*private static void read_database_paths(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("database_paths");
@@ -134,7 +131,7 @@ public class FactoryTsDB {
 		} catch (IOException e) {
 			log.warn(e);
 		}		
-	}
+	}*/
 	
 	public static String get_CSV_output_path() {		
 		String CSV_OUTPUT_DIRECTORY = "C:/timeseriesdatabase_output/";		

@@ -1,11 +1,15 @@
 package tsdb.loader;
 
+import java.io.Serializable;
+
 /**
  * This class contains header data from UDBF-File of one sensor.
  * @author woellauer
  *
  */
-public class SensorHeader {
+public class SensorHeader implements Serializable {
+	
+	private static final long serialVersionUID = -4739683382625294938L;
 	
 	public final String name;
 	public final String unit;

@@ -3,7 +3,6 @@ package gui.info;
 
 
 import java.rmi.RemoteException;
-import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -16,11 +15,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import tsdb.Sensor;
-import tsdb.Station;
-import tsdb.TsDB;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.remote.StationInfo;
 import tsdb.util.Util;
 

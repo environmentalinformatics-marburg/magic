@@ -1,5 +1,6 @@
 package tsdb;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -8,20 +9,22 @@ import java.time.LocalDateTime;
  * @author woellauer
  *
  */
-public class TimeConverter {
+public class TimeConverter implements Serializable {
 	
+	private static final long serialVersionUID = 4232805611076305334L;
+
 	private static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);
 	
 	private final double dActTimeToSecondFactor;
 	private final double startTime;
 	private final double startTimeToDayFactor;
-	private final double sampleRate;
+	//private final double sampleRate;
 	
 	public TimeConverter(double startTimeToDayFactor, double dActTimeToSecondFactor, double startTime, double sampleRate) {
 		this.startTimeToDayFactor = startTimeToDayFactor;
 		this.dActTimeToSecondFactor = dActTimeToSecondFactor;
 		this.startTime = startTime;
-		this.sampleRate = sampleRate;
+		//this.sampleRate = sampleRate;
 	}	
 	
 	public LocalDateTime oleAutomatonTimeToDateTime(double oleAutomatonTimestamp) {

@@ -4,29 +4,24 @@ import gui.util.ComboBridge;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import tsdb.DataQuality;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.util.TsDBLogger;
-
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.jface.viewers.ComboViewer;
 
 public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 
@@ -57,23 +52,24 @@ public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) {
-		setMessage("some settings of exported time series");
+		setMessage("settings of exported time series");
 		setTitle("Details");
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-		btnInterpolate = new Button(container, SWT.CHECK);
-		btnInterpolate.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-		btnInterpolate.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				useInterpolation = btnInterpolate.getSelection();
-			}
-		});
-		btnInterpolate.setText("interpolate missing values if possible");
-		btnInterpolate.setSelection(useInterpolation);
+				
+				Label lblNewLabel = new Label(container, SWT.SHADOW_NONE);
+				lblNewLabel.setText("interpolate missing values if possible");
+		
+				btnInterpolate = new Button(container, SWT.CHECK);
+				btnInterpolate.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						useInterpolation = btnInterpolate.getSelection();
+					}
+				});
+				btnInterpolate.setSelection(useInterpolation);
 
 		Label lblQualityChecked = new Label(container, SWT.NONE);
 		lblQualityChecked.setText("quality check of measured values");		
@@ -132,6 +128,11 @@ public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 		Combo combo = comboViewer.getCombo();
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		ComboBridge<AggregationInterval> comboBridge = new ComboBridge<AggregationInterval>(comboViewer);
+		
+		Label lblWriteSensorDescription = new Label(container, SWT.NONE);
+		lblWriteSensorDescription.setText("write sensor description");
+		
+		Button btnCheckButton = new Button(container, SWT.CHECK);
 		comboBridge.setLabelMapper(a->a.getText());
 		comboBridge.setInput(new AggregationInterval[]{AggregationInterval.HOUR,AggregationInterval.DAY,AggregationInterval.WEEK,AggregationInterval.MONTH, AggregationInterval.YEAR});
 		comboBridge.setSelection(aggregationInterval);		

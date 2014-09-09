@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import tsdb.DataQuality;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.iterator.TimeSeriesIterator;
 
 public interface TSDServerInterface extends Remote {
 

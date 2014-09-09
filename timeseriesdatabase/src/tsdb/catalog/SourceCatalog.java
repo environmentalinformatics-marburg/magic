@@ -3,20 +3,11 @@ package tsdb.catalog;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.NavigableSet;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.mapdb.BTreeMap;
-import org.mapdb.Bind;
-import org.mapdb.Bind.MapWithModificationListener;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Fun;
-import org.mapdb.Fun.Function2;
-import org.mapdb.Fun.Tuple2;
 
 public class SourceCatalog {
 

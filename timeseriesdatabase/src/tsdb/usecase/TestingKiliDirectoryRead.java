@@ -5,18 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.TreeMap;
-
-import de.umr.jepc.store.Event;
-import tsdb.Station;
-import tsdb.StationProperties;
-import tsdb.TimeConverter;
-import tsdb.catalog.SourceEntry;
-import tsdb.loader.ASCTimeSeries;
-import tsdb.loader.AbstractLoader;
-import tsdb.loader.LoaderFactory;
-import tsdb.raw.TimestampSeries;
 
 public class TestingKiliDirectoryRead {
 	

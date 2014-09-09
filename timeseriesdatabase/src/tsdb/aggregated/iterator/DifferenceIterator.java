@@ -2,7 +2,6 @@ package tsdb.aggregated.iterator;
 
 import java.util.List;
 
-import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;

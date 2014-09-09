@@ -2,8 +2,6 @@ package gui.info;
 
 
 
-import java.util.Map.Entry;
-
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -16,8 +14,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import tsdb.GeneralStation;
-import tsdb.Sensor;
-import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.util.Util;
 

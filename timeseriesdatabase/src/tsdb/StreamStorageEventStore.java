@@ -2,7 +2,6 @@ package tsdb;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.TreeMap;
 
 import org.apache.logging.log4j.Logger;
 
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -22,9 +22,7 @@ import de.umr.jepc.util.enums.TimeRepresentation;
  * @author woellauer
  *
  */
-public class StreamStorageEventStore implements StreamStorage {
-
-	private static final Logger log = Util.log;
+public class StreamStorageEventStore implements StreamStorage, TsDBLogger {
 
 	private TimeSplitBTreeEventStore store;
 
@@ -117,7 +115,7 @@ public class StreamStorageEventStore implements StreamStorage {
 				}
 			}
 		} else {
-			Attribute[] internalSchema = store.getSchema(streamName);
+			//Attribute[] internalSchema = store.getSchema(streamName);
 			for(Event event:eventList) {
 				/*if(event.getPayload().length!=internalSchema.length-2) {// TODO point or interval time representation
 					log.warn("internal schema: "+internalSchema.length+" payload: "+event.getPayload().length);
@@ -165,6 +163,7 @@ public class StreamStorageEventStore implements StreamStorage {
 	public long[] getTimeInterval(String streamName) {
 		Iterator<Event> it = store.getHistory(streamName);
 		if(it==null||!it.hasNext()) {
+			log.warn("no data in stream: "+streamName);
 			return null;
 		}
 		return new long[]{it.next().getTimestamp(),store.getLastTimestamp(streamName)};

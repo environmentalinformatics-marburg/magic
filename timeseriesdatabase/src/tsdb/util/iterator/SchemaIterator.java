@@ -1,9 +1,7 @@
 package tsdb.util.iterator;
 
 import java.util.Iterator;
-import java.util.List;
 
-import tsdb.util.CSV;
 import tsdb.util.OutputSchema;
 import tsdb.util.ProcessingChain;
 import tsdb.util.ProcessingChainEntry;

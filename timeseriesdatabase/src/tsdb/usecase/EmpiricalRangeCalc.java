@@ -1,10 +1,6 @@
 package tsdb.usecase;
 
 import java.util.List;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-
-import javax.xml.ws.spi.Invoker;
 
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;

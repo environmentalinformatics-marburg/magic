@@ -5,11 +5,11 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
-import tsdb.TsDB;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.SchemaIterator;
@@ -22,9 +22,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class NanGapIterator extends MoveIterator {
-
-	private static final Logger log = Util.log;
+public class NanGapIterator extends MoveIterator implements TsDBLogger {
 
 	SchemaIterator<TimeSeriesEntry> input_iterator;
 	/**

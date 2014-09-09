@@ -5,19 +5,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.Interpolator;
@@ -28,14 +15,12 @@ import tsdb.aggregated.iterator.BaseAggregationIterator;
 import tsdb.aggregated.iterator.EmpiricalIterator;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.aggregated.iterator.VirtualPlotIterator;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
 import tsdb.raw.iterator.LowQualityToNanIterator;
 import tsdb.raw.iterator.QualityFlagIterator;
 import tsdb.util.Builder;
 import tsdb.util.TimestampInterval;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
 
 /**
@@ -44,17 +29,15 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class QueryProcessor {
+@Deprecated
+public class QueryProcessor extends TsDBClient {
 
 	final int STATION_INTERPOLATION_COUNT = 15;		
 	final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 
-	private static final Logger log = Util.log;
 
-	private final TsDB timeSeriesDatabase;
-
-	public QueryProcessor(TsDB timeSeriesDatabase) {
-		this.timeSeriesDatabase = timeSeriesDatabase;
+	public QueryProcessor(TsDB tsdb) {
+		super(tsdb);
 	}
 
 	/**
@@ -66,7 +49,7 @@ public class QueryProcessor {
 	 * @return
 	 */
 	public TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
-		Station station = timeSeriesDatabase.getStation(plotID);
+		Station station = tsdb.getStation(plotID);
 		return Util.ifnull(station,x->x.queryRaw(querySchema, queryStart, queryEnd),()->{log.warn("plotID not found: "+plotID);return null;});
 	}	
 
@@ -80,7 +63,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_raw_with_quality_flags(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		TimeSeriesIterator input_iterator = query_raw(plotID, querySchema, queryStart, queryEnd);
-		return Util.ifnull(input_iterator, x->new QualityFlagIterator(timeSeriesDatabase,x));		
+		return Util.ifnull(input_iterator, x->new QualityFlagIterator(tsdb,x));		
 	}
 
 	/**
@@ -108,7 +91,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		TimeSeriesIterator qualityRemoveIterator = query_raw_with_bad_quality_removed(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		return Util.ifnull(qualityRemoveIterator, x->new BaseAggregationIterator(timeSeriesDatabase,x));
+		return Util.ifnull(qualityRemoveIterator, x->new BaseAggregationIterator(tsdb,x));
 	}
 
 	/**
@@ -137,7 +120,7 @@ public class QueryProcessor {
 	 * @return
 	 */
 	public TimeSeriesIterator query_base_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
-		Station station = timeSeriesDatabase.getStation(plotID);
+		Station station = tsdb.getStation(plotID);
 		if(station==null) {
 			log.warn("plotID not found: "+plotID);
 			return null; 				
@@ -166,7 +149,7 @@ public class QueryProcessor {
 		}		
 		ArrayList<String> tempInterpolationSensorNameList = new ArrayList<String>();
 		for(String sensorName:tempSchema) {
-			if(timeSeriesDatabase.getSensor(sensorName).useInterpolation) {
+			if(tsdb.getSensor(sensorName).useInterpolation) {
 				tempInterpolationSensorNameList.add(sensorName);
 			}
 		}		
@@ -197,7 +180,7 @@ public class QueryProcessor {
 
 		targetTimeSeries.hasDataInterpolatedFlag = true;		
 		TimeSeriesIterator clipIterator = targetTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
-		return new BadInterpolatedRemoveIterator(timeSeriesDatabase, clipIterator);
+		return new BadInterpolatedRemoveIterator(tsdb, clipIterator);
 	}
 
 	/**
@@ -212,7 +195,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
 		TimeSeriesIterator baseAggregatedQualityIterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		return Util.ifnull(baseAggregatedQualityIterator, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
+		return Util.ifnull(baseAggregatedQualityIterator, x -> new AggregationIterator(tsdb, x, aggregationInterval));
 	}
 
 
@@ -228,7 +211,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_aggregated_interpolated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval) {
 		TimeSeriesIterator input_iterator = query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);		
-		return Util.ifnull(input_iterator,x->new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
+		return Util.ifnull(input_iterator,x->new AggregationIterator(tsdb, x, aggregationInterval));
 	}
 
 	/**
@@ -261,7 +244,7 @@ public class QueryProcessor {
 	 */
 	public TimeSeriesIterator query_empirical_diff_check(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		if(queryStart==null||queryEnd==null) {
-			long[] interval = timeSeriesDatabase.getTimeInterval(plotID);
+			long[] interval = tsdb.getTimeInterval(plotID);
 			if(queryStart==null) {
 				queryStart = interval[0];
 			}
@@ -269,24 +252,24 @@ public class QueryProcessor {
 				queryEnd = interval[1];
 			}
 		}
-		String generalName = timeSeriesDatabase.getStation(plotID).generalStation.name;
+		String generalName = tsdb.getStation(plotID).generalStation.name;
 		TimeSeriesIterator input_iterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator compare_iterator = Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
-		Float[] maxDiff = timeSeriesDatabase.getEmpiricalDiff(input_iterator.getOutputSchema());
+		TimeSeriesIterator compare_iterator = Builder.project(Builder.continuous(tsdb.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
+		Float[] maxDiff = tsdb.getEmpiricalDiff(input_iterator.getOutputSchema());
 		System.out.println("maxDiff[0]: "+maxDiff[0]);
 		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
 	}
 
 	public TimeSeriesIterator virtualquery_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, boolean interpolated) {
-		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			if(querySchema==null) {
-				querySchema = timeSeriesDatabase.getBaseSchema(virtualPlot.getSchema());
+				querySchema = tsdb.getBaseSchema(virtualPlot.getSchema());
 			}
 			List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(queryStart, queryEnd, querySchema);			 
 			List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
 			for(TimestampInterval<StationProperties> interval:intervalList) {
-				String[] stationSchema = timeSeriesDatabase.getValidSchema(interval.value.get_serial(),querySchema);
+				String[] stationSchema = tsdb.getValidSchema(interval.value.get_serial(),querySchema);
 				if(stationSchema.length==0) {
 					log.warn("schema empty");
 				}
@@ -306,7 +289,7 @@ public class QueryProcessor {
 			return it_continuous_base_aggregated;
 			//return it_virtual_base_aggregated;
 
-		} else if(timeSeriesDatabase.stationExists(plotID)){
+		} else if(tsdb.stationExists(plotID)){
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, AggregationInterval.HOUR, interpolated);
 		} else {
 			return null;
@@ -314,11 +297,11 @@ public class QueryProcessor {
 	}
 
 	public TimeSeriesIterator virtualquery_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
-		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			TimeSeriesIterator it_continuous_base_aggregated = virtualquery_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, interpolated);
-			return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(timeSeriesDatabase, x, aggregationInterval));
-		} else if(timeSeriesDatabase.stationExists(plotID)){
+			return Util.ifnull(it_continuous_base_aggregated, x -> new AggregationIterator(tsdb, x, aggregationInterval));
+		} else if(tsdb.stationExists(plotID)){
 			return query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 		} else {
 			return null;

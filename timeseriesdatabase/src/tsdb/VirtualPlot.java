@@ -2,24 +2,13 @@ package tsdb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
-
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
-
-import de.umr.jepc.Attribute;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.util.TimestampInterval;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -27,11 +16,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class VirtualPlot {
-
-	private static final Logger log = Util.log;
-
-	private final TsDB timeSeriesDatabase;
+public class VirtualPlot extends TsDBClient {
 
 	public final String plotID;
 	public final GeneralStation generalStation;
@@ -46,8 +31,8 @@ public class VirtualPlot {
 	 */
 	public List<VirtualPlot> nearestVirtualPlots;
 
-	public VirtualPlot(TsDB timeSeriesDatabase, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing) {
-		this.timeSeriesDatabase = timeSeriesDatabase;
+	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing) {
+		super(tsdb);
 		this.plotID = plotID;
 		this.generalStation = generalStation;
 		this.geoPosEasting = geoPosEasting;
@@ -66,7 +51,7 @@ public class VirtualPlot {
 		}
 		return intervalList.stream()
 				.map(interval->{
-					LoggerType loggerType = timeSeriesDatabase.getLoggerType(interval.value.get_logger_type_name());
+					LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
 					if(loggerType==null) {
 						throw new RuntimeException("logger type not found: "+interval.value.get_logger_type_name());
 					}
@@ -148,7 +133,7 @@ public class VirtualPlot {
 		List<TimestampInterval<StationProperties>> resultIntervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		while(it.hasNext()) {
 			TimestampInterval<StationProperties> interval = it.next();
-			if(schemaOverlaps(timeSeriesDatabase.getLoggerType(interval.value.get_logger_type_name()).sensorNames,schema)) {
+			if(schemaOverlaps(tsdb.getLoggerType(interval.value.get_logger_type_name()).sensorNames,schema)) {
 				if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
 					resultIntervalList.add(interval);
 				}
@@ -182,7 +167,7 @@ public class VirtualPlot {
 	public long[] getTimestampInterval() {
 		long[] result = null;
 		for(TimestampInterval<StationProperties> entry:intervalList) {
-			long[] interval = timeSeriesDatabase.getTimeInterval(entry.value.get_serial());
+			long[] interval = tsdb.getTimeInterval(entry.value.get_serial());
 			if(interval!=null) {
 				if(result==null) {
 					result = interval;
@@ -221,7 +206,7 @@ public class VirtualPlot {
 			return false;
 		}
 		for(String name:querySchema) {
-			if(timeSeriesDatabase.getSensor(name).baseAggregationType==AggregationType.NONE) {
+			if(tsdb.getSensor(name).baseAggregationType==AggregationType.NONE) {
 				return false;
 			}
 		}

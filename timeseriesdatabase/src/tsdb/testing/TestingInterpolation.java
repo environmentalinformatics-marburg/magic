@@ -1,7 +1,5 @@
 package tsdb.testing;
 
-import java.util.Arrays;
-
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 /**

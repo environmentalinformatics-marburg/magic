@@ -11,7 +11,6 @@ import tsdb.raw.TimestampSeries;
 import tsdb.server.StartServer;
 import tsdb.server.TSDServerInterface;
 import tsdb.util.CSV;
-import tsdb.util.iterator.TimeSeriesIterator;
 
 public class RunClient {
 	

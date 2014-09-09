@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import de.umr.jepc.store.Event;
 import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.TsDBClient;
 import tsdb.catalog.SourceEntry;
 import tsdb.util.Util;
 
@@ -27,15 +28,12 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class TimeSeriesLoaderBE {
-	
-	private static final Logger log = Util.log;	
-	private TsDB timeseriesdatabase;
+public class TimeSeriesLoaderBE extends TsDBClient {
 	
 	private final long minTimestamp;
 	
-	public TimeSeriesLoaderBE(TsDB timeseriesdatabase, long minTimestamp) {
-		this.timeseriesdatabase = timeseriesdatabase;
+	public TimeSeriesLoaderBE(TsDB tsdb, long minTimestamp) {
+		super(tsdb);
 		this.minTimestamp = minTimestamp;
 	}
 	
@@ -51,10 +49,10 @@ public class TimeSeriesLoaderBE {
 			for(Path stationPath:stream) {
 				System.out.println(stationPath+"\t");
 				String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();				
-				if(!timeseriesdatabase.stationExists(stationID)) {
+				if(!tsdb.stationExists(stationID)) {
 					log.error("station does not exist in database:\t"+stationID);
 				} else {				
-					Station station = timeseriesdatabase.getStation(stationID);
+					Station station = tsdb.getStation(stationID);
 					Path newPath = Paths.get(stationPath.toString(),"backup");
 					if(Files.exists(newPath)) {
 						loadDirectoryOfOneStation(station,newPath);
@@ -107,10 +105,10 @@ public class TimeSeriesLoaderBE {
 				//**********************************
 
 
-				if(!timeseriesdatabase.stationExists(stationID)) {
+				if(!tsdb.stationExists(stationID)) {
 					log.error("station does not exist in database:\t"+stationID);
 				} else {				
-					Station station = timeseriesdatabase.getStation(stationID);
+					Station station = tsdb.getStation(stationID);
 					loadDirectoryOfOneStation(station,stationPath);
 				}
 			}
@@ -161,7 +159,7 @@ public class TimeSeriesLoaderBE {
 					if(eventList!=null) {
 						eventsList.add(eventList);
 						
-						timeseriesdatabase.sourceCatalog.insert(new SourceEntry(path,station.stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
+						tsdb.sourceCatalog.insert(new SourceEntry(path,station.stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
 					}
 				} catch (Exception e) {
 					log.error("file not read: "+path+"\t"+e);
@@ -245,7 +243,7 @@ public class TimeSeriesLoaderBE {
 		}	
 
 		if(eventMap.size()>0) {
-			timeseriesdatabase.streamStorage.insertData(station.stationID, eventMap);			
+			tsdb.streamStorage.insertData(station.stationID, eventMap);			
 		} else {
 			log.warn("no data to insert: "+stationPath);
 		}
@@ -286,7 +284,7 @@ public class TimeSeriesLoaderBE {
 			eventPos[sensorIndex] = -1;
 			SensorHeader sensorHeader = udbfTimeSeries.sensorHeaders[sensorIndex];
 			String rawSensorName = sensorHeader.name;
-			if(!timeseriesdatabase.containsIgnoreSensorName(rawSensorName)) {
+			if(!tsdb.containsIgnoreSensorName(rawSensorName)) {
 				String sensorName = station.translateInputSensorName(rawSensorName,true);
 				//System.out.println(sensorHeader.name+"->"+sensorName);
 				if(sensorName != null) {

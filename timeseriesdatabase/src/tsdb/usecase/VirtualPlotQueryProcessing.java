@@ -1,24 +1,14 @@
 package tsdb.usecase;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.QueryProcessor;
-import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.iterator.VirtualPlotIterator;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.util.Builder;
 import tsdb.util.TimestampInterval;
-import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
 
 public class VirtualPlotQueryProcessing {
 

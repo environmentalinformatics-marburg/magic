@@ -3,18 +3,17 @@ package tsdb.usecase;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.function.Function;
 
-import de.umr.jepc.util.Timer;
 import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.EmpiricalIterator;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Builder;
 import tsdb.util.CSV;
 import tsdb.util.iterator.TimeSeriesIterator;
+import de.umr.jepc.util.Timer;
 
 /**
  * Testing empirical diff check.

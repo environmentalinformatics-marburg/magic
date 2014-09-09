@@ -3,23 +3,19 @@ package gui.query;
 import java.time.LocalDateTime;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DateTime;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-
-import swing2swt.layout.BorderLayout;
-import swing2swt.layout.FlowLayout;
-import tsdb.util.Pair;
-
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
+
+import swing2swt.layout.BorderLayout;
+import tsdb.util.Pair;
 
 public class BeginEndDateTimeDialog extends Dialog {
 

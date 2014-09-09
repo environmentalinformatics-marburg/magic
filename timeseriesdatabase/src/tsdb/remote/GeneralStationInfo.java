@@ -5,7 +5,7 @@ import java.io.Serializable;
 import tsdb.GeneralStation;
 import tsdb.Region;
 
-public class GeneralStationInfo implements Serializable{
+public class GeneralStationInfo implements Serializable {
 	
 	private static final long serialVersionUID = -5021875538014695128L;
 	

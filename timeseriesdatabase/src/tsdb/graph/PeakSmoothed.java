@@ -2,7 +2,6 @@ package tsdb.graph;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.BaseAggregationIterator;
 import tsdb.aggregated.iterator.PeakSmoothIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;

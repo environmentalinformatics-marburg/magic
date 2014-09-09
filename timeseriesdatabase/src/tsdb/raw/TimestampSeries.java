@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
+import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesEntryIterator;
@@ -18,11 +19,9 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class TimestampSeries implements TimeSeriesIterable, Serializable {
+public class TimestampSeries implements TimeSeriesIterable, Serializable, TsDBLogger {
 	
 	private static final long serialVersionUID = 6078067255995220349L;
-
-	private static final Logger log = Util.log;
 	
 	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TimeSeriesEntry>(0),null);
 	

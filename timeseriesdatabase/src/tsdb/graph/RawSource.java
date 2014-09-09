@@ -2,14 +2,12 @@ package tsdb.graph;
 
 import java.util.Iterator;
 
-import de.umr.jepc.store.Event;
-import tsdb.DataQuality;
-import tsdb.LoggerType;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
+import de.umr.jepc.store.Event;
 
 public class RawSource extends Node.Abstract {
 	public final Station station; // not null

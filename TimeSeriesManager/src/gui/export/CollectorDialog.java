@@ -20,8 +20,6 @@ import org.eclipse.swt.widgets.Text;
 import tsdb.DataQuality;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
 import tsdb.util.TsDBLogger;
 
 public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {

@@ -1,10 +1,7 @@
 package gui.util;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
-import tsdb.remote.GeneralStationInfo;
 
 public abstract class AbstractModel {
 	

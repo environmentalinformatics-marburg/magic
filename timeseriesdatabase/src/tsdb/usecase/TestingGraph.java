@@ -4,9 +4,6 @@ import tsdb.DataQuality;
 import tsdb.FactoryTsDB;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.graph.Aggregated;
-import tsdb.graph.Base;
-import tsdb.graph.Node;
 
 public class TestingGraph {
 	

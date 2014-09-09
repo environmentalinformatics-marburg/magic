@@ -5,17 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.Iterator;
 
 import de.umr.eventstore.Stream;
-import de.umr.eventstore.storage.validation.Action;
-import de.umr.eventstore.storage.validation.Actions;
-import de.umr.eventstore.storage.validation.CheckConstraint;
-import de.umr.eventstore.storage.validation.CompoundAction;
 import de.umr.eventstore.storage.validation.Constraint;
-import de.umr.eventstore.storage.validation.Constraint.CheckMode;
-import de.umr.eventstore.storage.validation.ConstraintPredicate;
-import de.umr.eventstore.storage.validation.Equal;
-import de.umr.eventstore.storage.validation.Not;
-import de.umr.eventstore.storage.validation.UniqueConstraint;
-import de.umr.eventstore.storage.validation.Variable;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
 import de.umr.jepc.store.Event;

@@ -4,22 +4,21 @@ import java.rmi.RemoteException;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.layout.GridLayout;
 
-import tsdb.Sensor;
 import tsdb.TimeConverter;
 import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 
 public class NewSourceCatalogInfoDialog extends Dialog implements TsDBLogger {
 

@@ -1,6 +1,5 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TimeSeriesIterator;
@@ -71,7 +70,8 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private void updateFillData(long deltaTime,float[] data) {
 		fillData = new float[columns];
 		for(int c=0;c<columns;c++) {
-			fillData[c] = (data[c]/(deltaTime/timeStep));
+			//fillData[c] = (data[c]/(deltaTime/timeStep));
+			fillData[c] = (data[c]*60*24*7)/deltaTime;
 		}
 	}
 

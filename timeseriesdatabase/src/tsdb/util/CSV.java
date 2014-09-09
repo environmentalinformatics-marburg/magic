@@ -18,9 +18,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class CSV {
-
-	private static final Logger log = Util.log;	
+public class CSV implements TsDBLogger{
 
 	public static void writeNoHeader(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(it, false, filename, separator, nanText, csvTimeType, false, false);
@@ -68,7 +66,7 @@ public class CSV {
 			time=true;
 		}
 
-			PrintStream printStream = new PrintStream(out);
+			PrintStream printStream = new PrintStream(out,true);
 
 			if(header) {
 

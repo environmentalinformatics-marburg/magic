@@ -4,31 +4,17 @@ import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.layout.TableColumnLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.ColumnPixelData;
 
-import sun.util.logging.resources.logging;
-import tsdb.GeneralStation;
-import tsdb.TsDB;
-import tsdb.VirtualPlot;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 public class GeneralStationInfoDialog extends Dialog {

@@ -2,14 +2,9 @@ package tsdb.testing;
 
 import java.util.Iterator;
 
-import de.umr.eventstore.Stream;
-import de.umr.eventstore.queries.QueryResult;
-import de.umr.eventstore.queries.SQLQuery;
+import de.umr.jepc.store.Event;
 import de.umr.eventstore.storage.Schema;
 import de.umr.eventstore.storage.validation.Constraint;
-import de.umr.eventstore.storage.validation.UniqueConstraint;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
 
 public class UniqueTimestampConstraint extends Constraint {

@@ -13,11 +13,8 @@ import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 
 import tsdb.LoggerType;
-import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
 

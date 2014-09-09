@@ -1,20 +1,11 @@
 package tsdb;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.Logger;
-
-import tsdb.util.Util;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
-import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
-import de.umr.jepc.util.enums.TimeRepresentation;
 
 /**
  * This class encapsulates EventStore and provides basic methods store and query time series data. 

@@ -3,8 +3,6 @@ package tsdb.aggregated.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.util.Log;
-
 import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;

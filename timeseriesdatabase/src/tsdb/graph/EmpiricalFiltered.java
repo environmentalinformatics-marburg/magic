@@ -53,6 +53,9 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 	public TimeSeriesIterator get(Long start, Long end) {		
 		if(start==null||end==null) {
 			long[] interval = tsdb.getBaseTimeInterval(stationName);
+			if(interval==null) {
+				return null;
+			}
 			if(start==null) {
 				start = interval[0];
 			}
