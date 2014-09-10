@@ -12,18 +12,16 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
-import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
+import org.ini4j.Wini;
 
+import tsdb.aggregated.AggregationType;
+import tsdb.util.Table;
+import tsdb.util.Util;
+import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
-import tsdb.aggregated.AggregationType;
-import tsdb.util.Table;
-import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
-import tsdb.util.Util.FloatRange;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase
@@ -281,7 +279,7 @@ public class ConfigLoader extends TsDBClient {
 	 */
 	public void readStationGeoPositionConfig(String config_file) {
 		try{		
-			Table table = Table.readCSV(config_file);		
+			Table table = Table.readCSV(config_file,',');		
 			int plotidIndex = table.getColumnIndex("PlotID");
 			int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
 			int lonIndex = table.getColumnIndex("Lon");
@@ -415,7 +413,7 @@ public class ConfigLoader extends TsDBClient {
 	public void readVirtualPlotConfig(String config_file) {
 		try{
 
-			Table table = Table.readCSV(config_file);
+			Table table = Table.readCSV(config_file,',');
 			int plotidIndex = table.getColumnIndex("PlotID"); // virtual plotid
 			//int lonIndex = table.getColumnIndex("Lon");
 			//int latIndex = table.getColumnIndex("Lat");

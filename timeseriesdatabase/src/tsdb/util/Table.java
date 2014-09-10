@@ -36,11 +36,11 @@ public class Table implements TsDBLogger {
 	 * @param filename
 	 * @return
 	 */
-	public static Table readCSV(String filename) {
+	public static Table readCSV(String filename, char separator) {
 		try {
 			Table table = new Table();
 			
-			CSVReader reader = new CSVReader(new FileReader(filename));
+			CSVReader reader = new CSVReader(new FileReader(filename),separator);
 			List<String[]> list = reader.readAll();
 
 			table.names = list.get(0);

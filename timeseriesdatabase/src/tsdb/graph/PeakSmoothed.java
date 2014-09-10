@@ -1,23 +1,21 @@
 package tsdb.graph;
 
 import tsdb.Station;
-import tsdb.TsDB;
 import tsdb.aggregated.iterator.PeakSmoothIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 
-public class PeakSmoothed extends Base.Abstract {
+public class PeakSmoothed implements Base {
 	
 	private Node source;
 
-	protected PeakSmoothed(TsDB tsdb, Node source) {
-		super(tsdb);
+	protected PeakSmoothed(Node source) {
 		Util.throwNull(source);
 		this.source = source;
 	}
 	
-	public static PeakSmoothed create(TsDB tsdb, Node source) {
-		return new PeakSmoothed(tsdb, source);
+	public static PeakSmoothed create(Node source) {
+		return new PeakSmoothed(source);
 	}	
 
 	@Override

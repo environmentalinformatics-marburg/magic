@@ -13,8 +13,9 @@ public class Difference extends Continuous.Abstract {
 	private final Continuous source;
 	private final Continuous compareSource;
 	private final String stationName;
+	private final boolean absoluteDifference;
 
-	protected Difference(TsDB tsdb, Continuous source, Continuous compareSource, String stationName) {
+	protected Difference(TsDB tsdb, Continuous source, Continuous compareSource, String stationName, boolean absoluteDifference) {
 		super(tsdb);
 		Util.throwNull(source,compareSource,stationName);
 		if(!source.isContinuous()) {
@@ -31,30 +32,17 @@ public class Difference extends Continuous.Abstract {
 		}
 		this.source = source;
 		this.compareSource = compareSource;
-		this.stationName = stationName;		
+		this.stationName = stationName;
+		this.absoluteDifference = absoluteDifference;
 	}
 	
-	public static Continuous create(TsDB tsdb, Continuous source, Continuous compareSource, String stationName) {
-		return new Difference(tsdb, source, compareSource, stationName);		
+	public static Continuous create(TsDB tsdb, Continuous source, Continuous compareSource, String stationName, boolean absoluteDifference) {
+		return new Difference(tsdb, source, compareSource, stationName, absoluteDifference);		
 	}
 	
-	public static Continuous createFromGroupAverage(TsDB tsdb, Continuous continuous, String plotID) {
-		GeneralStation generalStation = null;
-		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
-		if(virtualPlot!=null) {
-			generalStation = virtualPlot.generalStation;
-		} else {
-			Station station = tsdb.getStation(plotID);
-			if(station!=null) {
-				generalStation = station.generalStation;
-			}
-		}
-		if(generalStation==null) {
-			throw new RuntimeException("station not found: "+plotID);
-		}
-		String streamName = generalStation.group;
-		Continuous compareSource = Continuous.create(tsdb, CacheBase.create(tsdb, streamName , continuous.getSchema()));
-		return create(tsdb,continuous,compareSource, plotID);
+	public static Continuous createFromGroupAverage(TsDB tsdb, Continuous continuous, String plotID, boolean absoluteDifference) {
+		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());		
+		return create(tsdb,continuous,compareSource, plotID, absoluteDifference);
 	}
 
 	@Override
@@ -69,7 +57,7 @@ public class Difference extends Continuous.Abstract {
 			log.warn("no compare iterator");
 			return null;
 		}		
-		DifferenceIterator difference_iterator = new DifferenceIterator(input_iterator, compare_iterator);
+		DifferenceIterator difference_iterator = new DifferenceIterator(input_iterator, compare_iterator, absoluteDifference);
 		return difference_iterator;
 	}
 

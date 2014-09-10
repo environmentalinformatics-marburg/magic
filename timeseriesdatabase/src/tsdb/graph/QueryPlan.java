@@ -31,6 +31,9 @@ public class QueryPlan {
 		} else {
 			continuous = continuousGen.get(plotID, schema);
 		}
+		//!!!TODO
+		//continuous = Difference.createFromGroupAverage(tsdb, continuous, plotID, false);
+		//!!!TODO
 		if(AggregationInterval.HOUR==aggregationInterval) {
 			return continuous;
 		} else {
@@ -48,7 +51,7 @@ public class QueryPlan {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(tsdb, dataQuality);		
 			Base base = Base.create(tsdb, plotID, schema, stationGen);
-			Continuous continuous = Continuous.create(tsdb, base);
+			Continuous continuous = Continuous.create(base);
 			if(DataQuality.EMPIRICAL==dataQuality) {
 				continuous = EmpiricalFiltered.create(tsdb, continuous, plotID);
 			}
@@ -70,7 +73,7 @@ public class QueryPlan {
 			}
 			Node rawSource = RawSource.create(tsdb, stationID, schema);
 			if(station.loggerType.typeName.equals("tfi")) {
-				rawSource = PeakSmoothed.create(tsdb,rawSource);
+				rawSource = PeakSmoothed.create(rawSource);
 			}			
 			if(DataQuality.Na==dataQuality) {
 				return rawSource;
@@ -90,7 +93,7 @@ public class QueryPlan {
 	 */
 	public static Node cache(TsDB tsdb, String streamName, String[] columnNames, AggregationInterval aggregationInterval) {		
 		CacheBase base = CacheBase.create(tsdb, streamName, columnNames);
-		Continuous continuous = Continuous.create(tsdb, base);
+		Continuous continuous = Continuous.create(base);
 		return Aggregated.create(tsdb, continuous, aggregationInterval);		
 	}	
 

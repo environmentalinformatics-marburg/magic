@@ -54,6 +54,34 @@ public class Util {
 		}
 		return String.format("%.2f", value);
 	}
+	
+	public static String doubleToString0(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.0f", value);
+	}
+	
+	public static String doubleToString1(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.1f", value);
+	}
+	
+	public static String doubleToString2(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.2f", value);
+	}
+	
+	public static String doubleToStringFull(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%f", value);
+	}
 
 	public static Map<String,Integer> stringArrayToMap(String[] entries) {
 		return stringArrayToMap(entries, false);
@@ -432,6 +460,12 @@ public class Util {
 			if(o[i]==null) {
 				throw new RuntimeException("null in "+(i+1)+".");
 			}
+		}
+	}
+	
+	public static void throwNullText(Object o, String text) {
+		if(o==null) {
+			throw new RuntimeException(text);
 		}
 	}
 

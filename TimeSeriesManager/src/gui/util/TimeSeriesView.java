@@ -1,7 +1,6 @@
-package gui.query;
+package gui.util;
 
 
-import gui.util.Painter;
 import gui.util.Painter.PosHorizontal;
 import gui.util.Painter.PosVerical;
 
@@ -35,6 +34,8 @@ public class TimeSeriesView {
 	private double dataMinValue;
 	private double dataMaxValue;
 	private double dataValueRange;
+	private double dataCount;
+	private double dataSum;
 
 	//*** range of time series data in output view
 	private double viewZoomFactor;
@@ -133,6 +134,8 @@ public class TimeSeriesView {
 	void updateRangeOfTimeSeriesData() {
 		dataMinValue = Float.MAX_VALUE;
 		dataMaxValue = -Float.MAX_VALUE;
+		dataCount = 0f;
+		dataSum = 0f;
 
 		for(TimeSeriesEntry entry:timeSeries) {
 			float value = entry.data[0];
@@ -143,6 +146,8 @@ public class TimeSeriesView {
 				if(value>dataMaxValue) {
 					dataMaxValue = value;						
 				}
+				dataCount++;
+				dataSum += value;
 			}
 		}
 
@@ -389,15 +394,32 @@ public class TimeSeriesView {
 
 	private void drawYGrid(GC gc) {
 		int maxLines = (int) (yRange/17);
-		double lineStep = valueRange/maxLines;
-
+		/*double lineStep = valueRange/maxLines;
+		
+		
+		
 		lineStep = lineStep+(10d-lineStep%10d);
-		double lineStart = minValue+(lineStep-minValue%lineStep);
 
 		if(valueRange/lineStep<=(maxLines/2d)) {
 			lineStep = lineStep/2d;
-		}		
-
+		}*/
+		
+		
+		
+		
+		double minLineStep = valueRange/maxLines;
+		double logMinLineStep = Math.pow(10d, Math.ceil(Math.log10(minLineStep)));
+		double lineStep = logMinLineStep;
+		if((valueRange/(lineStep/5))<=maxLines) {
+			lineStep /= 5d;
+		} else if((valueRange/(lineStep/2))<=maxLines) {
+			lineStep /= 2d;
+		}
+		
+		double mod = minValue%lineStep;
+		double lineStart = mod>0d?minValue+lineStep-mod:minValue-mod;
+		
+		System.out.println("logMinLineStep: "+logMinLineStep+"   minValue: "+minValue+"   maxValue: "+maxValue+"   valueRange: "+valueRange+"  lineStart: "+lineStart+"  lineStep: "+lineStep+"  minValue%lineStep: "+(minValue%lineStep));
 		drawYGrid(gc,lineStart,lineStep);
 	}
 
@@ -405,14 +427,27 @@ public class TimeSeriesView {
 	private void drawYGrid(GC gc, double lineStart, double lineStep) {
 		Color color_light_blue = new Color(canvas.getDisplay(),220,220,255);
 
-		double line = minValue;
+		//double line = minValue;
+		double line = lineStart;
 
 		while(line<=maxValue) {			
 			int y = valueToGraph(line);
 			gc.setForeground(color_light_blue);
 			gc.drawLine(xStart , y, xEnd, y);
 			gc.setForeground(color_black);
-			Painter.drawText(Util.doubleToString(line), gc, xStart, y, PosHorizontal.RIGHT, PosVerical.CENTER);
+			
+			String valueText;
+			if(lineStep>=1d) {
+				valueText = Util.doubleToString0(line);
+			} else if(lineStep>=0.1d) {
+				valueText = Util.doubleToString1(line);
+			} else if(lineStep>=0.01d) {
+				valueText = Util.doubleToString2(line);
+			} else {
+				valueText = Util.doubleToStringFull(line);
+			}
+			
+			Painter.drawText(valueText, gc, xStart, y, PosHorizontal.RIGHT, PosVerical.CENTER);
 			line+=lineStep;
 		}
 
@@ -593,6 +628,15 @@ public class TimeSeriesView {
 			}
 
 			updateDataWindowConversionValues();
+			
+			Color color_bluegreen = new Color(canvas.getDisplay(),190,240,190);
+			int avg = valueToGraph(dataSum/dataCount);
+			gc.setForeground(color_bluegreen);
+			gc.drawLine(xStart, avg, xEnd, avg);
+			
+			drawGrid(gc);
+
+			drawXYAxis(gc);
 
 			if(compare_timeSeries!=null) {
 
@@ -657,11 +701,6 @@ public class TimeSeriesView {
 
 		//*** start drawing
 
-		drawGrid(gc);
-
-		drawXYAxis(gc);
-
-
 		gc.setForeground(clrConnections);
 		for(int[] e:connectLineList) {
 			gc.drawLine(e[0], e[1], e[2], e[3]);
@@ -671,14 +710,6 @@ public class TimeSeriesView {
 		for(int[] e:valueLineList) {
 			gc.drawLine(e[0], e[1], e[2], e[3]);
 		}
-
-
 		//*** end drawing
-
-
-		//System.out.println("data length: "+timeSeries.entryList.size());		
 	}
-
-
-
 }

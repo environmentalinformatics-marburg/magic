@@ -1,6 +1,6 @@
 package gui.sensorquery;
 
-import gui.query.TimeSeriesView;
+import gui.util.TimeSeriesView;
 
 import java.util.ArrayList;
 import java.util.List;

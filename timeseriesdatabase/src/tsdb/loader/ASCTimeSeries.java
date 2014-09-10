@@ -78,7 +78,7 @@ public class ASCTimeSeries {
 			
 			
 
-			timestamp = parseTimestamp(row[0], row[1],true);
+			timestamp = TimeConverter.parseTimestamp(row[0], row[1],true);
 
 			if(timestampStart==-1) {
 				timestampStart = timestamp;
@@ -281,32 +281,7 @@ public class ASCTimeSeries {
 		}		
 	}
 
-	private static long parseTimestamp(String dateText, String timeText, boolean isISOdate) {		
-		int dayOfMonth;
-		int month;
-		int year;
-		
-		if(isISOdate) {
-			// 2012-06-15
-			// 0123456789
-			year = 1000*(dateText.charAt(0)-'0')+100*(dateText.charAt(1)-'0')+10*(dateText.charAt(2)-'0')+(dateText.charAt(3)-'0');
-			month = 10*(dateText.charAt(5)-'0')+(dateText.charAt(6)-'0');
-			dayOfMonth = 10*(dateText.charAt(8)-'0')+(dateText.charAt(9)-'0');
-		} else {
-			// 01.07.13
-			dayOfMonth = 10*(dateText.charAt(0)-'0')+(dateText.charAt(1)-'0');
-			month = 10*(dateText.charAt(3)-'0')+(dateText.charAt(4)-'0');
-			year = 2000 + 10*(dateText.charAt(6)-'0')+(dateText.charAt(7)-'0');
-		}	
-
-		// 09:30:00
-		int hour = 10*(timeText.charAt(0)-'0')+(timeText.charAt(1)-'0');
-		int minute = 10*(timeText.charAt(3)-'0')+(timeText.charAt(4)-'0');
-		int second = 10*(timeText.charAt(6)-'0')+(timeText.charAt(7)-'0');
-
-		LocalDateTime datetime = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second);
-		return TimeConverter.DateTimeToOleMinutes(datetime);
-	}
+	
 
 	public TimestampSeries readEntries() {
 		if(!isDataFile) {
@@ -339,7 +314,7 @@ public class ASCTimeSeries {
 			}
 
 
-			timestamp = parseTimestamp(row[0], row[1], false);
+			timestamp = TimeConverter.parseTimestamp(row[0], row[1], false);
 
 			if(timestampStart==-1) {
 				timestampStart = timestamp;

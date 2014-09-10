@@ -31,7 +31,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 	}
 
 	public static Continuous create(TsDB tsdb, Continuous continuous, String plotID) {
-		GeneralStation generalStation = null;
+		/*GeneralStation generalStation = null;
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			generalStation = virtualPlot.generalStation;
@@ -45,7 +45,8 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 			throw new RuntimeException("station not found: "+plotID);
 		}
 		String streamName = generalStation.group;
-		Continuous compareSource = Continuous.create(tsdb, CacheBase.create(tsdb, streamName , continuous.getSchema()));
+		Continuous compareSource = Continuous.create(CacheBase.create(tsdb, streamName , continuous.getSchema()));*/
+		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());
 		return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
 	}
 

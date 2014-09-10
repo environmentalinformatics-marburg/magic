@@ -8,14 +8,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.catalog.SourceCatalog;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
 
 /**
  * This is the main class of the timeseries database.

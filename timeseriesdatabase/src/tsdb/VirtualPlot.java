@@ -8,7 +8,6 @@ import java.util.List;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.util.TimestampInterval;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**

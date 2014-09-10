@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -18,7 +17,6 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesIterator;
 
 public class CacheStorage implements TsDBLogger {

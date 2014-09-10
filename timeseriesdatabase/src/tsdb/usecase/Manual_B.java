@@ -33,10 +33,16 @@ public class Manual_B {
 
 		QueryProcessor qp = new QueryProcessor(tsdb);
 
-		String plotID = "sav5";
+		//String plotID = "sav5";
+		String plotID = "fer0";
 		String[] querySchema = new String[]{"B_03"};
-		Long queryStart = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2012,11,7,9,20,00));
-		Long queryEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014,8,6,12,22,00));
+		//Long queryStart = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2012,11,7,9,20,00));
+		//Long queryEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014,8,6,12,22,00));
+		
+		Long queryStart = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2012,11,01,03,20,00));
+		Long queryEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014,8,8,8,25,00));
+		
+		
 		DataQuality dataQuality = DataQuality.NO;
 		//AggregationInterval aggregationInterval = AggregationInterval.HOUR;
 		boolean interpolated = false;
@@ -70,7 +76,7 @@ public class Manual_B {
 		
 		
 		
-		Continuous.create(tsdb, Base.create(tsdb, "sav5", querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
+		Continuous.create(Base.create(tsdb, "sav5", querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
 		
 		
 		//result_iterator.writeCSV(CSV_OUTPUT_PATH+"Manual_B.csv");

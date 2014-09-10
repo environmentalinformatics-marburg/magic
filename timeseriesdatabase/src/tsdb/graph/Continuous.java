@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import tsdb.Station;
+import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -17,8 +18,8 @@ public interface Continuous extends Node {
 	
 	public TimeSeriesIterator getExactly(long start, long end);
 	
-	public static Continuous create(TsDB tsdb, Base base) {
-		return new Concrete(tsdb, base);
+	public static Continuous create(Base base) {
+		return new Concrete(base);
 	}
 	
 	public abstract class Abstract extends TsDBClient implements Continuous {
@@ -27,10 +28,9 @@ public interface Continuous extends Node {
 		}	
 	}
 	
-	public class Concrete extends Abstract {
+	public class Concrete implements Continuous {
 		private final Base source;
-		protected Concrete(TsDB tsdb, Base source) {
-			super(tsdb); 
+		protected Concrete(Base source) {
 			Util.throwNull(source);
 			this.source = source;
 			if(!source.isConstantTimestep()) {
@@ -45,11 +45,11 @@ public interface Continuous extends Node {
 				return null;
 			}
 			if(start!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
-				log.warn("start timestamp not alligned: "+start);
+				log.warn("start timestamp not alligned: "+start+"   "+TimeConverter.oleMinutesToText(start));
 				start = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(start); // TODO ?
 			}
 			if(end!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
-				log.warn("end timestamp not alligned: "+end);
+				log.warn("end timestamp not alligned: "+end+"   "+TimeConverter.oleMinutesToText(end));
 				end = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(end); // TODO ?
 			}
 			NanGapIterator continuous = new NanGapIterator(input_iterator, start, end);

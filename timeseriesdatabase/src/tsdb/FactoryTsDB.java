@@ -6,9 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-import org.ini4j.Wini;
 import org.ini4j.Profile.Section;
+import org.ini4j.Wini;
 
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
