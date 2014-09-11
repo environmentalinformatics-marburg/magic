@@ -5,8 +5,9 @@ import java.util.List;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Sends only input elements to output that have at least one not NaN-value in data.
@@ -15,9 +16,10 @@ import tsdb.util.iterator.TimeSeriesIterator;
  */
 public class NanRemoveIterator extends MoveIterator{
 	
-	TimeSeriesIterator input_iterator;
+	TsIterator input_iterator;
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
+	public static TsSchema createSchema(TsSchema tsschema) {
+		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
 		String[] schema = input_schema.schema;
 		boolean constantTimeStep = input_schema.constantTimeStep;
 		int timeStep = input_schema.timeStep;
@@ -25,12 +27,12 @@ public class NanRemoveIterator extends MoveIterator{
 		boolean hasQualityFlags = input_schema.hasQualityFlags;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep , isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep , isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
 		
 	}
 
-	public NanRemoveIterator(TimeSeriesIterator input_iterator) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+	public NanRemoveIterator(TsIterator input_iterator) {
+		super(createSchema(input_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 	}
 
@@ -51,11 +53,6 @@ public class NanRemoveIterator extends MoveIterator{
 		return null;
 	}
 
-	@Override
-	public String getIteratorName() {
-		return "NanGapIterator";
-	}
-	
 	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();

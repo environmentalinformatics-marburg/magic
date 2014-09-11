@@ -10,7 +10,7 @@ import tsdb.Sensor;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public interface RemoteTsDB extends Remote {
 	
@@ -59,7 +59,7 @@ public interface RemoteTsDB extends Remote {
 
 	String[] getStationNames() throws RemoteException;
 
-	TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;
+	TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;
 
 	String[] getPlotSchema(String stationName) throws RemoteException;
 

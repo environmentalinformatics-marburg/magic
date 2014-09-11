@@ -4,7 +4,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.BaseAggregationIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class StationBase extends Base.Abstract {
 
@@ -25,8 +25,8 @@ public class StationBase extends Base.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
-		TimeSeriesIterator input_iterator = source.get(start, end);
+	public TsIterator get(Long start, Long end) {
+		TsIterator input_iterator = source.get(start, end);
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}

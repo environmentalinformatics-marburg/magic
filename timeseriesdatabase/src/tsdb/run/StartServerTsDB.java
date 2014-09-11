@@ -8,7 +8,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.UnicastRemoteObject;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
@@ -62,7 +62,7 @@ public class StartServerTsDB {
 		RemoteServer.setLog(System.out);
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> System.out.println(e));
 		System.out.println("open database...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		ServerTsDB servertsdb = new ServerTsDB(tsdb);
 		RemoteTsDB remoteTsDB = servertsdb;
 		System.out.println("create registry...");

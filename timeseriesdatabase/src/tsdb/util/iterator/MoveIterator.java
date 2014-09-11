@@ -2,14 +2,15 @@ package tsdb.util.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 
-public abstract class MoveIterator extends TimeSeriesIterator {
+public abstract class MoveIterator extends TsIterator {
 
 	private TimeSeriesEntry current = null;
 	protected boolean closed = false;
 	
-	public MoveIterator(TimeSeriesSchema outputTimeSeriesSchema) {
-		super(outputTimeSeriesSchema);
+	public MoveIterator(TsSchema schema) {
+		super(schema);
 	}
 
 	@Override

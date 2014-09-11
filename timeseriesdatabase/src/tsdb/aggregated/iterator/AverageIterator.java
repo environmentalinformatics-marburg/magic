@@ -1,14 +1,17 @@
 package tsdb.aggregated.iterator;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * This iterator outputs elements of average values of input_iterator values.
@@ -19,20 +22,22 @@ import tsdb.util.iterator.TimeSeriesIterator;
 public class AverageIterator extends MoveIterator {
 
 	private Map<String, Integer> schemaMap;
-	private TimeSeriesIterator[] input_iterators;
+	private TsIterator[] input_iterators;
 	private final int minCount;
 
-	private static TimeSeriesSchema createSchema(String[] schema, TimeSeriesIterator[] input_iterators) {
-		boolean constantTimeStep = input_iterators[0].getOutputTimeSeriesSchema().constantTimeStep;
-		int timeStep = input_iterators[0].getOutputTimeSeriesSchema().timeStep;
-		boolean isContinuous = input_iterators[0].getOutputTimeSeriesSchema().isContinuous;		
-		boolean hasQualityFlags = input_iterators[0].getOutputTimeSeriesSchema().hasQualityFlags;
-		boolean hasInterpolatedFlags = input_iterators[0].getOutputTimeSeriesSchema().hasInterpolatedFlags;
-		boolean hasQualityCounters = input_iterators[0].getOutputTimeSeriesSchema().hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	private static TsSchema createSchema(String[] names, TsIterator[] input_iterators) {
+		Util.throwEmpty(input_iterators);
+		TsSchema[] schemas = TsIterator.toSchemas(input_iterators);
+		TsSchema.throwDifferentAggregation(schemas);
+		Aggregation aggregation = schemas[0].aggregation;
+		TsSchema.throwDifferentTimeStep(schemas);
+		int timeStep = schemas[0].timeStep;
+		TsSchema.throwDifferentContinuous(schemas);
+		boolean isContinuous = schemas[0].isContinuous;
+		return new TsSchema(names, aggregation,timeStep ,isContinuous);
 	}
 
-	public AverageIterator(String[] schema, TimeSeriesIterator[] input_iterators, int minCount) {
+	public AverageIterator(String[] schema, TsIterator[] input_iterators, int minCount) {
 		super(createSchema(schema, input_iterators));
 		this.input_iterators = input_iterators;
 		this.schemaMap = Util.stringArrayToMap(schema);
@@ -49,9 +54,9 @@ public class AverageIterator extends MoveIterator {
 	@Override
 	protected TimeSeriesEntry getNext() {
 		long timestamp = -1;
-		int[] value_cnt = new int[this.outputTimeSeriesSchema.columns];
-		float[] value_sum = new float[this.outputTimeSeriesSchema.columns];				
-		for(TimeSeriesIterator it:input_iterators) {
+		int[] value_cnt = new int[this.schema.length];
+		float[] value_sum = new float[this.schema.length];				
+		for(TsIterator it:input_iterators) {
 			if(!it.hasNext()) {
 				return null;
 			}
@@ -63,7 +68,7 @@ public class AverageIterator extends MoveIterator {
 					throw new RuntimeException("iterator error");
 				}
 			}
-			String[] schema = it.getOutputSchema();
+			String[] schema = it.getNames();
 			for(int i=0;i<schema.length;i++) {
 				int pos = schemaMap.get(schema[i]);
 				float value = element.data[i];
@@ -74,8 +79,8 @@ public class AverageIterator extends MoveIterator {
 			}
 
 		}
-		float[] value_avg = new float[this.outputTimeSeriesSchema.columns];
-		for(int i=0;i<this.outputTimeSeriesSchema.columns;i++) {
+		float[] value_avg = new float[this.schema.length];
+		for(int i=0;i<this.schema.length;i++) {
 			if(value_cnt[i]>minCount) {
 				value_avg[i] = value_sum[i]/value_cnt[i];
 				//System.out.println("cnt: "+value_cnt[i]);
@@ -85,10 +90,4 @@ public class AverageIterator extends MoveIterator {
 		}
 		return new TimeSeriesEntry(timestamp, value_avg);	
 	}
-
-	@Override
-	public String getIteratorName() {
-		return "AverageIterator";
-	}
-
 }

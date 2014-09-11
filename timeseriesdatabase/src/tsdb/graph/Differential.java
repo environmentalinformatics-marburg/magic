@@ -4,7 +4,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.DifferentialIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Differential extends Continuous.Abstract {
 	
@@ -21,13 +21,13 @@ public class Differential extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator getExactly(long start, long end) {
+	public TsIterator getExactly(long start, long end) {
 		return get(start, end);
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {		
-		TimeSeriesIterator input_iterator = source.get(start, end);
+	public TsIterator get(Long start, Long end) {		
+		TsIterator input_iterator = source.get(start, end);
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}		

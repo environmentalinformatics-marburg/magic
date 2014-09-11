@@ -2,8 +2,9 @@ package tsdb.aggregated.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class LinearIterpolationIterator extends InputProcessingIterator {
 	
@@ -13,8 +14,8 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 	
 	private int interpolationCount = 0;
 	
-	private static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator) {
-		TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();		
+	private static TsSchema createSchema(TsSchema schema) {
+		/*TimeSeriesSchema input_schema = input_iterator.getSchema();		
 		String[] schema = input_schema.schema;
 		boolean constantTimeStep = input_schema.constantTimeStep;
 		int timeStep = input_schema.timeStep;
@@ -22,11 +23,12 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 		boolean hasQualityFlags = input_schema.hasQualityFlags;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();*/
+		return schema.copy(); // TODO!
 	}
 
-	public LinearIterpolationIterator(TimeSeriesIterator input_iterator) {
-		super(input_iterator, createSchema(input_iterator));
+	public LinearIterpolationIterator(TsIterator input_iterator) {
+		super(input_iterator, createSchema(input_iterator.getSchema()));
 		if(input_iterator.hasNext()) {
 			next = input_iterator.next();
 		}
@@ -47,7 +49,7 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 		}
 		if(prev!=null&&next!=null) { // interpolation possible
 			boolean interpolate=false;
-			for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			for(int i=0;i<schema.length;i++) {
 				if(Float.isNaN(curr.data[i])&&(!Float.isNaN(prev.data[i]))&&(!Float.isNaN(next.data[i]))) {
 					interpolate = true;
 					break;
@@ -56,8 +58,8 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 			if(!interpolate) {
 				return curr;
 			}
-			float[] result = new float[outputTimeSeriesSchema.columns];
-			for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			float[] result = new float[schema.length];
+			for(int i=0;i<schema.length;i++) {
 				if(Float.isNaN(curr.data[i])&&(!Float.isNaN(prev.data[i]))&&(!Float.isNaN(next.data[i]))) {
 					result[i] = (prev.data[i]+next.data[i])/2;
 					interpolationCount++;

@@ -12,35 +12,35 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 
-public class TimeSeriesIteratorIterator extends MoveIterator {
+public class TsIteratorIterator extends MoveIterator {
 
-	private Iterator<TimeSeriesIterator> input_iterator;
+	private Iterator<TsIterator> input_iterator;
 	private SchemaConverterIterator current_iterator;
 	
-	public static <T> TimeSeriesIteratorIterator create(Iterable<T> input, Function<T,TimeSeriesIterator> function) {
+	public static <T> TsIteratorIterator create(Iterable<T> input, Function<T,TsIterator> function) {
 		return create(input.iterator(),function);
 	}
 
-	public static <T> TimeSeriesIteratorIterator create(Iterator<T> input_iterator, Function<T,TimeSeriesIterator> function) {
+	public static <T> TsIteratorIterator create(Iterator<T> input_iterator, Function<T,TsIterator> function) {
 		Set<String> schemaSet = new HashSet<String>();
-		List<TimeSeriesIterator> list = new ArrayList<TimeSeriesIterator>();
+		List<TsIterator> list = new ArrayList<TsIterator>();
 		while(input_iterator.hasNext()) {
-			TimeSeriesIterator timeSeriesIterator = function.apply(input_iterator.next());
-			List<String> schemalist = Arrays.asList(timeSeriesIterator.getOutputSchema());
+			TsIterator timeSeriesIterator = function.apply(input_iterator.next());
+			List<String> schemalist = Arrays.asList(timeSeriesIterator.getNames());
 			System.out.println("schemalist: "+schemalist);
 			schemaSet.addAll(schemalist);
 			System.out.println("schemaSet: "+schemaSet);
 			list.add(timeSeriesIterator);
 		}			
-		return new TimeSeriesIteratorIterator(list,schemaSet.toArray(new String[0]));
+		return new TsIteratorIterator(list,schemaSet.toArray(new String[0]));
 	}
 	
-	public TimeSeriesIteratorIterator(Iterable<TimeSeriesIterator> input, String[] outputSchema) {
+	public TsIteratorIterator(Iterable<TsIterator> input, String[] outputSchema) {
 		this(input.iterator(),outputSchema);
 	}
 
-	public TimeSeriesIteratorIterator(Iterator<TimeSeriesIterator> input_iterator, String[] outputSchema) {
-		super(new TimeSeriesSchema(outputSchema));
+	public TsIteratorIterator(Iterator<TsIterator> input_iterator, String[] outputSchema) {
+		super(new TimeSeriesSchema(outputSchema).toTsSchema());
 		this.input_iterator = input_iterator;
 		current_iterator = null;
 	}
@@ -49,8 +49,8 @@ public class TimeSeriesIteratorIterator extends MoveIterator {
 	protected TimeSeriesEntry getNext() {			
 		if(current_iterator==null) {
 			if(input_iterator.hasNext()) {
-				TimeSeriesIterator next = input_iterator.next();
-				current_iterator = new SchemaConverterIterator(next, outputTimeSeriesSchema.schema, true);
+				TsIterator next = input_iterator.next();
+				current_iterator = new SchemaConverterIterator(next, schema.names, true);
 				//System.out.println("get next iterator");
 				return getNext();
 			} else {
@@ -65,15 +65,9 @@ public class TimeSeriesIteratorIterator extends MoveIterator {
 	}
 
 	@Override
-	public String getIteratorName() {
-		return "TimeSeriesIteratorIterator";
-	}
-	
-	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		ArrayList<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
 		result.add(this);
 		return result;
 	}	
-	
 }

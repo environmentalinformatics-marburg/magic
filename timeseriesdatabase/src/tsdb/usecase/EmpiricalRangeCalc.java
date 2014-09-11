@@ -3,7 +3,7 @@ package tsdb.usecase;
 import java.util.List;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
 import tsdb.Station;
@@ -11,8 +11,8 @@ import tsdb.TsDB;
 import tsdb.aggregated.iterator.NanRemoveIterator;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
-import tsdb.util.iterator.TimeSeriesIterator;
-import tsdb.util.iterator.TimeSeriesIteratorIterator;
+import tsdb.util.iterator.TsIterator;
+import tsdb.util.iterator.TsIteratorIterator;
 
 public class EmpiricalRangeCalc {
 	
@@ -20,7 +20,7 @@ public class EmpiricalRangeCalc {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 
@@ -42,7 +42,7 @@ public class EmpiricalRangeCalc {
 			List<Station> stationList = generalStation.stationList;
 			
 			//TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.queryRawQualityChecked(station.plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange)));
-			TimeSeriesIterator it = TimeSeriesIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.stationID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
+			TsIterator it = TsIteratorIterator.create(stationList, station -> new NanRemoveIterator(qp.query_raw_with_bad_quality_removed(station.stationID, querySchema, queryStart, queryEnd, DataQuality.STEP)));
 			
 			//TimeSeriesIterator it = qp.queryRaw(plotID, querySchema, queryStart, queryEnd);		
 			//TimeSeriesIterator it = qp.queryQualityChecked(plotID, querySchema, queryStart, queryEnd, checkPhysicalRange, checkEmpiricalRange, checkStepRange);

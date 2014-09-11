@@ -20,7 +20,7 @@ import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class StatisticsDialog extends Dialog {
 	
@@ -115,7 +115,7 @@ public class StatisticsDialog extends Dialog {
 		
 		for(String stationName:tsdb.getStationNames()) {
 			
-			TimeSeriesIterator it = tsdb.query_raw(stationName, null, null, null);
+			TsIterator it = tsdb.query_raw(stationName, null, null, null);
 			if(it==null) {
 				//println(null);
 			} else {

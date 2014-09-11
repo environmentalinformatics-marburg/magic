@@ -1,6 +1,6 @@
 package tsdb.usecase;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
@@ -16,7 +16,7 @@ public class DatabaseInfo {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		//timeSeriesDatabase.registerStreams();
 		
 		

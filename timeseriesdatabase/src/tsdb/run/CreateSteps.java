@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
@@ -18,8 +18,8 @@ import tsdb.graph.ContinuousGen;
 import tsdb.graph.Differential;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.iterator.TimeSeriesIterator;
-import tsdb.util.iterator.TimeSeriesIteratorIterator;
+import tsdb.util.iterator.TsIterator;
+import tsdb.util.iterator.TsIteratorIterator;
 
 public class CreateSteps {
 	
@@ -27,13 +27,13 @@ public class CreateSteps {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.PHYSICAL);
 
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {
 			System.out.println("process: "+sensorName);
 			String[] schema = new String[]{sensorName};
-			List<TimeSeriesIterator> iterator_list = new ArrayList<TimeSeriesIterator>();
+			List<TsIterator> iterator_list = new ArrayList<TsIterator>();
 			
 			List<String> stationNames = new ArrayList<String>();
 			for(GeneralStation gs:tsdb.getGeneralStations()) {
@@ -56,7 +56,7 @@ public class CreateSteps {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				TimeSeriesIterator it = Differential.create(tsdb, source).get(null, null);
+				TsIterator it = Differential.create(tsdb, source).get(null, null);
 				if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);
@@ -64,7 +64,7 @@ public class CreateSteps {
 			}
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {
-				TimeSeriesIteratorIterator result_iterator = new TimeSeriesIteratorIterator(iterator_list,schema);
+				TsIteratorIterator result_iterator = new TsIteratorIterator(iterator_list,schema);
 				FileOutputStream out = new FileOutputStream(CSV_OUTPUT_PATH+"Steps/"+sensorName);
 				PrintStream printStream = new PrintStream(out);
 				

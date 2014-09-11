@@ -8,8 +8,9 @@ import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Processed all interpolated values and removes all values that are of low quality.
@@ -18,36 +19,23 @@ import tsdb.util.iterator.TimeSeriesIterator;
  */
 public class BadInterpolatedRemoveIterator extends MoveIterator {
 	
-	private TimeSeriesIterator input_iterator;
+	private TsIterator input_iterator;
 	private TimeSeriesEntry prev;
 	private Sensor[] sensors;
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		if(!input_schema.isContinuous) {
-			throw new RuntimeException("BadInterpolatedRemoveIterator needs continuous elements");
-		}
-		boolean isContinuous = true;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		if(!input_schema.hasInterpolatedFlags) {
-			throw new RuntimeException("BadInterpolatedRemoveIterator needs InterpolatedFlags");
-		}
+	public static TsSchema createSchema(TsSchema input_schema) {
+		input_schema.throwNoQualityFlags();
+		boolean hasQualityFlags = true;
+		input_schema.throwNoInterpolatedFlags();
 		boolean hasInterpolatedFlags = true;
-		if(input_schema.hasQualityCounters) {
-			throw new RuntimeException("QualityCounters not implemted");
-		}
-		boolean hasQualityCounters = false;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
-		
+		return new TsSchema(input_schema.names, input_schema.aggregation,input_schema.timeStep, input_schema.isContinuous, hasQualityFlags, hasInterpolatedFlags);
 	}
 
-	public BadInterpolatedRemoveIterator(TsDB timeSeriesDatabase, TimeSeriesIterator input_iterator) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+	public BadInterpolatedRemoveIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
+		super(createSchema(input_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.prev = null;
-		this.sensors = timeSeriesDatabase.getSensors(input_iterator.getOutputTimeSeriesSchema());
+		this.sensors = timeSeriesDatabase.getSensors(schema.names);
 	}
 
 	@Override
@@ -74,7 +62,7 @@ public class BadInterpolatedRemoveIterator extends MoveIterator {
 				float[] data = Arrays.copyOf(current.data,current.data.length);
 				boolean[] interpolated = Arrays.copyOf(current.interpolated,current.interpolated.length);
 				boolean someChecksFailed = false;
-				for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+				for(int i=0;i<schema.length;i++) {
 					if(interpolated[i]) {
 						if(!check(i,prev.data[i],data[i])) {
 							someChecksFailed = true;
@@ -98,12 +86,6 @@ public class BadInterpolatedRemoveIterator extends MoveIterator {
 		}
 	}
 
-	@Override
-	public String getIteratorName() {
-		return "BadInterpolatedRemoveIterator";
-	}
-	
-	
 	private boolean check(int columnIndex, float prev, float value) {
 		if(!sensors[columnIndex].checkPhysicalRange(value)) {
 			return false;

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
@@ -19,8 +19,8 @@ import tsdb.graph.Difference;
 import tsdb.graph.NodeGen;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.iterator.TimeSeriesIterator;
-import tsdb.util.iterator.TimeSeriesIteratorIterator;
+import tsdb.util.iterator.TsIterator;
+import tsdb.util.iterator.TsIteratorIterator;
 
 public class AverageDiff {
 
@@ -28,7 +28,7 @@ public class AverageDiff {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		NodeGen stationGen = QueryPlan.getStationGen(tsdb, DataQuality.STEP);
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
@@ -36,7 +36,7 @@ public class AverageDiff {
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {
 			System.out.println("process: "+sensorName);
 			String[] schema = new String[]{sensorName};
-			List<TimeSeriesIterator> iterator_list = new ArrayList<TimeSeriesIterator>();
+			List<TsIterator> iterator_list = new ArrayList<TsIterator>();
 			
 			List<String> stationNames = new ArrayList<String>();
 			for(GeneralStation gs:tsdb.getGeneralStations()) {
@@ -59,7 +59,7 @@ public class AverageDiff {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				TimeSeriesIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
+				TsIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
 				if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);
@@ -67,7 +67,7 @@ public class AverageDiff {
 			}
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {
-				TimeSeriesIteratorIterator result_iterator = new TimeSeriesIteratorIterator(iterator_list,schema);
+				TsIteratorIterator result_iterator = new TsIteratorIterator(iterator_list,schema);
 				//result_iterator.writeCSV(CSV_OUTPUT_PATH+"AverageDiff/"+sensorName+".csv");
 				FileOutputStream out = new FileOutputStream(CSV_OUTPUT_PATH+"AverageDiff/"+sensorName);
 				PrintStream printStream = new PrintStream(out);

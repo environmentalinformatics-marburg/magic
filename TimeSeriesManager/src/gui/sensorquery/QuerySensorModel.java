@@ -5,6 +5,8 @@ import tsdb.Region;
 import tsdb.remote.GeneralStationInfo;
 
 public class QuerySensorModel extends AbstractModel {
+	
+	public enum ViewType{COMPARE,DIFF};
 
 	private Region[] regions;
 	private GeneralStationInfo[] generalStationInfos;

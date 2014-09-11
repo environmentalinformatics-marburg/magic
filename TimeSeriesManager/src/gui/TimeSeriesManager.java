@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
@@ -82,13 +82,13 @@ public class TimeSeriesManager implements TsDBLogger {
 
 		if(!useRemote) {
 			if(usedefault) {
-				TsDB tsdb = FactoryTsDB.createDefault();
+				TsDB tsdb = TsDBFactory.createDefault();
 				this.remoteTsDB =  new ServerTsDB(tsdb);
 			} else {
 				String databaseDirectory = "c:/timeseriesdatabase_database/";
 				String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 				String cacheDirectory = "c:/timeseriesdatabase_cache/";
-				TsDB tsDB = FactoryTsDB.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+				TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
 				//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
 				this.remoteTsDB =  new ServerTsDB(tsDB);
 			}

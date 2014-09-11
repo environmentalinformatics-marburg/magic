@@ -168,13 +168,13 @@ public class TsDB implements TsDBLogger {
 	 * @param outputTimeSeriesSchema
 	 * @return
 	 */
-	public Sensor[] getSensors(TimeSeriesSchema outputTimeSeriesSchema) {
-		Sensor[] sensors = new Sensor[outputTimeSeriesSchema.columns];
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
-			Sensor sensor = sensorMap.get(outputTimeSeriesSchema.schema[i]);
+	public Sensor[] getSensors(String[] names) {
+		Sensor[] sensors = new Sensor[names.length];
+		for(int i=0;i<names.length;i++) {
+			Sensor sensor = sensorMap.get(names[i]);
 			sensors[i] = sensor;
 			if(sensor==null) {
-				log.warn("sensor "+outputTimeSeriesSchema+" not found");
+				log.warn("sensor "+names[i]+" not found");
 			}
 		}
 		return sensors;

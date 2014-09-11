@@ -6,7 +6,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
 
 public class RawSource extends Node.Abstract {
@@ -43,7 +43,7 @@ public class RawSource extends Node.Abstract {
 	
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
+	public TsIterator get(Long start, Long end) {
 		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
 		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
 			return null;

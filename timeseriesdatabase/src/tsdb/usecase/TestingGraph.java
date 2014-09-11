@@ -1,7 +1,7 @@
 package tsdb.usecase;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 
@@ -12,7 +12,7 @@ public class TestingGraph {
 	public static void main(String[] args) {
 		System.out.println("start...");
 		
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		
 		//String stationName = "HEG01";
 		//String stationName = "8";

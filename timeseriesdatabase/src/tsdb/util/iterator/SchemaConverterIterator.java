@@ -9,13 +9,13 @@ import tsdb.util.Util;
 
 public class SchemaConverterIterator extends MoveIterator {
 
-	private TimeSeriesIterator input_iterator;
+	private TsIterator input_iterator;
 	private int[] inputPos;
 
-	public SchemaConverterIterator(TimeSeriesIterator input_iterator, String[] outputSchema, boolean fillWithNaN) {
-		super(new TimeSeriesSchema(outputSchema));
+	public SchemaConverterIterator(TsIterator input_iterator, String[] outputSchema, boolean fillWithNaN) {
+		super(new TimeSeriesSchema(outputSchema).toTsSchema());
 		this.input_iterator = input_iterator;
-		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getOutputSchema(), !fillWithNaN, false);
+		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), !fillWithNaN, false);
 	}
 
 	@Override
@@ -35,11 +35,6 @@ public class SchemaConverterIterator extends MoveIterator {
 		} else {
 			return null;
 		}
-	}
-
-	@Override
-	public String getIteratorName() {
-		return "SchemaConverterIterator";
 	}
 	
 	@Override

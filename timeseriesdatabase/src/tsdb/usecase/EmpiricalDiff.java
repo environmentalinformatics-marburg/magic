@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TsDB;
@@ -14,7 +14,7 @@ import tsdb.util.CSV;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Testing quality checks for empirical quality checks.
@@ -28,7 +28,7 @@ public class EmpiricalDiff {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(tsdb);
 
 
@@ -42,17 +42,17 @@ public class EmpiricalDiff {
 		Long queryStart = 56936340l;
 		Long queryEnd = 59809800l;
 		DataQuality dataQuality = DataQuality.PHYSICAL;
-		TimeSeriesIterator itBase = qp.query_continuous_base_aggregated(basePlotID, querySchema, queryStart, queryEnd, dataQuality);
+		TsIterator itBase = qp.query_continuous_base_aggregated(basePlotID, querySchema, queryStart, queryEnd, dataQuality);
 
 
 
 		List<Station> nearList = tsdb.getStation(basePlotID).getNearestStationsWithSensor(sensorName);
 		
 		Stream<Station> stream = nearList.stream();
-		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
-		Iterator<TimeSeriesIterator> it = stream1.iterator();
+		Stream<TsIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
+		Iterator<TsIterator> it = stream1.iterator();
 
-		TimeSeriesIterator[] itNear = new TimeSeriesIterator[NEAR_STATIONS];
+		TsIterator[] itNear = new TsIterator[NEAR_STATIONS];
 		int c = Util.fillArray(nearList, itNear, x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
 		if(c<NEAR_STATIONS) {
 			throw new RuntimeException("c: "+c+" "+nearList.size());
@@ -66,7 +66,7 @@ public class EmpiricalDiff {
 		}
 		 */
 
-		TimeSeriesIterator itDiff = new TimeSeriesIterator(new TimeSeriesSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg","step"})) {
+		TsIterator itDiff = new TsIterator(new TimeSeriesSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg","step"}).toTsSchema()) {
 			private float prevValue = Float.NaN;
 			
 			@Override
@@ -127,7 +127,7 @@ public class EmpiricalDiff {
 				return null;
 			}
 			@Override
-			public String getIteratorName() {
+			public String getProcessingTitle() {
 				return "diff";
 			}			
 		};

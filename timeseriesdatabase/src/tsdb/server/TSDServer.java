@@ -9,7 +9,7 @@ import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class TSDServer extends TsDBClient implements TSDServerInterface {
 	
@@ -22,7 +22,7 @@ public class TSDServer extends TsDBClient implements TSDServerInterface {
 	
 	@Override
 	public TimestampSeries query(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
-		TimeSeriesIterator it = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
+		TsIterator it = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 		TimestampSeries timestampSeries = TimestampSeries.create(it);
 		return timestampSeries;
 	}

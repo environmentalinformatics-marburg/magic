@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import tsdb.util.TsSchema.Aggregation;
+
+@Deprecated
 public class TimeSeriesSchema implements Serializable {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1280659814458690806L;
 
 	/**
@@ -18,7 +18,7 @@ public class TimeSeriesSchema implements Serializable {
 	public final String[] schema;
 	
 	/**
-	 * if entries are aggregated data with constant time seps, may contain gaps
+	 * if entries are aggregated data with constant time steps, may contain gaps
 	 */
 	public final boolean constantTimeStep;
 	public static final int NO_CONSTANT_TIMESTEP = -999999;
@@ -214,6 +214,16 @@ public class TimeSeriesSchema implements Serializable {
 	
 	public void throwNotContinuous() {
 		Util.throwFalse(isContinuous, "iterator needs to be continuous");
+	}
+	
+	public TsSchema toTsSchema() {
+		Aggregation aggregation;
+		if(constantTimeStep) {
+			aggregation = Aggregation.CONSTANT_STEP;
+		} else {
+			aggregation = Aggregation.NO;
+		}
+		return new TsSchema(schema, aggregation, timeStep, isContinuous,  hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);
 	}
 	
 

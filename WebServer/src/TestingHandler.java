@@ -24,7 +24,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.server.TSDServerInterface;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 
 public class TestingHandler extends AbstractHandler {
@@ -75,7 +75,7 @@ public class TestingHandler extends AbstractHandler {
 			boolean interpolated = false;
 			TimestampSeries result = stub.query(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 
-			TimeSeriesIterator it = result.timeSeriesIterator();
+			TsIterator it = result.tsIterator();
 
 			while(it.hasNext()) {
 				response.getWriter().println(Util.arrayToString(it.next().data)+"<br>");

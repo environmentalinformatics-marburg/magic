@@ -3,7 +3,11 @@ package tsdb.usecase;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
+import tsdb.TsDB;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.graph.Aggregated;
 import tsdb.graph.Base;
 import tsdb.graph.CSVSource;
 import tsdb.graph.Continuous;
@@ -11,11 +15,13 @@ import tsdb.graph.Node;
 import tsdb.graph.PeakSmoothed;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.iterator.CSVIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Tfi_csv {
 
 	public static void main(String[] args) throws IOException {
+		
+		TsDB tsdb = TsDBFactory.createDefault();
 		
 		
 		String filename = "C:/timeseriesdatabase_output/kili_tfi/fer0_tfi_changed.csv";
@@ -47,13 +53,13 @@ public class Tfi_csv {
 		Base base = PeakSmoothed.create(source);
 		Continuous continuous = Continuous.create(base);
 		
-		//TimeSeriesIterator it = base.get(null, null);
+		/*//TimeSeriesIterator it = base.get(null, null);
 		TimeSeriesIterator it = continuous.get(null, null);
 		
 		while(it.hasNext()) {
 			TimeSeriesEntry e = it.next();
 			System.out.println(e);
-		}
+		}*/
 		
 		//Long queryStart = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2012,11,7,9,20,00));
 		//Long queryEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014,8,6,12,22,00));
@@ -61,6 +67,7 @@ public class Tfi_csv {
 		Long queryEnd = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014,8,8,8,25,00));
 		
 		continuous.getExactly(queryStart, queryEnd).writeCSV("c:/timeseriesdatabase_output/Manual_B_new.csv");
+		Aggregated.create(tsdb, continuous, AggregationInterval.YEAR).get(null, null).writeCSV("c:/timeseriesdatabase_output/Manual_B__new_year.csv");
 		
 
 	}

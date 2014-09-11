@@ -10,7 +10,7 @@ import tsdb.VirtualPlot;
 import tsdb.aggregated.iterator.VirtualPlotIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class VirtualBase extends Base.Abstract  {
 
@@ -47,16 +47,16 @@ public class VirtualBase extends Base.Abstract  {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {		
+	public TsIterator get(Long start, Long end) {		
 		List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(start, end, schema);			 
-		List<TimeSeriesIterator> processing_iteratorList = new ArrayList<TimeSeriesIterator>();				
+		List<TsIterator> processing_iteratorList = new ArrayList<TsIterator>();				
 		for(TimestampInterval<StationProperties> interval:intervalList) {
 			String[] stationSchema = tsdb.getValidSchema(interval.value.get_serial(), schema);
 			if(stationSchema.length>0) {
 				//Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
 				Station station = tsdb.getStation(interval.value.get_serial());
 				Node node = StationBase.create(tsdb, station, stationSchema, stationGen);
-				TimeSeriesIterator it = node.get(interval.start, interval.end);
+				TsIterator it = node.get(interval.start, interval.end);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);
 				}
@@ -65,7 +65,7 @@ public class VirtualBase extends Base.Abstract  {
 		if(processing_iteratorList.isEmpty()) {
 			return null;
 		}
-		VirtualPlotIterator virtual_iterator = new VirtualPlotIterator(schema, processing_iteratorList.toArray(new TimeSeriesIterator[0]),virtualPlot.plotID);			
+		VirtualPlotIterator virtual_iterator = new VirtualPlotIterator(schema, processing_iteratorList.toArray(new TsIterator[0]),virtualPlot.plotID);			
 		if(virtual_iterator==null||!virtual_iterator.hasNext()) {
 			return null;
 		}

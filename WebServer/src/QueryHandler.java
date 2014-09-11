@@ -41,7 +41,7 @@ import tsdb.usecase.QualityFlag;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 
 public class QueryHandler extends AbstractHandler {
@@ -105,9 +105,9 @@ public class QueryHandler extends AbstractHandler {
 
 			TimestampSeries result = stub.query(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 
-			TimeSeriesIterator it = result.timeSeriesIterator();
+			TsIterator it = result.tsIterator();
 
-			String[] schema = it.getOutputSchema();
+			String[] schema = it.getNames();
 			
 			if(!useHtml) { // CSV
 				response.setContentType("text/csv;charset=utf-8");

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
@@ -17,10 +15,11 @@ import tsdb.util.Pair;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.SchemaIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Aggregates input to high aggregated data values
@@ -38,7 +37,7 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	private static final int QUALITY_EMPIRICAL_POS = 3;
 	private static final int QUALITY_INTERPOLATED_POS = 4;	
 
-	private SchemaIterator<TimeSeriesEntry> input_iterator;
+	private TsIterator input_iterator;
 	private AggregationInterval aggregationInterval;
 	private Sensor[] sensors;
 
@@ -64,24 +63,26 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	//***
 	
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
-		String[] schema = input_schema.schema;
-		if(!input_schema.constantTimeStep) {
-			throw new RuntimeException("no constant time step");
-		}
-		if(!input_schema.isContinuous) {
-			throw new RuntimeException("not continuous");
-		}
-		if(input_schema.hasQualityCounters) {
-			throw new RuntimeException("quality counters are not usable as input");
-		}
-		boolean constantTimeStep = false;
+	public static TsSchema createSchema(TsSchema input_schema, AggregationInterval aggregationInterval) {		
+		input_schema.throwNoAggregation();
+		input_schema.throwNotContinuous();
+		Util.throwTrue(input_schema.hasQualityCounters,"quality counters are not usable as input");
+		Aggregation aggregation = aggregationInterval.toAggregation();
+		int timeStep = aggregationInterval.toTimeStep();
+		boolean isContinuous = true;
+		boolean hasQualityFlags = false;
+		boolean hasInterpolatedFlags = false;
+		boolean hasQualityCounters = false;
+		return new TsSchema(input_schema.names, aggregation,timeStep ,isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);
+		
+
+		/*boolean constantTimeStep = false;
 		int timeStep = TimeSeriesSchema.NO_CONSTANT_TIMESTEP;
 		boolean isContinuous = false; //??		
 		boolean hasQualityFlags = false;
 		boolean hasInterpolatedFlags = false; //??
 		boolean hasQualityCounters = input_schema.hasQualityFlags;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();*/
 		
 	}
 
@@ -93,12 +94,12 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	 * @param input_iterator
 	 * @param aggregationInterval interval of time that should be aggregated
 	 */
-	public AggregationIterator(TsDB timeSeriesDatabase, TimeSeriesIterator input_iterator, AggregationInterval aggregationInterval) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+	public AggregationIterator(TsDB timeSeriesDatabase, TsIterator input_iterator, AggregationInterval aggregationInterval) {
+		super(createSchema(input_iterator.getSchema(), aggregationInterval));
 		//this.inputHasQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
 		this.input_iterator = input_iterator;
 		this.aggregationInterval = aggregationInterval;
-		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		
+		this.sensors = timeSeriesDatabase.getSensors(schema.names);		
 		prepareWindDirectionAggregation();
 		initAggregates();
 	}		
@@ -110,7 +111,7 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 		wind_direction_pos=-1;
 		wind_velocity_pos=-1;
 		aggregate_wind_direction = false;
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_WIND_DIRECTION) {
 				if(wind_direction_pos==-1) {
 					wind_direction_pos = i;
@@ -141,12 +142,12 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	 */
 	private void initAggregates() {
 		aggregation_timestamp = -1;
-		aggQualityCounter = new int[outputTimeSeriesSchema.columns][QUALITY_COUNTERS];
-		aggCnt = new int[outputTimeSeriesSchema.columns];
-		aggSum = new float[outputTimeSeriesSchema.columns];
-		aggMax = new float[outputTimeSeriesSchema.columns];		
-		columnEntryCounter = new int[outputTimeSeriesSchema.columns];
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		aggQualityCounter = new int[schema.length][QUALITY_COUNTERS];
+		aggCnt = new int[schema.length];
+		aggSum = new float[schema.length];
+		aggMax = new float[schema.length];		
+		columnEntryCounter = new int[schema.length];
+		for(int i=0;i<schema.length;i++) {
 			columnEntryCounter[i] = 0;
 		}		
 		resetAggregates();
@@ -157,7 +158,7 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	 */
 	private void resetAggregates() {
 		collectedRowsInCurrentAggregate = 0;
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			if(aggQualityCounter!=null) {
 				for(int q=0;q<QUALITY_COUNTERS;q++) {
 					aggQualityCounter[i][q] = 0;
@@ -180,7 +181,7 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	private void collectValues(float[] inputData, DataQuality[] quality, boolean[] inputInterpolated) {
 		//collect values for aggregation
 		collectedRowsInCurrentAggregate++;		
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			float value = (float) inputData[i];
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_ZERO&&Float.isNaN(value)) { // special conversion of NaN values for aggregate AVERAGE_ZERO
 				//System.out.println("NaN...");
@@ -253,7 +254,12 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 			return collectorCount>0;
 		}
 		case DAY: {
-			final int MIN_VALUES = (1*24*PERCENT)/100;
+			if(aggregationType == AggregationType.AVERAGE_ALBEDO) {
+				final int MIN_VALUES = 5;
+				return MIN_VALUES<=collectorCount;
+			}
+			//final int MIN_VALUES = (1*24*PERCENT)/100;
+			final int MIN_VALUES = 22; // ~90%
 			return MIN_VALUES<=collectorCount; 
 		}
 		case WEEK: {
@@ -281,10 +287,10 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	 * @return result or null if there are no valid aggregates
 	 */
 	private Pair<float[],int[][]> aggregateCollectedData() {
-		float[] resultData = new float[outputTimeSeriesSchema.columns];	
+		float[] resultData = new float[schema.length];	
 		int validValueCounter=0; //counter of valid aggregates
 
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			//if(aggCnt[i]>0) {// at least one entry has been collected
 			if(isValidAggregate(aggCnt[i], sensors[i].baseAggregationType)) { // a minimum of values need to be collected
 				switch(sensors[i].baseAggregationType) {
@@ -335,8 +341,8 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 		if(validValueCounter>0) { // if there are some valid aggregates return result data
 			int[][] resultQualityCounter = null;
 			if(aggQualityCounter!=null) {
-				resultQualityCounter = new int[outputTimeSeriesSchema.columns][QUALITY_COUNTERS]; 
-				for(int c=0;c<outputTimeSeriesSchema.columns;c++) {
+				resultQualityCounter = new int[schema.length][QUALITY_COUNTERS]; 
+				for(int c=0;c<schema.length;c++) {
 					for(int q=0;q<QUALITY_COUNTERS;q++) {
 						resultQualityCounter[c][q] = aggQualityCounter[c][q];
 					}
@@ -418,7 +424,7 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData, inputQuality, inputInterpolated);
 						} else {	
-							TimeSeriesEntry resultElement = TimeSeriesEntry.createNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+							TimeSeriesEntry resultElement = TimeSeriesEntry.createNaN(aggregation_timestamp,schema.length);
 							aggregation_timestamp = nextAggTimestamp;
 							collectValues(inputData, inputQuality, inputInterpolated);
 							return resultElement;
@@ -439,16 +445,11 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 		if(aggregatedPair!=null) {
 			return new TimeSeriesEntry(aggregation_timestamp, null, aggregatedPair);
 		} else if(dataInAggregateCollection) { //insert NaN element at end //?? TODO testing
-			return TimeSeriesEntry.createNaN(aggregation_timestamp,outputTimeSeriesSchema.columns);
+			return TimeSeriesEntry.createNaN(aggregation_timestamp,schema.length);
 		} else {
 			return null; //no elements left
 		}
 
-	}
-
-	@Override
-	public String getIteratorName() {
-		return "AggregationIterator";
 	}
 
 	@Override

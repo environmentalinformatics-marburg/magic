@@ -7,7 +7,7 @@ import tsdb.TsDBClient;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public interface Continuous extends Node {
 	
@@ -16,7 +16,7 @@ public interface Continuous extends Node {
 		return true;
 	}
 	
-	public TimeSeriesIterator getExactly(long start, long end);
+	public TsIterator getExactly(long start, long end);
 	
 	public static Continuous create(Base base) {
 		return new Concrete(base);
@@ -39,8 +39,8 @@ public interface Continuous extends Node {
 		}		
 
 		@Override
-		public TimeSeriesIterator get(Long start, Long end) {
-			TimeSeriesIterator input_iterator = source.get(start, end);
+		public TsIterator get(Long start, Long end) {
+			TsIterator input_iterator = source.get(start, end);
 			if(input_iterator==null||!input_iterator.hasNext()) {
 				return null;
 			}
@@ -60,7 +60,7 @@ public interface Continuous extends Node {
 		}
 		
 		@Override
-		public TimeSeriesIterator getExactly(long start, long end) {		
+		public TsIterator getExactly(long start, long end) {		
 			return get(start,end);
 		}
 

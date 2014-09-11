@@ -11,7 +11,7 @@ import tsdb.aggregated.AggregationType;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
 
 /**
@@ -130,7 +130,7 @@ public class Station extends TsDBClient {
 		return stationID+"("+loggerType.typeName+")";
 	}
 
-	public TimeSeriesIterator queryRaw(String[] querySchema, Long start, Long end) {		
+	public TsIterator queryRaw(String[] querySchema, Long start, Long end) {		
 		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(stationID,start,end);
 		if(rawEventIterator==null) {
 			return null;

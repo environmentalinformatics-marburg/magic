@@ -11,7 +11,7 @@ import tsdb.aggregated.Interpolator;
 import tsdb.aggregated.TimeSeries;
 import tsdb.aggregated.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Interpolated extends Continuous.Abstract {
 
@@ -112,11 +112,11 @@ public class Interpolated extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
+	public TsIterator get(Long start, Long end) {
 		Long queryStart = start;
 		Long queryEnd = end;
 		start =  Util.ifnull(start, x->x-TRAINING_TIME_INTERVAL);
-		TimeSeriesIterator source_iterator = source.get(start, end);
+		TsIterator source_iterator = source.get(start, end);
 		if(source_iterator==null||!source_iterator.hasNext()) {
 			return null;
 		}
@@ -128,7 +128,7 @@ public class Interpolated extends Continuous.Abstract {
 		List<TimeSeries> interpolationTimeSeriesTemp = new ArrayList<TimeSeries>();
 		int sourcesLinearInterpolationCount=0;
 		for(Continuous interpolationSource:interpolationSources) {
-			TimeSeriesIterator it = interpolationSource.getExactly(interpolationStart, interpolationEnd);//TODO
+			TsIterator it = interpolationSource.getExactly(interpolationStart, interpolationEnd);//TODO
 			if(it!=null&&it.hasNext()) {
 				TimeSeries timeSeries = it.toTimeSeries();
 				sourcesLinearInterpolationCount += Interpolator.processOneValueGaps(timeSeries);
@@ -145,8 +145,8 @@ public class Interpolated extends Continuous.Abstract {
 		System.out.println("interpolated: linear: "+linearInterpolatedCount+"   multi linear: "+interpolatedCount+"   sources linear: "+sourcesLinearInterpolationCount);
 
 		sourceTimeSeries.hasDataInterpolatedFlag = true;		
-		TimeSeriesIterator clipIterator = sourceTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
-		TimeSeriesIterator resultIterator = clipIterator;
+		TsIterator clipIterator = sourceTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
+		TsIterator resultIterator = clipIterator;
 		if(interpolatedCount>0) {
 			resultIterator = new BadInterpolatedRemoveIterator(tsdb, clipIterator);
 		}
@@ -164,7 +164,7 @@ public class Interpolated extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator getExactly(long start, long end) {
+	public TsIterator getExactly(long start, long end) {
 		return get(start,end);
 	}
 	

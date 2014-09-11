@@ -5,7 +5,7 @@ import tsdb.TsDB;
 import tsdb.aggregated.iterator.ProjectionIterator;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class CacheBase extends Base.Abstract {
 
@@ -31,12 +31,12 @@ public class CacheBase extends Base.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
-		TimeSeriesIterator it = tsdb.cacheStorage.query(streamName, start, end);
+	public TsIterator get(Long start, Long end) {
+		TsIterator it = tsdb.cacheStorage.query(streamName, start, end);
 		if(it==null || !it.hasNext()) {
 			return null;
 		}
-		TimeSeriesIterator proj = new ProjectionIterator(it,schema);
+		TsIterator proj = new ProjectionIterator(it,schema);
 		if(proj==null || !proj.hasNext()) {
 			return null;
 		}

@@ -5,18 +5,18 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class GritBotDataCreation {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		String plotID = "HEW42";
@@ -25,7 +25,7 @@ public class GritBotDataCreation {
 		Long queryEnd = null;
 		DataQuality dataQuality = DataQuality.STEP;		
 		
-		TimeSeriesIterator result_iterator = qp.query_raw_with_bad_quality_removed(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TsIterator result_iterator = qp.query_raw_with_bad_quality_removed(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		//CSV.writeNoHeader(result_iterator, "c:/vm_share/gritbot.data", ",", "?", CSVTimeType.TIMESTAMP);
 		writeGritbotName("c:/vm_share/gritbot.names",querySchema);		
 		writeGritbotData("c:/vm_share/gritbot.data",result_iterator);
@@ -34,7 +34,7 @@ public class GritBotDataCreation {
 
 	}
 	
-	private static void writeGritbotData(String filename, TimeSeriesIterator it) throws FileNotFoundException {
+	private static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
 		PrintStream printStream = new PrintStream(filename);
 		
 		while(it.hasNext()) {

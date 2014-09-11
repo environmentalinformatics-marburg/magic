@@ -1,20 +1,20 @@
 package tsdb.usecase;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class UseCaseStepCheck {
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		String plotID = "HEG01";
@@ -40,7 +40,7 @@ public class UseCaseStepCheck {
 		
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryRaw(plotID,sensorNames,null,null);
 		//SchemaIterator<TimeSeriesEntry> it = qp.queryRawQualityChecked(plotID,sensorNames,null,null,false,false,true);
-		TimeSeriesIterator it = qp.query_raw_with_bad_quality_removed(plotID, sensorNames, null, null, DataQuality.NO);
+		TsIterator it = qp.query_raw_with_bad_quality_removed(plotID, sensorNames, null, null, DataQuality.NO);
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryBaseAggregated(plotID,sensorNames,null,null,false,false,false);
 		while(it.hasNext()) {
 			TimeSeriesEntry e = it.next();

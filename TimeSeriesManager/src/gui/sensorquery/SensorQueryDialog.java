@@ -1,5 +1,8 @@
 package gui.sensorquery;
 
+import gui.sensorquery.QuerySensorModel.ViewType;
+import gui.util.ComboBridge;
+
 import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
@@ -83,6 +86,8 @@ public class SensorQueryDialog extends Dialog {
 	private Label lblUnitText;
 	private Group grpAggregation;
 	private ComboViewer comboViewerAggregation;
+	private Group grpView;
+
 
 	/**
 	 * Create the dialog.
@@ -184,6 +189,15 @@ public class SensorQueryDialog extends Dialog {
 			model.setAggregationName((String) ((IStructuredSelection)event.getSelection()).getFirstElement());
 		});
 
+		grpView = new Group(grpQuery, SWT.NONE);
+		grpView.setText("View");
+		grpView.setLayout(new RowLayout(SWT.HORIZONTAL));
+
+		ComboViewer comboViewerView = new ComboViewer(grpView, SWT.READ_ONLY);
+		ComboBridge<ViewType> viewBridge = new ComboBridge<ViewType>(comboViewerView);
+		ViewType[] viewTypes = new ViewType[]{ViewType.COMPARE,ViewType.DIFF};
+		viewBridge.setInput(viewTypes);
+
 
 		Group grpQuery_1 = new Group(grpQuery, SWT.NONE);
 		grpQuery_1.setText("query");
@@ -251,7 +265,7 @@ public class SensorQueryDialog extends Dialog {
 		//updateFromRegionCombo((Region) ((IStructuredSelection)comboRegionViewer.getSelection()).getFirstElement());
 
 		lblQueryStatus.setText("ready        ");
-		
+
 		String[] aggregationNames = new String[]{"hour","day","week","month","year"};
 		model.setAggregationNames(aggregationNames);
 		model.setAggregationName("day");
@@ -284,8 +298,8 @@ public class SensorQueryDialog extends Dialog {
 		case "year":
 			aggregationInterval = AggregationInterval.YEAR;
 			break;
-			default:
-				log.warn("unknown aggregate: "+model.getAggregationName());
+		default:
+			log.warn("unknown aggregate: "+model.getAggregationName());
 		}
 
 		GeneralStationInfo generalStationInfo = model.getGeneralStationInfo();
@@ -323,10 +337,12 @@ public class SensorQueryDialog extends Dialog {
 				TimestampSeries ts = null;
 				TimestampSeries ts_compare = null;
 				try {
-
-					ts = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.EMPIRICAL, false);
-					ts_compare = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.NO, false);				
+					if(!Util.empty(tsdb.getValidSchema(name, new String[]{model.getSensorName()}))) {
+						ts = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.EMPIRICAL, false);
+						ts_compare = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.NO, false);
+					}
 				} catch(Exception e) {
+					e.printStackTrace();
 					log.error(e.toString());
 				}
 				if(ts!=null) {

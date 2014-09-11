@@ -5,7 +5,7 @@ import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.iterator.AggregationIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Aggregated extends Continuous.Abstract {
 
@@ -27,8 +27,8 @@ public class Aggregated extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
-		TimeSeriesIterator continuous_iterator = source.get(start, end);
+	public TsIterator get(Long start, Long end) {
+		TsIterator continuous_iterator = source.get(start, end);
 		if(continuous_iterator==null||!continuous_iterator.hasNext()) {
 			return null;
 		}
@@ -50,7 +50,7 @@ public class Aggregated extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator getExactly(long start, long end) {
+	public TsIterator getExactly(long start, long end) {
 		return get(start, end);
 	}
 

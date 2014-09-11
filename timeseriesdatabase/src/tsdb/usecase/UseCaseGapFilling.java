@@ -3,14 +3,14 @@ package tsdb.usecase;
 import java.time.LocalDateTime;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * use case for gap filled data
@@ -25,7 +25,7 @@ public class UseCaseGapFilling {
 		String nanValue = "NaN";
 		
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		String plotID = "HEW01";
@@ -44,7 +44,7 @@ public class UseCaseGapFilling {
 		
 		
 		TimeSeries result = TimeSeries.create(qp.query_continuous_base_aggregated(plotID, querySensorNames, startTimestamp, endTimestamp, dataQuality));
-		TimeSeriesIterator result_interpolated = qp.query_base_aggregated_interpolated(plotID, querySensorNames, startTimestamp, endTimestamp, dataQuality);
+		TsIterator result_interpolated = qp.query_base_aggregated_interpolated(plotID, querySensorNames, startTimestamp, endTimestamp, dataQuality);
 		
 		System.out.println(result);
 		System.out.println(result_interpolated);	
@@ -54,7 +54,7 @@ public class UseCaseGapFilling {
 		
 		System.out.println(timeSeriesDatabase.getStation(plotID).nearestStations);
 		String nearPlot = timeSeriesDatabase.getStation(plotID).nearestStations.get(0).stationID;
-		TimeSeriesIterator near = qp.query_base_aggregated_interpolated(nearPlot, querySensorNames, result.getFirstTimestamp(), result.getLastTimestamp(), dataQuality);
+		TsIterator near = qp.query_base_aggregated_interpolated(nearPlot, querySensorNames, result.getFirstTimestamp(), result.getLastTimestamp(), dataQuality);
 		
 		System.out.println(near);
 		

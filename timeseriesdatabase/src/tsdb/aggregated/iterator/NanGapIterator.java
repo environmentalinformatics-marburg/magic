@@ -2,18 +2,15 @@ package tsdb.aggregated.iterator;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.SchemaIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * This iterator fills gaps in input_iterator with NaN rows.
@@ -24,7 +21,7 @@ import tsdb.util.iterator.TimeSeriesIterator;
  */
 public class NanGapIterator extends MoveIterator implements TsDBLogger {
 
-	SchemaIterator<TimeSeriesEntry> input_iterator;
+	TsIterator input_iterator;
 	/**
 	 * timestamp of next Element to output
 	 */
@@ -33,7 +30,8 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 
 	Long endTimestamp;
 
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
+	public static TsSchema createSchema(TsSchema tsschema) {
+		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
 		String[] schema = input_schema.schema;
 		if(!input_schema.constantTimeStep) {
 			throw new RuntimeException("input iterator needs to have constant time steps");
@@ -44,7 +42,7 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 		boolean hasQualityFlags = input_schema.hasQualityFlags;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
 	}
 
 
@@ -54,8 +52,8 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 	 * @param start if null first element is start
 	 * @param end if null last element is end
 	 */
-	public NanGapIterator(TimeSeriesIterator input_iterator, Long start, Long end) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+	public NanGapIterator(TsIterator input_iterator, Long start, Long end) {
+		super(createSchema(input_iterator.getSchema()));
 
 		/*System.out.println("nan it start: "+TimeConverter.oleMinutesToLocalDateTime(start));
 		System.out.println("nan it end: "+TimeConverter.oleMinutesToLocalDateTime(end));
@@ -65,7 +63,7 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
 				throw new RuntimeException("timestamp start not alligned: "+TimeConverter.oleMinutesToLocalDateTime(start));
 			}
-			if(start%outputTimeSeriesSchema.timeStep!=0) {
+			if(start%schema.timeStep!=0) {
 				throw new RuntimeException("timestamp start not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(start));
 			}
 		}
@@ -74,7 +72,7 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
 				throw new RuntimeException("timestamp end not alligned: "+TimeConverter.oleMinutesToLocalDateTime(end));
 			}		
-			if(end%outputTimeSeriesSchema.timeStep!=0) {
+			if(end%schema.timeStep!=0) {
 				throw new RuntimeException("timestamp end not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(end));
 			}
 		}
@@ -124,8 +122,8 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 				return null;
 			} else {
 				if(currTimestamp<=endTimestamp) {
-					TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
-					currTimestamp += outputTimeSeriesSchema.timeStep;
+					TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getNames().length);
+					currTimestamp += schema.timeStep;
 					//System.out.println(this.getClass()+" "+currTimestamp+" "+nanElement);
 					return nanElement;
 				} else {
@@ -133,11 +131,11 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 				}
 			}
 		} else if(currTimestamp<nextElement.timestamp) { // ************** next element higher than current timestamp ****************
-			TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getOutputSchema().length);
-			currTimestamp += outputTimeSeriesSchema.timeStep;
+			TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getNames().length);
+			currTimestamp += schema.timeStep;
 			return nanElement;
 		} else if(currTimestamp==nextElement.timestamp) { // ************* current element timestamp equal to current timestamp ******
-			currTimestamp += outputTimeSeriesSchema.timeStep;
+			currTimestamp += schema.timeStep;
 			TimeSeriesEntry currElement = nextElement;			
 			if(input_iterator.hasNext()) {
 				TimeSeriesEntry temp = input_iterator.next();
@@ -159,13 +157,8 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 
 
 	@Override
-	public String[] getOutputSchema() {
-		return input_iterator.getOutputSchema();
-	}
-
-	@Override
-	public String getIteratorName() {
-		return "NanGapIterator";
+	public String[] getNames() {
+		return input_iterator.getNames();
 	}
 
 	@Override

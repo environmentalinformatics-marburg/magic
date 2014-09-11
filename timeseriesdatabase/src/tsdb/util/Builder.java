@@ -12,7 +12,7 @@ import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.aggregated.iterator.ProjectionIterator;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Builder creates a Factory to create a chain of TimeseriesIterators
@@ -29,31 +29,31 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 		return new Builder(()->qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), queryStart, queryEnd);
 	}
 	
-	public static TimeSeriesIterator project(TimeSeriesIterator it, String ... schema) {
+	public static TsIterator project(TsIterator it, String ... schema) {
 		return new ProjectionIterator(it,schema);
 	}
 	
-	public static TimeSeriesIterator project(TimeSeriesIterator it, TimeSeriesIterator targetSchema) {
-		return project(it, targetSchema.getOutputSchema());
+	public static TsIterator project(TsIterator it, TsIterator targetSchema) {
+		return project(it, targetSchema.getNames());
 	}
 	
-	public static TimeSeriesIterator continuous(TimeSeriesIterator it) {
+	public static TsIterator continuous(TsIterator it) {
 		return new NanGapIterator(it,null,null);
 	}
 	
-	public static TimeSeriesIterator continuous(TimeSeriesIterator it, Long start, Long end) {
+	public static TsIterator continuous(TsIterator it, Long start, Long end) {
 		return new NanGapIterator(it,start,end);
 	}
 	
-	public static TimeSeriesIterator apply(TimeSeriesIterator it, Function<TimeSeriesEntry,TimeSeriesEntry> mapper) {
+	public static TsIterator apply(TsIterator it, Function<TimeSeriesEntry,TimeSeriesEntry> mapper) {
 		return new ApplyIterator(it,mapper);
 	}
 	
-	public static TimeSeriesIterator linearIterpolate(TimeSeriesIterator it) {
+	public static TsIterator linearIterpolate(TsIterator it) {
 		return new LinearIterpolationIterator(it);
 	}
 	
-	private final Supplier<TimeSeriesIterator> supplier;
+	private final Supplier<TsIterator> supplier;
 	
 	/*public Builder(Supplier<TimeSeriesIterator> supplier) {
 		this.supplier = supplier;
@@ -61,13 +61,13 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 		this.queryEnd = null;
 	}*/
 	
-	public Builder(Supplier<TimeSeriesIterator> supplier, Long queryStart, Long queryEnd) {
+	public Builder(Supplier<TsIterator> supplier, Long queryStart, Long queryEnd) {
 		this.supplier = supplier;
 		this.queryStart = queryStart;
 		this.queryEnd = queryEnd;
 	}
 	
-	public TimeSeriesIterator create() {
+	public TsIterator create() {
 		return supplier.get();
 	}
 	
@@ -95,7 +95,7 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 	 * @param target_iterator
 	 * @return
 	 */
-	public Builder project(TimeSeriesIterator target_iterator) {
+	public Builder project(TsIterator target_iterator) {
 		return new Builder(()->project(this.create(),target_iterator),this.queryStart,this.queryEnd);
 	}
 	

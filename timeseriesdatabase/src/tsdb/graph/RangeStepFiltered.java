@@ -6,7 +6,7 @@ import tsdb.TsDB;
 import tsdb.raw.iterator.LowQualityToNanIterator;
 import tsdb.raw.iterator.QualityFlagIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class RangeStepFiltered extends Node.Abstract{ // just range and step
 	
@@ -28,8 +28,8 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
-		TimeSeriesIterator input_iterator = source.get(start, end);
+	public TsIterator get(Long start, Long end) {
+		TsIterator input_iterator = source.get(start, end);
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}

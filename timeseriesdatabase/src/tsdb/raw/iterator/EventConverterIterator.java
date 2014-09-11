@@ -8,8 +8,9 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.ProcessingChainTitle;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
 
 /**
@@ -17,12 +18,12 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
-public class EventConverterIterator extends TimeSeriesIterator {	
+public class EventConverterIterator extends TsIterator {	
 	private Iterator<Event> inputIterator;
 	private int[] eventPos;
 
 	public EventConverterIterator(String[] inputSchema, Iterator<Event> inputIterator, String[] outputSchema) {
-		super(TimeSeriesSchema.createJustSchema(outputSchema));
+		super(new TsSchema(outputSchema));
 		this.inputIterator = inputIterator;		
 		eventPos = Util.stringArrayToPositionIndexArray(outputSchema, inputSchema, true, true);
 	}
@@ -37,18 +38,13 @@ public class EventConverterIterator extends TimeSeriesIterator {
 		Event event = inputIterator.next();
 		//System.out.println("event: "+event);
 		Object[] payload = event.getPayload();
-		float[] data = new float[outputTimeSeriesSchema.columns];
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		float[] data = new float[schema.length];
+		for(int i=0;i<schema.length;i++) {
 			data[i] = (float) payload[eventPos[i]];
 		}
 		return new TimeSeriesEntry(event.getTimestamp(),data);
 	}
 
-	@Override
-	public String getIteratorName() {
-		return "EventConverterIterator";
-	}
-	
 	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();

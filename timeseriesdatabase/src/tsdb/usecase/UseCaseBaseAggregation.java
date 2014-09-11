@@ -2,7 +2,7 @@ package tsdb.usecase;
 
 import java.time.LocalDateTime;
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
@@ -23,7 +23,7 @@ public class UseCaseBaseAggregation {
 		
 		System.out.println("start database...");
 
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		System.out.println("query data...");

@@ -3,10 +3,13 @@ package tsdb.aggregated.iterator;
 import java.util.List;
 
 import tsdb.DataQuality;
+import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * This iterator checks values of input_iterator by comparing values to compare_iterator.
@@ -14,29 +17,25 @@ import tsdb.util.iterator.TimeSeriesIterator;
  * @author woellauer
  *
  */
-public class EmpiricalIterator extends TimeSeriesIterator {
+public class EmpiricalIterator extends TsIterator {
 
-	private TimeSeriesIterator input_iterator;
-	private TimeSeriesIterator compare_iterator;
+	private TsIterator input_iterator;
+	private TsIterator compare_iterator;
 	private Float[] maxDiff;
 
-	public static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator) {
-		TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = input_schema.isContinuous;
-		if(!input_schema.hasQualityFlags) {
-			throw new RuntimeException("EmpiricalIterator: no quality flags in schema");
-		}
-		boolean hasQualityFlags = true;
-		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
-		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	public static TsSchema createSchema(TsSchema schema) {
+		schema.throwNotContinuous();
+		boolean isContinuous = true;
+		schema.throwNoConstantTimeStep();
+		Aggregation aggregation = Aggregation.CONSTANT_STEP;
+		schema.throwNoBaseAggregation();
+		int timeStep = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
+		//TODO quality flag
+		return new TsSchema(schema.names, aggregation, timeStep, isContinuous);
 	}
 
-	public EmpiricalIterator(TimeSeriesIterator input_iterator, TimeSeriesIterator compare_iterator, Float[] maxDiff) {
-		super(createSchema(input_iterator));
+	public EmpiricalIterator(TsIterator input_iterator, TsIterator compare_iterator, Float[] maxDiff) {
+		super(createSchema(input_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.compare_iterator = compare_iterator;
 		this.maxDiff = maxDiff;
@@ -56,9 +55,9 @@ public class EmpiricalIterator extends TimeSeriesIterator {
 			throw new RuntimeException("iterator error");
 		}
 
-		float[] result = new float[outputTimeSeriesSchema.columns];
-		DataQuality[] resultQf = new DataQuality[outputTimeSeriesSchema.columns];
-		for(int colIndex=0;colIndex<outputTimeSeriesSchema.columns;colIndex++) {
+		float[] result = new float[schema.length];
+		DataQuality[] resultQf = new DataQuality[schema.length];
+		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			if(element.qualityFlag[colIndex]==DataQuality.STEP) {
 				if(maxDiff[colIndex]!=null&&!Float.isNaN(genElement.data[colIndex])) {
 					if(Math.abs(element.data[colIndex]-genElement.data[colIndex])<=maxDiff[colIndex]) { // check successful

@@ -7,7 +7,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 
 public class StartServer {
@@ -17,7 +17,7 @@ public class StartServer {
 	public static void main(String[] args) throws RemoteException, AlreadyBoundException, MalformedURLException {
 		System.out.println("start...");
 		
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 
         try {
             TSDServer tsdserver = new TSDServer(timeSeriesDatabase);

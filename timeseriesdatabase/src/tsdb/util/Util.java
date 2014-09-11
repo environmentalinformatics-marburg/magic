@@ -480,6 +480,22 @@ public class Util {
 			throw new RuntimeException(errorText);
 		}
 	}
+	
+	public static interface Callback {
+		public String call();
+	}
+	
+	public static void throwFalse(boolean check, Callback errorText) {
+		if(!check) {
+			throw new RuntimeException(errorText.call());
+		}
+	}
+	
+	public static void throwTrue(boolean check, String errorText) {
+		if(check) {
+			throw new RuntimeException(errorText);
+		}		
+	}
 
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
@@ -488,4 +504,13 @@ public class Util {
 	public static boolean empty(Object[] array) {
 		return array==null||array.length==0;
 	}
+
+	public static void throwEmpty(Object[] array) {
+		if(empty(array)) {
+			throw new RuntimeException("array empty");
+		}
+		
+	}
+
+	
 }

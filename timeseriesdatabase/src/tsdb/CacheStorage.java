@@ -17,7 +17,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class CacheStorage implements TsDBLogger {
 
@@ -103,11 +103,11 @@ public class CacheStorage implements TsDBLogger {
 		}
 	}
 
-	public  TimeSeriesIterator query(String streamName, Long begin, Long end) {		
+	public  TsIterator query(String streamName, Long begin, Long end) {		
 		TimeSeriesSchema timeSeriesSchema = schemaMap.get(streamName);
 		if(timeSeriesSchema!=null) {
 			Iterator<TimeSeriesEntry> it = queryMap(streamName,begin,end).values().iterator();			
-			TimeSeriesIterator it2 = new TimeSeriesIterator(timeSeriesSchema) {
+			TsIterator it2 = new TsIterator(timeSeriesSchema.toTsSchema()) {
 				@Override
 				public boolean hasNext() {
 					return it.hasNext();
@@ -123,7 +123,7 @@ public class CacheStorage implements TsDBLogger {
 					return result;
 				}
 				@Override
-				public String getIteratorName() {
+				public String getProcessingTitle() {
 					return "cache query iterator";
 				}				
 			};
@@ -135,13 +135,13 @@ public class CacheStorage implements TsDBLogger {
 		}
 	}
 
-	public void writeNew(String streamName,TimeSeriesIterator input_iterator) {
+	public void writeNew(String streamName,TsIterator input_iterator) {
 		
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		db.delete(dbName);
 		schemaMap.remove(streamName);
 
-		schemaMap.put(streamName, input_iterator.getOutputTimeSeriesSchema());
+		schemaMap.put(streamName, input_iterator.getSchema().toTimeSeriesSchema());
 		
 		Iterator<Tuple2<Long, TimeSeriesEntry>> bulk_iterator = new Iterator<Tuple2<Long,TimeSeriesEntry>>() {
 			@Override

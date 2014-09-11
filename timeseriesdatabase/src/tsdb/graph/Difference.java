@@ -6,7 +6,7 @@ import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.iterator.DifferenceIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Difference extends Continuous.Abstract {
 	
@@ -46,12 +46,12 @@ public class Difference extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator getExactly(long start, long end) {
-		TimeSeriesIterator input_iterator = source.get(start, end);
+	public TsIterator getExactly(long start, long end) {
+		TsIterator input_iterator = source.get(start, end);
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}
-		TimeSeriesIterator compare_iterator = compareSource.get(start, end);
+		TsIterator compare_iterator = compareSource.get(start, end);
 		//TimeSeriesIterator compare_iterator = new ProjectionIterator(compareSource.get(start, end),source.getSchema());
 		if(compare_iterator==null||!compare_iterator.hasNext()) {
 			log.warn("no compare iterator");
@@ -62,7 +62,7 @@ public class Difference extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
+	public TsIterator get(Long start, Long end) {
 		if(start==null||end==null) {
 			long[] interval = tsdb.getBaseTimeInterval(stationName);
 			if(interval==null) {

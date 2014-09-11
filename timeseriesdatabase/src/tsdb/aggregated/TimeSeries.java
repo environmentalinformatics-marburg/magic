@@ -13,16 +13,18 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.ProcessingChainTitle;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterable;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterable;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * time series of aggregated data. time interval between values is constant
  * @author woellauer
  *
  */
-public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
+public class TimeSeries implements TsIterable, TsDBLogger {
 
 	//used for metadata, may be null
 	private final List<ProcessingChainEntry> processingChain;
@@ -73,17 +75,17 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 	 * @param timeStep
 	 * @return
 	 */
-	public static TimeSeries create(TimeSeriesIterator input_iterator) {
-		TimeSeriesSchema timeSeriesSchema = input_iterator.getOutputTimeSeriesSchema();
-		if(!timeSeriesSchema.constantTimeStep) {
+	public static TimeSeries create(TsIterator input_iterator) {
+		TsSchema tsSchema = input_iterator.getSchema();
+		if(tsSchema.aggregation!=Aggregation.CONSTANT_STEP) {
 			log.error("time series needs to have constant aggregated timesteps");
 			return null;
 		}
-		if(!timeSeriesSchema.isContinuous) {
+		if(!tsSchema.isContinuous) {
 			log.error("time series needs to have constant timesteps and continuous entries");
 			return null;
 		}
-		String[] schema = timeSeriesSchema.schema;
+		String[] schema = tsSchema.names;
 
 		if(!input_iterator.hasNext()) {
 			return null; // not data in input_iterator
@@ -98,7 +100,7 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 		long timestamp=-1;
 		for(int i=0;i<entryList.size();i++) {
 			TimeSeriesEntry entry = entryList.get(i);
-			if(timestamp==-1||timestamp+timeSeriesSchema.timeStep==entry.timestamp) {
+			if(timestamp==-1||timestamp+tsSchema.timeStep==entry.timestamp) {
 				for(int column=0;column<schema.length;column++) {
 					data[column][i] = entry.data[column];
 				}
@@ -118,9 +120,9 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 			}
 		}
 
-		TimeSeries result = new TimeSeries(input_iterator.getProcessingChain(),schema, startTimestamp, timeSeriesSchema.timeStep, data, dataQuality, dataInterpolated);
+		TimeSeries result = new TimeSeries(input_iterator.getProcessingChain(),schema, startTimestamp, tsSchema.timeStep, data, dataQuality, dataInterpolated);
 
-		result.hasDataQualityFlag = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
+		result.hasDataQualityFlag = input_iterator.getSchema().hasQualityFlags;
 		result.hasDataInterpolatedFlag = false; //TODO
 
 		return result;
@@ -300,11 +302,11 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 	}
 
 	@Override
-	public TimeSeriesIterator timeSeriesIterator() {
+	public TsIterator tsIterator() {
 		return new InternalClipIterator(null, null);
 	}
 	
-	public TimeSeriesIterator timeSeriesIteratorCLIP(Long clipStart, Long clipEnd) {
+	public TsIterator timeSeriesIteratorCLIP(Long clipStart, Long clipEnd) {
 		return new InternalClipIterator(clipStart, clipEnd);
 	}
 
@@ -369,13 +371,13 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 	}*/
 
 
-	private class InternalClipIterator extends TimeSeriesIterator {
+	private class InternalClipIterator extends TsIterator {
 
 		private int pos;
 		private final int endPos;
 
 		public InternalClipIterator(Long clipStart, Long clipEnd) {
-			super(createSchema());
+			super(createSchema().toTsSchema());
 
 			long clipStartTimestamp = clipStart==null?getFirstTimestamp():clipStart;
 			long clipEndTimestamp = clipEnd==null?getLastTimestamp():clipEnd;	
@@ -434,7 +436,7 @@ public class TimeSeries implements TimeSeriesIterable, TsDBLogger {
 		}	
 
 		@Override
-		public String getIteratorName() {
+		public String getProcessingTitle() {
 			return "InternalClipIterator";
 		}
 	}

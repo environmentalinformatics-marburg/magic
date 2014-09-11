@@ -4,11 +4,11 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.util.TsDBLogger;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public interface Node extends TsDBLogger {
 	
-	public TimeSeriesIterator get(Long start, Long end);	
+	public TsIterator get(Long start, Long end);	
 	public Station getSourceStation();
 	
 	/**

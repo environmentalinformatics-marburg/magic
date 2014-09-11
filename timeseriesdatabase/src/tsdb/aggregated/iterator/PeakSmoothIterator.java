@@ -3,8 +3,9 @@ package tsdb.aggregated.iterator;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * This iterator fills manually inserted sensor data with averaged values.
@@ -29,20 +30,21 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private float[] fillData;
 	private long nextTimestamp;
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
+	public static TsSchema createSchema(TsSchema tsschema) {
+		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
 		String[] schema = input_schema.schema;
 		boolean constantTimeStep = true;
 		boolean isContinuous = false;		
 		boolean hasQualityFlags = false;
 		boolean hasInterpolatedFlags = false;
 		boolean hasQualityCounters = false;
-		return new TimeSeriesSchema(schema, constantTimeStep, TIMESTEP, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, TIMESTEP, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
 
 	}
 
-	public PeakSmoothIterator(TimeSeriesIterator input_iterator) {
-		super(input_iterator, createSchema(input_iterator.getOutputTimeSeriesSchema()));
-		columns = input_iterator.getOutputSchema().length;
+	public PeakSmoothIterator(TsIterator input_iterator) {
+		super(input_iterator, createSchema(input_iterator.getSchema()));
+		columns = input_iterator.getNames().length;
 		if(input_iterator.hasNext()) {
 			TimeSeriesEntry first = input_iterator.next();	
 			if(input_iterator.hasNext()) {
@@ -83,8 +85,8 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private void updateFillData(long deltaTime,float[] data) {
 		fillData = new float[columns];
 		for(int c=0;c<columns;c++) {
-			//fillData[c] = (data[c]/(deltaTime/timeStep));
-			fillData[c] = (data[c]*60*24*7)/deltaTime;
+			fillData[c] = (data[c]/(deltaTime/TIMESTEP));
+			//fillData[c] = (data[c]*60*24*7)/deltaTime;
 		}
 	}
 

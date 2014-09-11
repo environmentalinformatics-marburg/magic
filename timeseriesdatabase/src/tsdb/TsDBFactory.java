@@ -17,7 +17,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class FactoryTsDB implements TsDBLogger {
+public class TsDBFactory implements TsDBLogger {
 	
 	static String CONFIG_DIRECTORY = "config/";
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";

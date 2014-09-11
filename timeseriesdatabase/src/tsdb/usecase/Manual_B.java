@@ -3,7 +3,7 @@ package tsdb.usecase;
 import java.time.LocalDateTime;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TimeConverter;
@@ -20,7 +20,7 @@ import tsdb.graph.QueryPlan;
 import tsdb.graph.RangeStepFiltered;
 import tsdb.graph.RawSource;
 import tsdb.graph.VirtualBase;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Manual_B {
 	
@@ -29,7 +29,7 @@ public class Manual_B {
 	public static void main(String[] args) {
 		System.out.println("start...");
 
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 
 		QueryProcessor qp = new QueryProcessor(tsdb);
 
@@ -76,7 +76,7 @@ public class Manual_B {
 		
 		
 		
-		Continuous.create(Base.create(tsdb, "sav5", querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
+		Continuous.create(Base.create(tsdb, plotID, querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
 		
 		
 		//result_iterator.writeCSV(CSV_OUTPUT_PATH+"Manual_B.csv");

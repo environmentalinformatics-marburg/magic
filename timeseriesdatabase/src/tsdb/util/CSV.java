@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.iterator.TimeSeriesIterable;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterable;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * Writes time series data to CSV file with some format options.
@@ -20,39 +20,39 @@ import tsdb.util.iterator.TimeSeriesIterator;
  */
 public class CSV implements TsDBLogger{
 
-	public static void writeNoHeader(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+	public static void writeNoHeader(TsIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(it, false, filename, separator, nanText, csvTimeType, false, false);
 	}
 
 
-	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+	public static void write(TsIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(input, filename, separator, nanText, csvTimeType, false);
 	}
 	
-	public static void write(TimeSeriesIterable input, String filename) {
+	public static void write(TsIterable input, String filename) {
 		write(input, filename, ",", "NA", CSVTimeType.TIMESTAMP_AND_DATETIME);
 	}
 
-	public static void write(TimeSeriesIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag) {
-		write(input.timeSeriesIterator(), filename, separator, nanText, csvTimeType, qualityFlag, false);
+	public static void write(TsIterable input, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag) {
+		write(input.tsIterator(), filename, separator, nanText, csvTimeType, qualityFlag, false);
 	}
 	
-	public static void write(TimeSeriesIterator it, String filename) {
+	public static void write(TsIterator it, String filename) {
 		write(it, filename, ",", "NA", CSVTimeType.TIMESTAMP_AND_DATETIME);
 	}
 
-	public static void write(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
+	public static void write(TsIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(it, filename, separator, nanText, csvTimeType, false, false);
 	}
 
-	public static void write(TimeSeriesIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
+	public static void write(TsIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
 		write(it, true, filename, separator, nanText, csvTimeType, qualityFlag, qualityCounter);
 	}
 	
 	
 		
 
-	public static void write(TimeSeriesIterator it, boolean header, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
+	public static void write(TsIterator it, boolean header, String filename, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {
 		try {
 			FileOutputStream out = new FileOutputStream(filename);
 			write(it, header, out, separator, nanText, csvTimeType, qualityFlag, qualityCounter);
@@ -60,7 +60,7 @@ public class CSV implements TsDBLogger{
 			e.printStackTrace();
 		}
 	}
-	public static void write(TimeSeriesIterator it, boolean header, OutputStream out, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {		
+	public static void write(TsIterator it, boolean header, OutputStream out, String separator, String nanText, CSVTimeType csvTimeType, boolean qualityFlag, boolean qualityCounter) {		
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
 			time=true;
@@ -88,7 +88,7 @@ public class CSV implements TsDBLogger{
 					}
 				}
 
-				String[] sensorNames = it.getOutputSchema();
+				String[] sensorNames = it.getNames();
 
 				for(int i=0;i<sensorNames.length;i++) {
 					if(time||i>0) {

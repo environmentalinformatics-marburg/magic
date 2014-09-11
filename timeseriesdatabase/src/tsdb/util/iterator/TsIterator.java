@@ -1,28 +1,41 @@
 package tsdb.util.iterator;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
+import tsdb.util.ProcessingChain;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 
-public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry> {
+public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChain, ProcessingChainEntry {
 
-	public TimeSeriesIterator(TimeSeriesSchema outputTimeSeriesSchema) {
-		super(outputTimeSeriesSchema);
+	protected final TsSchema schema;
+	
+	public TsIterator(TsSchema schema) {
+		this.schema = schema;
+	}
+	
+	public TsSchema getSchema() {
+		return schema;
 	}
 
-	public String getIteratorName() {
-		return this.getClass().getName();
+	public String[] getNames() {
+		return schema.names;
 	}
-
 	
 	@Override
-	public String toString() {
-		
+	public String getProcessingTitle() {
+		return this.getClass().getName();
+	}
+	
+	@Override
+	public String toString() {		
 		List<ProcessingChainEntry> list = getProcessingChain();
 		boolean first=true;
 		String chain="";
@@ -33,15 +46,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 				chain+=" -> ";
 			}
 			chain += entry.getProcessingTitle();
-		}
-		
-		return getIteratorName()+" "+outputTimeSeriesSchema.toString()+" "+chain;
-	}
-	
-	@Override
-	public String getProcessingTitle() {
-		return getIteratorName();
-	}
+		}		
+		return getProcessingTitle()+" "+schema.toString()+" "+chain;
+	}	
 	
 	public void writeCSV(String filename) {
 		CSV.write(this,filename);
@@ -60,5 +67,9 @@ public abstract class TimeSeriesIterator extends SchemaIterator<TimeSeriesEntry>
 	
 	public TimestampSeries toTimestampSeries() {
 		return TimestampSeries.create(this);
+	}
+	
+	public static TsSchema[] toSchemas(TsIterator[] input_iterators) {
+		return Arrays.stream(input_iterators).map(it->it.getSchema()).toArray(TsSchema[]::new);
 	}
 }

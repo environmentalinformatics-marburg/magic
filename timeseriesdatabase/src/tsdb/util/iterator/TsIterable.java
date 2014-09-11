@@ -4,13 +4,13 @@ import java.util.Iterator;
 
 import tsdb.raw.TimeSeriesEntry;
 
-public interface TimeSeriesIterable extends Iterable<TimeSeriesEntry> {
+public interface TsIterable extends Iterable<TimeSeriesEntry> {
 
 	@Override
 	public default Iterator<TimeSeriesEntry> iterator() {
-		return timeSeriesIterator();
+		return tsIterator();
 	}
 	
-	public TimeSeriesIterator timeSeriesIterator();
+	public TsIterator tsIterator();
 
 }

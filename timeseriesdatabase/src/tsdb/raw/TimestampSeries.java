@@ -4,22 +4,19 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.TimeConverter;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.iterator.SchemaIterator;
 import tsdb.util.iterator.TimeSeriesEntryIterator;
-import tsdb.util.iterator.TimeSeriesIterable;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterable;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * time series with individual time stamp for each entry
  * @author woellauer
  *
  */
-public class TimestampSeries implements TimeSeriesIterable, Serializable, TsDBLogger {
+public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 	
 	private static final long serialVersionUID = 6078067255995220349L;
 	
@@ -36,7 +33,7 @@ public class TimestampSeries implements TimeSeriesIterable, Serializable, TsDBLo
 		this.timeinterval = timeinterval;
 	}
 	
-	public static TimestampSeries create(SchemaIterator<TimeSeriesEntry> input_iterator) {
+	public static TimestampSeries create(TsIterator input_iterator) {
 		if(!input_iterator.hasNext()) {
 			log.warn("TimestampSeries.create: input_iterator is empty");
 			//new Exception().printStackTrace(System.out);
@@ -47,7 +44,7 @@ public class TimestampSeries implements TimeSeriesIterable, Serializable, TsDBLo
 			TimeSeriesEntry next = input_iterator.next();
 			entryList.add(next);
 		}
-		return new TimestampSeries(input_iterator.getOutputSchema(), entryList, null);
+		return new TimestampSeries(input_iterator.getNames(), entryList, null);
 	}
 	
 	@Override
@@ -225,7 +222,7 @@ public class TimestampSeries implements TimeSeriesIterable, Serializable, TsDBLo
 	}
 
 	@Override
-	public TimeSeriesIterator timeSeriesIterator() {
+	public TsIterator tsIterator() {
 		return new TimeSeriesEntryIterator(entryList.iterator(),parameterNames);
 	}
 

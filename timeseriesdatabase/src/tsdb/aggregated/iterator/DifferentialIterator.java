@@ -2,32 +2,24 @@ package tsdb.aggregated.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class DifferentialIterator extends InputProcessingIterator {
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = false;
-		int timeStep = TimeSeriesSchema.NO_CONSTANT_TIMESTEP;
-		input_schema.throwNotContinuous();
-		boolean isContinuous = input_schema.isContinuous;		
-		boolean hasQualityFlags = false;
-		boolean hasInterpolatedFlags = false;
-		boolean hasQualityCounters = false;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);		
+	public static TsSchema createSchema(TsSchema schema) {
+		schema.throwNotContinuous();
+		boolean isContinuous = true;
+		return new TsSchema(schema.names, schema.aggregation, schema.timeStep, isContinuous);
 	}
-	
-	private final int columns;
 	
 	private float[]  prev = null;
 	
-	public DifferentialIterator(TimeSeriesIterator input_iterator) {
-		super(input_iterator, createSchema(input_iterator.getOutputTimeSeriesSchema()));
-		columns = this.outputTimeSeriesSchema.columns;
-		prev = new float[columns];
-		for(int col=0;col<columns;col++) {
+	public DifferentialIterator(TsIterator input_iterator) {
+		super(input_iterator, createSchema(input_iterator.getSchema()));
+		prev = new float[schema.length];
+		for(int col=0;col<schema.length;col++) {
 			prev[col] = Float.NaN;
 		}
 	}	
@@ -39,8 +31,8 @@ public class DifferentialIterator extends InputProcessingIterator {
 		}
 		TimeSeriesEntry element = input_iterator.next();
 		float[] curr = element.data;
-		float[] data = new float[columns];
-		for(int col=0;col<columns;col++) {
+		float[] data = new float[schema.length];
+		for(int col=0;col<schema.length;col++) {
 			if(!Float.isNaN(prev[col])&&!Float.isNaN(curr[col])) {
 				data[col] = curr[col]-prev[col];
 			} else {

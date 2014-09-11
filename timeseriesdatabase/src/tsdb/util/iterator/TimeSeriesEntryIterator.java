@@ -8,12 +8,12 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 
-public class TimeSeriesEntryIterator extends TimeSeriesIterator {
+public class TimeSeriesEntryIterator extends TsIterator {
 	
 	private Iterator<TimeSeriesEntry> input_iterator;
 
 	public TimeSeriesEntryIterator(Iterator<TimeSeriesEntry> input_iterator, String[] schema) {
-		super(new TimeSeriesSchema(schema));
+		super(new TimeSeriesSchema(schema).toTsSchema());
 		this.input_iterator = input_iterator;
 	}
 
@@ -27,11 +27,6 @@ public class TimeSeriesEntryIterator extends TimeSeriesIterator {
 		return input_iterator.next();
 	}
 
-	@Override
-	public String getIteratorName() {
-		return "TimeSeriesEntryIterator";
-	}
-	
 	@Override
 	public List<ProcessingChainEntry> getProcessingChain() {
 		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();

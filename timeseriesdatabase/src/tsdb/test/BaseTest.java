@@ -1,7 +1,7 @@
 package tsdb.test;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 import tsdb.graph.Base;
 import tsdb.graph.NodeGen;
@@ -11,7 +11,7 @@ public class BaseTest {
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		
 		NodeGen stationGen = QueryPlan.getStationGen(tsdb, DataQuality.EMPIRICAL);
 		Base.create(tsdb, "HEG01", null, stationGen).writeConsole(null, null);

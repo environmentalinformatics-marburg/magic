@@ -14,10 +14,11 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Pair;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.SchemaIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * BaseAggregationIterator aggregates input elements to aggregated output elements with base aggregation time intervals
@@ -29,7 +30,7 @@ public class BaseAggregationIterator extends MoveIterator {
 	private static final Logger log = Util.log;
 
 	//String[] schema;
-	SchemaIterator<TimeSeriesEntry> input_iterator;
+	TsIterator input_iterator;
 
 	Sensor[] sensors;
 	boolean aggregate_wind_direction;	
@@ -52,22 +53,15 @@ public class BaseAggregationIterator extends MoveIterator {
 	int[] columnEntryCounter;
 	//***
 
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema, int timeStep) {
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = true;
-		boolean isContinuous = input_schema.isContinuous;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		boolean hasInterpolatedFlags = false;
-		boolean hasQualityCounters = false;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
-
+	public static TsSchema createSchema(TsSchema schema, int timeStep) {
+		return new TsSchema(schema.names, Aggregation.CONSTANT_STEP, timeStep, schema.isContinuous, schema.hasQualityFlags);
 	}
 
-	public BaseAggregationIterator(TsDB timeSeriesDatabase, TimeSeriesIterator input_iterator) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema(), BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
-		this.useQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags; 
+	public BaseAggregationIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
+		super(createSchema(input_iterator.getSchema(), BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
+		this.useQualityFlags = input_iterator.getSchema().hasQualityFlags; 
 		this.input_iterator = input_iterator;
-		this.sensors = timeSeriesDatabase.getSensors(outputTimeSeriesSchema);		
+		this.sensors = timeSeriesDatabase.getSensors(schema.names);		
 		prepareWindDirectionAggregation();
 		initAggregates();
 	}
@@ -76,7 +70,7 @@ public class BaseAggregationIterator extends MoveIterator {
 		wind_direction_pos=-1;
 		wind_velocity_pos=-1;
 		aggregate_wind_direction = false;
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			if(sensors[i].baseAggregationType==AggregationType.AVERAGE_WIND_DIRECTION) {
 				if(wind_direction_pos==-1) {
 					wind_direction_pos = i;
@@ -104,19 +98,19 @@ public class BaseAggregationIterator extends MoveIterator {
 
 	private void initAggregates() {
 		aggregation_timestamp = -1;
-		aggQuality = new DataQuality[outputTimeSeriesSchema.columns];
-		aggCnt = new int[outputTimeSeriesSchema.columns];
-		aggSum = new float[outputTimeSeriesSchema.columns];
-		aggMax = new float[outputTimeSeriesSchema.columns];		
-		columnEntryCounter = new int[outputTimeSeriesSchema.columns];
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		aggQuality = new DataQuality[schema.length];
+		aggCnt = new int[schema.length];
+		aggSum = new float[schema.length];
+		aggMax = new float[schema.length];		
+		columnEntryCounter = new int[schema.length];
+		for(int i=0;i<schema.length;i++) {
 			columnEntryCounter[i] = 0;
 		}		
 		resetAggregates();
 	}
 
 	private void resetAggregates() {
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			if(aggQuality!=null)  {			
 				aggQuality[i] = DataQuality.Na;
 			}
@@ -134,7 +128,7 @@ public class BaseAggregationIterator extends MoveIterator {
 			//System.out.println("inputQuality==null");
 			aggQuality = null;
 		} else {		
-			for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+			for(int i=0;i<schema.length;i++) {
 				switch(aggQuality[i]) {
 				case Na:
 					aggQuality[i] = inputQuality[i]; // Na, NO, PHYSICAL, STEP, EMPIRICAL 
@@ -172,7 +166,7 @@ public class BaseAggregationIterator extends MoveIterator {
 
 	private void collectValues(float[] inputData, long timestamp) {
 		//collect values for aggregation
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			float value = (float) inputData[i];
 
 			switch(sensors[i].baseAggregationType) {
@@ -229,10 +223,10 @@ public class BaseAggregationIterator extends MoveIterator {
 	 * @return result or null if there are no valid aggregates
 	 */
 	private Pair<float[],DataQuality[]> aggregateCollectedData() {
-		float[] resultData = new float[outputTimeSeriesSchema.columns];	
+		float[] resultData = new float[schema.length];	
 		int validValueCounter=0; //counter of valid aggregates
 
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		for(int i=0;i<schema.length;i++) {
 			if(aggCnt[i]>0) {// at least one entry has been collected
 				switch(sensors[i].baseAggregationType) {
 				case AVERAGE:
@@ -331,11 +325,6 @@ public class BaseAggregationIterator extends MoveIterator {
 			return new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);
 		}
 		return null; //no elements left
-	}
-
-	@Override
-	public String getIteratorName() {
-		return "BaseAggregationIterator";
 	}
 
 	@Override

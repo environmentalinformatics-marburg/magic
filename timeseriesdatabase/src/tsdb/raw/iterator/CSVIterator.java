@@ -9,20 +9,14 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.Table;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
-public class CSVIterator extends TimeSeriesIterator implements TsDBLogger{
+public class CSVIterator extends TsIterator implements TsDBLogger{
 
-	public static TimeSeriesSchema createSchema(String[] sensorNames) {
-		//String[] schema = Arrays.copyOfRange(header, 2, header.length);
-		boolean constantTimeStep = false;
-		int timeStep = TimeSeriesSchema.NO_CONSTANT_TIMESTEP;
-		boolean isContinuous = false;
-		boolean hasQualityFlags = false;
-		boolean hasInterpolatedFlags = false;
-		boolean hasQualityCounters = false;	
-		return new TimeSeriesSchema(sensorNames, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	public static TsSchema createSchema(String[] sensorNames) {
+		return new TsSchema(sensorNames);
 	}
 
 	public static CSVIterator create(String filename) {
@@ -35,13 +29,11 @@ public class CSVIterator extends TimeSeriesIterator implements TsDBLogger{
 	private String[][] rows;
 	private int currIndex;
 
-	private final int columns;
 
 	public CSVIterator(String[] sensorNames, String[][] rows) {
 		super(createSchema(sensorNames));
 		this.rows = rows;
 		this.currIndex = 0;
-		columns = this.outputTimeSeriesSchema.columns;
 	}
 
 	@Override
@@ -54,8 +46,8 @@ public class CSVIterator extends TimeSeriesIterator implements TsDBLogger{
 		String[] row = rows[currIndex];
 		currIndex++;
 		long timestamp = TimeConverter.parseTimestamp(row[0], row[1], true);		
-		float[] data = new float[columns];
-		for(int colIndex=0;colIndex<columns;colIndex++) {
+		float[] data = new float[schema.length];
+		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			try {
 				data[colIndex] = Float.parseFloat(row[colIndex+2]); 
 			} catch (Exception e) {

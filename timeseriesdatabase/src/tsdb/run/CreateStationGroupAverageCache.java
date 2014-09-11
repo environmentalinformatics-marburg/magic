@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.graph.Averaged;
@@ -24,7 +24,7 @@ public class CreateStationGroupAverageCache implements TsDBLogger{
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB tsdb = FactoryTsDB.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
 		for(String group:tsdb.getGeneralStationGroups()) {

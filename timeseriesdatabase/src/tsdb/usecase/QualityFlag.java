@@ -3,20 +3,20 @@ package tsdb.usecase;
 import java.util.List;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.ProcessingChainEntry;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class QualityFlag {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		String plotID = "HEG20";
@@ -30,7 +30,7 @@ public class QualityFlag {
 		//TimeSeriesIterator result_iterator = qp.TestingQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingBaseAggregatadQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingAggregatadQualityQuery(plotID, querySchema,  queryStart,  queryEnd, dataQuality,aggregationInterval);
-		TimeSeriesIterator result_iterator = qp.query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TsIterator result_iterator = qp.query_base_aggregated_interpolated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		//TimeSeriesIterator result_iterator = qp.TestingInterpolatedAggregatadQualityQuery(plotID, querySchema, queryStart, queryEnd, dataQuality,aggregationInterval);
 		
 		//CSV.write(result_iterator, "c:/timeseriesdatabase_output/qualty_flag.csv", " ", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME, true, false);

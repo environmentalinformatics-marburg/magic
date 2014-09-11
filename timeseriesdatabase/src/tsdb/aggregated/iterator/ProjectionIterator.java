@@ -5,29 +5,30 @@ import java.util.List;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
-public class ProjectionIterator extends TimeSeriesIterator {
+public class ProjectionIterator extends TsIterator {
 
-	private TimeSeriesIterator input_iterator;
+	private TsIterator input_iterator;
 	private int[] eventPos;
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator, String[] outputSchema) {
-		TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
+	public static TsSchema createSchema(TsSchema tsschema, String[] outputSchema) {
+		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
 		boolean constantTimeStep = input_schema.constantTimeStep;
 		int timeStep = input_schema.timeStep;
 		boolean isContinuous = input_schema.isContinuous;		
 		boolean hasQualityFlags = input_schema.hasQualityFlags;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(outputSchema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(outputSchema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
 	}
 
-	public ProjectionIterator(TimeSeriesIterator input_iterator, String[] outputSchema) {
-		super(createSchema(input_iterator, outputSchema));
+	public ProjectionIterator(TsIterator input_iterator, String[] outputSchema) {
+		super(createSchema(input_iterator.getSchema(), outputSchema));
 		this.input_iterator = input_iterator;
-		this.eventPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getOutputSchema(), true, true);
+		this.eventPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), true, true);
 	}
 
 	@Override
@@ -38,8 +39,8 @@ public class ProjectionIterator extends TimeSeriesIterator {
 	@Override
 	public TimeSeriesEntry next() {
 		TimeSeriesEntry element = input_iterator.next();
-		float[] data = new float[outputTimeSeriesSchema.columns];
-		for(int i=0;i<outputTimeSeriesSchema.columns;i++) {
+		float[] data = new float[schema.length];
+		for(int i=0;i<schema.length;i++) {
 			data[i] = element.data[eventPos[i]];
 		}
 		return new TimeSeriesEntry(element.timestamp,data);
@@ -51,10 +52,4 @@ public class ProjectionIterator extends TimeSeriesIterator {
 		result.add(this);
 		return result;
 	}
-
-	@Override
-	public String getIteratorName() {
-		return "ProjectionIterator";
-	}
-
 }

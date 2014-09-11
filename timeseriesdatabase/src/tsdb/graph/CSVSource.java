@@ -6,7 +6,7 @@ import tsdb.Station;
 import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.Table;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class CSVSource implements Node {
 	
@@ -28,7 +28,7 @@ public class CSVSource implements Node {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) { // TODO start, end		
+	public TsIterator get(Long start, Long end) { // TODO start, end		
 		return new CSVIterator(sensorNames, rows);
 	}
 

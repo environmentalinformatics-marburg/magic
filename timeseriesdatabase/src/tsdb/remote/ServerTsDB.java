@@ -22,7 +22,7 @@ import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 
@@ -36,7 +36,7 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 		if(node==null) {
 			return null;
 		}
-		TimeSeriesIterator it = node.get(null, null);
+		TsIterator it = node.get(null, null);
 		if(it==null||!it.hasNext()) {
 			return null;
 		}
@@ -49,7 +49,7 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 		if(node==null) {
 			return null;
 		}
-		TimeSeriesIterator it = node.get(null, null);
+		TsIterator it = node.get(null, null);
 		if(it==null||!it.hasNext()) {
 			return null;
 		}
@@ -175,7 +175,7 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 	}
 
 	@Override
-	public TimeSeriesIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
+	public TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		QueryProcessor qp = new QueryProcessor(tsdb);
 		return qp.query_raw(plotID, querySchema, queryStart, queryEnd);
 	}

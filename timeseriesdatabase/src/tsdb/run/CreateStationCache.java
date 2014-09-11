@@ -1,24 +1,24 @@
 package tsdb.run;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.graph.Base;
 import tsdb.graph.NodeGen;
 import tsdb.graph.QueryPlan;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class CreateStationCache {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 
 		int lastCommit=0;
 		int counter=0;
 		for(Station station:timeSeriesDatabase.getStations()) {
-			TimeSeriesIterator input_iterator = null;
+			TsIterator input_iterator = null;
 			//TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
 			if(station.isPlot) {
 				NodeGen stationGen = QueryPlan.getStationGen(timeSeriesDatabase, DataQuality.STEP);

@@ -5,7 +5,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class GroupAverageSource implements Continuous {
 	
@@ -37,7 +37,7 @@ public class GroupAverageSource implements Continuous {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
+	public TsIterator get(Long start, Long end) {
 		return source.get(start, end);
 	}
 
@@ -58,7 +58,7 @@ public class GroupAverageSource implements Continuous {
 	}
 
 	@Override
-	public TimeSeriesIterator getExactly(long start, long end) {
+	public TsIterator getExactly(long start, long end) {
 		return source.getExactly(start, end);
 	}
 

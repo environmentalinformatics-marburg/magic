@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import de.umr.jepc.util.Timer;
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
@@ -39,7 +39,7 @@ public class ParallelQuery {
 
 	public static void main(String[] args) throws InterruptedException {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		//final int THREAD_COUNT = 2;

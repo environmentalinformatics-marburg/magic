@@ -10,7 +10,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.AverageIterator;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class Averaged extends Continuous.Abstract {
 	
@@ -51,19 +51,19 @@ public class Averaged extends Continuous.Abstract {
 	}
 
 	@Override
-	public TimeSeriesIterator get(Long start, Long end) {
+	public TsIterator get(Long start, Long end) {
 		return getExactly(start,end);
 	}
 	
-	public TimeSeriesIterator getExactly(long start, long end) {		
-		List<TimeSeriesIterator> iteratorList = new ArrayList<>();		
+	public TsIterator getExactly(long start, long end) {		
+		List<TsIterator> iteratorList = new ArrayList<>();		
 		for(Continuous source:sources) {
-			TimeSeriesIterator it = source.get(start, end);
+			TsIterator it = source.get(start, end);
 			if(it!=null&&it.hasNext()) {
 				iteratorList.add(it);				
 			}
 		}
-		return new AverageIterator(schema, iteratorList.toArray(new TimeSeriesIterator[0]), minCount);		
+		return new AverageIterator(schema, iteratorList.toArray(new TsIterator[0]), minCount);		
 	}
 
 	@Override

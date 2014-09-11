@@ -58,7 +58,7 @@ public class BaseAggregationProcessor implements TsDBLogger {
 		this.checkPhysicalRange = checkPhysicalRange;
 		this.checkStepRange = checkStepRange;
 		parameterNames = getResultSchema(timeSeriesDatabase, schemaSensorNames, querySensorNames);
-		sensors = timeSeriesDatabase.getSensors(new TimeSeriesSchema(parameterNames));		
+		sensors = timeSeriesDatabase.getSensors(parameterNames);		
 		eventPos = Util.stringArrayToPositionIndexArray(parameterNames, schemaSensorNames, true, false);
 		prepareWindDirectionAggregation();		
 	}

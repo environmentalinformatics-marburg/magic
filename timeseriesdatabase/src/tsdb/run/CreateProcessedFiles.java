@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
@@ -17,7 +17,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * create processed csv files inserted in directory structure of sensor names
@@ -30,7 +30,7 @@ public class CreateProcessedFiles implements TsDBLogger {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
@@ -75,7 +75,7 @@ public class CreateProcessedFiles implements TsDBLogger {
 							DataQuality dataQuality = DataQuality.EMPIRICAL;
 							AggregationInterval aggregationInterval = AggregationInterval.DAY;
 							boolean interpolated = true;
-							TimeSeriesIterator it = qp.virtualquery_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
+							TsIterator it = qp.virtualquery_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
 							if(it!=null&&it.hasNext()) {
 								System.out.println("process: "+virtualPlot.plotID);
 								(new File(CSV_OUTPUT_PATH+"processed/"+sensorName)).mkdir();

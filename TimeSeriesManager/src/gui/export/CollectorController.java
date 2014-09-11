@@ -185,7 +185,7 @@ public class CollectorController implements TsDBLogger {
 							ZipEntry zipEntry = new ZipEntry(plotID+".csv");
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
-							CSV.write(timeseries.timeSeriesIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
+							CSV.write(timeseries.tsIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
 						} else {
 							printLine("not processed: "+plotID);
 						}

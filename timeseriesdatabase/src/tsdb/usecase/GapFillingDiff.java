@@ -1,7 +1,7 @@
 package tsdb.usecase;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
@@ -12,7 +12,7 @@ public class GapFillingDiff {
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		String plotID = "HEG01";

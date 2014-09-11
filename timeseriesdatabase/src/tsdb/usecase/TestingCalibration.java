@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.StationProperties;
 import tsdb.TsDB;
@@ -13,9 +13,10 @@ import tsdb.VirtualPlot;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TimestampInterval;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class TestingCalibration {
 
@@ -25,7 +26,7 @@ public class TestingCalibration {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		/*String plotID = "gra1";
@@ -47,7 +48,7 @@ public class TestingCalibration {
 		VirtualPlot virtualPlot = timeSeriesDatabase.getVirtualPlot(plotID);
 		for(TimestampInterval<StationProperties> interval:virtualPlot.intervalList) {			
 			String stationName = interval.value.get_serial();
-			TimeSeriesIterator temp_raw_iterator = qp.query_raw(stationName, querySchema, interval.start, interval.end);
+			TsIterator temp_raw_iterator = qp.query_raw(stationName, querySchema, interval.start, interval.end);
 			if(temp_raw_iterator!=null&&temp_raw_iterator.hasNext()) {
 				System.out.println("get: "+stationName);
 				String loggerTypeName = interval.value.get_logger_type_name();
@@ -66,16 +67,15 @@ public class TestingCalibration {
 
 	static class TestingRainIterator extends InputProcessingIterator {
 
-		private static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator) {
-			TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
-			String[] schema = new String[]{"P_container_RT","P_RT_NRT"};
-			return TimeSeriesSchema.createJustSchema(schema );
+		private static TsSchema createSchema() {
+			String[] names = new String[]{"P_container_RT","P_RT_NRT"};
+			return new TsSchema(names);
 		}
 
 		private float prev = Float.NaN;
 
-		public TestingRainIterator(TimeSeriesIterator input_iterator) {
-			super(input_iterator, createSchema(input_iterator));
+		public TestingRainIterator(TsIterator input_iterator) {
+			super(input_iterator, createSchema());
 		}
 
 		@Override
@@ -112,14 +112,13 @@ public class TestingCalibration {
 		float calib_coefficient_LWDR_300_U = Float.NaN;
 		float calib_coefficient_LWUR_300_U = Float.NaN;
 
-		private static TimeSeriesSchema createSchema(TimeSeriesIterator input_iterator, StationProperties properties) {
+		private static TsSchema createSchema(TsIterator input_iterator, StationProperties properties) {
 
 			if(!properties.get_logger_type_name().equals(LOGGER_TYPE_NAME)) {
 				throw new RuntimeException("wrong logger type: "+properties.get_logger_type_name());
 			}
 
-			TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
-			String[] input_sensorNames = input_schema.schema;
+			String[] input_sensorNames = input_iterator.getNames();
 
 			//SWDR_300_U, SWUR_300_U, LWDR_300_U, LWUR_300_U			
 
@@ -167,7 +166,7 @@ public class TestingCalibration {
 
 		private final StationProperties properties;
 
-		public TestingCalibration_wxt_Iterator(TimeSeriesIterator input_iterator, StationProperties properties) {
+		public TestingCalibration_wxt_Iterator(TsIterator input_iterator, StationProperties properties) {
 			super(input_iterator, createSchema(input_iterator, properties));
 			this.properties = properties;
 		}
@@ -179,8 +178,7 @@ public class TestingCalibration {
 				throw new RuntimeException("wrong logger type: "+properties.get_logger_type_name());
 			}
 
-			TimeSeriesSchema input_schema = input_iterator.getOutputTimeSeriesSchema();
-			String[] input_sensorNames = input_schema.schema;
+			String[] input_sensorNames = input_iterator.getNames();
 
 			//SWDR_300_U, SWUR_300_U, LWDR_300_U, LWUR_300_U			
 

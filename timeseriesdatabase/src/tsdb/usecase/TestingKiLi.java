@@ -4,7 +4,7 @@ import java.nio.file.Paths;
 
 import org.apache.logging.log4j.Logger;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TsDB;
 import tsdb.loader.TimeSeriesLoaderKiLi;
 import tsdb.util.TsDBLogger;
@@ -15,7 +15,7 @@ public class TestingKiLi implements TsDBLogger{
 	public static void main(String[] args) {
 		System.out.println("begin...");
 		
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		TimeSeriesLoaderKiLi timeseriesloader = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
 		timeSeriesDatabase.registerStreams();
 		

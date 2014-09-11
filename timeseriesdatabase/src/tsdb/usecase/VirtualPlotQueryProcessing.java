@@ -2,7 +2,7 @@ package tsdb.usecase;
 
 import java.util.List;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
@@ -16,7 +16,7 @@ public class VirtualPlotQueryProcessing {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		String plotName = "cof3";

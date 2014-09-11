@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.EmpiricalIterator_OLD;
 import tsdb.util.CSV;
 import tsdb.util.Util;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 public class TestingEmpiricalIterator {
 	
@@ -22,7 +22,7 @@ public class TestingEmpiricalIterator {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		String basePlotID = "HEW08";
@@ -37,16 +37,16 @@ public class TestingEmpiricalIterator {
 		List<Station> nearList = station.getNearestStationsWithSensor("Ta_200");
 		
 		Stream<Station> stream = nearList.stream();
-		Stream<TimeSeriesIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
-		Iterator<TimeSeriesIterator> it = stream1.iterator();
+		Stream<TsIterator> stream1 = stream.map(x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
+		Iterator<TsIterator> it = stream1.iterator();
 
-		TimeSeriesIterator[] itNear = new TimeSeriesIterator[NEAR_STATIONS];
+		TsIterator[] itNear = new TsIterator[NEAR_STATIONS];
 		int c = Util.fillArray(nearList, itNear, x->qp.query_continuous_base_aggregated(x.stationID, querySchema, queryStart, queryEnd, dataQuality));
 		if(c<NEAR_STATIONS) {
 			throw new RuntimeException("c: "+c+" "+nearList.size());
 		}
 		
-		TimeSeriesIterator itBase = qp.query_continuous_base_aggregated(basePlotID, querySchema, queryStart, queryEnd, dataQuality);
+		TsIterator itBase = qp.query_continuous_base_aggregated(basePlotID, querySchema, queryStart, queryEnd, dataQuality);
 		
 		
 		

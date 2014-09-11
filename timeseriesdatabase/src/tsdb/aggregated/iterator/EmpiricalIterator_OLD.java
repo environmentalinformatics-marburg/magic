@@ -6,29 +6,24 @@ import java.util.Map;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 
 @Deprecated
 public class EmpiricalIterator_OLD extends MoveIterator {
 	
-	private final TimeSeriesIterator input_iterator;
-	private final TimeSeriesIterator[] compareIterators;
+	private final TsIterator input_iterator;
+	private final TsIterator[] compareIterators;
 	private final Float[] maxDiff;
 	
 	private final int columns;	
 	private int[][] posIndex;
 	
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema) {
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = input_schema.isContinuous;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
-		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	public static TsSchema createSchema(TsSchema input_schema) {
+		//TODO
+		return input_schema.copy();
 	}
 
 	/**
@@ -37,18 +32,18 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 	 * @param compareIterators
 	 * @param maxDiff null entries are not used for empirical checks
 	 */
-	public EmpiricalIterator_OLD(TimeSeriesIterator input_iterator, TimeSeriesIterator[] compareIterators, Float[] maxDiff) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema()));
+	public EmpiricalIterator_OLD(TsIterator input_iterator, TsIterator[] compareIterators, Float[] maxDiff) {
+		super(createSchema(input_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.compareIterators = compareIterators;
 		this.maxDiff = maxDiff;
 		
-		this.columns = input_iterator.getOutputSchema().length;
+		this.columns = input_iterator.getNames().length;
 		this.posIndex = new int[compareIterators.length][columns];
 		
-		String[] schema = this.outputTimeSeriesSchema.schema;
+		String[] schema = this.schema.names;
 		for(int itIndex=0;itIndex<compareIterators.length;itIndex++) {
-			Map<String, Integer> map = Util.stringArrayToMap(compareIterators[itIndex].getOutputSchema());  
+			Map<String, Integer> map = Util.stringArrayToMap(compareIterators[itIndex].getNames());  
 			for(int colIndex=0;colIndex<columns;colIndex++) {
 				if(maxDiff!=null) {
 					Integer attrNr = map.get(schema[colIndex]);
@@ -124,10 +119,4 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 		result.add(this);
 		return result;
 	}
-
-	@Override
-	public String getIteratorName() {
-		return "EmpiricalIterator";
-	}
-
 }

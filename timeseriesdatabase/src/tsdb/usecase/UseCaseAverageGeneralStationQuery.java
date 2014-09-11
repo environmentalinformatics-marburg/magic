@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.function.Function;
 
 import tsdb.DataQuality;
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
@@ -12,7 +12,7 @@ import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Builder;
 import tsdb.util.CSV;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.util.Timer;
 
 /**
@@ -22,9 +22,9 @@ import de.umr.jepc.util.Timer;
  */
 public class UseCaseAverageGeneralStationQuery {
 	
-	private static final String CSV_OUTPUT_PATH = FactoryTsDB.get_CSV_output_path();
+	private static final String CSV_OUTPUT_PATH = TsDBFactory.get_CSV_output_path();
 	
-	private static Function<TimeSeriesEntry, TimeSeriesEntry> createDiffFunc(TimeSeriesIterator compareIt) {
+	private static Function<TimeSeriesEntry, TimeSeriesEntry> createDiffFunc(TsIterator compareIt) {
 		return new Function<TimeSeriesEntry, TimeSeriesEntry>() {			
 			@Override
 			public TimeSeriesEntry apply(TimeSeriesEntry element) {
@@ -84,7 +84,7 @@ public class UseCaseAverageGeneralStationQuery {
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 		
 		
@@ -123,8 +123,8 @@ public class UseCaseAverageGeneralStationQuery {
 		CSV.write(qp.query_empirical_diff_check(plotID, querySchema, queryStart, queryEnd, dataQuality), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_check.csv");
 		String generalName = timeSeriesDatabase.getStation(plotID).generalStation.name;
 		CSV.write(Builder.project(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd),querySchema), CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_general.csv");
-		TimeSeriesIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
-		TimeSeriesIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
+		TsIterator input_it = qp.query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
+		TsIterator diff_it = Builder.apply(input_it,createDiffFunc(Builder.project(Builder.continuous(timeSeriesDatabase.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd), input_it)));
 		CSV.write(diff_it, CSV_OUTPUT_PATH+"UseCaseAverageGeneralStationQuery_diff.csv");
 		
 		

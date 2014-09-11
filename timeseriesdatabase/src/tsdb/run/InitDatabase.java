@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.Logger;
 
-import tsdb.FactoryTsDB;
+import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.loader.TimeSeriesLoaderBE;
@@ -24,7 +24,7 @@ public class InitDatabase implements TsDBLogger {
 		System.out.println("begin...");
 		
 		// *** workaround for not created database files ... 
-		TsDB timeSeriesDatabase = FactoryTsDB.createDefault();
+		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		timeSeriesDatabase.clear();
 		/*try {
 			Thread.sleep(500);
@@ -34,7 +34,7 @@ public class InitDatabase implements TsDBLogger {
 		System.gc();*/
 		// *** ... workaround
 		
-		timeSeriesDatabase = FactoryTsDB.createDefault();
+		timeSeriesDatabase = TsDBFactory.createDefault();
 		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase, minTimestamp);
@@ -44,19 +44,19 @@ public class InitDatabase implements TsDBLogger {
 		if(args.length!=2) {
 			System.out.println("load from default paths");
 		} else {			
-			FactoryTsDB.SOURCE_BE_STRUCTURE_ONE_PATH = args[0];
-			FactoryTsDB.SOURCE_BE_STRUCTURE_TWO_PATH = args[1];
+			TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH = args[0];
+			TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH = args[1];
 		}
-		System.out.println("load: "+FactoryTsDB.SOURCE_BE_STRUCTURE_ONE_PATH+"\t\t"+FactoryTsDB.SOURCE_BE_STRUCTURE_TWO_PATH);
+		System.out.println("load: "+TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH+"\t\t"+TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH);
 		
 		timeSeriesDatabase.registerStreams();
 		
 		
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
 		
-		timeseriesloaderBE.loadDirectoryOfAllExploratories_structure_one(Paths.get(FactoryTsDB.SOURCE_BE_STRUCTURE_ONE_PATH));
-		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get(FactoryTsDB.SOURCE_BE_STRUCTURE_TWO_PATH));
-		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(FactoryTsDB.SOURCE_KILI_PATH));
+		timeseriesloaderBE.loadDirectoryOfAllExploratories_structure_one(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH));
+		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH));
+		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(TsDBFactory.SOURCE_KILI_PATH));
 		
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/

@@ -5,29 +5,28 @@ import java.util.List;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
-import tsdb.util.iterator.TimeSeriesIterator;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.Util;
+import tsdb.util.iterator.TsIterator;
 
-public class DifferenceIterator extends TimeSeriesIterator {
-	private TimeSeriesIterator input_iterator;
-	private TimeSeriesIterator compare_iterator;
+public class DifferenceIterator extends TsIterator {
+	private TsIterator input_iterator;
+	private TsIterator compare_iterator;
 	private final boolean absoluteDifference;
 
-	public static TimeSeriesSchema createSchema(TimeSeriesSchema input_schema, TimeSeriesSchema compare_schema) {
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = input_schema.isContinuous;
-		boolean hasQualityFlags = false; //maybe TODO
-		boolean hasInterpolatedFlags = false; //maybe TODO
-		boolean hasQualityCounters = false; //maybe TODO
-		if(!TimeSeriesSchema.isSameSchemaNames(input_schema.schema, compare_schema.schema)) {
-			throw new RuntimeException("needs same schema");
-		}
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+	public static TsSchema createSchema(TsSchema input_schema, TsSchema compare_schema) {
+		TsSchema.throwDifferentNames(input_schema, compare_schema);
+		TsSchema.throwDifferentAggregation(input_schema, compare_schema);
+		TsSchema.throwDifferentTimeStep(input_schema, compare_schema);
+		input_schema.throwNotContinuous();
+		compare_schema.throwNotContinuous();
+		boolean isContinuous = true;
+		return new TsSchema(input_schema.names, input_schema.aggregation, input_schema.timeStep, isContinuous);
 	}
 
-	public DifferenceIterator(TimeSeriesIterator input_iterator, TimeSeriesIterator compare_iterator, boolean absoluteDifference) {
-		super(createSchema(input_iterator.getOutputTimeSeriesSchema(),compare_iterator.getOutputTimeSeriesSchema()));
+	public DifferenceIterator(TsIterator input_iterator, TsIterator compare_iterator, boolean absoluteDifference) {
+		super(createSchema(input_iterator.getSchema(),compare_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.compare_iterator = compare_iterator;
 		this.absoluteDifference = absoluteDifference;
@@ -47,8 +46,8 @@ public class DifferenceIterator extends TimeSeriesIterator {
 			throw new RuntimeException("iterator error");
 		}
 
-		float[] result = new float[outputTimeSeriesSchema.columns];
-		for(int colIndex=0;colIndex<outputTimeSeriesSchema.columns;colIndex++) {
+		float[] result = new float[schema.length];
+		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			if(absoluteDifference) {
 				result[colIndex] = Math.abs(element.data[colIndex]-genElement.data[colIndex]);
 			} else {
