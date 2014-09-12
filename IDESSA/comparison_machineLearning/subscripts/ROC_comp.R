@@ -96,6 +96,12 @@ pdf(paste(resultpath,"/ROC_confidence.pdf",sep=""))
   legend("bottomright",legend=paste(model,round(auc,3)),col=col[1:length(model)],lwd=1,bty="n")
 dev.off()
 
+ ###write all auc values per scene
+ dir.create (paste(resultpath,"/Confusion_comp",sep=""))
+ aucvalsOut=data.frame((sapply(aucvals,c)))
+ colnames(aucvalsOut)=model
+ write.csv(aucvalsOut,file=paste(resultpath,"/Confusion_comp/aucdata.csv",sep=""),row.names=FALSE)
+
 ##################################################################################################################
 #                                                 Compare ROC by t-test
 ##################################################################################################################
