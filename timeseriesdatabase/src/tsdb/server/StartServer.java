@@ -10,6 +10,7 @@ import java.rmi.server.UnicastRemoteObject;
 import tsdb.TsDBFactory;
 import tsdb.TsDB;
 
+@Deprecated
 public class StartServer {
 	
 	public static final String SERVER_NAME = "tsdserver";

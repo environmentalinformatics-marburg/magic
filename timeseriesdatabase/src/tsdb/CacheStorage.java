@@ -117,12 +117,6 @@ public class CacheStorage implements TsDBLogger {
 					return it.next();
 				}
 				@Override
-				public List<ProcessingChainEntry> getProcessingChain() {
-					List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
-					result.add(this);
-					return result;
-				}
-				@Override
 				public String getProcessingTitle() {
 					return "cache query iterator";
 				}				

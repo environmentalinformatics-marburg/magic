@@ -1,13 +1,9 @@
 package tsdb.aggregated.iterator;
 
-import java.util.List;
-
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
-import tsdb.util.TsSchema.Aggregation;
-import tsdb.util.Util;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 public class DifferenceIterator extends TsIterator {
@@ -58,9 +54,7 @@ public class DifferenceIterator extends TsIterator {
 	}
 
 	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
 	}
 }

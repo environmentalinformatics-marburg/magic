@@ -9,6 +9,7 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -19,9 +20,8 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class NanGapIterator extends MoveIterator implements TsDBLogger {
+public class NanGapIterator extends InputProcessingIterator implements TsDBLogger {
 
-	TsIterator input_iterator;
 	/**
 	 * timestamp of next Element to output
 	 */
@@ -53,7 +53,7 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 	 * @param end if null last element is end
 	 */
 	public NanGapIterator(TsIterator input_iterator, Long start, Long end) {
-		super(createSchema(input_iterator.getSchema()));
+		super(input_iterator, createSchema(input_iterator.getSchema()));
 
 		/*System.out.println("nan it start: "+TimeConverter.oleMinutesToLocalDateTime(start));
 		System.out.println("nan it end: "+TimeConverter.oleMinutesToLocalDateTime(end));
@@ -79,7 +79,6 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 
 
 		this.endTimestamp = end;
-		this.input_iterator = input_iterator;		
 		if(input_iterator.hasNext()) { //****************input iterator is not empty***************
 			this.nextElement = input_iterator.next();
 			if(start!=null) { //********************** with start timestamp *********************
@@ -155,16 +154,8 @@ public class NanGapIterator extends MoveIterator implements TsDBLogger {
 		}
 	}
 
-
 	@Override
 	public String[] getNames() {
 		return input_iterator.getNames();
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 }

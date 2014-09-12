@@ -7,14 +7,12 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.Util;
 
-public class SchemaConverterIterator extends MoveIterator {
+public class SchemaConverterIterator extends InputProcessingIterator {
 
-	private TsIterator input_iterator;
 	private int[] inputPos;
 
 	public SchemaConverterIterator(TsIterator input_iterator, String[] outputSchema, boolean fillWithNaN) {
-		super(new TimeSeriesSchema(outputSchema).toTsSchema());
-		this.input_iterator = input_iterator;
+		super(input_iterator, new TimeSeriesSchema(outputSchema).toTsSchema());
 		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), !fillWithNaN, false);
 	}
 
@@ -36,12 +34,4 @@ public class SchemaConverterIterator extends MoveIterator {
 			return null;
 		}
 	}
-	
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
-	}
-
 }

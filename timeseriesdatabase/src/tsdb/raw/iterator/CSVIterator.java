@@ -57,11 +57,4 @@ public class CSVIterator extends TsIterator implements TsDBLogger{
 		}
 		return new TimeSeriesEntry(timestamp,data);
 	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

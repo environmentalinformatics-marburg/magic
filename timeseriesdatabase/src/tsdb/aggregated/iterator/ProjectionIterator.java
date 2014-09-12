@@ -7,9 +7,10 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
+import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
-public class ProjectionIterator extends TsIterator {
+public class ProjectionIterator extends InputIterator {
 
 	private TsIterator input_iterator;
 	private int[] eventPos;
@@ -26,7 +27,7 @@ public class ProjectionIterator extends TsIterator {
 	}
 
 	public ProjectionIterator(TsIterator input_iterator, String[] outputSchema) {
-		super(createSchema(input_iterator.getSchema(), outputSchema));
+		super(input_iterator, createSchema(input_iterator.getSchema(), outputSchema));
 		this.input_iterator = input_iterator;
 		this.eventPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), true, true);
 	}
@@ -44,12 +45,5 @@ public class ProjectionIterator extends TsIterator {
 			data[i] = element.data[eventPos[i]];
 		}
 		return new TimeSeriesEntry(element.timestamp,data);
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 }

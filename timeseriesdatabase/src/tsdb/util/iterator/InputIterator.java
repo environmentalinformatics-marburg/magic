@@ -11,11 +11,11 @@ import tsdb.util.TsSchema;
  * @author woellauer
  *
  */
-public abstract class InputProcessingIterator extends MoveIterator {
+public abstract class InputIterator extends TsIterator {
 	
 	protected final TsIterator input_iterator;
 
-	public InputProcessingIterator(TsIterator input_iterator, TsSchema output_schema) {
+	public InputIterator(TsIterator input_iterator, TsSchema output_schema) {
 		super(output_schema);
 		this.input_iterator = input_iterator;
 	}

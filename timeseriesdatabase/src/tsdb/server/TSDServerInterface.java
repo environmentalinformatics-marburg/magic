@@ -7,6 +7,7 @@ import tsdb.DataQuality;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 
+@Deprecated
 public interface TSDServerInterface extends Remote {
 
 	TimestampSeries query(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) throws RemoteException;

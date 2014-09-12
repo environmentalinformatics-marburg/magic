@@ -9,6 +9,8 @@ import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 @Deprecated
@@ -114,9 +116,7 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 	}
 	
 	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(input_iterator,compareIterators, this);
 	}
 }

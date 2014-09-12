@@ -16,6 +16,9 @@ import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainOneSource;
+import tsdb.util.iterator.NewProcessingChainSource;
 import tsdb.util.iterator.TsIterable;
 import tsdb.util.iterator.TsIterator;
 
@@ -27,7 +30,7 @@ import tsdb.util.iterator.TsIterator;
 public class TimeSeries implements TsIterable, TsDBLogger {
 
 	//used for metadata, may be null
-	private final List<ProcessingChainEntry> processingChain;
+	private final NewProcessingChain processingChain;
 
 	/**
 	 * sensor names of time series in data
@@ -56,8 +59,8 @@ public class TimeSeries implements TsIterable, TsDBLogger {
 	public DataQuality[][] dataQuality;
 	public boolean[][] dataInterpolated;
 
-	public TimeSeries(List<ProcessingChainEntry> processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
-		this.processingChain = Util.createList(processingChain,new ProcessingChainTitle("TimeSeries"));
+	public TimeSeries(NewProcessingChain processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
+		this.processingChain = new NewProcessingChainOneSource(processingChain,new ProcessingChainTitle("TimeSeries"));
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
@@ -421,19 +424,7 @@ public class TimeSeries implements TsIterable, TsDBLogger {
 			} else {
 				throw new RuntimeException("iterator out of range");
 			}
-		}
-
-		@Override
-		public List<ProcessingChainEntry> getProcessingChain() {
-			List<ProcessingChainEntry> result = null;
-			if(processingChain==null) {
-				result = new ArrayList<ProcessingChainEntry>();
-			} else {
-				result = processingChain;	
-			}
-			result.add(this);
-			return result;
-		}	
+		}		
 
 		@Override
 		public String getProcessingTitle() {

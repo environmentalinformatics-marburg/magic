@@ -9,6 +9,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -17,9 +18,8 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class BadInterpolatedRemoveIterator extends MoveIterator {
+public class BadInterpolatedRemoveIterator extends InputProcessingIterator {
 	
-	private TsIterator input_iterator;
 	private TimeSeriesEntry prev;
 	private Sensor[] sensors;
 	
@@ -32,17 +32,9 @@ public class BadInterpolatedRemoveIterator extends MoveIterator {
 	}
 
 	public BadInterpolatedRemoveIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
-		super(createSchema(input_iterator.getSchema()));
-		this.input_iterator = input_iterator;
+		super(input_iterator, createSchema(input_iterator.getSchema()));
 		this.prev = null;
 		this.sensors = timeSeriesDatabase.getSensors(schema.names);
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 
 	@Override

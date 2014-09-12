@@ -1,11 +1,8 @@
 package tsdb.util.iterator;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 
 public class TimeSeriesEntryIterator extends TsIterator {
@@ -26,12 +23,4 @@ public class TimeSeriesEntryIterator extends TsIterator {
 	public TimeSeriesEntry next() {
 		return input_iterator.next();
 	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
-		result.add(this);
-		return result;
-	}
-
 }

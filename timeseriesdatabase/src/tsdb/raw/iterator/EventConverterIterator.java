@@ -44,12 +44,4 @@ public class EventConverterIterator extends TsIterator {
 		}
 		return new TimeSeriesEntry(event.getTimestamp(),data);
 	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
-		result.add(new ProcessingChainTitle("Iterator<Event>"));
-		result.add(this);
-		return result;
-	}
 }

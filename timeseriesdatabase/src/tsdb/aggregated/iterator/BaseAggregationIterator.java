@@ -17,6 +17,7 @@ import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -25,12 +26,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class BaseAggregationIterator extends MoveIterator {
+public class BaseAggregationIterator extends InputProcessingIterator {
 
 	private static final Logger log = Util.log;
-
-	//String[] schema;
-	TsIterator input_iterator;
 
 	Sensor[] sensors;
 	boolean aggregate_wind_direction;	
@@ -58,9 +56,8 @@ public class BaseAggregationIterator extends MoveIterator {
 	}
 
 	public BaseAggregationIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
-		super(createSchema(input_iterator.getSchema(), BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
+		super(input_iterator, createSchema(input_iterator.getSchema(), BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL));
 		this.useQualityFlags = input_iterator.getSchema().hasQualityFlags; 
-		this.input_iterator = input_iterator;
 		this.sensors = timeSeriesDatabase.getSensors(schema.names);		
 		prepareWindDirectionAggregation();
 		initAggregates();
@@ -325,13 +322,6 @@ public class BaseAggregationIterator extends MoveIterator {
 			return new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);
 		}
 		return null; //no elements left
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 }
 

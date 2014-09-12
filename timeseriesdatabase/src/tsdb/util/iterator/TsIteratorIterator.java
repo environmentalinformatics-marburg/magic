@@ -62,12 +62,5 @@ public class TsIteratorIterator extends MoveIterator {
 			current_iterator = null;
 			return getNext();
 		}
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		ArrayList<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>();
-		result.add(this);
-		return result;
 	}	
 }

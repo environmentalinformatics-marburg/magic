@@ -8,6 +8,7 @@ import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -16,11 +17,10 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class QualityFlagIterator extends MoveIterator {
+public class QualityFlagIterator extends InputProcessingIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
-	TsIterator input_iterator;
 	int columns;
 	long[] prevTimestamps;
 	float[] prevData;
@@ -30,11 +30,10 @@ public class QualityFlagIterator extends MoveIterator {
 	String[] schema;
 
 	public QualityFlagIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
-		super(TimeSeriesSchema.createWithQualityFlags(input_iterator.getSchema().toTimeSeriesSchema()).toTsSchema());
+		super(input_iterator, TimeSeriesSchema.createWithQualityFlags(input_iterator.getSchema().toTimeSeriesSchema()).toTsSchema());
 		this.schema = input_iterator.getNames();		
 		sensors = timeSeriesDatabase.getSensors(input_iterator.getNames());
 		columns = schema.length;
-		this.input_iterator = input_iterator;
 		this.prevTimestamps = new long[columns];
 		this.prevData = new float[columns];
 		for(int i=0;i<columns;i++) {
@@ -81,15 +80,6 @@ public class QualityFlagIterator extends MoveIterator {
 	@Override
 	public String[] getNames() {
 		return schema;
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
-	}
-	
-	
+	}	
 }
 

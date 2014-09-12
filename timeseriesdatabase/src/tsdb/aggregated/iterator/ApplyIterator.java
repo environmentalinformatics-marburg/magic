@@ -7,6 +7,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.iterator.NewProcessingChainOneSource;
 import tsdb.util.iterator.TsIterator;
 
 public class ApplyIterator extends TsIterator {
@@ -31,9 +32,7 @@ public class ApplyIterator extends TsIterator {
 	}
 
 	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
+	public NewProcessingChainOneSource getProcessingChain() {
+		return new NewProcessingChainOneSource(input_iterator,this);
 	}
 }

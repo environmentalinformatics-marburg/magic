@@ -10,6 +10,7 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
+import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -17,7 +18,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class LowQualityToNanIterator extends TsIterator implements TsDBLogger {
+public class LowQualityToNanIterator extends InputIterator implements TsDBLogger {
 
 	TsIterator input_iterator;
 	private DataQuality targetDataQuality;
@@ -28,7 +29,7 @@ public class LowQualityToNanIterator extends TsIterator implements TsDBLogger {
 	 * @param dataQuality lowest acceptable quality
 	 */
 	public LowQualityToNanIterator(TsIterator input_iterator, DataQuality dataQuality) {
-		super(input_iterator.getSchema().copy());
+		super(input_iterator, input_iterator.getSchema().copy());
 		if(!input_iterator.getSchema().hasQualityFlags) {
 			throw new RuntimeException("no quality flags in schema");
 		}
@@ -78,12 +79,5 @@ public class LowQualityToNanIterator extends TsIterator implements TsDBLogger {
 			}
 		}
 		return new TimeSeriesEntry(next.timestamp,resultData,qualityFlag);
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 }

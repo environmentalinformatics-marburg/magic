@@ -13,7 +13,7 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 
-public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChain, ProcessingChainEntry {
+public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChainEntry {
 
 	protected final TsSchema schema;
 	
@@ -31,23 +31,20 @@ public abstract class TsIterator implements Iterator<TimeSeriesEntry>, Processin
 	
 	@Override
 	public String getProcessingTitle() {
-		return this.getClass().getName();
+		String simpleName = this.getClass().getSimpleName();
+		if(simpleName.isEmpty()) {
+			return this.getClass().getName();
+		}
+		return simpleName;
+	}
+	
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainSource(this);
 	}
 	
 	@Override
 	public String toString() {		
-		List<ProcessingChainEntry> list = getProcessingChain();
-		boolean first=true;
-		String chain="";
-		for(ProcessingChainEntry entry:list) {
-			if(first) {				
-				first=false;
-			} else {
-				chain+=" -> ";
-			}
-			chain += entry.getProcessingTitle();
-		}		
-		return getProcessingTitle()+" "+schema.toString()+" "+chain;
+		return getProcessingTitle()+" "+schema.toString()+" "+getProcessingChain().getText();
 	}	
 	
 	public void writeCSV(String filename) {

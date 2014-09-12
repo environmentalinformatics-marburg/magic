@@ -10,6 +10,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.ProcessingChainEntry;
+import tsdb.util.iterator.NewProcessingChain;
 import tsdb.util.iterator.TsIterator;
 
 public class QualityFlag {
@@ -39,7 +40,7 @@ public class QualityFlag {
 		CSV.write(result_iterator, "c:/timeseriesdatabase_output/qualty_flag.csv", ",", "NA", CSVTimeType.TIMESTAMP_AND_DATETIME, true, false);
 		//CSV.write(result_iterator, "c:/timeseriesdatabase_output/qualty_counter.csv", ",", "NA", CSVTimeType.TIMESTAMP_AND_DATETIME, false, true );
 
-		List<ProcessingChainEntry> chain = result_iterator.getProcessingChain();
+		NewProcessingChain chain = result_iterator.getProcessingChain();
 		
 		System.out.println(result_iterator);
 		//System.out.println(chain);

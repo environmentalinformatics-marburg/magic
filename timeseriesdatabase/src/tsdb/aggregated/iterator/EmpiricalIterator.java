@@ -9,6 +9,8 @@ import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -98,15 +100,13 @@ public class EmpiricalIterator extends TsIterator {
 				} 
 			}			
 		}*/
-		
-					
+
+
 		return new TimeSeriesEntry(timestamp,result);
 	}
 
-		@Override
-		public List<ProcessingChainEntry> getProcessingChain() {
-			List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-			result.add(this);
-			return result;
-		}
+	@Override
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
 	}
+}

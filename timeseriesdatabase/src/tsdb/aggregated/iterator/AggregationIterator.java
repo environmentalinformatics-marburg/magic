@@ -18,6 +18,7 @@ import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -27,7 +28,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class AggregationIterator extends MoveIterator implements TsDBLogger  {
+public class AggregationIterator extends InputProcessingIterator implements TsDBLogger  {
 
 	private static final int QUALITY_COUNTERS = 5;
 	
@@ -37,7 +38,6 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	private static final int QUALITY_EMPIRICAL_POS = 3;
 	private static final int QUALITY_INTERPOLATED_POS = 4;	
 
-	private TsIterator input_iterator;
 	private AggregationInterval aggregationInterval;
 	private Sensor[] sensors;
 
@@ -95,9 +95,8 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 	 * @param aggregationInterval interval of time that should be aggregated
 	 */
 	public AggregationIterator(TsDB timeSeriesDatabase, TsIterator input_iterator, AggregationInterval aggregationInterval) {
-		super(createSchema(input_iterator.getSchema(), aggregationInterval));
+		super(input_iterator, createSchema(input_iterator.getSchema(), aggregationInterval));
 		//this.inputHasQualityFlags = input_iterator.getOutputTimeSeriesSchema().hasQualityFlags;
-		this.input_iterator = input_iterator;
 		this.aggregationInterval = aggregationInterval;
 		this.sensors = timeSeriesDatabase.getSensors(schema.names);		
 		prepareWindDirectionAggregation();
@@ -449,13 +448,5 @@ public class AggregationIterator extends MoveIterator implements TsDBLogger  {
 		} else {
 			return null; //no elements left
 		}
-
-	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
 	}
 }

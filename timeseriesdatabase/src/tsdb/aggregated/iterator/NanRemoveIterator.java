@@ -6,6 +6,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -14,9 +15,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class NanRemoveIterator extends MoveIterator{
-	
-	TsIterator input_iterator;
+public class NanRemoveIterator extends InputProcessingIterator {
 	
 	public static TsSchema createSchema(TsSchema tsschema) {
 		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
@@ -32,8 +31,7 @@ public class NanRemoveIterator extends MoveIterator{
 	}
 
 	public NanRemoveIterator(TsIterator input_iterator) {
-		super(createSchema(input_iterator.getSchema()));
-		this.input_iterator = input_iterator;
+		super(input_iterator, createSchema(input_iterator.getSchema()));
 	}
 
 	@Override
@@ -52,12 +50,4 @@ public class NanRemoveIterator extends MoveIterator{
 		}
 		return null;
 	}
-
-	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = input_iterator.getProcessingChain();
-		result.add(this);
-		return result;
-	}
-
 }

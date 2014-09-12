@@ -14,6 +14,8 @@ import tsdb.util.CSV;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.Util;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -123,8 +125,8 @@ public class EmpiricalDiff {
 				}
 			}
 			@Override
-			public List<ProcessingChainEntry> getProcessingChain() {
-				return null;
+			public NewProcessingChain getProcessingChain() {
+				return new NewProcessingChainMultiSources(itBase, itNear, this);
 			}
 			@Override
 			public String getProcessingTitle() {

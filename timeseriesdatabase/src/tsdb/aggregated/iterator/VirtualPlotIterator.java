@@ -1,16 +1,13 @@
 package tsdb.aggregated.iterator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
+import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 public class VirtualPlotIterator extends MoveIterator {
@@ -67,10 +64,8 @@ public class VirtualPlotIterator extends MoveIterator {
 	}
 
 	@Override
-	public List<ProcessingChainEntry> getProcessingChain() {
-		List<ProcessingChainEntry> result = new ArrayList<ProcessingChainEntry>(); 
-		result.add(this);
-		return result;
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(processing_iterator, this);
 	}
 
 	@Override

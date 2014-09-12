@@ -11,6 +11,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
+@Deprecated
 public class TSDServer extends TsDBClient implements TSDServerInterface {
 	
 	private QueryProcessor qp;
