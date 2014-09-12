@@ -20,7 +20,7 @@ public class PlotInfo implements Serializable {
 		this.name = virtualPlot.plotID;
 		this.generalStationInfo = new GeneralStationInfo(virtualPlot.generalStation);
 		this.isStation = false;
-		this.isVIP = false; // TODO
+		this.isVIP = virtualPlot.isFocalPlot;
 	}
 	
 	public PlotInfo(Station station) {
@@ -62,5 +62,10 @@ public class PlotInfo implements Serializable {
 		} else if (!name.equals(other.name))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 }

@@ -1,5 +1,6 @@
 package gui.query;
 
+import tsdb.remote.PlotInfo;
 import gui.util.AbstractModel;
 
 public class QueryModel extends AbstractModel {
@@ -10,8 +11,8 @@ public class QueryModel extends AbstractModel {
 	private String[] generalStationLongNames = null;
 	private String generalStationLongName = null;
 	
-	private String[] plotIDs = null;
-	private String plotID = null;
+	private PlotInfo[] plotInfos = null;
+	private PlotInfo plotInfo = null;
 	
 	private String[] sensorNames = null;
 	private String sensorName = null;
@@ -40,12 +41,12 @@ public class QueryModel extends AbstractModel {
 		changeSupport.firePropertyChange("generalStationLongName", this.generalStationLongName, this.generalStationLongName=generalStationLongName);
 	}
 	
-	public void setPlotIDs(String[] plotIDs) {
-		changeSupport.firePropertyChange("plotIDs", this.plotIDs, this.plotIDs=plotIDs);
+	public void setPlotInfos(PlotInfo[] plotInfos) {
+		changeSupport.firePropertyChange("plotInfos", this.plotInfos, this.plotInfos=plotInfos);
 	}
 	
-	public void setPlotID(String plotID) {
-		changeSupport.firePropertyChange("plotID", this.plotID, this.plotID=plotID);
+	public void setPlotInfo(PlotInfo plotInfo) {
+		changeSupport.firePropertyChange("plotInfo", this.plotInfo, this.plotInfo=plotInfo);
 	}
 	
 	public void setSensorNames(String[] sensorNames) {
@@ -82,12 +83,12 @@ public class QueryModel extends AbstractModel {
 		return generalStationLongName;
 	}
 	
-	public String[] getPlotIDs() {
-		return plotIDs;
+	public PlotInfo[] getPlotInfos() {
+		return plotInfos;
 	}
 	
-	public String getPlotID() {
-		return plotID;
+	public PlotInfo getPlotInfo() {
+		return plotInfo;
 	}
 	
 	public String[] getSensorNames() {
@@ -97,13 +98,4 @@ public class QueryModel extends AbstractModel {
 	public String getSensorName() {
 		return sensorName;
 	}
-	
-	
-	
-	
-	
-	
-	
-
-
 }

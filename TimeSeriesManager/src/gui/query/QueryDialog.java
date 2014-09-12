@@ -1,11 +1,14 @@
 package gui.query;
 
+import gui.util.ComboBridge;
+
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -47,7 +50,6 @@ public class QueryDialog extends Dialog {
 
 	private Combo comboRegion;
 	private Combo comboGeneralStation;
-	private Combo comboPlotID;
 	private Combo comboSensorName;
 	private Combo comboAggregation;
 
@@ -68,8 +70,10 @@ public class QueryDialog extends Dialog {
 	private Group grpInfo;
 	private Label lblSensorInfo;
 	private Label lblSensorUnitInfo;
-	
+
 	private Composite composite;
+	
+	ComboBridge<PlotInfo> comboBridgePlotInfo;
 
 	private QueryModel model;
 
@@ -82,7 +86,6 @@ public class QueryDialog extends Dialog {
 		super(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
 		beginDateTime = null;
 		endDateTime = null;
-		setText("SWT Dialog");
 		this.tsdb = timeSeriesDatabase;
 		this.model = new QueryModel();
 	}
@@ -134,9 +137,6 @@ public class QueryDialog extends Dialog {
 		comboRegion.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				/*updateGUIgeneralstations();
-				updateGUIplotID();
-				updateGUISensorName();*/
 				model.setRegionLongName(comboRegion.getText());
 			}
 		});
@@ -150,8 +150,6 @@ public class QueryDialog extends Dialog {
 		comboGeneralStation.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				/*updateGUIplotID();
-				updateGUISensorName();*/
 				model.setGeneralStationLongName(comboGeneralStation.getText());
 			}
 		});
@@ -160,14 +158,16 @@ public class QueryDialog extends Dialog {
 		grpPlot.setText("Plot");
 		grpPlot.setLayout(new RowLayout(SWT.HORIZONTAL));
 
-		comboPlotID = new Combo(grpPlot, SWT.READ_ONLY);
-		comboPlotID.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//updateGUISensorName();
-				model.setPlotID(comboPlotID.getText());
+		ComboViewer comboViewerPlotInfo = new ComboViewer(grpPlot, SWT.READ_ONLY);
+		comboBridgePlotInfo = new ComboBridge<PlotInfo>(comboViewerPlotInfo);
+		comboBridgePlotInfo.setLabelMapper(p->{
+			String s = p.name;
+			if(p.isVIP) {
+				s+=" (VIP)";
 			}
+			return s;
 		});
+		comboBridgePlotInfo.addSelectionChangedCallback(model::setPlotInfo);
 
 		Group grpSensor = new Group(composite, SWT.NONE);
 		grpSensor.setText("Sensor");
@@ -177,7 +177,6 @@ public class QueryDialog extends Dialog {
 		comboSensorName.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				//updateGUIinterpolated();
 				model.setSensorName(comboSensorName.getText());
 			}
 		});
@@ -232,31 +231,6 @@ public class QueryDialog extends Dialog {
 		checkButtonInterpolated2.setText("Interpolated");
 		//checkButtonInterpolated2.setSelection(true);
 		checkButtonInterpolated2.setBounds(0, 33, 85, 16);
-
-		//******************************
-		/*
-		Group grpQuality = new Group(composite, SWT.NONE);
-		grpQuality.setText("Quality");
-		grpQuality.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-
-
-		CheckButtonPhysical = new Button(grpQuality, SWT.CHECK);
-		CheckButtonPhysical.setSelection(true);
-		CheckButtonPhysical.setText("Physical Check");
-
-		CheckButtonEmpirical = new Button(grpQuality, SWT.CHECK);
-		CheckButtonEmpirical.setSelection(true);
-		CheckButtonEmpirical.setText("Empirical Check");
-
-		CheckButtonStep = new Button(grpQuality, SWT.CHECK);
-		CheckButtonStep.setSelection(true);
-		CheckButtonStep.setText("Step Check");
-
-		CheckButtonInterpolated = new Button(grpQuality, SWT.CHECK);
-		CheckButtonInterpolated.setSelection(true);
-		CheckButtonInterpolated.setText("Interpolated");
-		 */
 
 		grpAction = new Group(composite, SWT.NONE);
 		grpAction.setText("Action");
@@ -316,7 +290,7 @@ public class QueryDialog extends Dialog {
 
 	private void runQuery() {
 
-		String plotID = comboPlotID.getText();
+		String plotID = model.getPlotInfo().name;
 
 		String sensorName = comboSensorName.getText();
 		String[] querySchema;
@@ -450,192 +424,6 @@ public class QueryDialog extends Dialog {
 		};
 
 		worker.start();
-
-
-
-
-	}
-
-
-	void updateGUI() {
-		updateGUIregions();
-		updateGUIgeneralstations();
-		updateGUIplotID();
-		updateGUISensorName();
-		updateGUIAggregation();
-		updateGUIInfo();
-	}
-
-	void updateGUIregions() {
-		try {
-			String[] longNames = tsdb.getRegionLongNames();
-			String[] items = Arrays.copyOf(longNames, longNames.length+1);
-			items[longNames.length] = "cache";
-
-			//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
-			comboRegion.setItems(items);
-			comboRegion.setText(items[0]);
-		} catch(RemoteException e) {
-			log.error(e);
-		}
-	}
-
-	void updateGUIgeneralstations() {
-		try {
-			String regionLongName = comboRegion.getText();		
-			Region region = tsdb.getRegionByLongName(regionLongName);
-			if(region!=null) {
-				String[] generalStationNames = tsdb.getGeneralStationLongNames(region.name);
-				comboGeneralStation.setItems(generalStationNames);
-				if(generalStationNames.length>0) {
-					comboGeneralStation.setText(generalStationNames[0]);
-				} else {
-					comboGeneralStation.setText("");	
-				}
-			} else if(regionLongName.equals("cache")) {
-				System.out.println(regionLongName);
-				comboGeneralStation.setItems(new String[]{"cache"});
-				comboGeneralStation.setText("cache");			
-				String[] streams = tsdb.cacheStorageGetStreamNames();
-				comboPlotID.setItems(streams);
-				comboPlotID.setText(streams.length>0?streams[0]:"");
-			} else {
-				comboPlotID.setItems(new String[0]);
-			}
-
-			/*String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
-		//String[] generalStations = new String[]{"AEG","AEW","HEG","HEW","SEG","SEW"};
-		comboGeneralStation.setItems(generalStations);
-		comboGeneralStation.setText(generalStations[0]);*/
-		} catch(RemoteException e) {
-			log.error(e);
-		}
-	}
-
-	void updateGUIplotID() {
-		try {
-			String generalStationName = comboGeneralStation.getText();
-			if(!generalStationName.equals("cache")) {				
-				String[] plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationName);
-				if(plotIDs!=null) {
-					comboPlotID.setItems(plotIDs);
-					comboPlotID.setText(plotIDs[0]);
-				} else {
-					comboPlotID.setItems(new String[0]);
-				}
-
-			} else {
-
-			}
-
-
-
-
-			/*
-		if(generalStation!=null) {
-			java.util.List<Station> list = generalStation.stationList;
-			if(list.size()>0) {
-			String[] plotIDs = new String[list.size()];
-			for(int i=0;i<list.size();i++) {
-				plotIDs[i] = list.get(i).plotID;
-			}
-			comboPlotID.setItems(plotIDs);
-			comboPlotID.setText(plotIDs[0]);
-			} else {
-				comboPlotID.setItems(new String[0]);
-			}
-		} else {
-			comboPlotID.setItems(new String[0]);
-		}*/
-		} catch(RemoteException e) {
-			log.error(e);
-		}
-
-	}
-
-	void updateGUISensorName() {
-
-		try {
-
-			String stationName = comboPlotID.getText();
-
-
-			System.out.println("updateGUISensorName "+stationName);
-			String[] schema = null;
-			/*VirtualPlotInfo virtualplotInfo = timeSeriesDatabase.getVirtualPlotInfo(stationName);
-			if(virtualplotInfo!=null) {
-				//schema = virtualplotInfo.getSchema();
-			} else {*/
-			schema = tsdb.getPlotSchema(stationName);
-			//} 
-
-			if(comboGeneralStation.getText().equals("cache")) {
-				schema = tsdb.getCacheSchemaNames(stationName);
-			}
-			if(schema!=null) {
-
-				String[] sensorNames = tsdb.getBaseSchema(schema);
-				if(sensorNames.length>0) {
-					String oldName = comboSensorName.getText();
-					comboSensorName.setItems(sensorNames);
-					int indexPos = Util.getIndexInArray(oldName, sensorNames);				
-					if(indexPos<0) {
-						indexPos = 0;					
-					}
-					comboSensorName.setText(sensorNames[indexPos]);
-				} else {
-					comboSensorName.setItems(new String[0]);
-					comboSensorName.setText("");
-				}
-			} else {
-				comboSensorName.setItems(new String[0]);
-				comboSensorName.setText("");
-			}
-
-			updateGUIinterpolated();
-
-		} catch(RemoteException e) {
-			log.error(e);
-		}
-	}
-
-	protected void updateGUIinterpolated() {
-		try {
-			String sensorName = comboSensorName.getText();
-			if(sensorName!=null && !sensorName.isEmpty()) {
-				Sensor sensor = tsdb.getSensor(sensorName);
-				if(sensor != null) {
-					checkButtonInterpolated2.setEnabled(sensor.useInterpolation);
-					return;
-				}
-			}
-			checkButtonInterpolated2.setEnabled(false);
-		} catch(RemoteException e) {
-			log.error(e);
-		}
-	}
-
-	void updateGUIAggregation() {
-		//String[] generalStations = timeSeriesDatabase.generalStationMap.keySet().toArray(new String[0]);
-		//TODO: just for testing!
-		String[] aggregationNames = new String[]{"hour","day","week","month","year"};
-		comboAggregation.setItems(aggregationNames);
-		comboAggregation.setText("day");
-	}
-
-
-
-	void updateGUIInfo() {
-		/*if(queryResult!=null) {
-			long starttimestamp = queryResult.getFirstTimestamp();
-			long endtimestamp = queryResult.getLastTimestamp();
-			LocalDateTime start = TimeConverter.oleMinutesToLocalDateTime(starttimestamp);
-			LocalDateTime end = TimeConverter.oleMinutesToLocalDateTime(endtimestamp);
-			String s = queryResult.data[0].length+" entries \t\t time: "+start+" - "+end+"\t\t value range: "+minValue+" - "+maxValue+"\t\tquery time: "+(queryTimer.getTime("query")/1000f)+"s";
-			labelInfo.setText(s);
-		} else {
-			labelInfo.setText("no result");
-		}*/
 	}
 
 	protected void saveInCSV() {
@@ -655,7 +443,6 @@ public class QueryDialog extends Dialog {
 				CSV.write(result, filename, ",", "NaN", CSVTimeType.TIMESTAMP_AND_DATETIME);
 			}
 		}
-
 	}
 
 	private void bind() {
@@ -663,8 +450,8 @@ public class QueryDialog extends Dialog {
 		model.addPropertyChangeCallback("regionLongName", this::onChangeRegionLongName);
 		model.addPropertyChangeCallback("generalStationLongNames", this::onChangeGeneralStationLongNames);
 		model.addPropertyChangeCallback("generalStationLongName", this::onChangeGeneralStationLongName);
-		model.addPropertyChangeCallback("plotIDs", this::onChangePlotIDs);
-		model.addPropertyChangeCallback("plotID", this::onChangePlotID);
+		model.addPropertyChangeCallback("plotInfos", this::onChangePlotInfos);
+		model.addPropertyChangeCallback("plotInfo", this::onChangePlotInfo);
 		model.addPropertyChangeCallback("sensorNames", this::onChangeSensorNames);
 		model.addPropertyChangeCallback("sensorName", this::onChangeSensorName);
 		model.addPropertyChangeCallback("aggregationNames", this::onChangeAggregationNames);
@@ -720,6 +507,7 @@ public class QueryDialog extends Dialog {
 	}
 
 	private void onChangeGeneralStationLongNames(String[] generalStationLongNames) {
+		System.out.println("onChangeGeneralStationLongNames");
 		if(generalStationLongNames!=null&&generalStationLongNames.length>0) {
 			comboGeneralStation.setItems(generalStationLongNames);
 			model.setGeneralStationLongName(generalStationLongNames[0]);
@@ -730,28 +518,30 @@ public class QueryDialog extends Dialog {
 	}
 
 	private void onChangeGeneralStationLongName(String generalStationLongName) {
-		String[] plotIDs = null;
+		System.out.println("onChangeGeneralStationLongName");
+		PlotInfo[] plotInfos = null;
 		if(generalStationLongName!=null) {
 			comboGeneralStation.setText(generalStationLongName);
 			if(generalStationLongName.equals("cache")) {
 				try {
-					plotIDs = tsdb.cacheStorageGetStreamNames();
-					PlotInfo[] plotInfos = Arrays.stream(plotIDs).map(p->new PlotInfo(p, "cache", "cache")).toArray(PlotInfo[]::new);
+					String[] plotIDs = tsdb.cacheStorageGetStreamNames();
+					plotInfos = Arrays.stream(plotIDs).map(p->new PlotInfo(p, "cache", "cache")).toArray(PlotInfo[]::new);
 				} catch (RemoteException e) {
 					log.error(e);
 				}				
 			} else {
 				try {
-					plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationLongName);
+					String[] plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationLongName);
+					System.out.println(Util.arrayToString(plotIDs));
 					HashSet<String> set = new HashSet<String>();
 					set.addAll(Arrays.asList(plotIDs));
-					
-					PlotInfo[] plotInfos = tsdb.getPlotInfos();
+					plotInfos = tsdb.getPlotInfos();
+					System.out.println(set);
+					System.out.println(Util.arrayToString(plotInfos));
 					if(plotInfos!=null) {
-						plotInfos = Arrays.stream(plotInfos).filter(p->set.contains(p)).toArray(PlotInfo[]::new);
+						plotInfos = Arrays.stream(plotInfos).filter(p->set.contains(p.name)).toArray(PlotInfo[]::new);
+						System.out.println(Util.arrayToString(plotInfos));
 					}
-					
-					
 				} catch (RemoteException e) {
 					log.error(e);
 				}
@@ -759,40 +549,41 @@ public class QueryDialog extends Dialog {
 		} else {
 			comboGeneralStation.setText("");
 		}
-		model.setPlotIDs(plotIDs);
+		model.setPlotInfos(plotInfos);
 	}
 
-	private void onChangePlotIDs(String[] plotIDs) {
-		if(plotIDs!=null&&plotIDs.length>0) {
-			comboPlotID.setItems(plotIDs);
-			model.setPlotID(plotIDs[0]);
+	private void onChangePlotInfos(PlotInfo[] plotInfos) {
+		System.out.println("onChangePlotInfos: "+Util.arrayToString(plotInfos));
+		if(plotInfos!=null&&plotInfos.length>0) {
+			comboBridgePlotInfo.setInput(plotInfos);
+			model.setPlotInfo(plotInfos[0]);
 		} else {
-			comboPlotID.setItems(new String[0]);
-			model.setPlotID(null);
+			comboBridgePlotInfo.setInput(null);
+			model.setPlotInfo(null);
 		}
-
 	}
 
-	private void onChangePlotID(String plotID) {
+	private void onChangePlotInfo(PlotInfo plotInfo) {
+		System.out.println("onChangePlotInfo: "+plotInfo);
 		String[] sensorNames = null;
-		if(plotID!=null) {
-			comboPlotID.setText(plotID);			
+		if(plotInfo!=null) {
+			comboBridgePlotInfo.setSelection(plotInfo);
 			if("cache".equals(model.getGeneralStationLongName())) {
 				try {
-					sensorNames = tsdb.getCacheSchemaNames(plotID);
+					sensorNames = tsdb.getCacheSchemaNames(plotInfo.name);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
 			} else {
 				try {
-					sensorNames = tsdb.getPlotSchema(plotID);
+					sensorNames = tsdb.getPlotSchema(plotInfo.name);
 				} catch (RemoteException e) {
 					log.error(e);
 				}
 			}
 
 		} else {
-			comboPlotID.setText("");
+			comboBridgePlotInfo.clearSelection();
 		}
 		if(sensorNames!=null) {
 			try {
@@ -806,7 +597,7 @@ public class QueryDialog extends Dialog {
 	}
 
 	private void onChangeSensorNames(String[] sensorNames) {
-		System.out.println("onChangeSensorNames: "+sensorNames.length);
+		System.out.println("onChangeSensorNames");
 		String sensorName = null;
 		if(sensorNames!=null&&sensorNames.length>0) {
 			comboSensorName.setItems(sensorNames);

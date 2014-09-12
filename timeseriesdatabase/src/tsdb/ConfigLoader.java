@@ -419,6 +419,7 @@ public class ConfigLoader extends TsDBClient {
 			//int latIndex = table.getColumnIndex("Lat");
 			int eastingIndex = table.getColumnIndex("Easting");
 			int northingIndex = table.getColumnIndex("Northing");
+			int focalPlotIndex = table.getColumnIndex("FocalPlot");
 			for(String[] row:table.rows) {
 				String plotID = row[plotidIndex];				
 				if(plotID.length()==4&&plotID.charAt(3)>='0'&&plotID.charAt(3)<='9') {
@@ -436,6 +437,12 @@ public class ConfigLoader extends TsDBClient {
 					//String lat = row[latIndex];
 					String easting = row[eastingIndex];
 					String northing = row[northingIndex];
+					String focalPlot = row[focalPlotIndex];
+					
+					boolean isFocalPlot = false;
+					if(focalPlot.equals("Y")) {
+						isFocalPlot = true;
+					}
 
 					//double geoPoslongitude = Double.NaN;
 					//double geoPosLatitude = Double.NaN;
@@ -456,7 +463,7 @@ public class ConfigLoader extends TsDBClient {
 						geoPosNorthing = Integer.parseInt(northing);							
 					} catch(Exception e) {}
 
-					tsdb.insertVirtualPlot(new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing));					
+					tsdb.insertVirtualPlot(new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing, isFocalPlot));					
 				} else {
 					log.warn("not valid plotID name: "+plotID+"  VirtualPlot not inserted"+"   in config file: "+config_file);;
 				}

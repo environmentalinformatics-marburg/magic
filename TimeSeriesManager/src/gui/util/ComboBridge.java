@@ -8,6 +8,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 
+import tsdb.util.Util;
+
 public class ComboBridge<E> {
 
 	private final ComboViewer comboViewer;
@@ -41,13 +43,19 @@ public class ComboBridge<E> {
 	}
 
 	public void setSelection(E element) {
+		Util.throwNull(element);
 		comboViewer.setSelection(new StructuredSelection(element));
+	}
+
+	public void clearSelection() {
+		comboViewer.getCombo().clearSelection();
 	}
 
 	public interface CallBack<E> {
 		void call(E e);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addSelectionChangedCallback(CallBack<E> callback) {
 		comboViewer.addSelectionChangedListener(event->{		
 			callback.call((E) ((IStructuredSelection)event.getSelection()).getFirstElement());

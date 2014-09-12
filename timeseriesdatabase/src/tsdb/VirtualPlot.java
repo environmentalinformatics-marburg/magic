@@ -22,6 +22,8 @@ public class VirtualPlot extends TsDBClient {
 
 	public int geoPosEasting = -1;
 	public int geoPosNorthing = -1;
+	
+	public final boolean isFocalPlot;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
 
@@ -30,12 +32,13 @@ public class VirtualPlot extends TsDBClient {
 	 */
 	public List<VirtualPlot> nearestVirtualPlots;
 
-	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing) {
+	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing, boolean isFocalPlot) {
 		super(tsdb);
 		this.plotID = plotID;
 		this.generalStation = generalStation;
 		this.geoPosEasting = geoPosEasting;
 		this.geoPosNorthing = geoPosNorthing;
+		this.isFocalPlot = isFocalPlot;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
 	}

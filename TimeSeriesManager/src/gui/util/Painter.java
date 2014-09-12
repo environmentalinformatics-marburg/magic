@@ -12,7 +12,6 @@ public class Painter {
 
 	public static void drawText(String text, GC gc, int x, int y, PosHorizontal posHorizontal, PosVerical posVerical) {
 		Point point = gc.textExtent(text);
-		System.out.println(point);
 		int xPos;
 		switch(posHorizontal) {
 		case LEFT:

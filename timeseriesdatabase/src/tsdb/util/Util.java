@@ -172,6 +172,17 @@ public class Util {
 		}
 		return result;
 	}
+	
+	public static <T> String arrayToString(T[] a) {
+		if(a==null) {
+			return "[null]";
+		}
+		String result="[";
+		for(int i=0;i<a.length;i++) {
+			result+=a[i].toString()+" ";
+		}
+		return result+"]";
+	}
 
 	public static void printArray(String[] a) {
 		printArray(a," ");
