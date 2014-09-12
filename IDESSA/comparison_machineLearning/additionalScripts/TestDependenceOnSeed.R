@@ -14,7 +14,7 @@
 for (testnumber in 1:10){
 #choose where to work (currently "hanna" and "ui183" are supported. 
 #New profiles have to be created in the "datapath" section)
-profil="hanna"
+profil=="ui183"
 doParallel=TRUE
 useSeeds=FALSE
 
@@ -81,7 +81,7 @@ adaptiveResampling=FALSE #use adaptive crosss validation?
 
 ###only for classification:
 tuneThreshold=TRUE #should the optimal probability threshold be tuned?  
-thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
+thresholds=c(seq(0.0, 0.40, 0.02),seq(0.50,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
 
 
 ##### RF Settings:
@@ -92,7 +92,7 @@ nnet_decay=seq(0.01,0.1,0.02)
 nnet_size=seq(2,length(predictorVariables),2)
 ##### SVM Settings:
 svm_sigma="sigest(as.matrix(predictors))[2]" #analyticaly solved with sigest. vector is also allowed
-svm_cost=c(0.50, 2.00, 8.00, 32.00, 128.00, 512.00, 2048.00, 8192.00)
+svm_cost=c(0.50, 2.00, 8.00, 16.00, 32.00, 64.00, 128.00, 512.00)
 ##################################################################################################################
 ##################################################################################################################
 ##################################################################################################################
@@ -177,8 +177,7 @@ source("PredictModels.R",echo=TRUE)
 if (type=="classification") source("ROC_comp.R",echo=TRUE)
 if (type=="classification") source("confusion_comp.R",echo=TRUE)
 if (type=="regression") source("RMSE_comp.R",echo=TRUE)
-#if (response=="RInfo") source("SpatialRInfoResults.R",echo=TRUE)
-#if (response=="Rain") source("SpatialRainResults.R",echo=TRUE)
+
 ##################################################################################################################
 ##################################################################################################################
 #                             Stop cluster and clear workspace
