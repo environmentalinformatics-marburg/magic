@@ -119,11 +119,12 @@ bwplot(as.vector(MAE_all)~names,ylab="MAE")
 dev.off()
 
 #######################Significant differences
-Rsquared_all
-RMSE_all
-ME_all
-MAE_all
 
+#######################Write all scores to table
+for (i in 1:length(RMSE)){
+  VerificationScores=data.frame("RMSE"=RMSE[[i]][,2],"ME"=ME[[i]][,2],"MAE"=MAE[[i]][,2],"Rsquared"=Rsquared[[i]][,2])
+  write.csv(VerificationScores,file=paste(resultpath,"/VerificationScores_",model[i],".csv",sep=""),row.names=FALSE)
+}
 
 #######################Means and SD's
 

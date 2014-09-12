@@ -34,7 +34,7 @@ data=data[(rowSums(is.na(data[,which(names(data) %in% predictorVariables)])))==0
 
 tmp=data[,predictorVariables]
 M <- cor(tmp)
-png(paste0(resultpath,"CorrelationVariables.png"),res=300)
+png(paste0(resultpath,"/CorrelationVariables.png"),res=300)
 corrplot(M, method = "circle",type="lower",tl.col="black",tl.cex=0.75)
 dev.off()
 

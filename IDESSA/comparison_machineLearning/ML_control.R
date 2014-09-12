@@ -24,11 +24,11 @@ rm(list=ls())
 profil="hanna"
 doParallel=TRUE
 useSeeds=TRUE
-shortTest=TRUE#if TRUE then learning parameters and data set are set automatically for quick test of the system
+shortTest=FALSE#if TRUE then learning parameters and data set are set automatically for quick test of the system
 ##################################################################################################################
 #                                          Data adjustments
 ##################################################################################################################
-inputTable="rfInput_vp03_day_as.dat"
+inputTable="rfInput_vp03_inb_as.dat"
 response<-"Rain" #field name of the response variable. "Rain" or "RInfo"
 dateField="chDate" #field name of the date+time variable. identifier for scenes. 
 #important to split the data. must be unique per scene. format: yyyymmddhhmm
@@ -36,6 +36,7 @@ centerscale=TRUE#center and scale the predictor variables?
 transformResponse=FALSE#Transform Rain rates?
 rainAreaFromRadar=TRUE#If false all cloudy pixels are considered as potentially raining. If true only pixels
 #where radar says it rains are considered for rain rate assignment
+
 
 ##################################################################################################################
 #                                          Predictor variables
@@ -54,11 +55,11 @@ rainAreaFromRadar=TRUE#If false all cloudy pixels are considered as potentially 
 #}
 if (substr(inputTable,14,14)=="d"){
   predictorVariables=c("SZen",
-                      "B01","B02","B03", "B0103", #remove them for night data sets!!
-                     "B04","B05","B06","B07","B08","B09","B10","B11",
-                     #"Tau",
-                     #"Aef","CWP",
-                     "B0409","B0406","B0709","B0910","B0509","B0610"
+                       "B01","B02","B03", "B0103", #remove them for night data sets!!
+                       "B04","B05","B06","B07","B08","B09","B10","B11",
+                       #"Tau",
+                       #"Aef","CWP",
+                       "B0409","B0406","B0709","B0910","B0509","B0610"
   )
 }
 
@@ -74,10 +75,10 @@ if (substr(inputTable,14,14)=="i"){
 
 if (substr(inputTable,14,14)=="n"){
   predictorVariables=c(# "B01","B02","B03", "B0103", #remove them for night data sets!!
-                       "B04","B05","B06","B07","B08","B09","B10","B11",
-                       #"Tau",
-                       #"Aef","CWP",
-                       "B0409","B0406","B0709","B0910","B0509","B0610"
+    "B04","B05","B06","B07","B08","B09","B10","B11",
+    #"Tau",
+    #"Aef","CWP",
+    "B0409","B0406","B0709","B0910","B0509","B0610"
   )
 }
 
@@ -93,7 +94,7 @@ if (response=="Rain"){
 if (response=="RInfo"){
   sampsize=0.05 #how many percent of training scene pixels from the training data should actually be used for training? 
 }
-fixedSampsize=100000 #use fixed sampsize instead? if not then put it on FALSE
+fixedSampsize=FALSE #use fixed sampsize instead? if not then put it on FALSE
 
 ##################################################################################################################
 #                                      Learning adjustments
@@ -103,8 +104,8 @@ adaptiveResampling=FALSE #use adaptive crosss validation?
 
 ###only for classification:
 tuneThreshold=TRUE #should the optimal probability threshold be tuned?  
-thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
-
+#thresholds=c(seq(0.0, 0.20, 0.01),seq(0.30,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
+thresholds=c(seq(0.0, 0.40, 0.02),seq(0.50,1,0.1)) #if tuneThreshold==TRUE: Which thresholds?
 
 ##### RF Settings:
 ntree=500
@@ -114,7 +115,8 @@ nnet_decay=seq(0.01,0.1,0.02)
 nnet_size=seq(2,length(predictorVariables),2)
 ##### SVM Settings:
 svm_sigma="sigest(as.matrix(predictors))[2]" #analyticaly solved with sigest. vector is also allowed
-svm_cost=c(0.50, 2.00, 8.00, 16.00, 32.00, 128.00, 512.00, 2048.00, 8192.00)
+#svm_cost=c(0.50, 2.00, 8.00, 16.00, 32.00, 128.00, 512.00, 2048.00, 8192.00)
+svm_cost=c(0.50, 2.00, 8.00, 16.00, 32.00, 64.00, 128.00, 512.00)
 ##################################################################################################################
 ##################################################################################################################
 ##################################################################################################################
@@ -131,6 +133,9 @@ if (response=="Rain"){
 if (type=="regression"){
   tuneThreshold=FALSE
 }
+
+
+
 
 ##################################################################################################################
 #                                   Initialize "shortTest"
@@ -202,7 +207,7 @@ if (doParallel){
 ##################################################################################################################
 #                                           Preprocessing
 ##################################################################################################################
-source("Preprocessing.R",echo=TRUE,echo=TRUE)
+source("Preprocessing.R",echo=TRUE)
 ##################################################################################################################
 #                                          Learning
 ##################################################################################################################

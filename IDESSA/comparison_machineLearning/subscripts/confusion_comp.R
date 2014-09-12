@@ -27,6 +27,15 @@ for (i in 1:length(model)){
   }
 }
 scorenames=names(confusion[[1]][[1]])
+
+###write whole confusion data.set
+confusiondataOut=confusiondata
+for (i in 1:length(confusiondataOut)){
+  colnames(confusiondataOut[[i]])=scorenames
+  write.csv(confusiondataOut[[i]],file=paste(resultpath,"/Confusion_comp/confusiondata_",model[i],".csv",sep=""),row.names=FALSE)
+}
+
+
 ###write confusion means
 confusionmeans=lapply(confusiondata,colMeans)
 confusionsd=lapply(confusiondata,function(x){apply(x, 2, sd)})
