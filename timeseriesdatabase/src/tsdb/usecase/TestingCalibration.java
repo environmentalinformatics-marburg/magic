@@ -152,14 +152,8 @@ public class TestingCalibration {
 				}
 			}
 
-
-
 			System.out.println("output schema: "+outputSensorNameList);
-
-
 			return null;
-
-
 			/*String[] schema = new String[]{"P_container_RT","P_RT_NRT"};
 			return TimeSeriesSchema.createJustSchema(schema );*/
 		}

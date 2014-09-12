@@ -4,6 +4,7 @@ import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
+import tsdb.aggregated.iterator.DayAggregationIterator;
 
 /**
  * With QueryPlan query graphs for specific queries a are build
@@ -31,14 +32,21 @@ public class QueryPlan {
 		} else {
 			continuous = continuousGen.get(plotID, schema);
 		}
-		//!!!TODO
-		//continuous = Difference.createFromGroupAverage(tsdb, continuous, plotID, false);
-		//!!!TODO
-		if(AggregationInterval.HOUR==aggregationInterval) {
-			return continuous;
+		return Aggregated.create(tsdb, continuous, aggregationInterval);
+		
+	}
+	
+	public static Node plotDifference(TsDB tsdb, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+		String[] schema = columnNames;
+		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
+		Continuous continuous;
+		if(interpolated) {
+			continuous = Interpolated.create(tsdb, plotID, schema, continuousGen); 
 		} else {
-			return Aggregated.create(tsdb, continuous, aggregationInterval);
-		}		
+			continuous = continuousGen.get(plotID, schema);
+		}
+		continuous = Difference.createFromGroupAverage(tsdb, continuous, plotID, false);
+		return Aggregated.create(tsdb, continuous, aggregationInterval);		
 	}
 
 	/**

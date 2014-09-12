@@ -3,6 +3,7 @@ package gui.query;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -29,6 +30,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.graph.Node;
 import tsdb.raw.TimestampSeries;
+import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
@@ -410,7 +412,7 @@ public class QueryDialog extends Dialog {
 					if(useCache) {
 						resultTimeSeries = tsdb.cache(plotID, querySchema, agg);
 					} else {
-						resultTimeSeries = tsdb.plot(plotID, querySchema, agg, dataQuality, useInterpolation);
+						resultTimeSeries = tsdb.plot(null,plotID, querySchema, agg, dataQuality, useInterpolation);
 					}
 
 					/*if(useCache) {
@@ -734,12 +736,22 @@ public class QueryDialog extends Dialog {
 			if(generalStationLongName.equals("cache")) {
 				try {
 					plotIDs = tsdb.cacheStorageGetStreamNames();
+					PlotInfo[] plotInfos = Arrays.stream(plotIDs).map(p->new PlotInfo(p, "cache", "cache")).toArray(PlotInfo[]::new);
 				} catch (RemoteException e) {
 					log.error(e);
 				}				
 			} else {
 				try {
 					plotIDs = tsdb.getPlotIDsByGeneralStationByLongName(generalStationLongName);
+					HashSet<String> set = new HashSet<String>();
+					set.addAll(Arrays.asList(plotIDs));
+					
+					PlotInfo[] plotInfos = tsdb.getPlotInfos();
+					if(plotInfos!=null) {
+						plotInfos = Arrays.stream(plotInfos).filter(p->set.contains(p)).toArray(PlotInfo[]::new);
+					}
+					
+					
 				} catch (RemoteException e) {
 					log.error(e);
 				}

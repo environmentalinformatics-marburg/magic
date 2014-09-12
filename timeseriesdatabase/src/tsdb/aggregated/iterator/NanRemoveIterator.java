@@ -1,13 +1,9 @@
 package tsdb.aggregated.iterator;
 
-import java.util.List;
-
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -26,8 +22,7 @@ public class NanRemoveIterator extends InputProcessingIterator {
 		boolean hasQualityFlags = input_schema.hasQualityFlags;
 		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
 		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep , isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
-		
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep , isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();		
 	}
 
 	public NanRemoveIterator(TsIterator input_iterator) {

@@ -4,6 +4,10 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.iterator.AggregationIterator;
+import tsdb.aggregated.iterator.DayAggregationIterator;
+import tsdb.aggregated.iterator.MonthAggregationIterator;
+import tsdb.aggregated.iterator.WeekAggregationIterator;
+import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
@@ -32,11 +36,45 @@ public class Aggregated extends Continuous.Abstract {
 		if(continuous_iterator==null||!continuous_iterator.hasNext()) {
 			return null;
 		}
-		AggregationIterator aggregation_iterator = new AggregationIterator(tsdb, continuous_iterator, aggregationInterval);
+		if(aggregationInterval==AggregationInterval.HOUR) {
+			return continuous_iterator;
+		}
+		
+		DayAggregationIterator day_iterator = new DayAggregationIterator(tsdb,continuous_iterator);
+		if(day_iterator==null||!day_iterator.hasNext()) {
+			return null;
+		}
+		if(aggregationInterval==AggregationInterval.DAY) {
+			return day_iterator;
+		}
+		if(aggregationInterval==AggregationInterval.WEEK) {
+			WeekAggregationIterator week_iterator = new WeekAggregationIterator(tsdb, day_iterator);
+			if(week_iterator==null||!week_iterator.hasNext()) {
+				return null;
+			}
+			return week_iterator;
+		}
+		MonthAggregationIterator month_iterator = new MonthAggregationIterator(tsdb, day_iterator);
+		if(month_iterator==null||!month_iterator.hasNext()) {
+			return null;
+		}
+		if(aggregationInterval==AggregationInterval.MONTH) {			
+			return month_iterator;
+		}
+		if(aggregationInterval==AggregationInterval.YEAR) {
+			YearAggregationIterator year_iterator = new YearAggregationIterator(tsdb, month_iterator);
+			if(year_iterator==null||!year_iterator.hasNext()) {
+				return null;
+			}
+			return year_iterator;
+		}
+		log.warn("unknown aggregation: "+aggregationInterval);
+		return null;		
+		/*AggregationIterator aggregation_iterator = new AggregationIterator(tsdb, continuous_iterator, aggregationInterval);
 		if(aggregation_iterator==null||!aggregation_iterator.hasNext()) {
 			return null;
 		}
-		return aggregation_iterator;
+		return aggregation_iterator;*/
 	}
 
 	@Override

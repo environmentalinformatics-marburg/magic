@@ -75,5 +75,4 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 			return curr;
 		}
 	}
-
 }

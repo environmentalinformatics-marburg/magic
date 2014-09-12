@@ -21,22 +21,17 @@ public class QualityFlagIterator extends InputProcessingIterator {
 
 	private static final int MAX_TIME_STEP = 60;
 	
-	int columns;
 	long[] prevTimestamps;
 	float[] prevData;
 	
 	Sensor[] sensors;
-	
-	String[] schema;
 
 	public QualityFlagIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
-		super(input_iterator, TimeSeriesSchema.createWithQualityFlags(input_iterator.getSchema().toTimeSeriesSchema()).toTsSchema());
-		this.schema = input_iterator.getNames();		
+		super(input_iterator, TimeSeriesSchema.createWithQualityFlags(input_iterator.getSchema().toTimeSeriesSchema()).toTsSchema());	
 		sensors = timeSeriesDatabase.getSensors(input_iterator.getNames());
-		columns = schema.length;
-		this.prevTimestamps = new long[columns];
-		this.prevData = new float[columns];
-		for(int i=0;i<columns;i++) {
+		this.prevTimestamps = new long[schema.length];
+		this.prevData = new float[schema.length];
+		for(int i=0;i<schema.length;i++) {
 			prevTimestamps[i] = -1000;
 			prevData[i] = Float.NaN; 
 		}
@@ -48,8 +43,8 @@ public class QualityFlagIterator extends InputProcessingIterator {
 			TimeSeriesEntry currEntry = input_iterator.next();
 			long currTimestamp = currEntry.timestamp;
 			float[] currData = currEntry.data;
-			DataQuality[] flags = new DataQuality[columns];
-			for(int columnIndex=0;columnIndex<columns;columnIndex++) {
+			DataQuality[] flags = new DataQuality[schema.length];
+			for(int columnIndex=0;columnIndex<schema.length;columnIndex++) {
 				float currValue = currData[columnIndex];
 				Sensor sensor = sensors[columnIndex];
 				DataQuality currQuality = DataQuality.Na;
@@ -76,10 +71,5 @@ public class QualityFlagIterator extends InputProcessingIterator {
 			return null; // no elements left
 		}
 	}
-
-	@Override
-	public String[] getNames() {
-		return schema;
-	}	
 }
 

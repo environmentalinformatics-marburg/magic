@@ -196,8 +196,17 @@ public class SensorQueryDialog extends Dialog {
 		ComboViewer comboViewerView = new ComboViewer(grpView, SWT.READ_ONLY);
 		ComboBridge<ViewType> viewBridge = new ComboBridge<ViewType>(comboViewerView);
 		ViewType[] viewTypes = new ViewType[]{ViewType.COMPARE,ViewType.DIFF};
+		viewBridge.setLabelMapper(v->{switch (v) {
+		case COMPARE:
+			return "standard";
+		case DIFF:
+			return "difference";
+		default:
+			return "[?]";
+		}});
 		viewBridge.setInput(viewTypes);
-
+		viewBridge.setSelection(viewTypes[0]);
+		viewBridge.addSelectionChangedCallback(v->model.setViewType(v));
 
 		Group grpQuery_1 = new Group(grpQuery, SWT.NONE);
 		grpQuery_1.setText("query");
@@ -336,10 +345,22 @@ public class SensorQueryDialog extends Dialog {
 				System.out.println(name+"  sensor name: "+model.getSensorName());
 				TimestampSeries ts = null;
 				TimestampSeries ts_compare = null;
+				String queryType = null;
+				DataQuality dataQuality = DataQuality.EMPIRICAL;
+				ViewType viewType = model.getViewType();
+				if(viewType==ViewType.DIFF) {
+					queryType = "difference";
+					dataQuality = DataQuality.STEP;
+				}
+				String[] sensorNames = new String[]{model.getSensorName()};
+				if(model.getSensorName().equals("WD")) {
+					sensorNames = new String[]{sensorNames[0],"WV"};
+				}
+				
 				try {
-					if(!Util.empty(tsdb.getValidSchema(name, new String[]{model.getSensorName()}))) {
-						ts = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.EMPIRICAL, false);
-						ts_compare = tsdb.plot(name, new String[]{model.getSensorName()}, aggregationInterval, DataQuality.NO, false);
+					if(!Util.empty(tsdb.getValidSchema(name, sensorNames))) {
+						ts = tsdb.plot(queryType,name, sensorNames, aggregationInterval, dataQuality, false);
+						ts_compare = tsdb.plot(queryType,name, sensorNames, aggregationInterval, DataQuality.NO, false);
 					}
 				} catch(Exception e) {
 					e.printStackTrace();

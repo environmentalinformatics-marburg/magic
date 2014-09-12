@@ -58,9 +58,7 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 					posIndex[itIndex][colIndex] = -1;
 				}
 			}
-		}
-		
-		
+		}		
 	}
 	
 	@Override

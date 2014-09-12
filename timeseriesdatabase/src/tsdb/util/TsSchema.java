@@ -14,7 +14,11 @@ public class TsSchema {
 		NO,
 		CONSTANT_STEP,
 		MONTH,
-		YEAR
+		YEAR;
+		
+		public void throwNotVariableStepAggregation() {
+			Util.throwFalse(this==Aggregation.MONTH||this==Aggregation.YEAR,"NotVariableStepAggregation: "+this);
+		}
 	}
 
 	public final String[] names;
@@ -114,6 +118,14 @@ public class TsSchema {
 	public void throwNoAggregation() {
 		Util.throwTrue(aggregation==Aggregation.NO,"input is not pre aggregated");
 	}
+	
+	public void throwNotAggregation(Aggregation aggregation) {
+		Util.throwFalse(this.aggregation==aggregation,"not aggregation: "+this.aggregation+"  "+aggregation);
+	}
+	
+	public void throwNotStep(int timeStep) {
+		Util.throwFalse(this.timeStep==timeStep,"not timeStep: "+this.timeStep+"  "+timeStep);
+	}
 
 	public void throwNotContinuous() {
 		Util.throwFalse(isContinuous,"input is not pre aggregated");
@@ -181,5 +193,9 @@ public class TsSchema {
 	
 	public void throwNoBaseAggregation() {
 		Util.throwFalse(timeStep==BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL,"no base aggregation");
+	}
+	
+	public void throwNotVariableStepAggregation() {
+		aggregation.throwNotVariableStepAggregation();
 	}
 }

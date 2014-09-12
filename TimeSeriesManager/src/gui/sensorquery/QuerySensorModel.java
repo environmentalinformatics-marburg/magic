@@ -18,6 +18,8 @@ public class QuerySensorModel extends AbstractModel {
 	private String sensorName;
 	private String aggregationName;
 	
+	private ViewType viewType;
+	
 	
 
 	public void setRegions(Region[] regions) {
@@ -49,6 +51,10 @@ public class QuerySensorModel extends AbstractModel {
 	public void setAggregationName(String aggregationName) {			
 		changeSupport.firePropertyChange("aggregationName", this.aggregationName, this.aggregationName=aggregationName);
 	}
+	
+	public void setViewType(ViewType viewType) {
+		changeSupport.firePropertyChange("viewType", this.viewType, this.viewType=viewType);
+	}
 
 
 	public Region[] getRegions() {
@@ -76,5 +82,8 @@ public class QuerySensorModel extends AbstractModel {
 	}
 	public String getAggregationName() {
 		return aggregationName;
-	}	
+	}
+	public ViewType getViewType() {
+		return viewType;
+	}
 }

@@ -1,9 +1,6 @@
 package tsdb.aggregated.iterator;
 
 import java.util.Arrays;
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.Sensor;
@@ -12,13 +9,10 @@ import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Pair;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -26,9 +20,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class BaseAggregationIterator extends InputProcessingIterator {
-
-	private static final Logger log = Util.log;
+public class BaseAggregationIterator extends InputProcessingIterator implements TsDBLogger {
 
 	Sensor[] sensors;
 	boolean aggregate_wind_direction;	

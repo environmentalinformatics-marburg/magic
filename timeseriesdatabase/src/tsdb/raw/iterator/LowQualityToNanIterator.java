@@ -20,7 +20,6 @@ import tsdb.util.iterator.TsIterator;
  */
 public class LowQualityToNanIterator extends InputIterator implements TsDBLogger {
 
-	TsIterator input_iterator;
 	private DataQuality targetDataQuality;
 
 	/**
@@ -33,7 +32,6 @@ public class LowQualityToNanIterator extends InputIterator implements TsDBLogger
 		if(!input_iterator.getSchema().hasQualityFlags) {
 			throw new RuntimeException("no quality flags in schema");
 		}
-		this.input_iterator = input_iterator;
 		this.targetDataQuality = dataQuality;
 	}
 

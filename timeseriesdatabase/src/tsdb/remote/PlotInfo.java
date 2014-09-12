@@ -14,11 +14,13 @@ public class PlotInfo implements Serializable {
 
 	public final GeneralStationInfo generalStationInfo;
 	public final boolean isStation;
+	public final boolean isVIP;
 	
 	public PlotInfo(VirtualPlot virtualPlot) {
 		this.name = virtualPlot.plotID;
 		this.generalStationInfo = new GeneralStationInfo(virtualPlot.generalStation);
 		this.isStation = false;
+		this.isVIP = false; // TODO
 	}
 	
 	public PlotInfo(Station station) {
@@ -26,6 +28,15 @@ public class PlotInfo implements Serializable {
 		this.name = station.stationID;
 		this.generalStationInfo = new GeneralStationInfo(station.generalStation);
 		this.isStation = true;
+		this.isVIP = station.isVIP();
+	}
+	
+	public PlotInfo(String name, String generalName, String regionName) {
+		Util.throwNull(name);
+		this.name = name;
+		this.generalStationInfo = new GeneralStationInfo(generalName, regionName);
+		this.isStation = false;
+		this.isVIP = false;
 	}
 
 	@Override

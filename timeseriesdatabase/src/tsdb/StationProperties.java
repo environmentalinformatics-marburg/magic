@@ -20,6 +20,9 @@ public class StationProperties implements Serializable, TsDBLogger {
 	private final static String PROPERTY_LOGGER = "LOGGER";
 	private final static String PROPERTY_PLOTID = "PLOTID";
 	private final static String PROPERTY_SERIAL = "SERIAL";
+	private final static String PROPERTY_TYPE = "TYPE"; //type: EP or VIP
+	
+	private final static String TYPE_VIP = "VIP";
 
 	private Map<String,String> propertyMap;
 
@@ -29,6 +32,14 @@ public class StationProperties implements Serializable, TsDBLogger {
 
 	public String getProperty(String key) {
 		return propertyMap.get(key);
+	}
+	
+	public boolean isVIP() {
+		String type = getProperty(PROPERTY_TYPE);
+		if(type==null) {
+			return false;
+		}
+		return type.equals(TYPE_VIP);
 	}
 	
 	public Integer getIntProperty(String key) {

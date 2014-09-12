@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import tsdb.GeneralStation;
 import tsdb.Region;
+import tsdb.util.Util;
 
 public class GeneralStationInfo implements Serializable {
 	
@@ -23,6 +24,16 @@ public class GeneralStationInfo implements Serializable {
 		this.region = generalStation.region;
 		this.stationCount = generalStation.stationList.size();
 		this.virtualPlotCount = generalStation.virtualPlots.size();
+	}
+	
+	public GeneralStationInfo(String generalName, String regionName) {
+		Util.throwNull(generalName, regionName);
+		this.name = generalName;
+		this.longName = generalName;
+		this.group = generalName;
+		this.region = new Region(regionName, regionName);
+		this.stationCount = 0;
+		this.virtualPlotCount = 0;
 	}
 	
 	public String getName() {

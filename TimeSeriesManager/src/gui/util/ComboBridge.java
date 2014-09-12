@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 
@@ -33,14 +34,24 @@ public class ComboBridge<E> {
 			}
 		});
 	}
-	
+
 	public void setInput(E[] input) {
 		comboViewer.setContentProvider(ArrayContentProvider.getInstance());
 		comboViewer.setInput(input);
 	}
-	
+
 	public void setSelection(E element) {
 		comboViewer.setSelection(new StructuredSelection(element));
+	}
+
+	public interface CallBack<E> {
+		void call(E e);
+	}
+
+	public void addSelectionChangedCallback(CallBack<E> callback) {
+		comboViewer.addSelectionChangedListener(event->{		
+			callback.call((E) ((IStructuredSelection)event.getSelection()).getFirstElement());
+		});
 	}
 
 }

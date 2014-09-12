@@ -28,6 +28,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
+@Deprecated
 public class AggregationIterator extends InputProcessingIterator implements TsDBLogger  {
 
 	private static final int QUALITY_COUNTERS = 5;
@@ -82,11 +83,8 @@ public class AggregationIterator extends InputProcessingIterator implements TsDB
 		boolean hasQualityFlags = false;
 		boolean hasInterpolatedFlags = false; //??
 		boolean hasQualityCounters = input_schema.hasQualityFlags;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();*/
-		
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();*/		
 	}
-
-
 
 	/**
 	 * 

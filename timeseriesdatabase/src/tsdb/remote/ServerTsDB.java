@@ -31,8 +31,15 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 	}
 
 	@Override
-	public TimestampSeries plot(String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
-		Node node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
+	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+		Node node = null;
+		if(queryType==null||queryType.equals("standard")) {		
+			node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
+		} else if(queryType.equals("difference")) {
+			node = QueryPlan.plotDifference(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
+		} else {
+			log.error("queryType unknown");
+		}
 		if(node==null) {
 			return null;
 		}
@@ -217,7 +224,7 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 				tsdb.getVirtualPlots().stream().map(v->new PlotInfo(v))
 				).toArray(PlotInfo[]::new);
 	}
-	
+
 	@Override
 	public String[] getValidSchema(String plotID, String[] sensorNames) {
 		return tsdb.getValidSchema(plotID, sensorNames);

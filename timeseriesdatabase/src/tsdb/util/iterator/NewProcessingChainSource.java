@@ -9,6 +9,6 @@ public class NewProcessingChainSource implements NewProcessingChain  {
 	}
 	@Override
 	public String getText() {
-		return "| "+entry.getProcessingTitle();
+		return "|-"+entry.getProcessingTitle();
 	}
 }

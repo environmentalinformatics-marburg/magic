@@ -47,11 +47,6 @@ public class AverageIterator extends MoveIterator {
 	}
 
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(input_iterators, this);
-	}
-
-	@Override
 	protected TimeSeriesEntry getNext() {
 		long timestamp = -1;
 		int[] value_cnt = new int[this.schema.length];
@@ -89,5 +84,10 @@ public class AverageIterator extends MoveIterator {
 			}
 		}
 		return new TimeSeriesEntry(timestamp, value_avg);	
+	}
+	
+	@Override
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(input_iterators, this);
 	}
 }

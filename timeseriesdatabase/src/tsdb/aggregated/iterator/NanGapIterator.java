@@ -1,16 +1,12 @@
 package tsdb.aggregated.iterator;
 
-import java.util.List;
-
 import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -152,10 +148,5 @@ public class NanGapIterator extends InputProcessingIterator implements TsDBLogge
 			//log.error("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp);
 			//return null;
 		}
-	}
-
-	@Override
-	public String[] getNames() {
-		return input_iterator.getNames();
 	}
 }

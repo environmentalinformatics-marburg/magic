@@ -23,7 +23,5 @@ public abstract class InputProcessingIterator extends MoveIterator {
 	@Override
 	public NewProcessingChain getProcessingChain() {		
 		return new NewProcessingChainOneSource(input_iterator,this);
-	}
-
-	
+	}	
 }

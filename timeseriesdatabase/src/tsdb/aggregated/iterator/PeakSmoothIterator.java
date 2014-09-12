@@ -39,7 +39,6 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 		boolean hasInterpolatedFlags = false;
 		boolean hasQualityCounters = false;
 		return new TimeSeriesSchema(schema, constantTimeStep, TIMESTEP, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
-
 	}
 
 	public PeakSmoothIterator(TsIterator input_iterator) {

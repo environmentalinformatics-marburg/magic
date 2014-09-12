@@ -12,7 +12,6 @@ import tsdb.util.iterator.TsIterator;
 
 public class ProjectionIterator extends InputIterator {
 
-	private TsIterator input_iterator;
 	private int[] eventPos;
 	
 	public static TsSchema createSchema(TsSchema tsschema, String[] outputSchema) {
@@ -28,7 +27,6 @@ public class ProjectionIterator extends InputIterator {
 
 	public ProjectionIterator(TsIterator input_iterator, String[] outputSchema) {
 		super(input_iterator, createSchema(input_iterator.getSchema(), outputSchema));
-		this.input_iterator = input_iterator;
 		this.eventPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), true, true);
 	}
 

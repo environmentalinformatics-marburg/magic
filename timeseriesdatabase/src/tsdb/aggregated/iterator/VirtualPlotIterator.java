@@ -64,11 +64,6 @@ public class VirtualPlotIterator extends MoveIterator {
 	}
 
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(processing_iterator, this);
-	}
-
-	@Override
 	protected TimeSeriesEntry getNext() {
 		if(currentElements==0) {
 			return null;
@@ -116,7 +111,12 @@ public class VirtualPlotIterator extends MoveIterator {
 			}
 		}
 		return resultTimeSeriesEntry;
-	}		
+	}
+	
+	@Override
+	public NewProcessingChain getProcessingChain() {
+		return new NewProcessingChainMultiSources(processing_iterator, this);
+	}
 }
 
 

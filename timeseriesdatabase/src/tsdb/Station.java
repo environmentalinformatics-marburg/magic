@@ -206,4 +206,11 @@ public class Station extends TsDBClient {
 	public String[] getSchema() {
 		return loggerType.sensorNames;
 	}
+	
+	public boolean isVIP() {
+		if(!isPlot) {
+			return false;
+		}
+		return propertiesList.get(0).value.isVIP();
+	}
 }
