@@ -26,6 +26,7 @@ public class TsDBFactory implements TsDBLogger {
 	public static String SOURCE_BE_STRUCTURE_ONE_PATH = "c:/timeseriesdatabase_data_source_structure_one";
 	public static String SOURCE_BE_STRUCTURE_TWO_PATH = "c:/timeseriesdatabase_data_source_structure_two";
 	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
+	public static String SOURCE_KILI_TFI_PATH = "c:/timeseriesdatabase_data_source_structure_kili_tfi";
 	
 	public static TsDB createDefault() {
 		//System.out.println("JVM bits: "+System.getProperty("sun.arch.data.model"));		
@@ -56,6 +57,9 @@ public class TsDBFactory implements TsDBLogger {
 			}
 			if(pathMap.containsKey("SOURCE_KILI_PATH")) {
 				SOURCE_KILI_PATH = pathMap.get("SOURCE_KILI_PATH");
+			}
+			if(pathMap.containsKey("SOURCE_KILI_TFI_PATH")) {
+				SOURCE_KILI_TFI_PATH = pathMap.get("SOURCE_KILI_TFI_PATH");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

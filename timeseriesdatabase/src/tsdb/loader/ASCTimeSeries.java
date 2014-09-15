@@ -93,7 +93,7 @@ public class ASCTimeSeries {
 					float value = Float.parseFloat(row[colIndex+2]);
 					data[colIndex] = value;
 				} catch (NumberFormatException e) {
-					e.printStackTrace();
+					log.warn(e);
 					data[colIndex] = Float.NaN;
 				}
 			}
@@ -130,7 +130,7 @@ public class ASCTimeSeries {
 			if(!header[1].startsWith("Color:")) {
 				throw new RuntimeException("header variant error: "+header[1]);
 			}
-			
+			                                 
 			String HEADER_SERIALNUMBER_NAME = "Serial number:";
 			if(!header[2].startsWith(HEADER_SERIALNUMBER_NAME)) {
 				throw new RuntimeException("header variant error: "+header[2]);

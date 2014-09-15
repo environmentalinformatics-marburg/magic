@@ -664,7 +664,7 @@ public class TimeSeriesView {
 			aggregationTimeInterval=7*24*60;
 			break;
 		case MONTH:
-			aggregationTimeInterval=28*24*60;
+			aggregationTimeInterval=30*24*60;//28*24*60;
 			break;
 		case YEAR:
 			aggregationTimeInterval=365*24*60;

@@ -1,16 +1,13 @@
 package tsdb.raw.iterator;
 
+import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 
 import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
 import tsdb.util.Table;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class CSVIterator extends TsIterator implements TsDBLogger{
@@ -18,20 +15,25 @@ public class CSVIterator extends TsIterator implements TsDBLogger{
 	public static TsSchema createSchema(String[] sensorNames) {
 		return new TsSchema(sensorNames);
 	}
+	
+	public static CSVIterator create(Path path) {
+		return create(path.toString());
+	}
 
 	public static CSVIterator create(String filename) {
 		Table table = Table.readCSV(filename, ',');
-		System.out.println("header: "+Util.arrayToString(table.names));
 		String[] schema = Arrays.copyOfRange(table.names, 2, table.names.length);
-		return new CSVIterator(schema,table.rows);
+		return new CSVIterator(schema,table.rows,filename);
 	}
 
+	private final String filename;//for debug
 	private String[][] rows;
 	private int currIndex;
 
 
-	public CSVIterator(String[] sensorNames, String[][] rows) {
+	public CSVIterator(String[] sensorNames, String[][] rows, String filename) {
 		super(createSchema(sensorNames));
+		this.filename = filename;
 		this.rows = rows;
 		this.currIndex = 0;
 	}
@@ -52,7 +54,7 @@ public class CSVIterator extends TsIterator implements TsDBLogger{
 				data[colIndex] = Float.parseFloat(row[colIndex+2]); 
 			} catch (Exception e) {
 				data[colIndex] = Float.NaN;
-				log.warn(e);
+				log.warn(e+ "   csv line "+(currIndex+1)+"  in "+filename);
 			}
 		}
 		return new TimeSeriesEntry(timestamp,data);

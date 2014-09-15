@@ -194,10 +194,26 @@ public class UniversalDataBinFile implements TsDBLogger {
 	 */
 	public DataRow[] readDataRows() {
 		mappedByteBuffer.position(dataSectionStartFilePosition);
-		int dataRowByteSize = (variableCount+1)*4;
+		//int dataRowByteSize = (variableCount+1)*4;
+		int dataRowByteSize = 4;
+		for(int sensorID=0;sensorID<variableCount;sensorID++) {
+			switch(sensorHeaders[sensorID].dataType) {
+			case 1:
+				dataRowByteSize += 1; // ~ 1 byte boolean
+				break;
+			case 8:
+				dataRowByteSize += 4; // ~ 4 byte float
+				break;
+			case 7:
+				dataRowByteSize += 4; // ~ 4 byte int
+				break;
+			default:
+				throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
+			}			
+		}
 		
 		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
-			log.warn("file end not at boundary of data entry grid: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
+			log.warn("file end not at row boundary: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
 			//return null;
 		}
 		
@@ -210,6 +226,9 @@ public class UniversalDataBinFile implements TsDBLogger {
 			int rowID = mappedByteBuffer.getInt();
 			for(int sensorID=0;sensorID<variableCount;sensorID++) {
 				switch(sensorHeaders[sensorID].dataType) {
+				case 1:
+					data[sensorID] = mappedByteBuffer.get(); // ~ 1 byte boolean
+					break;
 				case 8:
 					data[sensorID] = mappedByteBuffer.getFloat(); 
 					break;

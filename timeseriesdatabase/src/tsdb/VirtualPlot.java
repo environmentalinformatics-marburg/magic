@@ -22,7 +22,7 @@ public class VirtualPlot extends TsDBClient {
 
 	public int geoPosEasting = -1;
 	public int geoPosNorthing = -1;
-	
+
 	public final boolean isFocalPlot;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
@@ -75,7 +75,11 @@ public class VirtualPlot extends TsDBClient {
 	 * @param properties
 	 */
 	public void addStationEntry(Station station, StationProperties properties) {
-		intervalList.add(new TimestampInterval<StationProperties>(properties, properties.get_date_start(), properties.get_date_end()));
+		try {
+			intervalList.add(new TimestampInterval<StationProperties>(properties, properties.get_date_start(), properties.get_date_end()));
+		} catch(Exception e) {
+			log.warn(e+" with "+station.stationID+"   "+properties.getProperty(StationProperties.PROPERTY_START)+"  "+properties.getProperty(StationProperties.PROPERTY_END));
+		}
 	}
 
 	/**
@@ -185,7 +189,7 @@ public class VirtualPlot extends TsDBClient {
 		}
 		return result;
 	}
-	
+
 	public long[] getTimestampBaseInterval() {
 		long[] interval = getTimestampInterval();
 		if(interval==null) {
@@ -193,7 +197,7 @@ public class VirtualPlot extends TsDBClient {
 		}
 		return new long[]{BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[0]),BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(interval[1])};
 	}
-	
+
 	public boolean isValidSchema(String[] querySchema) {
 		Util.throwNull((Object)querySchema);
 		String[] schema = getSchema();
@@ -202,7 +206,7 @@ public class VirtualPlot extends TsDBClient {
 		}
 		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, schema));
 	}
-	
+
 	public boolean isValidBaseSchema(String[] querySchema) {
 		if(!isValidSchema(querySchema)) {
 			return false;

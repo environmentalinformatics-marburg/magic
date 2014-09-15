@@ -139,7 +139,7 @@ public class ServerTsDB extends TsDBClient implements RemoteTsDB {
 
 	@Override
 	public String[] getCacheSchemaNames(String streamName) {
-		return tsdb.cacheStorage.getSchema(streamName).schema;
+		return tsdb.cacheStorage.getSchema(streamName).names;
 	}
 
 	@Override

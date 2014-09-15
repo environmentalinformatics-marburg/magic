@@ -14,8 +14,14 @@ import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBClient;
+import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
+import tsdb.graph.CSVSource;
+import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.raw.iterator.CSVIterator;
+import tsdb.util.TimestampInterval;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
@@ -101,7 +107,6 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 				}
 
 			} catch(Exception e) {
-				e.printStackTrace();
 				log.error(e+" in "+ascPath);
 			}					
 			
@@ -146,6 +151,10 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 	 * @param timestampSeries
 	 */
 	public void insertOneFile(ASCTimeSeries csvtimeSeries, Station station, StationProperties properties, String[] translatedInputSchema, TimestampSeries timestampSeries) {
+		if(station.loggerType.typeName.equals("tfi")) {
+			return;  // !!! tfi should not be loaded from this format !!!
+		}
+		
 		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties, csvtimeSeries);
 		if(loader!=null) {
 			List<Event> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);			
@@ -159,5 +168,81 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 		} else {
 			log.warn("no loader found for logger type: "+station.loggerType.typeName);
 		}		
+	}
+	
+	public void loadOneDirectory_structure_kili_tfi(Path kiliTfiPath) {		
+		try {
+			if(Files.exists(kiliTfiPath)) {
+				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliTfiPath);
+				System.out.println("*** load kili tfi directory: "+kiliTfiPath+" ***");
+				for(Path path:stream) {
+					String filename = path.getName(path.getNameCount()-1).toString();
+					if(filename.endsWith(".csv")) {
+						if(filename.indexOf("_tfi")==4) {
+							String plotID = filename.substring(0, 4);
+							System.out.println("plotID: "+plotID);
+							VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+							if(virtualPlot!=null) {
+								loadOneFile_structure_kili_tfi(virtualPlot,path);
+							} else {
+								log.warn("unknown plotID: "+plotID);
+							}
+						} else {
+							log.warn("no csv tfi file: "+filename);
+						}
+						//ascCollectorMap.putIfAbsent(fileKey, path);
+					} else {
+						log.warn("no csv file: "+filename);
+					}
+				}				
+			} else {
+				log.warn("directory not found: "+kiliTfiPath);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	private void loadOneFile_structure_kili_tfi(VirtualPlot virtualPlot, Path path) {		
+		CSVIterator input_iterator = CSVIterator.create(path);
+		if(input_iterator!=null&&input_iterator.hasNext()) {
+			TimestampSeries timestampSeries = input_iterator.toTimestampSeries();
+			long start = timestampSeries.getFirstTimestamp();
+			long end = timestampSeries.getLastTimestamp();
+			String serial = null;
+			for(TimestampInterval<StationProperties> interval:virtualPlot.intervalList) {
+				if(interval.contains(start, end)) {
+					String loggerTypeName = interval.value.get_logger_type_name();
+					if(loggerTypeName.equals("tfi")) {
+						if(interval.value.get_plotid().equals(virtualPlot.plotID)) {
+							if(serial==null) {
+								serial = interval.value.get_serial();
+							} else {
+								log.warn("multiple entries");
+							}
+						} else {
+							log.error("plotIDs not consistent");
+						}						
+					}
+				}
+			}
+			if(serial!=null) {
+				String[] targetSchema = tsdb.getLoggerType("tfi").sensorNames;
+				System.out.println("serial found: "+serial);
+				Loader_new_tfi loader = new Loader_new_tfi(timestampSeries);
+				loader.load(targetSchema);
+				List<Event> events = loader.toEvents();
+				if(events!=null) {
+					tsdb.streamStorage.insertEventList(serial, events, start, end);
+					tsdb.sourceCatalog.insert(new SourceEntry(path,serial,start,end,events.size(),timestampSeries.parameterNames, targetSchema, TsSchema.NO_CONSTANT_TIMESTEP));
+				} else {
+					log.warn("no events inserted: "+path);
+				}
+			} else {
+				log.warn("no serial found for tfi: "+virtualPlot.plotID+"   "+path);
+			}
+		} else {
+			log.warn("empty file: "+path);
+		}
 	}
 }

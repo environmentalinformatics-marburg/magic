@@ -1,8 +1,9 @@
 package tsdb.loader;
 
 import tsdb.StationProperties;
+import tsdb.util.TsDBLogger;
 
-public class LoaderFactory {
+public class LoaderFactory implements TsDBLogger {
 	
 	private LoaderFactory(){}
 	
@@ -17,7 +18,9 @@ public class LoaderFactory {
 		case "rad":
 			return new Loader_rad(input_schema, properties, csvtimeSeries);
 		case "tfi":
-			return new Loader_tfi(input_schema, properties, csvtimeSeries);
+			//return new Loader_tfi(input_schema, properties, csvtimeSeries);
+			log.warn("don't load generated tfi files");
+			return null;
 		case "gp1":
 			return new Loader_gp1(input_schema, properties, csvtimeSeries);
 		case "rug":

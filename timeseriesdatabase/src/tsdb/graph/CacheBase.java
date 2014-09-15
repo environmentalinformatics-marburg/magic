@@ -1,9 +1,11 @@
 package tsdb.graph;
 
+import java.util.Arrays;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.ProjectionIterator;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
@@ -20,12 +22,12 @@ public class CacheBase extends Base.Abstract {
 	}
 
 	public static CacheBase create(TsDB tsdb, String streamName, String[] schema) {
-		TimeSeriesSchema tsSchema = tsdb.cacheStorage.getSchema(streamName);
+		TsSchema tsSchema = tsdb.cacheStorage.getSchema(streamName);
 		if(schema==null) {
-			schema = tsSchema.schema;
+			schema = tsSchema.names;
 		}		
-		if(schema.length==0 || !Util.isContained(schema, tsSchema.schema)) {
-			throw new RuntimeException("not valid schema: "+Util.arrayToString(schema)+"   "+Util.arrayToString(tsSchema.schema));
+		if(schema.length==0 || !tsSchema.contains(schema)) {
+			throw new RuntimeException("not valid schema: "+ Arrays.toString(schema) +"   "+tsSchema);
 		}
 		return new CacheBase(tsdb, streamName, schema);
 	}

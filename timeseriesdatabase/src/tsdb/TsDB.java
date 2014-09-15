@@ -125,6 +125,7 @@ public class TsDB implements TsDBLogger {
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
+		cacheStorage.clear();
 		sourceCatalog.clear();		
 		streamStorage.clear();
 	}

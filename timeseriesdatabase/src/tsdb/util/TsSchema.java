@@ -1,13 +1,15 @@
 package tsdb.util;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import tsdb.aggregated.BaseAggregationTimeUtil;
 
-public class TsSchema {
-
+public class TsSchema implements Serializable {
+	private static final long serialVersionUID = 755267163534504899L;
+	
 	public static final int NO_CONSTANT_TIMESTEP = -999999;
 
 	public enum Aggregation{
@@ -197,5 +199,19 @@ public class TsSchema {
 	
 	public void throwNotVariableStepAggregation() {
 		aggregation.throwNotVariableStepAggregation();
+	}
+	
+	public boolean contains(String[] names) {
+		return Util.isContained(names, this.names);
+	}
+	
+	@Override
+	public String toString() {
+		return "TsSchema [names=" + Arrays.toString(names) + ", length="
+				+ length + ", aggregation=" + aggregation + ", timeStep="
+				+ timeStep + ", isContinuous=" + isContinuous
+				+ ", hasQualityFlags=" + hasQualityFlags
+				+ ", hasInterpolatedFlags=" + hasInterpolatedFlags
+				+ ", hasQualityCounters=" + hasQualityCounters + "]";
 	}
 }

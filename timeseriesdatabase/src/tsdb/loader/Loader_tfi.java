@@ -8,6 +8,7 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import de.umr.jepc.store.Event;
 
+@Deprecated
 public class Loader_tfi extends AbstractLoader {
 
 	private enum ProcessingType {NONE,COPY,B,RAINFALL,FOG};

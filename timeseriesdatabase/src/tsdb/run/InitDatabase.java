@@ -53,13 +53,15 @@ public class InitDatabase implements TsDBLogger {
 		
 		
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
+		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
+		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
 		
 		timeseriesloaderBE.loadDirectoryOfAllExploratories_structure_one(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH));
 		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH));
 		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(TsDBFactory.SOURCE_KILI_PATH));
+		timeseriesloaderKiLi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KILI_TFI_PATH));
 		
-		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
-		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
+		
 		
 		
 

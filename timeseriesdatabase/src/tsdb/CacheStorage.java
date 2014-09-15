@@ -1,9 +1,7 @@
 package tsdb;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.stream.Stream;
@@ -14,9 +12,8 @@ import org.mapdb.DBMaker;
 import org.mapdb.Fun.Tuple2;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
+import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
 public class CacheStorage implements TsDBLogger {
@@ -38,7 +35,7 @@ public class CacheStorage implements TsDBLogger {
 	 */
 
 	private DB db;
-	private BTreeMap<String, TimeSeriesSchema> schemaMap;
+	private BTreeMap<String, TsSchema> schemaMap;
 
 
 
@@ -62,7 +59,7 @@ public class CacheStorage implements TsDBLogger {
 		}
 	}
 
-	public void createNew(String streamName, TimeSeriesSchema timeSeriesSchema) {
+	public void createNew(String streamName, TsSchema schema) {
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		db.delete(dbName);
 		//ConcurrentNavigableMap<Long,TimeSeriesEntry> map = db.getTreeMap(streamName);
@@ -71,7 +68,7 @@ public class CacheStorage implements TsDBLogger {
 
 		//db.getTreeMap(dbName);
 		db.createTreeMap(dbName).makeLongMap();
-		schemaMap.put(streamName, timeSeriesSchema);
+		schemaMap.put(streamName, schema);
 		
 		
 
@@ -104,10 +101,10 @@ public class CacheStorage implements TsDBLogger {
 	}
 
 	public  TsIterator query(String streamName, Long begin, Long end) {		
-		TimeSeriesSchema timeSeriesSchema = schemaMap.get(streamName);
-		if(timeSeriesSchema!=null) {
+		TsSchema schema = schemaMap.get(streamName);
+		if(schema!=null) {
 			Iterator<TimeSeriesEntry> it = queryMap(streamName,begin,end).values().iterator();			
-			TsIterator it2 = new TsIterator(timeSeriesSchema.toTsSchema()) {
+			TsIterator it2 = new TsIterator(schema) {
 				@Override
 				public boolean hasNext() {
 					return it.hasNext();
@@ -135,7 +132,7 @@ public class CacheStorage implements TsDBLogger {
 		db.delete(dbName);
 		schemaMap.remove(streamName);
 
-		schemaMap.put(streamName, input_iterator.getSchema().toTimeSeriesSchema());
+		schemaMap.put(streamName, input_iterator.getSchema());
 		
 		Iterator<Tuple2<Long, TimeSeriesEntry>> bulk_iterator = new Iterator<Tuple2<Long,TimeSeriesEntry>>() {
 			@Override
@@ -188,6 +185,14 @@ public class CacheStorage implements TsDBLogger {
 		System.out.println("******************");
 	}
 	
+	public void clear() {		
+		for(String key:schemaMap.keySet()){
+			db.getTreeMap(key).clear();
+		}
+		schemaMap.clear();
+		commit_and_compact();
+	}
+	
 	public void close() {
 		db.commit();
 		db.compact();
@@ -203,7 +208,7 @@ public class CacheStorage implements TsDBLogger {
 		return db.getAll().keySet().stream().filter(x->x.startsWith(DB_NAME_STREAM_PREFIX)).map(x->x.substring(DB_NAME_STREAM_PREFIX.length()));
 	}
 	
-	public TimeSeriesSchema getSchema(String streamName) {
+	public TsSchema getSchema(String streamName) {
 		return schemaMap.get(streamName);		
 	}
 

@@ -12,10 +12,12 @@ public class CSVSource implements Node {
 	
 	private final String[] sensorNames;
 	private final String[][] rows;
+	private final String filename; //for debug
 
-	protected CSVSource(String[] sensorNames,String[][] rows) {
+	protected CSVSource(String[] sensorNames,String[][] rows,String filename) {
 		this.sensorNames = sensorNames;
 		this.rows = rows;
+		this.filename = filename;
 		Util.throwNull((Object)sensorNames);
 		Util.throwNull((Object)rows);
 	}
@@ -24,12 +26,12 @@ public class CSVSource implements Node {
 		Table table = Table.readCSV(filename, ',');
 		System.out.println("header: "+Util.arrayToString(table.names));
 		String[] sensorNames = Arrays.copyOfRange(table.names, 2, table.names.length);
-		return new CSVSource(sensorNames, table.rows);
+		return new CSVSource(sensorNames, table.rows, filename);
 	}
 
 	@Override
 	public TsIterator get(Long start, Long end) { // TODO start, end		
-		return new CSVIterator(sensorNames, rows);
+		return new CSVIterator(sensorNames, rows, filename);
 	}
 
 	@Override

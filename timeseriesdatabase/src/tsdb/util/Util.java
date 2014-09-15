@@ -507,6 +507,18 @@ public class Util {
 			throw new RuntimeException(errorText);
 		}		
 	}
+	
+	public static void throwGreater(Long a, Long b) {
+		if(a!=null&&b!=null&&a>b) {
+			throw new RuntimeException("not a<b: "+a+"  "+b);
+		}
+	}
+	
+	public static void throwGreater(long a, long b) {
+		if(a>b) {
+			throw new RuntimeException("not a<b: "+a+"  "+b);
+		}
+	}
 
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
