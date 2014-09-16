@@ -30,6 +30,8 @@ import org.ini4j.Wini;
  *
  */
 public class Util {
+	
+	private Util(){}
 
 	/**
 	 * Default logger
@@ -531,8 +533,12 @@ public class Util {
 	public static void throwEmpty(Object[] array) {
 		if(empty(array)) {
 			throw new RuntimeException("array empty");
-		}
-		
+		}		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static String[] toArray(String e) {
+		return new String[]{e};
 	}
 
 	

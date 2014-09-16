@@ -233,7 +233,7 @@ public class TsDB implements TsDBLogger {
 		}
 		stationMap.put(station.stationID, station);
 	}
-	
+
 	/**
 	 * gets first and last timestamp of virtualplot or station
 	 * @param stationName
@@ -256,7 +256,7 @@ public class TsDB implements TsDBLogger {
 		return new long[]{start,end};*/
 		return streamStorage.getTimeInterval(stationName);
 	}
-	
+
 	/**
 	 * gets first and last timestamp of virtualplot or station
 	 * @param stationName
@@ -288,7 +288,7 @@ public class TsDB implements TsDBLogger {
 	public Collection<GeneralStation> getGeneralStations() {
 		return generalStationMap.values();
 	}
-	
+
 	public Stream<GeneralStation> getGeneralStationsOfGroup(String group) {
 		return generalStationMap.values().stream().filter(gs -> group.equals(gs.group));
 	}
@@ -313,13 +313,13 @@ public class TsDB implements TsDBLogger {
 	public Stream<GeneralStation> getGeneralStations(String regionName) {
 		return generalStationMap.values().stream().filter(x->regionName.equals(x.region.name));
 	}
-	
+
 	public Set<String> getGeneralStationGroups() {
 		Set<String> set = new TreeSet<String>();
 		getGeneralStations().forEach(gs->set.add(gs.group));
 		return set;
 	}
-	
+
 	public Stream<String> getStationAndVirtualPlotNames(String group) {
 		return getGeneralStationsOfGroup(group).flatMap(gs->gs.getStationAndVirtualPlotNames());
 	}
@@ -495,7 +495,7 @@ public class TsDB implements TsDBLogger {
 		}
 		return sensorNames.toArray(new String[0]);
 	}
-	
+
 	public Set<String> getBaseAggregationSensorNames() {
 		return baseAggregationSensorNameSet;
 	}
@@ -503,7 +503,7 @@ public class TsDB implements TsDBLogger {
 	//*********************************************** end base aggregation *************************************************************************
 
 	public String[] getValidSchema(String plotID, String[] schema) {
-		
+
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return virtualPlot.getValidSchemaEntries(schema);
@@ -513,15 +513,22 @@ public class TsDB implements TsDBLogger {
 			return station.getValidSchemaEntries(schema);
 		}
 		throw new RuntimeException("plotID not found: "+plotID);
-		
-		/*
-		ArrayList<String> sensorNames = new ArrayList<String>();
-		Map<String, Integer> map = Util.stringArrayToMap(getStation(stationID).loggerType.sensorNames);
-		for(String name:schema) {
-			if(map.containsKey(name)) {
-				sensorNames.add(name);
-			}
-		}
-		return sensorNames.toArray(new String[0]);*/
 	}
+
+	public boolean isValidSchema(String plotID, String[] schema) {
+
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.isValidSchema(schema);
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.isValidSchema(schema);
+		}
+		throw new RuntimeException("plotID not found: "+plotID);
+	}
+
+
+
+
 }

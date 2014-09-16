@@ -180,7 +180,7 @@ public class CacheStorage implements TsDBLogger {
 		//Map<String, Object> map = db.getAll();
 		Map<String, Object> map = db.getCatalog();
 		for(Map.Entry<String,Object> entry:map.entrySet()) {
-			System.out.println(entry.getKey()+"   "+entry.getValue().getClass());
+			System.out.println(entry.getKey()+"   "+entry.getValue().getClass()+"  "+entry.getValue().toString());
 		}
 		System.out.println("******************");
 	}

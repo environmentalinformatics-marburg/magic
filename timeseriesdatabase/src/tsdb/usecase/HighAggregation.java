@@ -13,8 +13,8 @@ public class HighAggregation {
 	
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
-		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
+		TsDB tsdb = TsDBFactory.createDefault();
+		QueryProcessor qp = new QueryProcessor(tsdb);
 		
 		
 		//String plotID = "HEG01";

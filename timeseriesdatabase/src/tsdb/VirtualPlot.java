@@ -2,8 +2,10 @@ package tsdb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -26,6 +28,9 @@ public class VirtualPlot extends TsDBClient {
 	public final boolean isFocalPlot;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
+	
+	//Map SensorName -> group correction value
+	public Map<String,Float> groupCorrectionValueMap;
 
 	/**
 	 * This list is used for interpolation when similar stations are needed.
@@ -41,6 +46,7 @@ public class VirtualPlot extends TsDBClient {
 		this.isFocalPlot = isFocalPlot;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
+		this.groupCorrectionValueMap = new HashMap<String,Float>();
 	}
 
 	/**
