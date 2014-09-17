@@ -29,9 +29,7 @@ public class VirtualPlot extends TsDBClient {
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
 	
-	//Map SensorName -> group correction value
-	public Map<String,Float> groupCorrectionValueMap;
-
+	
 	/**
 	 * This list is used for interpolation when similar stations are needed.
 	 */
@@ -46,7 +44,6 @@ public class VirtualPlot extends TsDBClient {
 		this.isFocalPlot = isFocalPlot;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
-		this.groupCorrectionValueMap = new HashMap<String,Float>();
 	}
 
 	/**

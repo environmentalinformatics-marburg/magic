@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Query Time Series</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){
+	updataRegions();
+});
+
+var updataRegions = function() {
+	$("#region_input").empty();
+	$.get("/tsdb/region_list").done(function(data) {
+		var lines = data.split(/\n/);
+		$.each(lines, function(i,line) {$("#region_input").append("<option value=\""+line+"\">"+line+"</option>");})
+		updateGeneralStation();		
+	}).fail(function() {$("#region_input").append("<option value=\""+"[error]"+"\">"+"[error]"+"</option>");});
+}
+
+var updateGeneralStation = function() {
+	$("#generalstation_input").empty();
+	$("#generalstation_input").append("<option value=\""+"[error]"+"\">"+"[error]"+"</option>");
+}
+
+</script>
+</head>
+
+<body>
+<h1>Query Time Series</h1>
+
+Region: <select id="region_input" onchange="updateGeneralStation()"></select>
+General Station: <select id="generalstation_input"></select>
+
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Console</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.js"></script>
+<script type="text/javascript">
+
+var queryInfo = function(name) {
+	$("#output").val("query...");
+	$.get("/tsdb/"+name).done(function(data) {
+		$("#output").val(data);
+	}).fail(function() {$("#output").val("error")});
+}
+
+</script>
+</head>
+
+<body>
+<h1>Console</h1>
+
+<p>query</p>
+<button onclick="queryInfo('plots')">plots</button>
+<button onclick="queryInfo('sensors')">sensors</button>
+<p><textarea id="output" cols="100" rows="40" wrap="soft">ready</textarea></p>
+
+
+</body>
+</html>

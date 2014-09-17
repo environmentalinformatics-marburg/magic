@@ -63,6 +63,9 @@ public class TsDB implements TsDBLogger {
 
 
 	private Map<String,VirtualPlot> virtualplotMap;
+	
+	//Map PlotID -> Plot Object
+	private Map<String,Plot> plotMap;
 
 
 	//*** begin persistent information ***
@@ -103,6 +106,8 @@ public class TsDB implements TsDBLogger {
 		this.cacheStorage = new CacheStorage(cachePath);
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
+		
+		this.plotMap = new TreeMap<String,Plot>();
 
 		this.sourceCatalog = new SourceCatalog(databasePath);
 	}	
@@ -526,6 +531,25 @@ public class TsDB implements TsDBLogger {
 			return station.isValidSchema(schema);
 		}
 		throw new RuntimeException("plotID not found: "+plotID);
+	}
+
+	public void createPlotMap() {
+		for(VirtualPlot virtualPlot:getVirtualPlots()) {
+			if(!plotMap.containsKey(virtualPlot.plotID)) {
+				plotMap.put(virtualPlot.plotID, new Plot(virtualPlot.plotID));
+			} else {
+				log.warn("plot exists already: "+virtualPlot.plotID);
+			}
+		}
+		for(Station station:getStations()) {
+			if(station.isPlot) {
+				if(!plotMap.containsKey(station.stationID)) {
+					plotMap.put(station.stationID, new Plot(station.stationID));
+				} else {
+					log.warn("plot exists already: "+station.stationID);
+				}
+			}
+		}
 	}
 
 

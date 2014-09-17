@@ -43,6 +43,9 @@ public class TsDBFactory implements TsDBLogger {
 			}			
 			Section section = ini.get("database_paths");
 			Map<String, String> pathMap = Util.readIniSectionMap(section);
+			if(pathMap.containsKey("CONFIG_DIRECTORY")) {
+				CONFIG_DIRECTORY = pathMap.get("CONFIG_DIRECTORY");
+			}
 			if(pathMap.containsKey("DATABASE_DIRECTORY")) {
 				DATABASE_DIRECTORY = pathMap.get("DATABASE_DIRECTORY");
 			}
@@ -70,8 +73,8 @@ public class TsDBFactory implements TsDBLogger {
 	
 	public static TsDB createDefault(String databaseDirectory,String configDirectory, String cacheDirectory) {		
 		try {
-			TsDB timeSeriesDatabase = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory);
-			ConfigLoader configLoader = new ConfigLoader(timeSeriesDatabase);
+			TsDB tsdb = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory);
+			ConfigLoader configLoader = new ConfigLoader(tsdb);
 			
 			//*** global config start			
 			configLoader.readRegionConfig(configDirectory+"region.ini");
@@ -109,12 +112,14 @@ public class TsDBFactory implements TsDBLogger {
 			configLoader.readSensorUnitConfig(configDirectory+"sensor_unit.ini");
 			//*** global config end
 			
+			tsdb.createPlotMap();
+			
 			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
 			
-			timeSeriesDatabase.updateGeneralStations(); //TODO later remove!
+			tsdb.updateGeneralStations(); //TODO later remove!
 			
 			
-			return timeSeriesDatabase;		
+			return tsdb;		
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("create TimeSeriesDatabase"+e);
