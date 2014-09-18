@@ -115,4 +115,8 @@ public class Sensor implements Serializable {
 	public Float getEmpiricalDiff() {
 		return empiricalDiff;
 	}
+	
+	public boolean isAggregable() {
+		return baseAggregationType!= AggregationType.NONE;
+	}
 }
