@@ -42,6 +42,10 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
+import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.FillLayout;
 
 public class SensorQueryDialog extends Dialog {
 
@@ -107,11 +111,16 @@ public class SensorQueryDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		container = (Composite) super.createDialogArea(parent);
-		container.setLayout(new BorderLayout(0, 0));
+		GridLayout gl_container = new GridLayout(1, false);
+		gl_container.marginWidth = 0;
+		gl_container.marginHeight = 0;
+		container.setLayout(gl_container);
 
 		grpQuery = new Group(container, SWT.NONE);
+		GridData gd_grpQuery = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		gd_grpQuery.widthHint = 1069;
+		grpQuery.setLayoutData(gd_grpQuery);
 		grpQuery.setText("query");
-		grpQuery.setLayoutData(BorderLayout.NORTH);
 		RowLayout rl_grpQuery = new RowLayout(SWT.HORIZONTAL);
 		RowData row = new RowData();
 		rl_grpQuery.fill = true;
@@ -230,19 +239,6 @@ public class SensorQueryDialog extends Dialog {
 
 		progressBar = new ProgressBar(grpQuery_1, SWT.SMOOTH);
 		progressBar.setVisible(false);
-		//formToolkit.adapt(progressBar, true, true);
-
-		ScrolledComposite scrolledComposite = new ScrolledComposite(container, SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBackground(SWTResourceManager.getColor(102, 205, 170));
-		scrolledComposite.setLayoutData(BorderLayout.CENTER);
-		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(true);
-
-		multiTimeSeriesExplorer = new MultiTimeSeriesExplorer(scrolledComposite, SWT.NONE);
-		formToolkit.adapt(multiTimeSeriesExplorer);
-		formToolkit.paintBordersFor(multiTimeSeriesExplorer);
-		scrolledComposite.setContent(multiTimeSeriesExplorer);
-		scrolledComposite.setMinSize(multiTimeSeriesExplorer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
 		grpInfo = new Group(grpQuery, SWT.NONE);
 		grpInfo.setText("Info");
@@ -274,6 +270,11 @@ public class SensorQueryDialog extends Dialog {
 		//updateFromRegionCombo((Region) ((IStructuredSelection)comboRegionViewer.getSelection()).getFirstElement());
 
 		lblQueryStatus.setText("ready        ");
+
+		multiTimeSeriesExplorer = new MultiTimeSeriesExplorer(container, SWT.NONE);
+		GridData gd_multiTimeSeriesExplorer = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		gd_multiTimeSeriesExplorer.heightHint = 440;
+		multiTimeSeriesExplorer.setLayoutData(gd_multiTimeSeriesExplorer);
 
 		String[] aggregationNames = new String[]{"hour","day","week","month","year"};
 		model.setAggregationNames(aggregationNames);
@@ -356,7 +357,7 @@ public class SensorQueryDialog extends Dialog {
 				if(model.getSensorName().equals("WD")) {
 					sensorNames = new String[]{sensorNames[0],"WV"};
 				}
-				
+
 				try {
 					if(!Util.empty(tsdb.getValidSchema(name, sensorNames))) {
 						ts = tsdb.plot(queryType,name, sensorNames, aggregationInterval, dataQuality, false);
@@ -399,7 +400,7 @@ public class SensorQueryDialog extends Dialog {
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(497, 300);
+		return new Point(1123, 723);
 	}
 
 	private void updateRegions() {

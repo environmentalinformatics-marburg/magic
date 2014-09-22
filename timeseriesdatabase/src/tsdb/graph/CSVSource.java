@@ -8,6 +8,11 @@ import tsdb.util.Table;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node provides a source from csv-file.
+ * @author woellauer
+ *
+ */
 public class CSVSource implements Node {
 	
 	private final String[] sensorNames;

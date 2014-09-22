@@ -5,6 +5,11 @@ import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.util.Util;
 
+/**
+ * This node provides base aggregated data.
+ * @author woellauer
+ *
+ */
 public interface Base extends Node {
 	
 	@Override

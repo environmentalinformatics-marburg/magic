@@ -6,6 +6,11 @@ import tsdb.TsDBClient;
 import tsdb.util.TsDBLogger;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * The base interface for all Nodes in the Query Graph.
+ * @author woellauer
+ *
+ */
 public interface Node extends TsDBLogger {
 	
 	public TsIterator get(Long start, Long end);	

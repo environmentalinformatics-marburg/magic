@@ -49,6 +49,13 @@ public class Util {
 		}
 		return String.format("%.2f", value);
 	}
+	
+	public static String floatToString0(float value) {
+		if(Float.isNaN(value)) {
+			value = 0f;
+		}
+		return String.format("%.2f", value);
+	}
 
 	public static String doubleToString(double value) {
 		if(Double.isNaN(value)) {

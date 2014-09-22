@@ -12,6 +12,11 @@ import tsdb.aggregated.iterator.AverageIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates average values per time step over all sources.
+ * @author woellauer
+ *
+ */
 public class Averaged extends Continuous.Abstract {
 	
 	private final List<Continuous> sources; //not null

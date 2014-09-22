@@ -11,6 +11,12 @@ import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates aggregated data from continuous input data.
+ * Depending on the requested aggregation interval a hierarchy of aggregation iterators will be created. 
+ * @author woellauer
+ *
+ */
 public class Aggregated extends Continuous.Abstract {
 
 	private final Continuous source; //not null

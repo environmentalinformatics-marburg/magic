@@ -1,13 +1,16 @@
 package tsdb.graph;
 
-import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.VirtualPlot;
 import tsdb.aggregated.iterator.DifferenceIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This Node creates difference values between two sources.
+ * @author woellauer
+ *
+ */
 public class Difference extends Continuous.Abstract {
 	
 	private final Continuous source;

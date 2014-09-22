@@ -9,6 +9,11 @@ import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node provides a source from cache storage.
+ * @author woellauer
+ *
+ */
 public class CacheBase extends Base.Abstract {
 
 	private final String streamName; //not null

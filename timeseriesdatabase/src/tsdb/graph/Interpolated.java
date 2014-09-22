@@ -13,6 +13,13 @@ import tsdb.aggregated.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node tries to interpolate missing values.
+ * For one-values gaps it uses linear interpolation.
+ * For bigger gaps it uses multilinear interpolation.
+ * @author woellauer
+ *
+ */
 public class Interpolated extends Continuous.Abstract {
 
 	final static int MIN_STATION_INTERPOLATION_COUNT = 2;

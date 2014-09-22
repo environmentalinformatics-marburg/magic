@@ -9,6 +9,11 @@ import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates continuous values from a source with gaps in time.
+ * @author woellauer
+ *
+ */
 public interface Continuous extends Node {
 	
 	@Override

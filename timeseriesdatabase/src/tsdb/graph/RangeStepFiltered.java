@@ -8,6 +8,11 @@ import tsdb.raw.iterator.QualityFlagIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node filters source with range or with range and step check.
+ * @author woellauer
+ *
+ */
 public class RangeStepFiltered extends Node.Abstract{ // just range and step
 	
 	private final Node source;

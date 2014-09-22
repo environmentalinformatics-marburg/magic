@@ -14,6 +14,10 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 
 public class Main {
+	
+	static {
+		System.out.println("start");
+	}
 
 	public static void main(String[] args) throws Exception {
 		

@@ -6,6 +6,11 @@ import tsdb.aggregated.iterator.BaseAggregationIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates base aggregated values from one station source.
+ * @author woellauer
+ *
+ */
 public class StationBase extends Base.Abstract {
 
 	private final Node source;	

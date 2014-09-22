@@ -13,6 +13,11 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates base aggregated data of one virtual plot that consist of multiple station sources
+ * @author woellauer
+ *
+ */
 public class VirtualBase extends Base.Abstract  {
 
 	private final VirtualPlot virtualPlot; //not null	

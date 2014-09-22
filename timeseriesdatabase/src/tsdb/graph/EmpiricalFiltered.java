@@ -1,14 +1,17 @@
 package tsdb.graph;
 
-import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.VirtualPlot;
 import tsdb.aggregated.iterator.EmpiricalIterator;
 import tsdb.aggregated.iterator.ProjectionIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node filters values based on the difference to a reference source.
+ * @author woellauer
+ *
+ */
 public class EmpiricalFiltered extends Continuous.Abstract {
 
 	private final Continuous source; //not null

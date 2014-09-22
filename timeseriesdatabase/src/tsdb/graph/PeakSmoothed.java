@@ -5,6 +5,11 @@ import tsdb.aggregated.iterator.PeakSmoothIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Special node for manual precipitation sensors.
+ * @author woellauer
+ *
+ */
 public class PeakSmoothed implements Base {
 	
 	private Node source;

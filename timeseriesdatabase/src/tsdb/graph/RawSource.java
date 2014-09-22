@@ -9,6 +9,11 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
 
+/**
+ * This node is the source of station values.
+ * @author woellauer
+ *
+ */
 public class RawSource extends Node.Abstract {
 	public final Station station; // not null
 	public final String[] schema; //not null, schema valid

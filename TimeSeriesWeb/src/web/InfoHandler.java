@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -79,7 +80,13 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			break;
 		}
 		case "/query": {
-			ret = handle_query(writer);
+			String plot = request.getParameter("plot");
+			String sensor = request.getParameter("sensor");
+			if(plot!=null) {
+				ret = handle_query(writer,plot,sensor);
+			} else {
+				log.warn("wrong call");
+			}
 			break;
 		}
 		default:
@@ -93,27 +100,33 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		}
 	}
 
-	private boolean handle_query(PrintWriter writer) {
+	private boolean handle_query(PrintWriter writer, String plot, String sensor) {
 		try {
-			TimestampSeries ts = tsdb.plot(null, "HEG01", new String[]{"Ta_200"}, AggregationInterval.MONTH, DataQuality.STEP, false);
+			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, AggregationInterval.DAY, DataQuality.STEP, false);
 			if(ts!=null) {
-			TsIterator it = ts.tsIterator();
-			while(it.hasNext()) {
-				TimeSeriesEntry e = it.next();
-				writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";"+e.data[0]);
-				if(it.hasNext()) {
-					writer.print('\n');
+				TsIterator it = ts.tsIterator();
+				while(it.hasNext()) {
+					TimeSeriesEntry e = it.next(); 
+					writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
+					float value = e.data[0];
+					if(Float.isNaN(value)) {
+						value = 0f;
+					}
+					writer.format(Locale.ENGLISH,"%.2f", value);
+					if(it.hasNext()) {
+						writer.print('\n');
+					}
 				}
-			}
-			return true;
+				return true;
 			} else {
+				log.warn("no data");
 				return false;
 			}
 		} catch (RemoteException e) {
 			log.warn(e);
 			return false;
 		}
-		
+
 	}
 
 	private boolean handle_plots(PrintWriter writer) {
@@ -180,9 +193,9 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			PlotInfo[] plotInfos = tsdb.getPlotInfos();
 			if(plotInfos!=null) {
 				String[] webList = Arrays.stream(plotInfos)
-						                 .filter(p->p.generalStationInfo.name.equals(generalstationName))
-						                 .map(p->p.name)
-						                 .toArray(String[]::new);
+						.filter(p->p.generalStationInfo.name.equals(generalstationName))
+						.map(p->p.name)
+						.toArray(String[]::new);
 				//String[] webList = Arrays.stream(generalStationInfos).map(g->g.name+","+g.longName).toArray(String[]::new);
 				writeStringArray(writer, webList);
 				return true;
@@ -200,11 +213,11 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			Map<String, Integer> sensorMap = Util.stringArrayToMap(sensorNames);
 			Sensor[] sensors = tsdb.getSensors();
 			String[] webList = Arrays.stream(sensors)
-					                 .filter(s->sensorMap.containsKey(s.name)&&s.isAggregable())
-					                 .map(s->s.name+";"+s.description+";"+s.unitDescription)
-					                 .toArray(String[]::new);
-			
-			
+					.filter(s->sensorMap.containsKey(s.name)&&s.isAggregable())
+					.map(s->s.name+";"+s.description+";"+s.unitDescription)
+					.toArray(String[]::new);
+
+
 			//String[] webList = 
 			if(webList!=null) {
 				writeStringArray(writer, webList);

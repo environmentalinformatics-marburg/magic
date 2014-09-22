@@ -16,6 +16,11 @@ import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Storage for pre calculated time series
+ * @author woellauer
+ *
+ */
 public class CacheStorage implements TsDBLogger {
 
 	private static final String DB_NAME_METADATA_SCHEMA = "schema";

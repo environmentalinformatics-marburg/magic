@@ -6,6 +6,11 @@ import tsdb.aggregated.iterator.DifferentialIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates differential values from source.
+ * @author woellauer
+ *
+ */
 public class Differential extends Continuous.Abstract {
 	
 	private Continuous source;

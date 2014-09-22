@@ -1,6 +1,7 @@
 package gui.sensorquery;
 
 import gui.util.TimeSeriesView;
+import gui.util.TimeframeSlider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,11 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
 
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.layout.GridData;
+
 public class MultiTimeSeriesExplorer extends Composite {
 
 	private Canvas canvas;
@@ -34,6 +40,11 @@ public class MultiTimeSeriesExplorer extends Composite {
 	private long minTimestamp = Long.MAX_VALUE;
 	private long maxTimestamp = Long.MIN_VALUE;
 
+	private long viewMinTimestamp = Long.MAX_VALUE;
+	private long viewMaxTimestamp = Long.MIN_VALUE;
+
+	private TimeframeSlider timeframeSlider;
+
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -41,23 +52,31 @@ public class MultiTimeSeriesExplorer extends Composite {
 	 */
 	public MultiTimeSeriesExplorer(Composite parent, int style) {
 		super(parent, style);
+		setLayout(new GridLayout(2, false));
 
-		setLayout(new BorderLayout(0, 0));
+		timeframeSlider = new TimeframeSlider(this, SWT.NONE);
+		GridData gd_canvasTimeFrameSlider = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd_canvasTimeFrameSlider.heightHint = 15;
+		timeframeSlider.setLayoutData(gd_canvasTimeFrameSlider);
+		timeframeSlider.addSliderChangeObserver(this::onTimeframSliderChange);
+		timeframeSlider.setRealRange(minTimestamp, maxTimestamp,true);
+
+		new Label(this, SWT.NONE);
 
 		canvas = new Canvas(this, SWT.DOUBLE_BUFFERED);
+		canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		canvas.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
-		//canvas.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
-		canvas.setLayout(new BorderLayout(0, 0));
+		canvas.setLayout(new GridLayout(1, false));
+		canvas.addPaintListener(e->onPaint(e.gc));
 
-		slider = new Slider(this, SWT.VERTICAL);
+		slider = new Slider(this, SWT.VERTICAL);		
+		slider.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false, 1, 1));
 		slider.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				canvas.redraw();
 			}
 		});
-		slider.setLayoutData(BorderLayout.EAST);
-		canvas.addPaintListener(e->onPaint(e.gc));
 
 		timeSeriesViews = new ArrayList<TimeSeriesView>();
 		timeSeriesCache = new ArrayList<Pair<Image,Long[]>>();
@@ -72,10 +91,20 @@ public class MultiTimeSeriesExplorer extends Composite {
 
 		TimeSeriesView timeSeriesView = new TimeSeriesView();
 		if(timeSeries.getFirstTimestamp()<minTimestamp) {
+			if(viewMinTimestamp==minTimestamp) {
+				viewMinTimestamp = timeSeries.getFirstTimestamp();
+			}
 			minTimestamp = timeSeries.getFirstTimestamp();
 		}
 		if(maxTimestamp<timeSeries.getLastTimestamp()) {
-			maxTimestamp = timeSeries.getLastTimestamp();
+			if(viewMaxTimestamp==maxTimestamp) {
+				viewMaxTimestamp = timeSeries.getLastTimestamp();
+			}
+			maxTimestamp = timeSeries.getLastTimestamp();			
+		}
+		timeframeSlider.setRealRange(minTimestamp, maxTimestamp,true);
+		if(timeSeriesViews.isEmpty()) {
+			timeframeSlider.setSelectedRange(minTimestamp, maxTimestamp);
 		}
 		timeSeriesView.setCanvas(canvas);
 		timeSeriesView.updateViewData(timeSeries, aggregationInterval, title, compare_timeSeries);
@@ -93,19 +122,20 @@ public class MultiTimeSeriesExplorer extends Composite {
 	}
 
 	public void onPaint(GC gc) {
+		System.out.println("onPaint");
 		Point size = canvas.getSize();
 		int offset = slider.getSelection();
 		System.out.println("offset "+offset+" maximum: "+slider.getMaximum());
-		
+
 		int seriesInWindow = size.y/timeSeriesHeight-1;
 		if(timeSeriesViews.size()>=seriesInWindow) {
 			slider.setMaximum(timeSeriesViews.size()-seriesInWindow);
 		} else {
 			slider.setMaximum(0);
 		}
-		
-		
-		
+
+
+
 
 
 		for(int i=0;i<timeSeriesViews.size();i++) {
@@ -124,7 +154,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 				boolean cacheValid=false;
 				if(cache!=null) {					
 					Long[] vs = cache.b;
-					if(vs[0]==minTimestamp && vs[1]==maxTimestamp && vs[2]==width && vs[3]==height) {
+					if(vs[0]==viewMinTimestamp && vs[1]==viewMaxTimestamp && vs[2]==width && vs[3]==height) {
 						cacheValid = true;
 					}
 				} 
@@ -134,7 +164,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 					Image image = new Image(getDisplay(),width,height);
 					GC imageGC = new GC(image);
 					timeSeriesView.updateWindow(0, 0, width, height);
-					timeSeriesView.setTimeRange(minTimestamp, maxTimestamp);
+					timeSeriesView.setTimeRange(viewMinTimestamp, viewMaxTimestamp);
 					timeSeriesView.paintCanvas(imageGC,false);
 					gc.drawImage(image, xPos, yPos);
 
@@ -142,7 +172,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 						cache.a.dispose();
 					}
 
-					cache = new Pair<Image, Long[]>(image, new Long[]{minTimestamp,maxTimestamp,(long) width,(long) height});
+					cache = new Pair<Image, Long[]>(image, new Long[]{viewMinTimestamp,viewMaxTimestamp,(long) width,(long) height});
 					timeSeriesCache.add(i, cache);
 
 
@@ -153,9 +183,9 @@ public class MultiTimeSeriesExplorer extends Composite {
 					timeSeriesView.paintCanvas(gc,false);*/
 
 				}
-				
+
 				gc.drawImage(cache.a, xPos, yPos);
-				
+
 
 
 			}
@@ -169,6 +199,19 @@ public class MultiTimeSeriesExplorer extends Composite {
 		timeSeriesCache.clear();
 		minTimestamp = Long.MAX_VALUE;
 		maxTimestamp = Long.MIN_VALUE;
+		viewMinTimestamp = minTimestamp;
+		viewMaxTimestamp = maxTimestamp;
 		canvas.redraw();
 	}
+
+	public void onTimeframSliderChange(long selectedMin,long selectedMax) {
+		System.out.println("onTimeframSliderChange "+selectedMin+"  "+selectedMax);
+		viewMinTimestamp = selectedMin;
+		viewMaxTimestamp = selectedMax;
+		if(canvas!=null) {
+			canvas.redraw();
+		}
+	}
+
+
 }
