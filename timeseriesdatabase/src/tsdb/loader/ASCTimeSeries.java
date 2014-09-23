@@ -51,6 +51,14 @@ public class ASCTimeSeries {
 		readHeader();
 	}
 	
+	public void close() {
+		try {
+			bufferedReader.close();
+		} catch (IOException e) {
+			log.warn(e);
+		}
+	}
+	
 	public TimestampSeries readEntriesASCVariant() {
 		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
 		

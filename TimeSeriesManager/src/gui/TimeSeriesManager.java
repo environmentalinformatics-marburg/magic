@@ -11,6 +11,8 @@ import gui.sensorquery.SensorQueryDialog;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -85,12 +87,17 @@ public class TimeSeriesManager implements TsDBLogger {
 				TsDB tsdb = TsDBFactory.createDefault();
 				this.remoteTsDB =  new ServerTsDB(tsdb);
 			} else {
-				String databaseDirectory = "c:/timeseriesdatabase_database/";
-				String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
-				String cacheDirectory = "c:/timeseriesdatabase_cache/";
-				TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
-				//timeSeriesDatabase = TimeSeriesDatabaseFactory.createDefault();		
-				this.remoteTsDB =  new ServerTsDB(tsDB);
+				if(Files.exists(Paths.get("database_paths.ini"))) {
+					TsDB tsDB = TsDBFactory.createDefault();
+					this.remoteTsDB =  new ServerTsDB(tsDB);
+				} else {
+					String databaseDirectory = "c:/timeseriesdatabase_database/";
+					String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
+					String cacheDirectory = "c:/timeseriesdatabase_cache/";
+					TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+					this.remoteTsDB =  new ServerTsDB(tsDB);
+				}
+				
 			}
 		} else {
 

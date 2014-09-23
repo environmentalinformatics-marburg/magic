@@ -59,6 +59,7 @@ public class TimeSeriesLoaderBE extends TsDBClient {
 					}
 				}
 			}
+			stream.close();
 		} catch (IOException e) {
 			log.error(e);
 		}		
@@ -77,6 +78,7 @@ public class TimeSeriesLoaderBE extends TsDBClient {
 				System.out.println(path);
 				loadDirectoryOfOneExploratory_structure_one(path);
 			}
+			stream.close();
 		} catch (IOException e) {
 			log.error(e);
 		}
@@ -112,6 +114,7 @@ public class TimeSeriesLoaderBE extends TsDBClient {
 					loadDirectoryOfOneStation(station,stationPath);
 				}
 			}
+			stream.close();
 		} catch (IOException e) {
 			log.error(e);
 		}
@@ -139,7 +142,8 @@ public class TimeSeriesLoaderBE extends TsDBClient {
 					fileNameMap.put(prefix, list);
 				}
 				list.add(path);
-			}			
+			}
+			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

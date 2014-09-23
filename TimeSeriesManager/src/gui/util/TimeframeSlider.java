@@ -5,11 +5,14 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 
 public class TimeframeSlider extends Canvas {
@@ -28,9 +31,6 @@ public class TimeframeSlider extends Canvas {
 	private int lineStart;
 	private int lineEnd;
 
-
-
-
 	private static enum slidingType{NONE,MIN,MAX};
 	private slidingType sliding;
 
@@ -42,7 +42,18 @@ public class TimeframeSlider extends Canvas {
 	private long slideMin;
 	private long slideMax;
 
+	private boolean hover;
+	private boolean hoverMin;
+	private boolean hoverMax;
+
 	private List<SliderChangeObserver> sliderChangeObserverList = new ArrayList<SliderChangeObserver>();
+
+	private Color colorEmptyBackground;
+	private Color colorWidgetBackground;
+	private Color colorWidgetBorder;
+	private Color colorBlack;
+	private Color colorEmptyBackgroundHover;
+	private Color colorDark;
 
 	public TimeframeSlider(Composite parent, int style) {
 		super(parent, style | SWT.DOUBLE_BUFFERED);
@@ -53,7 +64,26 @@ public class TimeframeSlider extends Canvas {
 		this.sliding = slidingType.NONE;
 
 		this.addPaintListener(this::onPaint);
-		//this.addMouseTrackListener(null);
+
+		this.addMouseTrackListener(new MouseTrackListener(){
+			@Override
+			public void mouseEnter(MouseEvent e) {
+				hover = true;
+				hoverMin = isOnMinSlider(e.x);
+				hoverMax = isOnMaxSlider(e.x);
+				redraw();
+			}
+			@Override
+			public void mouseExit(MouseEvent e) {
+				hover = false;
+				hoverMin = false;
+				hoverMax = false;
+				redraw();				
+			}
+			@Override
+			public void mouseHover(MouseEvent e) {
+			}});
+
 		this.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
@@ -66,7 +96,22 @@ public class TimeframeSlider extends Canvas {
 			public void mouseUp(MouseEvent e) {
 				onMouseUp(e);
 			}});
+
 		this.addMouseMoveListener(this::onMouseMove);
+
+
+
+		Display display = getDisplay();
+		colorEmptyBackground = display.getSystemColor(SWT.COLOR_WHITE);
+		colorWidgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+		colorWidgetBorder = display.getSystemColor(SWT.COLOR_WIDGET_BORDER);
+		colorBlack = display.getSystemColor(SWT.COLOR_BLACK);
+		colorDark = new Color(display,100,100,100);
+		colorEmptyBackgroundHover = new Color(display,250,250,250);
+
+		hover = false;
+		hoverMin = false;
+		hoverMax = false;
 	}
 
 	private void onPaint(PaintEvent e) {
@@ -74,7 +119,11 @@ public class TimeframeSlider extends Canvas {
 		gc.setAdvanced(true);
 		gc.setAntialias(SWT.ON);
 		Rectangle clipping = gc.getClipping();
-		gc.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+		if(hover) {
+			gc.setBackground(colorEmptyBackgroundHover);
+		} else {
+			gc.setBackground(colorEmptyBackground);
+		}
 		gc.fillRectangle(0, 0, clipping.width-1, clipping.height-1);
 
 		lineStart = sWidth;
@@ -98,28 +147,37 @@ public class TimeframeSlider extends Canvas {
 			sMaxX = realToWindow(slideMax);
 		}
 
-		gc.setBackground(e.display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+		gc.setBackground(colorWidgetBackground);
 		gc.fillRectangle(sMinX, lineY-2, sMaxX-sMinX, 5);
 
-		gc.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
+		gc.setForeground(colorBlack);
 		gc.drawLine(lineStart, lineY, lineEnd, lineY);
 
-		gc.setBackground(e.display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-		gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_BORDER));
+		if(hoverMin) {
+			gc.setBackground(colorWidgetBorder);	
+		} else {
+			gc.setBackground(colorWidgetBackground);
+		}
+		gc.setForeground(colorWidgetBorder);
 		gc.fillRectangle(sMinX-sWidth, 0, sWidth, clipping.height-1);
-		gc.drawRectangle(sMinX-sWidth, 0, sWidth, clipping.height-1);
-		gc.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
+		//gc.drawRectangle(sMinX-sWidth, 0, sWidth, clipping.height-1);
+		gc.drawLine(sMinX-sWidth,0,sMinX-sWidth,clipping.height-1);
+		gc.setForeground(colorBlack);
 		gc.drawLine(sMinX-sWidth, 0, sMinX, lineY);
 		gc.drawLine(sMinX-sWidth, clipping.height-1, sMinX, lineY);
 		gc.drawLine(sMinX,0,sMinX,clipping.height-1);
 
 
-
-		gc.setBackground(e.display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-		gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_BORDER));
+		if(hoverMax) {
+			gc.setBackground(colorWidgetBorder);	
+		} else {
+			gc.setBackground(colorWidgetBackground);
+		}
+		gc.setForeground(colorWidgetBorder);
 		gc.fillRectangle(sMaxX, 0, sWidth, clipping.height-1);
-		gc.drawRectangle(sMaxX, 0, sWidth, clipping.height-1);
-		gc.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
+		//gc.drawRectangle(sMaxX, 0, sWidth, clipping.height-1);
+		gc.drawLine(sMaxX+sWidth,0,sMaxX+sWidth,clipping.height-1);
+		gc.setForeground(colorBlack);
 		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, 0);
 		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, clipping.height-1);	
 		gc.drawLine(sMaxX,0,sMaxX,clipping.height-1);
@@ -138,11 +196,9 @@ public class TimeframeSlider extends Canvas {
 		} else {
 			sliding = slidingType.NONE;
 		}
-		System.out.println("onMouseDown: "+sliding);
 	}
 
 	private void onMouseUp(MouseEvent e) {
-		System.out.println("onMouseUp");
 		switch(sliding) {
 		case MIN:
 			if(selectedMin != slideMin) {
@@ -164,11 +220,13 @@ public class TimeframeSlider extends Canvas {
 	}
 
 	private void onMouseMove(MouseEvent e) {
-		System.out.println("onMouseMove: "+sliding+"  "+e.button);
-
+		hoverMin = isOnMinSlider(e.x);
+		hoverMax = isOnMaxSlider(e.x);
 		long diffX = windowToRealDiff(e.x-startX);
 		switch(sliding) {
 		case MIN:
+			hoverMin = true;
+			hoverMax = false;
 			slideMin = selectedMin+diffX;
 			if(slideMin<min) {
 				slideMin = min;
@@ -178,6 +236,8 @@ public class TimeframeSlider extends Canvas {
 			}
 			break;
 		case MAX:
+			hoverMin = false;
+			hoverMax = true;
 			slideMax = selectedMax+diffX;
 			if(slideMax>max) {
 				slideMax = max;
@@ -207,12 +267,6 @@ public class TimeframeSlider extends Canvas {
 		return (int) (((value-min)*windowRange)/realRange)+lineStart;
 	}
 
-	/*private long windowToReal(int x) {
-		long windowRange = (lineEnd-lineStart);
-		long realRange = (max-min);
-		return (((x-lineStart)*realRange)/windowRange)+min; 
-	}*/
-
 	private long windowToRealDiff(long diff) {
 		long windowRange = (lineEnd-lineStart);
 		long realRange = (max-min);
@@ -224,7 +278,6 @@ public class TimeframeSlider extends Canvas {
 	}
 
 	public void fireSliderChange() {
-		System.out.println("fireSliderChange() "+min+"  "+max+"  "+selectedMin+"  "+selectedMax);
 		for(SliderChangeObserver sliderChangeObserver:sliderChangeObserverList) {
 			sliderChangeObserver.onChange(selectedMin, selectedMax);
 		}
@@ -267,6 +320,4 @@ public class TimeframeSlider extends Canvas {
 		}
 		this.redraw();
 	}
-
-
 }

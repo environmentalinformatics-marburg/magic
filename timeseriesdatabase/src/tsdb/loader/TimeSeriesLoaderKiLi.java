@@ -31,11 +31,11 @@ import de.umr.jepc.store.Event;
  *
  */
 public class TimeSeriesLoaderKiLi extends TsDBClient {
-	
+
 	public TimeSeriesLoaderKiLi(TsDB tsdb) {
 		super(tsdb);
 	}
-	
+
 	/**
 	 * specific to KiLi:
 	 * read files contained in subfolders in KiLi folder tree
@@ -47,39 +47,43 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
 			for(Path path:stream) {
-     			DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
-				for(Path subPath:subStream) {
-					loadOneDirectory_structure_kili(subPath, ascCollectorMap);
+				if(Files.isDirectory(path)) {
+					DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
+					for(Path subPath:subStream) {
+						loadOneDirectory_structure_kili(subPath, ascCollectorMap);
+					}
+					subStream.close();
 				}
 			}
+			stream.close();
 		} catch (IOException e) {
 			log.error(e);
 		}
 		for(Path ascPath:ascCollectorMap.values()) {
 			System.out.println("asc file: "+ascPath);
-			
+
 			try{
 				ASCTimeSeries csvtimeSeries = new ASCTimeSeries(ascPath);
-				
+
 				TimestampSeries timestampSeries = null;
-				
+
 				if(csvtimeSeries.isASCVariant) {
 					timestampSeries = csvtimeSeries.readEntriesASCVariant();
 				} else {
 					timestampSeries = csvtimeSeries.readEntries();
 				}				
-				
-				
+
+
 				long intervalStart = csvtimeSeries.timestampStart;
 				long intervalEnd = csvtimeSeries.timestampEnd;
-				
+
 				if(timestampSeries!=null) {
 
 					if(!timestampSeries.entryList.isEmpty()) {
 
 						Station station = tsdb.getStation(csvtimeSeries.serialnumber);
 						if(station!=null) {									
-							
+
 							String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
 							for(int i=0;i<csvtimeSeries.parameterNames.length;i++) {
 								translatedInputSchema[i] = station.translateInputSensorName(csvtimeSeries.parameterNames[i], false);
@@ -90,9 +94,9 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 							StationProperties properties = station.getProperties(intervalStart, intervalEnd);
 
 							if(properties!=null) {
-								
+
 								insertOneFile(csvtimeSeries,station,properties,translatedInputSchema,timestampSeries);
-								
+
 							} else {
 								log.warn("no properties found in "+csvtimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
 							}									
@@ -105,15 +109,15 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 				} else {
 					log.error("no timestampseries: "+csvtimeSeries.filename);
 				}
-
+				csvtimeSeries.close();
 			} catch(Exception e) {
 				log.error(e+" in "+ascPath);
 			}					
-			
-			
+
+
 		}		
 	}	
-	
+
 	/**
 	 * Collects all kili-Files from one directory and adds them to ascCollectorMap.
 	 * @param kiliPath
@@ -133,7 +137,8 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 					} else {
 						log.warn("no asc file: "+filename);
 					}
-				}				
+				}
+				stream.close();
 			} else {
 				log.warn("directory not found: "+kiliPath);
 			}
@@ -141,7 +146,7 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * inserts data of one files to database. Schema is translated to database schema
 	 * @param csvtimeSeries
@@ -154,7 +159,7 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 		if(station.loggerType.typeName.equals("tfi")) {
 			return;  // !!! tfi should not be loaded from this format !!!
 		}
-		
+
 		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties, csvtimeSeries);
 		if(loader!=null) {
 			List<Event> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);			
@@ -169,7 +174,7 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 			log.warn("no loader found for logger type: "+station.loggerType.typeName);
 		}		
 	}
-	
+
 	public void loadOneDirectory_structure_kili_tfi(Path kiliTfiPath) {		
 		try {
 			if(Files.exists(kiliTfiPath)) {
@@ -202,7 +207,7 @@ public class TimeSeriesLoaderKiLi extends TsDBClient {
 			e.printStackTrace();
 		}		
 	}
-	
+
 	private void loadOneFile_structure_kili_tfi(VirtualPlot virtualPlot, Path path) {		
 		CSVIterator input_iterator = CSVIterator.create(path);
 		if(input_iterator!=null&&input_iterator.hasNext()) {
