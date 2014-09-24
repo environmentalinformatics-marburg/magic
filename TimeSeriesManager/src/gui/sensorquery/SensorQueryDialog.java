@@ -15,10 +15,11 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -31,9 +32,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.wb.swt.SWTResourceManager;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
@@ -42,10 +41,6 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
-import org.eclipse.swt.widgets.Slider;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.FillLayout;
 
 public class SensorQueryDialog extends Dialog {
 

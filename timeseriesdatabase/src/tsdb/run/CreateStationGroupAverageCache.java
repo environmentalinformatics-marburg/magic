@@ -8,6 +8,7 @@ import tsdb.DataQuality;
 import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
+import tsdb.graph.Addition;
 import tsdb.graph.Averaged;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
@@ -46,16 +47,29 @@ public class CreateStationGroupAverageCache implements TsDBLogger{
 
 			if(groupMinTimestamp!=Long.MAX_VALUE && groupMaxTimestamp!=Long.MIN_VALUE) {
 				System.out.println(group+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(groupMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(groupMaxTimestamp)+" **************************************************************** "+groupMinTimestamp+"\t-\t"+groupMaxTimestamp);
-				List<Continuous> sources = new ArrayList<Continuous>();				
+				List<Continuous> sources = new ArrayList<Continuous>();
+				List<Continuous> additions = new ArrayList<Continuous>();
 				for(String plotID:list) {
 					try {
 						Continuous continuous = continuousGen.get(plotID,null);
+						Addition addition = Addition.createWithElevationTemperature(tsdb,continuous,plotID);
+						if(addition!=null) {
+							additions.add(addition);
+						}
 						sources.add(continuous);
 					} catch (Exception e) {
 						log.warn(e);
 					}
-				}				
-				Averaged averaged = Averaged.create(tsdb, sources, 3);
+				}
+				
+				Averaged averaged;
+				
+				if(additions.isEmpty()) {
+					averaged = Averaged.create(tsdb, sources, 3);					
+				} else {
+					averaged = Averaged.create(tsdb, additions, 3);
+				}
+				
 				tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));
 				//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);
 			}

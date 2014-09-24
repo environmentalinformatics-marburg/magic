@@ -15,6 +15,8 @@ public class VirtualPlotInfo implements Serializable {
 	public final GeneralStationInfo generalStationInfo;
 	public final int geoPosEasting;
 	public final int geoPosNorthing;
+	public final float elevation;
+	public final float elevationTemperature;
 	public final List<TimestampInterval<StationProperties>> intervalList;
 	
 	public VirtualPlotInfo(VirtualPlot virtualPlot) {		
@@ -23,5 +25,7 @@ public class VirtualPlotInfo implements Serializable {
 		this.geoPosEasting = virtualPlot.geoPosEasting;
 		this.geoPosNorthing = virtualPlot.geoPosNorthing;
 		this.intervalList = virtualPlot.intervalList;
+		this.elevation = virtualPlot.elevation;
+		this.elevationTemperature = virtualPlot.elevationTemperature;
 	}
 }

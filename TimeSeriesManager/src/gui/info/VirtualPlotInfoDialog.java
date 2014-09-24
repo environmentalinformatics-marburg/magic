@@ -51,7 +51,8 @@ public class VirtualPlotInfoDialog extends Dialog {
 		tableViewBridge.addColumnText("General Station",100,v->v.generalStationInfo.longName+" ("+v.generalStationInfo.name+")");
 		tableViewBridge.addColumnInteger("Easting", 100,v->v.geoPosEasting);
 		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
-		tableViewBridge.addColumnInteger("Northing", 100,v->v.geoPosNorthing);
+		tableViewBridge.addColumnFloat("Elevation", 100,v->v.elevation);
+		tableViewBridge.addColumnFloat("Elevation Temperature", 100,v->v.elevationTemperature);
 		tableViewBridge.addColumnInteger("Time Intervals", 100,v->v.intervalList.size());
 
 		tableViewBridge.createColumns();

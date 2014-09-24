@@ -17,6 +17,8 @@ import org.ini4j.Wini;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.util.Table;
+import tsdb.util.Table.ColumnReaderFloat;
+import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.Util;
 import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
@@ -883,6 +885,34 @@ public class ConfigLoader extends TsDBClient {
 			return s.substring(3);
 		} else {
 			return s;
+		}
+	}
+
+	public void readVirtualPlotElevationConfig(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		/*int plotidIndex = table.getColumnIndex("PlotID");
+		int elevationIndex = table.getColumnIndex("Elevation");
+		if(plotidIndex<0||elevationIndex<0) {
+			log.error("readVirtualPlotElevationConfig: columns not found");
+			return;
+		}*/
+		
+		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
+		ColumnReaderFloat elevationReader = table.createColumnReaderFloat("Elevation");
+		if(plotidReader==null||elevationReader==null) {
+			log.error("readVirtualPlotElevationConfig: columns not found");
+			return;
+		}
+		
+		for(String[] row:table.rows) {
+			String plotID = plotidReader.get(row);
+			float elevation = elevationReader.get(row);
+			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+			if(virtualPlot==null) {
+				log.warn("plotID not found: "+plotID);
+				continue;
+			}
+			virtualPlot.setElevation(elevation);
 		}
 	}
 

@@ -14,16 +14,47 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class Table implements TsDBLogger {
 
+	public static class ColumnReader {
+		public final int rowIndex;
+		public ColumnReader(int rowIndex) {
+			Util.throwFalse(rowIndex>=0);
+			this.rowIndex = rowIndex;
+		}
+	}
+
+	public static class ColumnReaderString extends ColumnReader {
+		public ColumnReaderString(int rowIndex) {
+			super(rowIndex);
+		}
+		public String get(String[] row) {
+			return row[rowIndex];
+		}
+	}
+
+	public static class ColumnReaderFloat extends ColumnReader {
+		public ColumnReaderFloat(int rowIndex) {
+			super(rowIndex);
+		}
+		public float get(String[] row) {			
+			try {
+				return Float.parseFloat(row[rowIndex]);
+			} catch(NumberFormatException e) {
+				log.warn(row[rowIndex]+"not parsed");
+				return Float.NaN;
+			}
+		}
+	}
+
 	/**
 	 * header names in csv file
 	 */
 	public String[] names;
-	
+
 	/**
 	 * header name -> column position
 	 */
 	public Map<String, Integer> nameMap;
-	
+
 	/**
 	 * table rows of csv file
 	 */
@@ -39,12 +70,12 @@ public class Table implements TsDBLogger {
 	public static Table readCSV(String filename, char separator) {
 		try {
 			Table table = new Table();
-			
+
 			CSVReader reader = new CSVReader(new FileReader(filename),separator);
 			List<String[]> list = reader.readAll();
 
 			table.names = list.get(0);
-			
+
 			table.nameMap = new HashMap();
 
 			for(int i=0;i<table.names.length;i++) {
@@ -60,7 +91,7 @@ public class Table implements TsDBLogger {
 			for(int i=1;i<list.size();i++) {
 				table.rows[i-1] = list.get(i);
 			}
-			
+
 			for(int i=0;i<table.rows.length;i++) {
 
 			}
@@ -71,7 +102,7 @@ public class Table implements TsDBLogger {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * get column position of one header name
 	 * @param name
@@ -85,4 +116,22 @@ public class Table implements TsDBLogger {
 		}
 		return index;
 	}
+
+	public ColumnReaderString createColumnReader(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderString(columnIndex);
+	}
+
+	public ColumnReaderFloat createColumnReaderFloat(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderFloat(columnIndex);
+	}
+
+
 }

@@ -22,14 +22,17 @@ public class VirtualPlot extends TsDBClient {
 	public final String plotID;
 	public final GeneralStation generalStation;
 
-	public int geoPosEasting = -1;
-	public int geoPosNorthing = -1;
+	public final int geoPosEasting;
+	public final int geoPosNorthing;
+
+	public float elevation;
+	public float elevationTemperature;
 
 	public final boolean isFocalPlot;
 
 	public final List<TimestampInterval<StationProperties>> intervalList;
-	
-	
+
+
 	/**
 	 * This list is used for interpolation when similar stations are needed.
 	 */
@@ -41,6 +44,8 @@ public class VirtualPlot extends TsDBClient {
 		this.generalStation = generalStation;
 		this.geoPosEasting = geoPosEasting;
 		this.geoPosNorthing = geoPosNorthing;
+		this.elevation = Float.NaN;
+		this.elevationTemperature = Float.NaN;
 		this.isFocalPlot = isFocalPlot;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
@@ -220,5 +225,27 @@ public class VirtualPlot extends TsDBClient {
 			}
 		}
 		return true;
+	}
+
+	public void setElevation(float elevation) {
+		if(Float.isNaN(elevation)) {
+			log.warn("elevation not set: nan");
+			return;
+		}
+		if(!Float.isNaN(this.elevation)) {
+			log.warn("elevation already set, overwriting");
+		}
+
+		this.elevation = elevation;
+
+		if(!Float.isNaN(this.elevation)) {
+			if(elevation<=2321.501) {
+				elevationTemperature = elevation*-0.008443f+31.560182f;
+			} else {
+				elevationTemperature = elevation*-0.004174f+21.648931f;	
+			}
+		} else {
+			elevationTemperature = Float.NaN;
+		}
 	}
 }

@@ -12,20 +12,17 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
-
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.layout.GridData;
 
 public class MultiTimeSeriesExplorer extends Composite {
 

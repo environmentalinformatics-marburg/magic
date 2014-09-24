@@ -80,7 +80,7 @@ public class TableViewBridge<E> extends ViewerComparator{
 	public void addColumnFloat(String title, int textWidth, Function<E,Float> floatMapper) {
 		Function<Object,String> textMapper = o -> {
 			Float v = floatMapper.apply((E)o);
-			if(v==null||v==Float.MAX_VALUE||v==-Float.MAX_VALUE) {
+			if(v==null||v==Float.MAX_VALUE||v==-Float.MAX_VALUE||v.isNaN()) {
 				return "---";
 			} else {
 				return v.toString();
