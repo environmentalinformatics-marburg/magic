@@ -10,6 +10,7 @@ public class DifferenceIterator extends TsIterator {
 	private TsIterator input_iterator;
 	private TsIterator compare_iterator;
 	private final boolean absoluteDifference;
+	private final float[] refValues;
 
 	public static TsSchema createSchema(TsSchema input_schema, TsSchema compare_schema) {
 		TsSchema.throwDifferentNames(input_schema, compare_schema);
@@ -21,11 +22,12 @@ public class DifferenceIterator extends TsIterator {
 		return new TsSchema(input_schema.names, input_schema.aggregation, input_schema.timeStep, isContinuous);
 	}
 
-	public DifferenceIterator(TsIterator input_iterator, TsIterator compare_iterator, boolean absoluteDifference) {
+	public DifferenceIterator(TsIterator input_iterator, TsIterator compare_iterator, boolean absoluteDifference, float[] refValues) {
 		super(createSchema(input_iterator.getSchema(),compare_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.compare_iterator = compare_iterator;
 		this.absoluteDifference = absoluteDifference;
+		this.refValues = refValues;
 	}
 
 	@Override
@@ -47,7 +49,7 @@ public class DifferenceIterator extends TsIterator {
 			if(absoluteDifference) {
 				result[colIndex] = Math.abs(element.data[colIndex]-genElement.data[colIndex]);
 			} else {
-				result[colIndex] = element.data[colIndex]-genElement.data[colIndex];	
+				result[colIndex] = (element.data[colIndex]-refValues[colIndex])-genElement.data[colIndex];	
 			}
 		}
 		return new TimeSeriesEntry(timestamp,result);

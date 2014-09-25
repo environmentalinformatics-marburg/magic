@@ -256,8 +256,9 @@ public class QueryProcessor extends TsDBClient {
 		TsIterator input_iterator = query_continuous_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality);
 		TsIterator compare_iterator = Builder.project(Builder.continuous(tsdb.cacheStorage.query(generalName, queryStart, queryEnd), queryStart, queryEnd),input_iterator);
 		Float[] maxDiff = tsdb.getEmpiricalDiff(input_iterator.getNames());
+		float[] refValues = tsdb.getReferenceValues(plotID,input_iterator.getNames());
 		System.out.println("maxDiff[0]: "+maxDiff[0]);
-		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
+		return new EmpiricalIterator(input_iterator, compare_iterator, maxDiff, refValues);
 	}
 
 	public TsIterator virtualquery_base_aggregated(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, boolean interpolated) {

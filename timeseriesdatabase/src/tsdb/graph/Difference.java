@@ -59,8 +59,9 @@ public class Difference extends Continuous.Abstract {
 		if(compare_iterator==null||!compare_iterator.hasNext()) {
 			log.warn("no compare iterator");
 			return null;
-		}		
-		DifferenceIterator difference_iterator = new DifferenceIterator(input_iterator, compare_iterator, absoluteDifference);
+		}
+		float[] refValues = tsdb.getReferenceValues(stationName,source.getSchema());
+		DifferenceIterator difference_iterator = new DifferenceIterator(input_iterator, compare_iterator, absoluteDifference, refValues);
 		return difference_iterator;
 	}
 

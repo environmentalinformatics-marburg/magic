@@ -551,6 +551,22 @@ public class TsDB implements TsDBLogger {
 			}
 		}
 	}
+	
+	public float[] getReferenceValues(String plotID, String[] schema) {
+		float[] result = new float[schema.length];
+		for(int i=0;i<result.length;i++) {
+			result[i] = 0f;
+		}
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			for(int i=0;i<schema.length;i++) {
+				if(schema[i].equals("Ta_200")) {
+					result[i] = virtualPlot.elevationTemperature;
+				}
+			}
+		}
+		return result;
+	}
 
 
 

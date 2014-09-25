@@ -24,6 +24,7 @@ public class EmpiricalIterator extends TsIterator {
 	private TsIterator input_iterator;
 	private TsIterator compare_iterator;
 	private Float[] maxDiff;
+	private float[] refValues;
 
 	public static TsSchema createSchema(TsSchema schema) {
 		schema.throwNotContinuous();
@@ -36,11 +37,12 @@ public class EmpiricalIterator extends TsIterator {
 		return new TsSchema(schema.names, aggregation, timeStep, isContinuous);
 	}
 
-	public EmpiricalIterator(TsIterator input_iterator, TsIterator compare_iterator, Float[] maxDiff) {
+	public EmpiricalIterator(TsIterator input_iterator, TsIterator compare_iterator, Float[] maxDiff, float[] refValues) {
 		super(createSchema(input_iterator.getSchema()));
 		this.input_iterator = input_iterator;
 		this.compare_iterator = compare_iterator;
 		this.maxDiff = maxDiff;
+		this.refValues = refValues;
 	}
 
 	@Override
@@ -62,7 +64,7 @@ public class EmpiricalIterator extends TsIterator {
 		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			if(element.qualityFlag[colIndex]==DataQuality.STEP) {
 				if(maxDiff[colIndex]!=null&&!Float.isNaN(genElement.data[colIndex])) {
-					if(Math.abs(element.data[colIndex]-genElement.data[colIndex])<=maxDiff[colIndex]) { // check successful
+					if(Math.abs((element.data[colIndex]-refValues[colIndex])-genElement.data[colIndex])<=maxDiff[colIndex]) { // check successful
 						resultQf[colIndex] = DataQuality.EMPIRICAL;
 						result[colIndex] = element.data[colIndex];
 					} else { // remains STEP

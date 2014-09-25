@@ -34,21 +34,8 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 	}
 
 	public static Continuous create(TsDB tsdb, Continuous continuous, String plotID) {
-		/*GeneralStation generalStation = null;
-		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
-		if(virtualPlot!=null) {
-			generalStation = virtualPlot.generalStation;
-		} else {
-			Station station = tsdb.getStation(plotID);
-			if(station!=null) {
-				generalStation = station.generalStation;
-			}
-		}
-		if(generalStation==null) {
-			throw new RuntimeException("station not found: "+plotID);
-		}
-		String streamName = generalStation.group;
-		Continuous compareSource = Continuous.create(CacheBase.create(tsdb, streamName , continuous.getSchema()));*/
+		
+		
 		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());
 		return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
 	}
@@ -76,10 +63,13 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 			log.warn("no compare iterator");
 			return input_iterator;
 		}		
-		Float[] maxDiff = tsdb.getEmpiricalDiff(source.getSchema());		
-		EmpiricalIterator empirical_iterator = new EmpiricalIterator(input_iterator, compare_iterator, maxDiff);
+		Float[] maxDiff = tsdb.getEmpiricalDiff(source.getSchema());
+		float[] refValues = tsdb.getReferenceValues(stationName,source.getSchema());
+		EmpiricalIterator empirical_iterator = new EmpiricalIterator(input_iterator, compare_iterator, maxDiff, refValues);
 		return empirical_iterator;
 	}
+
+	
 
 	@Override
 	public Station getSourceStation() {

@@ -15,6 +15,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/JEPCBtreeStore"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jepc"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jepc_lite"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
