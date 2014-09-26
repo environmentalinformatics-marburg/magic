@@ -45,6 +45,9 @@ public class TimeframeSlider extends Canvas {
 	private boolean hover;
 	private boolean hoverMin;
 	private boolean hoverMax;
+	
+	private int startY;
+	private int endY;
 
 	private List<SliderChangeObserver> sliderChangeObserverList = new ArrayList<SliderChangeObserver>();
 
@@ -128,11 +131,10 @@ public class TimeframeSlider extends Canvas {
 
 		lineStart = sWidth;
 		lineEnd = clipping.width-1-sWidth;
-
-
-
-
-		int lineY = (clipping.height-1)/2;
+		
+		startY = 10;
+		endY = clipping.height-1;
+		int lineY = (endY-startY)/2+startY;
 
 
 
@@ -146,12 +148,22 @@ public class TimeframeSlider extends Canvas {
 		if(sliding!=slidingType.NONE) {
 			sMaxX = realToWindow(slideMax);
 		}
+		
+		
 
 		gc.setBackground(colorWidgetBackground);
 		gc.fillRectangle(sMinX, lineY-2, sMaxX-sMinX, 5);
 
 		gc.setForeground(colorBlack);
 		gc.drawLine(lineStart, lineY, lineEnd, lineY);
+		
+		
+		if(min<max) {
+			TimeScalePainter tsp = new TimeScalePainter();
+			tsp.setColor(getDisplay());
+			tsp.paint(gc, min, max, lineStart, lineEnd, startY, endY, 0);
+		}
+		
 
 		if(hoverMin) {
 			gc.setBackground(colorWidgetBorder);	
@@ -159,13 +171,13 @@ public class TimeframeSlider extends Canvas {
 			gc.setBackground(colorWidgetBackground);
 		}
 		gc.setForeground(colorWidgetBorder);
-		gc.fillRectangle(sMinX-sWidth, 0, sWidth, clipping.height-1);
+		gc.fillRectangle(sMinX-sWidth, startY, sWidth, endY);
 		//gc.drawRectangle(sMinX-sWidth, 0, sWidth, clipping.height-1);
-		gc.drawLine(sMinX-sWidth,0,sMinX-sWidth,clipping.height-1);
+		gc.drawLine(sMinX-sWidth,startY,sMinX-sWidth,endY);
 		gc.setForeground(colorBlack);
-		gc.drawLine(sMinX-sWidth, 0, sMinX, lineY);
-		gc.drawLine(sMinX-sWidth, clipping.height-1, sMinX, lineY);
-		gc.drawLine(sMinX,0,sMinX,clipping.height-1);
+		gc.drawLine(sMinX-sWidth, startY, sMinX, lineY);
+		gc.drawLine(sMinX-sWidth, endY, sMinX, lineY);
+		gc.drawLine(sMinX,startY,sMinX,endY);
 
 
 		if(hoverMax) {
@@ -174,13 +186,19 @@ public class TimeframeSlider extends Canvas {
 			gc.setBackground(colorWidgetBackground);
 		}
 		gc.setForeground(colorWidgetBorder);
-		gc.fillRectangle(sMaxX, 0, sWidth, clipping.height-1);
+		gc.fillRectangle(sMaxX, startY, sWidth, endY);
 		//gc.drawRectangle(sMaxX, 0, sWidth, clipping.height-1);
-		gc.drawLine(sMaxX+sWidth,0,sMaxX+sWidth,clipping.height-1);
+		gc.drawLine(sMaxX+sWidth,startY,sMaxX+sWidth,endY);
 		gc.setForeground(colorBlack);
-		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, 0);
-		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, clipping.height-1);	
-		gc.drawLine(sMaxX,0,sMaxX,clipping.height-1);
+		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, startY);
+		gc.drawLine(sMaxX, lineY, sMaxX+sWidth, endY);	
+		gc.drawLine(sMaxX,startY,sMaxX,endY);
+
+
+		
+
+
+
 	}
 
 	private void onMouseDown(MouseEvent e) {

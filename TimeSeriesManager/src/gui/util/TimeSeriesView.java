@@ -251,7 +251,10 @@ public class TimeSeriesView {
 
 	private void drawGrid(GC gc) {
 
-		drawXGrid(gc);
+		//drawXGrid(gc);
+		TimeScalePainter tsp = new TimeScalePainter();
+		tsp.setColor(canvas.getDisplay());
+		tsp.paint(gc, minTimestamp, maxTimestamp, xStart, xEnd, yStart, yEnd, yEnd);
 		drawYGrid(gc);
 
 
@@ -259,7 +262,7 @@ public class TimeSeriesView {
 
 
 
-	private void drawXGrid(GC gc) {
+	/*private void drawXGrid(GC gc) {
 
 		final int minGap = 25;
 
@@ -389,7 +392,7 @@ public class TimeSeriesView {
 		}
 
 
-	}
+	}*/
 
 
 	private void drawYGrid(GC gc) {

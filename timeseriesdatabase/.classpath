@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="testing/TestingJFreeChart.java|tsdb/testing/TestingJFreeChart.java" kind="src" path="src"/>
+	<classpathentry excluding="testing/TestingJFreeChart.java|tsdb/testing/TestingJFreeChart.java|tsdb/testing/TestingGDAL.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/ini4j-0.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.0-rc1.jar"/>

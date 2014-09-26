@@ -53,7 +53,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 
 		timeframeSlider = new TimeframeSlider(this, SWT.NONE);
 		GridData gd_canvasTimeFrameSlider = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_canvasTimeFrameSlider.heightHint = 15;
+		gd_canvasTimeFrameSlider.heightHint = 25;
 		timeframeSlider.setLayoutData(gd_canvasTimeFrameSlider);
 		timeframeSlider.addSliderChangeObserver(this::onTimeframSliderChange);
 		timeframeSlider.setRealRange(minTimestamp, maxTimestamp,true);

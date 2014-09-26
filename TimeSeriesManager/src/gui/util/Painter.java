@@ -40,7 +40,7 @@ public class Painter {
 		default:
 			throw new RuntimeException();		
 		}
-		gc.drawText(text, xPos, yPos);
+		gc.drawText(text, xPos, yPos, true);
 	}
 
 }

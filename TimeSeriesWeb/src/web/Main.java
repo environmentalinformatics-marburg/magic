@@ -21,6 +21,9 @@ public class Main {
 
 	public static void main(String[] args) throws Exception {
 		
+		//System.out.println(System.getenv().get("APP_HOME"));
+		
+		
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());
 		
         Server server = new Server(8080);

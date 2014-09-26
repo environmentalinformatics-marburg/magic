@@ -312,7 +312,7 @@ public class Util {
 		}
 	}
 
-	public static <A, B> B  ifnull(A a, Function<A,B> funcArg, B nullValue){
+	public static <A, B> B  ifnullval(A a, Function<A,B> funcArg, B nullValue){
 		if(a==null) {
 			return nullValue;
 		} else {
