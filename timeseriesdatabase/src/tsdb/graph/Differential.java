@@ -1,9 +1,9 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.DifferentialIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -17,7 +17,7 @@ public class Differential extends Continuous.Abstract {
 
 	protected Differential(TsDB tsdb, Continuous source) {
 		super(tsdb);
-		Util.throwNull(source);
+		throwNull(source);
 		this.source = source;
 	}
 	

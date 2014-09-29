@@ -9,8 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 
 public class TsIteratorIterator extends MoveIterator {
 
@@ -40,7 +39,7 @@ public class TsIteratorIterator extends MoveIterator {
 	}
 
 	public TsIteratorIterator(Iterator<TsIterator> input_iterator, String[] outputSchema) {
-		super(new TimeSeriesSchema(outputSchema).toTsSchema());
+		super(new TsSchema(outputSchema));
 		this.input_iterator = input_iterator;
 		current_iterator = null;
 	}

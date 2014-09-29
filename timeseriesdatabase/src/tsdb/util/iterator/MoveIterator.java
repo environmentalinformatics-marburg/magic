@@ -1,7 +1,6 @@
 package tsdb.util.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 
 public abstract class MoveIterator extends TsIterator {

@@ -1,9 +1,9 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.util.Util;
 
 /**
  * This node provides base aggregated data.
@@ -33,7 +33,7 @@ public interface Base extends Node {
 	public abstract class Abstract implements Base {		
 		protected TsDB tsdb; // not null		
 		Abstract(TsDB tsdb) {
-			Util.throwNull(tsdb);
+			throwNull(tsdb);
 			this.tsdb = tsdb;
 		}		
 	}

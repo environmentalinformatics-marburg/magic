@@ -1,16 +1,12 @@
 package tsdb.aggregated.iterator;
 
 import java.util.Arrays;
-import java.util.List;
 
 import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**

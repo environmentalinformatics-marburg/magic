@@ -1,12 +1,13 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 import java.util.Arrays;
 
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.ProjectionIterator;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -21,7 +22,7 @@ public class CacheBase extends Base.Abstract {
 
 	private CacheBase(TsDB tsdb, String streamName, String[] schema) {
 		super(tsdb);
-		Util.throwNull(streamName,schema);
+		throwNulls(streamName,schema);
 		this.streamName = streamName;
 		this.schema = schema;
 	}

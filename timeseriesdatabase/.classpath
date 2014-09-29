@@ -16,5 +16,6 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/JEPCBtreeStore"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jepc_lite"/>
+	<classpathentry kind="lib" path="C:/release-1600-x64-gdal-1-11-mapserver-6-4/bin/gdal/java/gdal.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

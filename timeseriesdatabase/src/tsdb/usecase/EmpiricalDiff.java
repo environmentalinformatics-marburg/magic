@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import tsdb.DataQuality;
-import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.TsDBFactory;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.CSV;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.NewProcessingChain;
 import tsdb.util.iterator.NewProcessingChainMultiSources;
@@ -68,7 +67,7 @@ public class EmpiricalDiff {
 		}
 		 */
 
-		TsIterator itDiff = new TsIterator(new TimeSeriesSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg","step"}).toTsSchema()) {
+		TsIterator itDiff = new TsIterator(new TsSchema(new String[]{"value","min_diff","avg_diff","valid_min","valid_avg","step"})) {
 			private float prevValue = Float.NaN;
 			
 			@Override

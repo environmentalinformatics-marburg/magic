@@ -1,24 +1,17 @@
 package tsdb.aggregated;
 
+import static tsdb.util.Util.log;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.ProcessingChainTitle;
-import tsdb.util.TimeSeriesSchema;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.NewProcessingChain;
-import tsdb.util.iterator.NewProcessingChainOneSource;
-import tsdb.util.iterator.NewProcessingChainSource;
 import tsdb.util.iterator.TsIterable;
 import tsdb.util.iterator.TsIterator;
 
@@ -27,10 +20,10 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class TimeSeries implements TsIterable, TsDBLogger {
+public class TimeSeries implements TsIterable {
 
 	//used for metadata, may be null
-	private final NewProcessingChain processingChain;
+	//private final NewProcessingChain processingChain;
 
 	/**
 	 * sensor names of time series in data
@@ -60,7 +53,7 @@ public class TimeSeries implements TsIterable, TsDBLogger {
 	public boolean[][] dataInterpolated;
 
 	public TimeSeries(NewProcessingChain processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
-		this.processingChain = new NewProcessingChainOneSource(processingChain,new ProcessingChainTitle("TimeSeries"));
+		//this.processingChain = new NewProcessingChainOneSource(processingChain,new ProcessingChainTitle("TimeSeries"));
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
@@ -313,14 +306,23 @@ public class TimeSeries implements TsIterable, TsDBLogger {
 		return new InternalClipIterator(clipStart, clipEnd);
 	}
 
-	public TimeSeriesSchema createSchema() {
-		String[] schema = parameterNames;
+	public TsSchema createSchema() {
+		/*String[] schema = parameterNames;
 		boolean constantTimeStep = true;
 		boolean isContinuous = true;		
 		boolean hasQualityFlags = hasDataQualityFlag; //TODO
 		boolean hasInterpolatedFlags = hasDataInterpolatedFlag; //TODO
 		boolean hasQualityCounters = false; //TODO
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters) ;
+		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);*/
+		
+		String[] names = this.parameterNames;
+		Aggregation aggregation = Aggregation.CONSTANT_STEP;
+		int timeStep = this.timeStep;
+		boolean isContinuous = true;
+		boolean hasQualityFlags = hasDataQualityFlag; //TODO
+		boolean hasInterpolatedFlags = hasDataInterpolatedFlag; //TODO
+		boolean hasQualityCounters = false; //TODO
+		return new TsSchema(names,aggregation,timeStep,isContinuous,hasQualityFlags,hasInterpolatedFlags,hasQualityCounters);
 
 	}
 
@@ -380,7 +382,7 @@ public class TimeSeries implements TsIterable, TsDBLogger {
 		private final int endPos;
 
 		public InternalClipIterator(Long clipStart, Long clipEnd) {
-			super(createSchema().toTsSchema());
+			super(createSchema());
 
 			long clipStartTimestamp = clipStart==null?getFirstTimestamp():clipStart;
 			long clipEndTimestamp = clipEnd==null?getLastTimestamp():clipEnd;	

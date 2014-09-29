@@ -1,14 +1,13 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.iterator.AggregationIterator;
 import tsdb.aggregated.iterator.DayAggregationIterator;
 import tsdb.aggregated.iterator.MonthAggregationIterator;
 import tsdb.aggregated.iterator.WeekAggregationIterator;
 import tsdb.aggregated.iterator.YearAggregationIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -24,7 +23,7 @@ public class Aggregated extends Continuous.Abstract {
 
 	protected Aggregated(TsDB tsdb, Continuous source, AggregationInterval aggregationInterval) {
 		super(tsdb);
-		Util.throwNull(source,aggregationInterval);
+		throwNulls(source,aggregationInterval);
 		this.source = source;
 		this.aggregationInterval = aggregationInterval;		
 		if(!source.isContinuous()) {

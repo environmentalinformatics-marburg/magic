@@ -29,7 +29,6 @@ public class AverageDiff {
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		NodeGen stationGen = QueryPlan.getStationGen(tsdb, DataQuality.STEP);
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
 		//String sensorName="Ta_200"; {

@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import de.umr.jepc.store.Event;
-import tsdb.Station;
-import tsdb.StationProperties;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
+import de.umr.jepc.store.Event;
 
 public class Loader_new_tfi implements TsDBLogger {
 

@@ -19,6 +19,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
+@Deprecated
 public class Builder implements Iterable<TimeSeriesEntry> {
 	
 	public static Builder base_aggregated(QueryProcessor qp, String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {

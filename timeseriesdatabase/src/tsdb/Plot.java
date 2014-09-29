@@ -1,9 +1,9 @@
 package tsdb;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import tsdb.util.Util;
 
 /**
  * This class contains data that is common for station and virtual plot
@@ -18,7 +18,7 @@ public class Plot {
 	public Map<String,Float> correctionValueMap;
 	
 	public Plot(String name) {
-		Util.throwNull(name);
+		throwNull(name);
 		this.name = name;
 		correctionValueMap = new HashMap<String, Float>();
 	}

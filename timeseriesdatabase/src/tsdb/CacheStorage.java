@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.Util.log;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,7 +14,6 @@ import org.mapdb.DBMaker;
 import org.mapdb.Fun.Tuple2;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
@@ -21,7 +22,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class CacheStorage implements TsDBLogger {
+public class CacheStorage {
 
 	private static final String DB_NAME_METADATA_SCHEMA = "schema";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";

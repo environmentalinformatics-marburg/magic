@@ -1,10 +1,10 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.EmpiricalIterator;
 import tsdb.aggregated.iterator.ProjectionIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -21,7 +21,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 
 	public EmpiricalFiltered(TsDB tsdb, Continuous source, Continuous compareSource, String stationName) {
 		super(tsdb);
-		Util.throwNull(source,compareSource,stationName);
+		throwNulls(source,compareSource,stationName);
 		if(!source.isContinuous()) {
 			throw new RuntimeException("QualityChecked needs continuous source");
 		}

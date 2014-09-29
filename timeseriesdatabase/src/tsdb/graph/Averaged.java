@@ -1,5 +1,7 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -9,7 +11,6 @@ import java.util.Set;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.AverageIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -26,7 +27,7 @@ public class Averaged extends Continuous.Abstract {
 
 	public Averaged(TsDB tsdb, List<Continuous> sources, String[] schema, int minCount) {
 		super(tsdb);
-		Util.throwNull(sources,schema);
+		throwNulls(sources,schema);
 		if(sources.isEmpty()) {
 			throw new RuntimeException("no sources");	
 		}

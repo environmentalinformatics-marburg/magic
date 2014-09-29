@@ -1,8 +1,8 @@
 package tsdb;
 
-import java.io.Serializable;
+import static tsdb.util.AssumptionCheck.throwNulls;
 
-import tsdb.util.Util;
+import java.io.Serializable;
 
 public class Region implements Serializable {
 	private static final long serialVersionUID = -8897183157291637247L;
@@ -11,7 +11,7 @@ public class Region implements Serializable {
 	public final String longName;
 	
 	public Region(String name, String longName) {
-		Util.throwNull(name,longName);
+		throwNulls(name,longName);
 		this.name = name;
 		this.longName = longName;
 	}

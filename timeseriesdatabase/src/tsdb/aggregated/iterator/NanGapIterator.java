@@ -3,9 +3,9 @@ package tsdb.aggregated.iterator;
 import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -26,19 +26,16 @@ public class NanGapIterator extends InputProcessingIterator implements TsDBLogge
 
 	Long endTimestamp;
 
-	public static TsSchema createSchema(TsSchema tsschema) {
-		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
-		String[] schema = input_schema.schema;
-		if(!input_schema.constantTimeStep) {
-			throw new RuntimeException("input iterator needs to have constant time steps");
-		}
-		boolean constantTimeStep = true;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = true;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
-		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
+	public static TsSchema createSchema(TsSchema tsSchema) {
+		String[] names = tsSchema.names;
+		tsSchema.throwNoConstantTimeStep();
+		Aggregation aggregation = tsSchema.aggregation;
+		int timeStep = tsSchema.timeStep;
+		boolean isContinuous = true;
+		boolean hasQualityFlags = tsSchema.hasQualityFlags;
+		boolean hasInterpolatedFlags = tsSchema.hasInterpolatedFlags;
+		boolean hasQualityCounters = tsSchema.hasQualityCounters;
+		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);
 	}
 
 

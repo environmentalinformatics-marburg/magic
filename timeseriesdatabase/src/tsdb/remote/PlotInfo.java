@@ -1,10 +1,12 @@
 package tsdb.remote;
 
+import static tsdb.util.AssumptionCheck.throwFalse;
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.io.Serializable;
 
 import tsdb.Station;
 import tsdb.VirtualPlot;
-import tsdb.util.Util;
 
 public class PlotInfo implements Serializable {
 	
@@ -24,7 +26,7 @@ public class PlotInfo implements Serializable {
 	}
 	
 	public PlotInfo(Station station) {
-		Util.throwFalse(station.isPlot);
+		throwFalse(station.isPlot);
 		this.name = station.stationID;
 		this.generalStationInfo = new GeneralStationInfo(station.generalStation);
 		this.isStation = true;
@@ -32,7 +34,7 @@ public class PlotInfo implements Serializable {
 	}
 	
 	public PlotInfo(String name, String generalName, String regionName) {
-		Util.throwNull(name);
+		throwNull(name);
 		this.name = name;
 		this.generalStationInfo = new GeneralStationInfo(generalName, regionName);
 		this.isStation = false;

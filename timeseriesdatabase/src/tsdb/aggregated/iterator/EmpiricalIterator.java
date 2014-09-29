@@ -1,12 +1,8 @@
 package tsdb.aggregated.iterator;
 
-import java.util.List;
-
 import tsdb.DataQuality;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.NewProcessingChain;

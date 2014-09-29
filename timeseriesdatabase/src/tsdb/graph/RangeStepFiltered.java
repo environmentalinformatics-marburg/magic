@@ -1,11 +1,11 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.raw.iterator.LowQualityToNanIterator;
 import tsdb.raw.iterator.QualityFlagIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -20,7 +20,7 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 
 	protected RangeStepFiltered(TsDB tsdb, Node source, DataQuality dataQuality) {
 		super(tsdb);
-		Util.throwNull(source, dataQuality);
+		throwNulls(source, dataQuality);
 		this.source = source;
 		this.dataQuality = dataQuality;
 	}

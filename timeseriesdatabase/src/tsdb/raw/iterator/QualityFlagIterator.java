@@ -1,15 +1,12 @@
 package tsdb.raw.iterator;
 
-import java.util.List;
-
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -25,9 +22,20 @@ public class QualityFlagIterator extends InputProcessingIterator {
 	float[] prevData;
 	
 	Sensor[] sensors;
+	
+	public static TsSchema createSchema(TsSchema tsSchema) {
+		String[] names = tsSchema.names;
+		Aggregation aggregation = tsSchema.aggregation;
+		int timeStep = tsSchema.timeStep;
+		boolean isContinuous = tsSchema.isContinuous;
+		boolean hasQualityFlags = true;
+		boolean hasInterpolatedFlags = false;
+		boolean hasQualityCounters = false;
+		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);		
+	}	
 
 	public QualityFlagIterator(TsDB timeSeriesDatabase, TsIterator input_iterator) {
-		super(input_iterator, TimeSeriesSchema.createWithQualityFlags(input_iterator.getSchema().toTimeSeriesSchema()).toTsSchema());	
+		super(input_iterator, createSchema(input_iterator.getSchema()));	
 		sensors = timeSeriesDatabase.getSensors(input_iterator.getNames());
 		this.prevTimestamps = new long[schema.length];
 		this.prevData = new float[schema.length];

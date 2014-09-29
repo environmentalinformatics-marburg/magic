@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import java.util.Iterator;
+import static tsdb.util.AssumptionCheck.throwNulls;
 
 import tsdb.Station;
 import tsdb.TsDB;
@@ -20,7 +21,7 @@ public class RawSource extends Node.Abstract {
 
 	protected RawSource(TsDB tsdb, Station station, String[] schema) {
 		super(tsdb);
-		Util.throwNull(station,schema);
+		throwNulls(station,schema);
 		this.station = station;
 		this.schema = schema;
 		if(this.schema.length==0) {

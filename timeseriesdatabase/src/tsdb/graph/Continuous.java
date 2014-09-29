@@ -1,12 +1,12 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -36,7 +36,7 @@ public interface Continuous extends Node {
 	public class Concrete implements Continuous {
 		private final Base source;
 		protected Concrete(Base source) {
-			Util.throwNull(source);
+			throwNull(source);
 			this.source = source;
 			if(!source.isConstantTimestep()) {
 				throw new RuntimeException("source with no constant timestep");

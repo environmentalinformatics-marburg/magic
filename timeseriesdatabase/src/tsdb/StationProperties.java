@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.Util.log;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,9 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 import tsdb.util.TimestampInterval;
-import tsdb.util.TsDBLogger;
 
-public class StationProperties implements Serializable, TsDBLogger {
+public class StationProperties implements Serializable{
 
 	private static final long serialVersionUID = -4558930650676952510L;
 	public final static String PROPERTY_START = "DATE_START";

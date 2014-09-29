@@ -10,17 +10,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
-import org.apache.logging.log4j.Logger;
-
-import de.umr.jepc.store.Event;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.catalog.SourceEntry;
-import tsdb.util.Util;
+import de.umr.jepc.store.Event;
 
 
 /**

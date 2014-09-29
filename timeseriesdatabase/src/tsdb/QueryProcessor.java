@@ -3,8 +3,6 @@ package tsdb;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.Interpolator;
@@ -19,7 +17,6 @@ import tsdb.raw.iterator.LowQualityToNanIterator;
 import tsdb.raw.iterator.QualityFlagIterator;
 import tsdb.util.Builder;
 import tsdb.util.TimestampInterval;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 

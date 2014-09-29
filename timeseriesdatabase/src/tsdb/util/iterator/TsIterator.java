@@ -2,15 +2,12 @@ package tsdb.util.iterator;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 import tsdb.aggregated.TimeSeries;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
-import tsdb.util.ProcessingChain;
 import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 
 public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChainEntry {

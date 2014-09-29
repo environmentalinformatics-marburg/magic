@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.Util.log;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -11,15 +13,13 @@ import java.util.stream.Stream;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.catalog.SourceCatalog;
-import tsdb.util.TimeSeriesSchema;
-import tsdb.util.TsDBLogger;
 
 /**
  * This is the main class of the timeseries database.
  * @author woellauer
  *
  */
-public class TsDB implements TsDBLogger {
+public class TsDB {
 
 	/**
 	 * map regionName -> Region
@@ -552,6 +552,12 @@ public class TsDB implements TsDBLogger {
 		}
 	}
 	
+	/**
+	 * Get an array of reference values of sensors at plotID.
+	 * @param plotID
+	 * @param schema
+	 * @return
+	 */
 	public float[] getReferenceValues(String plotID, String[] schema) {
 		float[] result = new float[schema.length];
 		for(int i=0;i<result.length;i++) {

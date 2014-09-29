@@ -10,10 +10,12 @@ import tsdb.util.iterator.NewProcessingChain;
 import tsdb.util.iterator.NewProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
+import static tsdb.util.AssumptionCheck.throwEmpty;
+
 public class VirtualPlotIterator extends MoveIterator {
 
 	public static TsSchema createSchema(String[] result_names, TsIterator[] input_iterator) {
-		Util.throwEmpty(input_iterator);
+		throwEmpty(input_iterator);
 		TsSchema[] schemas = TsIterator.toSchemas(input_iterator);
 		TsSchema.throwDifferentAggregation(schemas);
 		Aggregation aggregation = schemas[0].aggregation;

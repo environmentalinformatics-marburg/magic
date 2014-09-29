@@ -1,8 +1,9 @@
 package tsdb.aggregated.iterator;
 
+import static tsdb.util.AssumptionCheck.throwTrue;
+
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.List;
 
 import tsdb.DataQuality;
 import tsdb.Sensor;
@@ -12,14 +13,10 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.AggregationType;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.Pair;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
-import tsdb.util.Util;
 import tsdb.util.iterator.InputProcessingIterator;
-import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -67,7 +64,7 @@ public class AggregationIterator extends InputProcessingIterator implements TsDB
 	public static TsSchema createSchema(TsSchema input_schema, AggregationInterval aggregationInterval) {		
 		input_schema.throwNoAggregation();
 		input_schema.throwNotContinuous();
-		Util.throwTrue(input_schema.hasQualityCounters,"quality counters are not usable as input");
+		throwTrue(input_schema.hasQualityCounters,"quality counters are not usable as input");
 		Aggregation aggregation = aggregationInterval.toAggregation();
 		int timeStep = aggregationInterval.toTimeStep();
 		boolean isContinuous = true;

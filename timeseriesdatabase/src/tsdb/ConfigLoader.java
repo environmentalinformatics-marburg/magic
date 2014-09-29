@@ -916,6 +916,25 @@ public class ConfigLoader extends TsDBClient {
 		}
 	}
 
+	public void readUpdatedPlotGeoPosConfig(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
+		ColumnReaderFloat eastingReader = table.createColumnReaderFloat("Easting");
+		ColumnReaderFloat northingReader = table.createColumnReaderFloat("Northing");
+		for(String[] row:table.rows) {
+			String plotID = plotidReader.get(row);
+			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+			if(virtualPlot==null) {
+				log.warn("plotID not found: "+plotID);
+				continue;
+			}
+			float easting = eastingReader.get(row);
+			float northing = northingReader.get(row);
+			virtualPlot.geoPosEasting = easting;
+			virtualPlot.geoPosNorthing = northing;
+		}
+	}
+
 	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
 	try{		
 		Table table = Table.readCSV(config_file);		

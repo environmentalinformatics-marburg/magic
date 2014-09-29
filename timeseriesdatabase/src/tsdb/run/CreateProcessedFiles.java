@@ -3,13 +3,11 @@ package tsdb.run;
 import java.io.File;
 import java.time.LocalDateTime;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.DataQuality;
-import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
+import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimeSeriesEntry;

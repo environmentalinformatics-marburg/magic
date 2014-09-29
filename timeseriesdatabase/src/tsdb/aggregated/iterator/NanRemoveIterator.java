@@ -1,8 +1,8 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -13,16 +13,15 @@ import tsdb.util.iterator.TsIterator;
  */
 public class NanRemoveIterator extends InputProcessingIterator {
 	
-	public static TsSchema createSchema(TsSchema tsschema) {
-		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = false;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
-		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(schema, constantTimeStep, timeStep , isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();		
+	public static TsSchema createSchema(TsSchema tsSchema) {
+		String[] names = tsSchema.names;
+		Aggregation aggregation = tsSchema.aggregation;
+		int timeStep = tsSchema.timeStep;
+		boolean isContinuous = false;
+		boolean hasQualityFlags = tsSchema.hasQualityFlags;
+		boolean hasInterpolatedFlags = tsSchema.hasInterpolatedFlags;
+		boolean hasQualityCounters = tsSchema.hasQualityCounters;
+		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);		
 	}
 
 	public NanRemoveIterator(TsIterator input_iterator) {

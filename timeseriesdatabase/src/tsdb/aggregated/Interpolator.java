@@ -1,22 +1,21 @@
 package tsdb.aggregated;
 
+import static tsdb.util.Util.log;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
-import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
 
 /**
  * GabFiller interpolates missing values (NaN-values) in time series with data of a set of other time series
  * @author woellauer
  *
  */
-public class Interpolator implements TsDBLogger {
+public class Interpolator {
 
 	/**
 	 * count of values for training to fill one gap

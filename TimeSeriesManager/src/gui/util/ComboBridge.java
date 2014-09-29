@@ -1,6 +1,7 @@
 package gui.util;
 
 import java.util.function.Function;
+import static tsdb.util.AssumptionCheck.throwNull;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -43,7 +44,7 @@ public class ComboBridge<E> {
 	}
 
 	public void setSelection(E element) {
-		Util.throwNull(element);
+		throwNull(element);
 		comboViewer.setSelection(new StructuredSelection(element));
 	}
 

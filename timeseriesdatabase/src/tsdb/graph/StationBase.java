@@ -1,9 +1,9 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.BaseAggregationIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -17,7 +17,7 @@ public class StationBase extends Base.Abstract {
 
 	protected StationBase(TsDB tsdb, Node source) {
 		super(tsdb);
-		Util.throwNull(source);
+		throwNull(source);
 		this.source = source;
 	}
 

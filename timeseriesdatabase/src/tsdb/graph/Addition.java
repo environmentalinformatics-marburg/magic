@@ -1,10 +1,10 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.Util;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -14,7 +14,7 @@ public class Addition implements Continuous {
 	private final float value;
 	
 	protected Addition(Continuous source, float value) {
-		Util.throwNull(source);
+		throwNull(source);
 		this.source = source;
 		this.value = value;
 	}

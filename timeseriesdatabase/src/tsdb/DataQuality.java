@@ -1,6 +1,6 @@
 package tsdb;
 
-import tsdb.util.TsDBLogger;
+import static tsdb.util.Util.log;
 
 /**
  * for data values: highest passed quality check
@@ -8,7 +8,7 @@ import tsdb.util.TsDBLogger;
  * @author woellauer
  *
  */
-public enum DataQuality implements TsDBLogger { 
+public enum DataQuality { 
 	Na,			//quality unknown    for query: no check, no flag creation
 	NO,			//no quality check passed    for query: no check, but flag creation
 	PHYSICAL,	//physical range check passed and step and empirical not passed

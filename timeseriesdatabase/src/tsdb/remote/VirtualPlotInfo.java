@@ -22,8 +22,8 @@ public class VirtualPlotInfo implements Serializable {
 	public VirtualPlotInfo(VirtualPlot virtualPlot) {		
 		this.plotID = virtualPlot.plotID;
 		this.generalStationInfo= Util.ifnull(virtualPlot.generalStation, gs->new GeneralStationInfo(gs));
-		this.geoPosEasting = virtualPlot.geoPosEasting;
-		this.geoPosNorthing = virtualPlot.geoPosNorthing;
+		this.geoPosEasting = (int)virtualPlot.geoPosEasting;
+		this.geoPosNorthing = (int)virtualPlot.geoPosNorthing;
 		this.intervalList = virtualPlot.intervalList;
 		this.elevation = virtualPlot.elevation;
 		this.elevationTemperature = virtualPlot.elevationTemperature;

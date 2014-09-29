@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.Util.log;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +11,6 @@ import java.util.Map;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
 /**
@@ -17,7 +18,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class TsDBFactory implements TsDBLogger {
+public class TsDBFactory {
 	
 	static String CONFIG_DIRECTORY = "config/";
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
@@ -96,6 +97,7 @@ public class TsDBFactory implements TsDBLogger {
 			configLoader.readVirtualPlotConfig(configDirectory+"station_master.csv"); // KiLi 4. read plotids and create virtualplot objects
 			configLoader.readVirtualPlotElevationConfig(configDirectory+"ki_elevation.csv");
 			configLoader.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf"); // KiLi 5. read time interval of stations and insert it in virtualplot objects
+			configLoader.readUpdatedPlotGeoPosConfig(configDirectory+"kili_plots_correct_xy.csv");
 			configLoader.calcNearestVirtualPlots();
 			//*** KilI end
 			

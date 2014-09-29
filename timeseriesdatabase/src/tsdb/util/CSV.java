@@ -6,8 +6,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Locale;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.util.iterator.TsIterable;

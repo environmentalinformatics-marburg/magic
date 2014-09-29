@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import java.util.ArrayList;
+import static tsdb.util.AssumptionCheck.throwNulls;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class Interpolated extends Continuous.Abstract {
 
 	protected Interpolated(TsDB tsdb, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema) {		
 		super(tsdb);
-		Util.throwNull(source,interpolationSources,interpolationSchema);
+		throwNulls(source,interpolationSources,interpolationSchema);
 		if(!source.isContinuous()) {
 			throw new RuntimeException("source not continuous");
 		}

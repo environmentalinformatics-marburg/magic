@@ -1,10 +1,11 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.AssumptionCheck.throwNullText;
 import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class GroupAverageSource implements Continuous {
@@ -12,7 +13,7 @@ public class GroupAverageSource implements Continuous {
 	private final Continuous source;
 	
 	public GroupAverageSource(Continuous source) {
-		Util.throwNull(source);
+		throwNull(source);
 		this.source = source;
 	}
 	
@@ -27,7 +28,7 @@ public class GroupAverageSource implements Continuous {
 				generalStation = station.generalStation;
 			}
 		}
-		Util.throwNullText(generalStation,"station not found: "+plotID);
+		throwNullText(generalStation,"station not found: "+plotID);
 		return createFromGroup(tsdb, generalStation.group, schema);		
 	}
 	

@@ -1,9 +1,12 @@
 package tsdb.util;
 
 import java.io.Serializable;
+
+import static tsdb.util.AssumptionCheck.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 
 import tsdb.aggregated.BaseAggregationTimeUtil;
 
@@ -19,7 +22,7 @@ public class TsSchema implements Serializable {
 		YEAR;
 		
 		public void throwNotVariableStepAggregation() {
-			Util.throwFalse(this==Aggregation.MONTH||this==Aggregation.YEAR,"NotVariableStepAggregation: "+this);
+			throwFalse(this==Aggregation.MONTH||this==Aggregation.YEAR,"NotVariableStepAggregation: "+this);
 		}
 	}
 
@@ -111,66 +114,60 @@ public class TsSchema implements Serializable {
 		return new TsSchema(names, aggregation,timeStep,isContinuous,hasQualityFlags,hasInterpolatedFlags,hasQualityCounters);
 	}
 
-	@Deprecated
-	public TimeSeriesSchema toTimeSeriesSchema() {
-		boolean constantTimeStep = (aggregation==Aggregation.CONSTANT_STEP);
-		return new TimeSeriesSchema(names, constantTimeStep , timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);
-	}
-
 	public void throwNoAggregation() {
-		Util.throwTrue(aggregation==Aggregation.NO,"input is not pre aggregated");
+		throwTrue(aggregation==Aggregation.NO,"input is not pre aggregated");
 	}
 	
 	public void throwNotAggregation(Aggregation aggregation) {
-		Util.throwFalse(this.aggregation==aggregation,"not aggregation: "+this.aggregation+"  "+aggregation);
+		throwFalse(this.aggregation==aggregation,"not aggregation: "+this.aggregation+"  "+aggregation);
 	}
 	
 	public void throwNotStep(int timeStep) {
-		Util.throwFalse(this.timeStep==timeStep,"not timeStep: "+this.timeStep+"  "+timeStep);
+		throwFalse(this.timeStep==timeStep,"not timeStep: "+this.timeStep+"  "+timeStep);
 	}
 
 	public void throwNotContinuous() {
-		Util.throwFalse(isContinuous,"input is not pre aggregated");
+		throwFalse(isContinuous,"input is not pre aggregated");
 	}
 
 	public static void throwDifferentContinuous(TsSchema[] schemas) {
 		boolean cont = schemas[0].isContinuous;
 		for(TsSchema schema:schemas) {
-			Util.throwFalse(schema.isContinuous==cont,"different continuous");
+			throwFalse(schema.isContinuous==cont,"different continuous");
 		}
 	}
 	
 	public static void throwDifferentQualityFlags(TsSchema[] schemas) {
 		boolean qf = schemas[0].hasQualityFlags;
 		for(TsSchema schema:schemas) {
-			Util.throwFalse(schema.hasQualityFlags==qf,"different quality flags");
+			throwFalse(schema.hasQualityFlags==qf,"different quality flags");
 		}
 	}
 	
 	public static void throwDifferentTimeStep(TsSchema... schemas) {
 		int step = schemas[0].timeStep;
 		for(TsSchema schema:schemas) {
-			Util.throwFalse(schema.timeStep==step,"different timestep");
+			throwFalse(schema.timeStep==step,"different timestep");
 		}
 	}
 	
 	public static void throwDifferentAggregation(TsSchema... schemas) {
 		Aggregation agg = schemas[0].aggregation;
 		for(TsSchema schema:schemas) {
-			Util.throwFalse(schema.aggregation==agg,"different aggregation");
+			throwFalse(schema.aggregation==agg,"different aggregation");
 		}
 	}
 	
 	public void throwNoQualityFlags() {
-		Util.throwFalse(hasQualityFlags,"input has no qualityflags");
+		throwFalse(hasQualityFlags,"input has no qualityflags");
 	}
 	
 	public void throwNoInterpolatedFlags() {
-		Util.throwFalse(hasInterpolatedFlags,"input has no interpolated flags");
+		throwFalse(hasInterpolatedFlags,"input has no interpolated flags");
 	}
 	
 	public static boolean isSameNames(TsSchema schema1, TsSchema schema2) {
-		Util.throwNull(schema1, schema2);
+		throwNulls(schema1, schema2);
 		if(schema1.length!=schema2.length) {
 			return false;
 		}
@@ -186,15 +183,15 @@ public class TsSchema implements Serializable {
 	}
 	
 	public static void throwDifferentNames(TsSchema schema1, TsSchema schema2) {
-		Util.throwFalse(isSameNames(schema1, schema2),"not same names");
+		throwFalse(isSameNames(schema1, schema2),"not same names");
 	}
 	
 	public void throwNoConstantTimeStep() {
-		Util.throwFalse(aggregation==Aggregation.CONSTANT_STEP,"no constant timestep");
+		throwFalse(aggregation==Aggregation.CONSTANT_STEP,"no constant timestep");
 	}
 	
 	public void throwNoBaseAggregation() {
-		Util.throwFalse(timeStep==BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL,"no base aggregation");
+		throwFalse(timeStep==BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL,"no base aggregation");
 	}
 	
 	public void throwNotVariableStepAggregation() {

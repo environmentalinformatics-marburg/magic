@@ -1,12 +1,10 @@
 package tsdb.aggregated.iterator;
 
-import java.util.Arrays;
-import java.util.List;
+import static tsdb.util.AssumptionCheck.throwEmpty;
+
 import java.util.Map;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
@@ -28,7 +26,7 @@ public class AverageIterator extends MoveIterator {
 	private final int minCount;
 
 	private static TsSchema createSchema(String[] names, TsIterator[] input_iterators) {
-		Util.throwEmpty(input_iterators);
+		throwEmpty(input_iterators);
 		TsSchema[] schemas = TsIterator.toSchemas(input_iterators);
 		TsSchema.throwDifferentAggregation(schemas);
 		Aggregation aggregation = schemas[0].aggregation;

@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import java.util.ArrayList;
+import static tsdb.util.AssumptionCheck.throwNulls;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class VirtualBase extends Base.Abstract  {
 
 	protected VirtualBase(TsDB tsdb, VirtualPlot virtualPlot, String[] schema, NodeGen stationGen) {
 		super(tsdb);
-		Util.throwNull(virtualPlot, schema, stationGen);
+		throwNulls(virtualPlot, schema, stationGen);
 		if(schema.length==0) {
 			throw new RuntimeException("no schema");
 		}

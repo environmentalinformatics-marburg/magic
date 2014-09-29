@@ -1,13 +1,8 @@
 package tsdb.raw.iterator;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.ProcessingChainTitle;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;

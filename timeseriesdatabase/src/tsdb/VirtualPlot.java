@@ -1,11 +1,11 @@
 package tsdb;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -22,8 +22,8 @@ public class VirtualPlot extends TsDBClient {
 	public final String plotID;
 	public final GeneralStation generalStation;
 
-	public final int geoPosEasting;
-	public final int geoPosNorthing;
+	public float geoPosEasting;
+	public float geoPosNorthing;
 
 	public float elevation;
 	public float elevationTemperature;
@@ -38,7 +38,7 @@ public class VirtualPlot extends TsDBClient {
 	 */
 	public List<VirtualPlot> nearestVirtualPlots;
 
-	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,int geoPosEasting, int geoPosNorthing, boolean isFocalPlot) {
+	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,float geoPosEasting, float geoPosNorthing, boolean isFocalPlot) {
 		super(tsdb);
 		this.plotID = plotID;
 		this.generalStation = generalStation;
@@ -207,7 +207,7 @@ public class VirtualPlot extends TsDBClient {
 	}
 
 	public boolean isValidSchema(String[] querySchema) {
-		Util.throwNull((Object)querySchema);
+		throwNull((Object)querySchema);
 		String[] schema = getSchema();
 		if(schema==null) {
 			return false;

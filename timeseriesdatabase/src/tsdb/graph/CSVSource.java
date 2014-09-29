@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import java.util.Arrays;
+import static tsdb.util.AssumptionCheck.throwNull;
 
 import tsdb.Station;
 import tsdb.raw.iterator.CSVIterator;
@@ -23,8 +24,8 @@ public class CSVSource implements Node {
 		this.sensorNames = sensorNames;
 		this.rows = rows;
 		this.filename = filename;
-		Util.throwNull((Object)sensorNames);
-		Util.throwNull((Object)rows);
+		throwNull((Object)sensorNames);
+		throwNull((Object)rows);
 	}
 	
 	public static CSVSource create(String filename) {		

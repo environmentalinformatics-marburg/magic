@@ -1,6 +1,7 @@
 package tsdb.util;
 
 import java.io.Serializable;
+import static tsdb.util.AssumptionCheck.*;
 
 public class TimestampInterval<T extends Serializable> implements Serializable {
 	
@@ -10,15 +11,15 @@ public class TimestampInterval<T extends Serializable> implements Serializable {
 	public final Long end; //nullable
 	
 	public TimestampInterval(T value, Long start, Long end) {
-		Util.throwNull(value);
-		Util.throwGreater(start,end);
+		throwNull(value);
+		throwGreater(start,end);
 		this.value = value;
 		this.start = start;
 		this.end = end;
 	}
 	
 	public boolean contains(long start, long end) {
-		Util.throwGreater(start,end);
+		throwGreater(start,end);
 		return (this.start==null?true:this.start<=start) && (this.end==null?true:end<=this.end);
 	}
 

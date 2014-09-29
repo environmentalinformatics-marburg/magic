@@ -1,11 +1,8 @@
 package tsdb.aggregated.iterator;
 
-import java.util.List;
-
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
@@ -14,15 +11,15 @@ public class ProjectionIterator extends InputIterator {
 
 	private int[] eventPos;
 	
-	public static TsSchema createSchema(TsSchema tsschema, String[] outputSchema) {
-		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
-		boolean constantTimeStep = input_schema.constantTimeStep;
-		int timeStep = input_schema.timeStep;
-		boolean isContinuous = input_schema.isContinuous;		
-		boolean hasQualityFlags = input_schema.hasQualityFlags;
-		boolean hasInterpolatedFlags = input_schema.hasInterpolatedFlags;
-		boolean hasQualityCounters = input_schema.hasQualityCounters;
-		return new TimeSeriesSchema(outputSchema, constantTimeStep, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
+	public static TsSchema createSchema(TsSchema tsSchema, String[] outputSchema) {
+		String[] names = outputSchema;
+		Aggregation aggregation = tsSchema.aggregation;
+		int timeStep = tsSchema.timeStep;
+		boolean isContinuous = tsSchema.isContinuous;
+		boolean hasQualityFlags = tsSchema.hasQualityFlags;
+		boolean hasInterpolatedFlags = tsSchema.hasInterpolatedFlags;
+		boolean hasQualityCounters = tsSchema.hasQualityCounters;
+		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters); 
 	}
 
 	public ProjectionIterator(TsIterator input_iterator, String[] outputSchema) {

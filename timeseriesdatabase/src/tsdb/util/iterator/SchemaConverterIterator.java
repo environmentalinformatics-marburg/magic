@@ -1,7 +1,7 @@
 package tsdb.util.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 import tsdb.util.Util;
 
 public class SchemaConverterIterator extends InputProcessingIterator {
@@ -9,7 +9,7 @@ public class SchemaConverterIterator extends InputProcessingIterator {
 	private int[] inputPos;
 
 	public SchemaConverterIterator(TsIterator input_iterator, String[] outputSchema, boolean fillWithNaN) {
-		super(input_iterator, new TimeSeriesSchema(outputSchema).toTsSchema());
+		super(input_iterator, new TsSchema(outputSchema));		
 		this.inputPos = Util.stringArrayToPositionIndexArray(outputSchema, input_iterator.getNames(), !fillWithNaN, false);
 	}
 

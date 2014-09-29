@@ -1,15 +1,8 @@
 package tsdb.raw.iterator;
 
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-
 import tsdb.DataQuality;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsDBLogger;
-import tsdb.util.Util;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 

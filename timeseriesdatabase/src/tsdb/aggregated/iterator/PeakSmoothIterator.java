@@ -2,8 +2,8 @@ package tsdb.aggregated.iterator;
 
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -30,15 +30,15 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private float[] fillData;
 	private long nextTimestamp;
 	
-	public static TsSchema createSchema(TsSchema tsschema) {
-		TimeSeriesSchema input_schema = tsschema.toTimeSeriesSchema();
-		String[] schema = input_schema.schema;
-		boolean constantTimeStep = true;
-		boolean isContinuous = false;		
+	public static TsSchema createSchema(TsSchema tsSchema) {
+		String[] names = tsSchema.names;
+		Aggregation aggregation = Aggregation.CONSTANT_STEP;
+		int timeStep = TIMESTEP;
+		boolean isContinuous = false;
 		boolean hasQualityFlags = false;
 		boolean hasInterpolatedFlags = false;
 		boolean hasQualityCounters = false;
-		return new TimeSeriesSchema(schema, constantTimeStep, TIMESTEP, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters).toTsSchema();
+		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);		
 	}
 
 	public PeakSmoothIterator(TsIterator input_iterator) {

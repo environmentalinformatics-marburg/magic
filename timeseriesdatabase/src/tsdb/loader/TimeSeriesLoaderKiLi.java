@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.Logger;
-
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
@@ -16,13 +14,10 @@ import tsdb.TsDB;
 import tsdb.TsDBClient;
 import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
-import tsdb.graph.CSVSource;
-import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
 /**

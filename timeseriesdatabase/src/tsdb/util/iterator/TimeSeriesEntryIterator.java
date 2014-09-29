@@ -3,14 +3,14 @@ package tsdb.util.iterator;
 import java.util.Iterator;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
+import tsdb.util.TsSchema;
 
 public class TimeSeriesEntryIterator extends TsIterator {
 	
 	private Iterator<TimeSeriesEntry> input_iterator;
 
 	public TimeSeriesEntryIterator(Iterator<TimeSeriesEntry> input_iterator, String[] schema) {
-		super(new TimeSeriesSchema(schema).toTsSchema());
+		super(new TsSchema(schema));
 		this.input_iterator = input_iterator;
 	}
 

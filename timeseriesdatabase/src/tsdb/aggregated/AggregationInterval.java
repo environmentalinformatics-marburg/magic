@@ -1,10 +1,10 @@
 package tsdb.aggregated;
 
-import tsdb.util.TsDBLogger;
+import static tsdb.util.Util.log;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 
-public enum AggregationInterval implements TsDBLogger {
+public enum AggregationInterval {
 	HOUR, 
 	DAY, 
 	WEEK, 

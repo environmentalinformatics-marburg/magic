@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 /**
  * Some utilities
  * @author woellauer
@@ -465,7 +467,7 @@ public class Util {
 	}
 
 	public static boolean isContained(String[] names, String[] source) {
-		Util.throwNull(names,source);		
+		throwNulls(names,source);		
 		Map<String, Integer> sourceMap = Util.stringArrayToMap(source);
 		for(String name:names) {
 			if(!sourceMap.containsKey(name)) {
@@ -475,59 +477,7 @@ public class Util {
 		return true;
 	}
 
-	public static void throwNull(Object ... o) {
-		for(int i=0;i<o.length;i++) {				
-			if(o[i]==null) {
-				throw new RuntimeException("null in "+(i+1)+".");
-			}
-		}
-	}
 	
-	public static void throwNullText(Object o, String text) {
-		if(o==null) {
-			throw new RuntimeException(text);
-		}
-	}
-
-	public static void throwFalse(boolean check) {
-		if(!check) {
-			throw new RuntimeException("check false");
-		}
-	}
-
-	public static void throwFalse(boolean check, String errorText) {
-		if(!check) {
-			throw new RuntimeException(errorText);
-		}
-	}
-	
-	public static interface Callback {
-		public String call();
-	}
-	
-	public static void throwFalse(boolean check, Callback errorText) {
-		if(!check) {
-			throw new RuntimeException(errorText.call());
-		}
-	}
-	
-	public static void throwTrue(boolean check, String errorText) {
-		if(check) {
-			throw new RuntimeException(errorText);
-		}		
-	}
-	
-	public static void throwGreater(Long a, Long b) {
-		if(a!=null&&b!=null&&a>b) {
-			throw new RuntimeException("not a<b: "+a+"  "+b);
-		}
-	}
-	
-	public static void throwGreater(long a, long b) {
-		if(a>b) {
-			throw new RuntimeException("not a<b: "+a+"  "+b);
-		}
-	}
 
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
@@ -536,14 +486,7 @@ public class Util {
 	public static boolean empty(Object[] array) {
 		return array==null||array.length==0;
 	}
-
-	public static void throwEmpty(Object[] array) {
-		if(empty(array)) {
-			throw new RuntimeException("array empty");
-		}		
-	}
 	
-	@SuppressWarnings("unchecked")
 	public static String[] toArray(String e) {
 		return new String[]{e};
 	}

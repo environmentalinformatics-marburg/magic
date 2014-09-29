@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import tsdb.Station;
+import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.DifferenceIterator;
 import tsdb.util.Util;
@@ -20,7 +21,7 @@ public class Difference extends Continuous.Abstract {
 
 	protected Difference(TsDB tsdb, Continuous source, Continuous compareSource, String stationName, boolean absoluteDifference) {
 		super(tsdb);
-		Util.throwNull(source,compareSource,stationName);
+		throwNulls(source,compareSource,stationName);
 		if(!source.isContinuous()) {
 			throw new RuntimeException("QualityChecked needs continuous source");
 		}

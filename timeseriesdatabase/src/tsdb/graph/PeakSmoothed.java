@@ -1,8 +1,8 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.aggregated.iterator.PeakSmoothIterator;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -15,7 +15,7 @@ public class PeakSmoothed implements Base {
 	private Node source;
 
 	protected PeakSmoothed(Node source) {
-		Util.throwNull(source);
+		throwNull(source);
 		this.source = source;
 	}
 	

@@ -1,7 +1,6 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.raw.TimeSeriesEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;

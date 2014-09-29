@@ -1,9 +1,5 @@
 package tsdb.util.iterator;
 
-import java.util.List;
-
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.TimeSeriesSchema;
 import tsdb.util.TsSchema;
 
 /**

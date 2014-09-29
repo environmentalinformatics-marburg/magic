@@ -1,6 +1,8 @@
 package tsdb.util;
 
 import java.io.FileReader;
+
+import static tsdb.util.AssumptionCheck.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +19,7 @@ public class Table implements TsDBLogger {
 	public static class ColumnReader {
 		public final int rowIndex;
 		public ColumnReader(int rowIndex) {
-			Util.throwFalse(rowIndex>=0);
+			throwFalse(rowIndex>=0);
 			this.rowIndex = rowIndex;
 		}
 	}
@@ -76,7 +78,7 @@ public class Table implements TsDBLogger {
 
 			table.names = list.get(0);
 
-			table.nameMap = new HashMap();
+			table.nameMap = new HashMap<String, Integer>();
 
 			for(int i=0;i<table.names.length;i++) {
 				if(table.nameMap.containsKey(table.names[i])) {

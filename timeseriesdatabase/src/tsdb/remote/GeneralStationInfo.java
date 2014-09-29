@@ -1,10 +1,11 @@
 package tsdb.remote;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 import java.io.Serializable;
 
 import tsdb.GeneralStation;
 import tsdb.Region;
-import tsdb.util.Util;
 
 public class GeneralStationInfo implements Serializable {
 	
@@ -27,7 +28,7 @@ public class GeneralStationInfo implements Serializable {
 	}
 	
 	public GeneralStationInfo(String generalName, String regionName) {
-		Util.throwNull(generalName, regionName);
+		throwNulls(generalName, regionName);
 		this.name = generalName;
 		this.longName = generalName;
 		this.group = generalName;
