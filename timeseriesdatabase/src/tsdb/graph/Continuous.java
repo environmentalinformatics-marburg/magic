@@ -4,10 +4,10 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.TsDBClient;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.util.iterator.TsIterator;
+import static tsdb.util.Util.log;
 
 /**
  * This node creates continuous values from a source with gaps in time.
@@ -27,9 +27,13 @@ public interface Continuous extends Node {
 		return new Concrete(base);
 	}
 	
-	public abstract class Abstract extends TsDBClient implements Continuous {
+	public abstract class Abstract implements Continuous {
+		
+		protected final TsDB tsdb; //not null
+		
 		protected Abstract(TsDB tsdb) {
-			super(tsdb);
+			throwNull(tsdb);
+			this.tsdb = tsdb;
 		}	
 	}
 	

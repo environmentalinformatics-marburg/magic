@@ -1,4 +1,4 @@
-package gui.info;
+package gui.bridge;
 
 import java.util.ArrayList;
 import java.util.function.BiFunction;
@@ -17,7 +17,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
 
-public class TableViewBridge<E> extends ViewerComparator{
+public class TableBridge<E> extends ViewerComparator{
 
 	/*
 	 * 
@@ -101,7 +101,7 @@ public class TableViewBridge<E> extends ViewerComparator{
 
 
 
-	public TableViewBridge(TableViewer tableViewer) {
+	public TableBridge(TableViewer tableViewer) {
 		this.tableViewer = tableViewer;
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
 		tableViewer.setComparator(this);

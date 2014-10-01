@@ -1,5 +1,8 @@
 package tsdb.loader;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.Util.log;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -11,7 +14,6 @@ import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.TsDBClient;
 import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
@@ -25,10 +27,13 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
-public class TimeSeriesLoaderKiLi extends TsDBClient {
-
+public class TimeSeriesLoaderKiLi {
+	
+	private final TsDB tsdb; //not null
+	
 	public TimeSeriesLoaderKiLi(TsDB tsdb) {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 	}
 
 	/**

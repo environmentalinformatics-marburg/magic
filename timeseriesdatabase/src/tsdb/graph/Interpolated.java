@@ -105,12 +105,12 @@ public class Interpolated extends Continuous.Abstract {
 				.filter(sensorName -> tsdb.getSensor(sensorName).useInterpolation)
 				.toArray(String[]::new);
 
-		Concrete[] interpolationSources = virtualPlot.nearestVirtualPlots
+		Continuous[] interpolationSources = virtualPlot.nearestVirtualPlots
 				.stream()
 				.limit(STATION_INTERPOLATION_COUNT)
 				.filter(sourceVirtualPlot -> sourceVirtualPlot.getValidSchemaEntries(interpolationSchema).length>0)
 				.map(sourceVirtualPlot -> sourceGen.get(sourceVirtualPlot.plotID, sourceVirtualPlot.getValidSchemaEntries(interpolationSchema)))
-				.toArray(Concrete[]::new);
+				.toArray(Continuous[]::new);
 
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
 			return source;

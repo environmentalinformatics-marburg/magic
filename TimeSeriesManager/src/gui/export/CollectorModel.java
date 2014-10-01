@@ -19,6 +19,8 @@ public class CollectorModel extends AbstractModel {
 	private boolean useInterpolation = false;	
 	private DataQuality dataQuality = DataQuality.NO;
 	private AggregationInterval aggregationInterval = AggregationInterval.HOUR;
+	private boolean writeDescription;
+	private boolean writeAllInOne;
 	
 	public void setRegionLongName(String regionLongName) {
 		changeSupport.firePropertyChange("regionLongName", this.regionLongName, this.regionLongName=regionLongName);
@@ -91,5 +93,21 @@ public class CollectorModel extends AbstractModel {
 	public AggregationInterval getAggregationInterval() {
 		return aggregationInterval;
 	}
+	
+	public void setWriteDescription(boolean writeDescription) {
+		changeSupport.firePropertyChange("writeDescription", this.writeDescription, this.writeDescription=writeDescription);
+	}
+	
+	public boolean getWriteDescription() {
+		return writeDescription;
+	}
+	
+	public void setWriteAllInOne(boolean writeAllInOne) {
+		changeSupport.firePropertyChange("writeAllInOne", this.writeAllInOne, this.writeAllInOne=writeAllInOne);
+	}
+	
+	public boolean getWriteAllInOne() {
+		return writeAllInOne;
+	}	
 
 }

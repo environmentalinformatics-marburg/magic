@@ -1,6 +1,7 @@
 package gui.query;
 
-import gui.util.ComboBridge;
+
+import gui.bridge.ComboBridge;
 
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
@@ -12,6 +13,8 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -24,7 +27,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
@@ -120,10 +122,10 @@ public class QueryDialog extends Dialog {
 		shlAggregatedQuery = new Shell(getParent(), getStyle());
 		shlAggregatedQuery.setSize(781, 454);
 		shlAggregatedQuery.setText("Aggregated Query");
-		shlAggregatedQuery.setLayout(new BorderLayout(0, 0));
+		shlAggregatedQuery.setLayout(new GridLayout(1, false));
 
 		composite = new Composite(shlAggregatedQuery, SWT.NONE);
-		composite.setLayoutData(BorderLayout.NORTH);
+		composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		RowLayout rl_composite = new RowLayout(SWT.HORIZONTAL);
 		rl_composite.center = true;
 		composite.setLayout(rl_composite);
@@ -267,9 +269,12 @@ public class QueryDialog extends Dialog {
 
 		lblSensorUnitInfo = new Label(grpInfo, SWT.NONE);
 		lblSensorUnitInfo.setText("New Label");
+		
+				dataExplorer = new DataExplorer(shlAggregatedQuery, SWT.NONE);
+				dataExplorer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+				dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 
 		Label labelStatus = new Label(shlAggregatedQuery, SWT.NONE);
-		labelStatus.setLayoutData(BorderLayout.SOUTH);
 		labelStatus.setText("status");
 
 		/**canvasDataView = new Canvas(shell, SWT.NONE);
@@ -280,9 +285,6 @@ public class QueryDialog extends Dialog {
 			}
 		});
 		canvasDataView.setLayoutData(BorderLayout.CENTER);*/
-
-		dataExplorer = new DataExplorer(shlAggregatedQuery, SWT.NONE);
-		dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 		//grpQuality.setLayoutData(BorderLayout.CENTER);
 
 

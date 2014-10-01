@@ -1,6 +1,10 @@
 package tsdb;
 
 import java.util.ArrayList;
+
+import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.Util.log;
+
 import java.util.List;
 
 import tsdb.aggregated.AggregationInterval;
@@ -27,15 +31,18 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 @Deprecated
-public class QueryProcessor extends TsDBClient {
+public class QueryProcessor{
 
 	final int STATION_INTERPOLATION_COUNT = 15;		
 	final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
-
-
+	
+	private final TsDB tsdb; //not null
+	
 	public QueryProcessor(TsDB tsdb) {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 	}
+
 
 	/**
 	 * Query one unprocessed time series

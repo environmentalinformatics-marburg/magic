@@ -1,9 +1,8 @@
 package tsdb.graph;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.TsDBClient;
-import tsdb.util.TsDBLogger;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -11,7 +10,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public interface Node extends TsDBLogger {
+public interface Node {
 	
 	public TsIterator get(Long start, Long end);	
 	public Station getSourceStation();
@@ -38,9 +37,13 @@ public interface Node extends TsDBLogger {
 		get(start,end).writeConsole();
 	}
 	
-	public abstract class Abstract extends TsDBClient implements Node {
+	public abstract class Abstract implements Node {
+		
+		protected final TsDB tsdb; //not null
+		
 		Abstract(TsDB tsdb) {
-			super(tsdb);
+			throwNull(tsdb);
+			this.tsdb = tsdb;
 		}
 	}
 }

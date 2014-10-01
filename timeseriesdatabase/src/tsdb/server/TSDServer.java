@@ -1,23 +1,27 @@
 package tsdb.server;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.rmi.RemoteException;
 
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
-import tsdb.TsDBClient;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 @Deprecated
-public class TSDServer extends TsDBClient implements TSDServerInterface {
+public class TSDServer implements TSDServerInterface {
+	
+	private final TsDB tsdb; //not null
 	
 	private QueryProcessor qp;
 	
 	public TSDServer(TsDB tsdb) throws RemoteException {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 		this.qp = new QueryProcessor(tsdb);
 	}
 	

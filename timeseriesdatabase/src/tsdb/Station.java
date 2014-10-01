@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,13 +14,16 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
+import static tsdb.util.Util.log;
 
 /**
  * This class contains metadata that is associated with a station (plotID).
  * @author woellauer
  *
  */
-public class Station extends TsDBClient {
+public class Station {
+	
+	private final TsDB tsdb; //not null
 	
 	/**
 	 * Stream name of this station
@@ -62,7 +67,8 @@ public class Station extends TsDBClient {
 	//*** end of fields that are used if this station is identical to one plot ***
 	
 	public Station(TsDB tsdb, GeneralStation generalStation, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 		this.isPlot = isPlot;
 		this.generalStation = generalStation;
 		this.stationID = stationID;

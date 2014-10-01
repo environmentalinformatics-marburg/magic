@@ -1,10 +1,12 @@
 package gui.export;
 
-import gui.util.ComboBridge;
+
+
+import gui.bridge.CheckButtonBridge;
+import gui.bridge.ComboBridge;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -26,12 +28,13 @@ import tsdb.util.TsDBLogger;
 public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 
 	private CollectorModel model;
-	private Button btnInterpolate;
 
 	private boolean useInterpolation;
 	private DataQuality dataQuality;
 	private AggregationInterval aggregationInterval;
-	
+	private boolean writeDescription;
+	private boolean writeAllInOne;
+
 	private Text txtTimeStep;
 
 	/**
@@ -44,6 +47,8 @@ public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 		this.useInterpolation = model.getUseInterpolation();
 		this.dataQuality = model.getDataQuality();
 		this.aggregationInterval = model.getAggregationInterval();
+		this.writeDescription = model.getWriteDescription();
+		this.writeAllInOne = model.getWriteAllInOne();
 	}
 
 	/**
@@ -58,87 +63,48 @@ public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 		container.setLayoutData(new GridData(GridData.FILL_BOTH));
-				
-				Label lblNewLabel = new Label(container, SWT.SHADOW_NONE);
-				lblNewLabel.setText("interpolate missing values if possible");
-		
-				btnInterpolate = new Button(container, SWT.CHECK);
-				btnInterpolate.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						useInterpolation = btnInterpolate.getSelection();
-					}
-				});
-				btnInterpolate.setSelection(useInterpolation);
+
+		Label lblNewLabel = new Label(container, SWT.SHADOW_NONE);
+		lblNewLabel.setText("interpolate missing values if possible");
+		CheckButtonBridge btnInterpolate = new CheckButtonBridge(new Button(container,SWT.CHECK));
+		btnInterpolate.setChecked(useInterpolation);
+		btnInterpolate.addCheckChangedCallback(c->useInterpolation=c);
+
 
 		Label lblQualityChecked = new Label(container, SWT.NONE);
-		lblQualityChecked.setText("quality check of measured values");		
-
+		lblQualityChecked.setText("quality check of measured values");
 		Combo comboDataQuality = new Combo(container, SWT.READ_ONLY);
-		comboDataQuality.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				switch(comboDataQuality.getSelectionIndex()) {
-				case 0:
-					dataQuality = DataQuality.NO;
-					break;
-				case 1:
-					dataQuality = DataQuality.PHYSICAL;
-					break;
-				case 2:
-					dataQuality = DataQuality.STEP;
-					break;
-				case 3:
-					dataQuality = DataQuality.EMPIRICAL;
-					break;
-				default:
-					log.warn("quality unknown");
-					dataQuality = DataQuality.NO;
-				}
-
-			}
-		});
-		
-		comboDataQuality.setItems(new String[] {"0: no", "1: physical", "2: physical + step", "3: physical + step + empirical"});
 		comboDataQuality.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		switch(dataQuality) {
-		case NO:
-			comboDataQuality.select(0);
-			break;
-		case PHYSICAL:
-			comboDataQuality.select(1);
-			break;
-		case STEP:
-			comboDataQuality.select(2);
-			break;
-		case EMPIRICAL:
-			comboDataQuality.select(3);
-			break;		
-		default:
-			log.warn("data quality unknown");
-			comboDataQuality.select(0);
-		}		
-		
+		ComboBridge<DataQuality> comboBridgeDQ = new ComboBridge<DataQuality>(comboDataQuality);
+		comboBridgeDQ.setLabelMapper(dq->dq.getTextGUI());
+		comboBridgeDQ.setInput(new DataQuality[]{DataQuality.NO,DataQuality.PHYSICAL,DataQuality.STEP,DataQuality.EMPIRICAL});
+		comboBridgeDQ.setSelection(dataQuality);
+		comboBridgeDQ.addSelectionChangedCallback(dq->dataQuality=dq);		
+
 		txtTimeStep = new Text(container, SWT.READ_ONLY);
 		txtTimeStep.setText("time step");
 		txtTimeStep.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		
-		ComboViewer comboViewer = new ComboViewer(container, SWT.READ_ONLY);
-		Combo combo = comboViewer.getCombo();
-		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		ComboBridge<AggregationInterval> comboBridge = new ComboBridge<AggregationInterval>(comboViewer);
-		
+		Combo comboTimeStep = new Combo(container, SWT.READ_ONLY);
+		comboTimeStep.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		ComboBridge<AggregationInterval> comboBridgeTimeStep = new ComboBridge<AggregationInterval>(comboTimeStep);
+		comboBridgeTimeStep.setLabelMapper(a->a.getText());
+		comboBridgeTimeStep.setInput(new AggregationInterval[]{AggregationInterval.HOUR,AggregationInterval.DAY,AggregationInterval.WEEK,AggregationInterval.MONTH, AggregationInterval.YEAR});
+		comboBridgeTimeStep.setSelection(aggregationInterval);
+		comboBridgeTimeStep.addSelectionChangedCallback(a->aggregationInterval=a);
+
+
 		Label lblWriteSensorDescription = new Label(container, SWT.NONE);
 		lblWriteSensorDescription.setText("write sensor description");
-		
-		Button btnCheckButton = new Button(container, SWT.CHECK);
-		comboBridge.setLabelMapper(a->a.getText());
-		comboBridge.setInput(new AggregationInterval[]{AggregationInterval.HOUR,AggregationInterval.DAY,AggregationInterval.WEEK,AggregationInterval.MONTH, AggregationInterval.YEAR});
-		comboBridge.setSelection(aggregationInterval);		
-		
+		CheckButtonBridge btnDescription = new CheckButtonBridge(new Button(container,SWT.CHECK));
+		btnDescription.setChecked(writeDescription);
+		btnDescription.addCheckChangedCallback(c->writeDescription=c);		
 
-
+		Label lblWriteAllInOne = new Label(container, SWT.NONE);
+		lblWriteAllInOne.setText("write all plots in one CSV-File");
+		CheckButtonBridge btnAllInOne = new CheckButtonBridge(new Button(container,SWT.CHECK));
+		btnAllInOne.setChecked(writeAllInOne);
+		btnAllInOne.addCheckChangedCallback(c->writeAllInOne=c);
+		
 		return area;
 	}
 
@@ -155,6 +121,9 @@ public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
 			public void widgetSelected(SelectionEvent e) {
 				model.setUseInterpolation(useInterpolation);
 				model.setDataQuality(dataQuality);
+				model.setAggregationInterval(aggregationInterval);
+				model.setWriteDescription(writeDescription);
+				model.setWriteAllInOne(writeAllInOne);
 			}
 		});
 		createButton(parent, IDialogConstants.CANCEL_ID,

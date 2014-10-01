@@ -1,6 +1,9 @@
 package gui.info;
 
+import gui.bridge.TableBridge;
+
 import java.rmi.RemoteException;
+
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.graphics.Point;
@@ -23,7 +26,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 
 	private RemoteTsDB timeSeriesDatabase;
 	private Table table;
-	private TableViewBridge<VirtualPlotInfo> tableViewBridge;
+	private TableBridge<VirtualPlotInfo> tableViewBridge;
 
 	/**
 	 * Create the dialog.
@@ -45,7 +48,7 @@ public class VirtualPlotInfoDialog extends Dialog {
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		tableViewBridge = new TableViewBridge<VirtualPlotInfo>(tableViewer);
+		tableViewBridge = new TableBridge<VirtualPlotInfo>(tableViewer);
 		
 		tableViewBridge.addColumn("plotID",100,v->v.plotID);		
 		tableViewBridge.addColumnText("General Station",100,v->v.generalStationInfo.longName+" ("+v.generalStationInfo.name+")");

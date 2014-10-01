@@ -15,6 +15,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import swing2swt.layout.BorderLayout;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
+import org.eclipse.swt.layout.FillLayout;
 
 public class DataExplorer extends Composite {
 
@@ -101,6 +102,7 @@ public class DataExplorer extends Composite {
 
 		dataView = new TimeSeriesView();
 		dataView.setCanvas(canvas);
+		canvas.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 	}
 

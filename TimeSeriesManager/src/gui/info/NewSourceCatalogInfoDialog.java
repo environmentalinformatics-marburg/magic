@@ -1,5 +1,7 @@
 package gui.info;
 
+import gui.bridge.TableBridge;
+
 import java.rmi.RemoteException;
 
 import org.eclipse.jface.viewers.TableViewer;
@@ -25,7 +27,7 @@ public class NewSourceCatalogInfoDialog extends Dialog implements TsDBLogger {
 	protected Object result;
 	protected Shell shell;
 	
-	private TableViewBridge<SourceEntry> tableViewBridge;
+	private TableBridge<SourceEntry> tableViewBridge;
 	private RemoteTsDB tsdb;
 
 	public NewSourceCatalogInfoDialog(Shell parent, RemoteTsDB tsdb) {
@@ -66,7 +68,7 @@ public class NewSourceCatalogInfoDialog extends Dialog implements TsDBLogger {
 		TableViewer tableViewer = new TableViewer(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.FILL);
 		Table table = tableViewer.getTable();
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));		
-		tableViewBridge = new TableViewBridge<SourceEntry>(tableViewer);
+		tableViewBridge = new TableBridge<SourceEntry>(tableViewer);
 		
 		tableViewBridge.addColumnText("Station Name",100,SourceEntry::getStationName);
 		tableViewBridge.addColumn("First",100,s->TimeConverter.oleMinutesToLocalDateTime(s.firstTimestamp).toString(),s->s.firstTimestamp);

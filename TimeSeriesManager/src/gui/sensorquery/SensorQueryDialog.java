@@ -1,12 +1,11 @@
 package gui.sensorquery;
 
+import gui.bridge.ComboBridge;
 import gui.sensorquery.QuerySensorModel.ViewType;
-import gui.util.ComboBridge;
 
 import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
-import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -26,12 +25,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import tsdb.DataQuality;
 import tsdb.Region;
@@ -77,8 +74,6 @@ public class SensorQueryDialog extends Dialog {
 
 	public QuerySensorModel model = new QuerySensorModel();
 
-	private DataBindingContext m_bindingContext;
-	private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
 	private CLabel lblQueryStatus;
 	private Group grpInfo;
 	private Label lblInfoText;
@@ -258,7 +253,7 @@ public class SensorQueryDialog extends Dialog {
 
 		container.layout();
 
-		m_bindingContext = initDataBindings();
+		initDataBindings();
 
 		updateRegions();
 
@@ -407,9 +402,7 @@ public class SensorQueryDialog extends Dialog {
 		}
 	}
 
-	protected DataBindingContext initDataBindings() {
-		DataBindingContext dbc = new DataBindingContext();
-
+	protected void initDataBindings() {
 		model.addPropertyChangeListener("regions",event -> regionsChange((Region[])event.getNewValue()));
 		model.addPropertyChangeListener("region", event -> regionChange((Region)event.getNewValue()));		
 		model.addPropertyChangeListener("generalStationInfos",event -> generalStationsChange((GeneralStationInfo[])event.getNewValue()));
@@ -420,8 +413,6 @@ public class SensorQueryDialog extends Dialog {
 		model.addPropertyChangeCallback("sensorName", this::sensorNameChange);
 		model.addPropertyChangeCallback("aggregationNames", this::aggregationNamesChange);
 		model.addPropertyChangeCallback("aggregationName", this::aggregationNameChange);
-
-		return dbc;
 	}
 
 	private void regionsChange(Region[] regions) {

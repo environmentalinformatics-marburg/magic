@@ -15,12 +15,14 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.TimeConverter;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowLayout;
 
 public class StatisticsDialog extends Dialog {
 	
@@ -67,16 +69,17 @@ public class StatisticsDialog extends Dialog {
 		shell = new Shell(getParent(), getStyle());
 		shell.setSize(450, 300);
 		shell.setText(getText());
-		shell.setLayout(new BorderLayout(0, 0));
-		
-		textBox = new Text(shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CANCEL | SWT.MULTI);
-		textBox.setLayoutData(BorderLayout.CENTER);
+		shell.setLayout(new GridLayout(1, false));
 		
 		Group grpConfig = new Group(shell, SWT.NONE);
+		grpConfig.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		grpConfig.setText("control");
-		grpConfig.setLayoutData(BorderLayout.NORTH);
+		grpConfig.setLayout(new GridLayout(1, false));
 		
 		Button btnRun = new Button(grpConfig, SWT.NONE);
+		GridData gd_btnRun = new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1);
+		gd_btnRun.widthHint = 100;
+		btnRun.setLayoutData(gd_btnRun);
 		btnRun.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {				
@@ -89,8 +92,10 @@ public class StatisticsDialog extends Dialog {
 				worker.start();				
 			}
 		});
-		btnRun.setBounds(349, 32, 75, 25);
 		btnRun.setText("run");
+		
+		textBox = new Text(shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CANCEL | SWT.MULTI);
+		textBox.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
 	}
 	

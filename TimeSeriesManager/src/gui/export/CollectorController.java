@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -12,9 +14,12 @@ import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import sun.misc.FloatingDecimal;
 import tsdb.DataQuality;
 import tsdb.Sensor;
+import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
+import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
@@ -185,7 +190,38 @@ public class CollectorController implements TsDBLogger {
 							ZipEntry zipEntry = new ZipEntry(plotID+".csv");
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
-							CSV.write(timeseries.tsIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
+							
+							PrintStream csvOut = new PrintStream(zipOutputStream);
+							StringBuilder stringbuilder = new StringBuilder();
+							stringbuilder.append("plotID");
+							stringbuilder.append(',');
+							stringbuilder.append("timestamp");
+							stringbuilder.append(',');
+							stringbuilder.append("datetime");
+							for(String name:timeseries.parameterNames) {
+								stringbuilder.append(',');
+								stringbuilder.append(name);
+							}
+							csvOut.println(stringbuilder);
+							
+							for(TimeSeriesEntry entry:timeseries.entryList) {
+								StringBuilder s = new StringBuilder();
+								s.append(plotID);
+								s.append(',');
+								s.append(entry.timestamp);								
+								s.append(',');
+								s.append(TimeConverter.oleMinutesToText(entry.timestamp));
+								
+								Formatter formater = new Formatter(s,Locale.ENGLISH);								
+								for(float v:entry.data) {									
+									formater.format(",%3.3f", v);
+
+								}
+								csvOut.println(s);
+								formater.close();															
+							}
+							
+							//CSV.write(timeseries.tsIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
 						} else {
 							printLine("not processed: "+plotID);
 						}

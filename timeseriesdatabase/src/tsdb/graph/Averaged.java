@@ -12,6 +12,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.AverageIterator;
 import tsdb.util.iterator.TsIterator;
+import static tsdb.util.Util.log;
 
 /**
  * This node creates average values per time step over all sources.

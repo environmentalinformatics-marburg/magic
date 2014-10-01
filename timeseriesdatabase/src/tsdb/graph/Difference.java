@@ -6,6 +6,7 @@ import tsdb.TsDB;
 import tsdb.aggregated.iterator.DifferenceIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
+import static tsdb.util.Util.log;
 
 /**
  * This Node creates difference values between two sources.

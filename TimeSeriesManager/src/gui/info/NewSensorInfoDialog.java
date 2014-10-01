@@ -1,5 +1,7 @@
 package gui.info;
 
+import gui.bridge.TableBridge;
+
 import java.rmi.RemoteException;
 
 import org.eclipse.jface.viewers.TableViewer;
@@ -29,7 +31,7 @@ public class NewSensorInfoDialog extends Dialog implements TsDBLogger {
 	protected Shell shell;
 	private Table table;
 	private Button btnCheckButton;
-	private TableViewBridge<Sensor> tableViewBridge;
+	private TableBridge<Sensor> tableViewBridge;
 
 	private TableViewer tableViewer;
 
@@ -89,7 +91,7 @@ public class NewSensorInfoDialog extends Dialog implements TsDBLogger {
 		table = tableViewer.getTable();
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-		tableViewBridge = new TableViewBridge<Sensor>(tableViewer);
+		tableViewBridge = new TableBridge<Sensor>(tableViewer);
 
 		tableViewBridge.addColumn("Name",100,Sensor::getName);
 		tableViewBridge.addColumnFloat("Physical Min",100,Sensor::getPhysicalMin);

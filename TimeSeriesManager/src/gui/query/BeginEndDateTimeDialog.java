@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -14,7 +16,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.util.Pair;
 
 public class BeginEndDateTimeDialog extends Dialog {
@@ -70,13 +71,9 @@ public class BeginEndDateTimeDialog extends Dialog {
 		shlQueryTimeInterval.setLayout(rl_shlQueryTimeInterval);
 		
 		Group grpBegin = new Group(shlQueryTimeInterval, SWT.NONE);
+		grpBegin.setLayout(new GridLayout(1, false));
 		grpBegin.setLayoutData(new RowData(371, 205));
 		grpBegin.setText("Begin");
-		grpBegin.setLayout(new BorderLayout(0, 0));
-		
-		dateBegin = new DateTime(grpBegin, SWT.CALENDAR /*| SWT.DROP_DOWN*/);
-		dateBegin.setLayoutData(BorderLayout.CENTER);
-		dateBegin.setEnabled(false);
 		
 		btnBeginOfData = new Button(grpBegin, SWT.CHECK);
 		btnBeginOfData.setSelection(true);
@@ -92,22 +89,19 @@ public class BeginEndDateTimeDialog extends Dialog {
 				}
 			}
 		});
-		btnBeginOfData.setLayoutData(BorderLayout.NORTH);
 		btnBeginOfData.setText("begin date of data");
+		
+		dateBegin = new DateTime(grpBegin, SWT.CALENDAR /*| SWT.DROP_DOWN*/);
+		dateBegin.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		dateBegin.setEnabled(false);
 		timeBegin = new DateTime(grpBegin, SWT.TIME);
-		timeBegin.setLayoutData(BorderLayout.SOUTH);
+		timeBegin.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 		timeBegin.setEnabled(false);
 		
 		Group grpEnd = new Group(shlQueryTimeInterval, SWT.NONE);
+		grpEnd.setLayout(new GridLayout(1, false));
 		grpEnd.setLayoutData(new RowData(371, 205));
 		grpEnd.setText("End");
-		grpEnd.setLayout(new BorderLayout(0, 0));
-		dateEnd = new DateTime(grpEnd, SWT.CALENDAR /*| SWT.DROP_DOWN*/);
-		dateEnd.setLayoutData(BorderLayout.CENTER);
-		dateEnd.setEnabled(false);
-		timeEnd = new DateTime(grpEnd, SWT.TIME);
-		timeEnd.setLayoutData(BorderLayout.SOUTH);
-		timeEnd.setEnabled(false);
 		
 		btnEndDateOf = new Button(grpEnd, SWT.CHECK);
 		btnEndDateOf.addSelectionListener(new SelectionAdapter() {
@@ -123,8 +117,13 @@ public class BeginEndDateTimeDialog extends Dialog {
 			}
 		});
 		btnEndDateOf.setSelection(true);
-		btnEndDateOf.setLayoutData(BorderLayout.NORTH);
 		btnEndDateOf.setText("end date of data");
+		dateEnd = new DateTime(grpEnd, SWT.CALENDAR /*| SWT.DROP_DOWN*/);
+		dateEnd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		dateEnd.setEnabled(false);
+		timeEnd = new DateTime(grpEnd, SWT.TIME);
+		timeEnd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
+		timeEnd.setEnabled(false);
 		
 		Button btnOk = new Button(shlQueryTimeInterval, SWT.NONE);
 		btnOk.setLayoutData(new RowData(378, SWT.DEFAULT));

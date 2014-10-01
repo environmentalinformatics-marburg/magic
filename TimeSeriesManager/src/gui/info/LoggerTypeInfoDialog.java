@@ -2,6 +2,8 @@ package gui.info;
 
 
 
+import gui.bridge.TableBridge;
+
 import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
@@ -24,7 +26,7 @@ public class LoggerTypeInfoDialog extends Dialog {
 
 	private RemoteTsDB tsdb;
 	
-	private TableViewBridge<LoggerType> tableViewBridge;
+	private TableBridge<LoggerType> tableViewBridge;
 
 	public LoggerTypeInfoDialog(Shell parent, RemoteTsDB tsdb) {
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE, tsdb);
@@ -63,7 +65,7 @@ public class LoggerTypeInfoDialog extends Dialog {
 		TableViewer tableViewer = new TableViewer(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.FILL);
 		Table table = tableViewer.getTable();
 		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));		
-		tableViewBridge = new TableViewBridge<LoggerType>(tableViewer);
+		tableViewBridge = new TableBridge<LoggerType>(tableViewer);
 		
 		tableViewBridge.addColumnText("Name", 100, l->l.typeName);
 		tableViewBridge.addColumnText("Sensor Names", 100, l->Util.arrayToString(l.sensorNames));

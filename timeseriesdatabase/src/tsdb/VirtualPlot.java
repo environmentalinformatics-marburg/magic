@@ -1,6 +1,7 @@
 package tsdb;
 
 import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.Util.log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +18,10 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class VirtualPlot extends TsDBClient {
-
+public class VirtualPlot {
+	
+	protected final TsDB tsdb; //not null
+	
 	public final String plotID;
 	public final GeneralStation generalStation;
 
@@ -39,7 +42,8 @@ public class VirtualPlot extends TsDBClient {
 	public List<VirtualPlot> nearestVirtualPlots;
 
 	public VirtualPlot(TsDB tsdb, String plotID, GeneralStation generalStation,float geoPosEasting, float geoPosNorthing, boolean isFocalPlot) {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 		this.plotID = plotID;
 		this.generalStation = generalStation;
 		this.geoPosEasting = geoPosEasting;
@@ -57,7 +61,7 @@ public class VirtualPlot extends TsDBClient {
 	 */
 	public String[] getSchema() {
 		if(intervalList.isEmpty()) {
-			return null;
+			return new String[0]; //empty schema
 		}
 		return intervalList.stream()
 				.map(interval->{

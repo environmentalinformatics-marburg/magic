@@ -1,5 +1,7 @@
 package tsdb;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,16 +26,20 @@ import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
+import static tsdb.util.Util.log;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase
  * @author woellauer
  *
  */
-public class ConfigLoader extends TsDBClient {
+public class ConfigLoader {
+
+	private final TsDB tsdb; //not null
 
 	public ConfigLoader(TsDB tsdb) {
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 	}
 
 	private class GeneralStationBuilder {
@@ -356,7 +362,7 @@ public class ConfigLoader extends TsDBClient {
 			String group = virtualPlot.generalStation.group;
 			List<VirtualPlot> virtualPlots = new ArrayList<VirtualPlot>();
 			tsdb.getGeneralStationsOfGroup(group).forEach(gs->virtualPlots.addAll(gs.virtualPlots));
-			
+
 			for(VirtualPlot targetVirtualPlot:virtualPlots) {
 				if(virtualPlot!=targetVirtualPlot) {
 					double difference = getDifference(virtualPlot, targetVirtualPlot);
@@ -440,7 +446,7 @@ public class ConfigLoader extends TsDBClient {
 					String easting = row[eastingIndex];
 					String northing = row[northingIndex];
 					String focalPlot = row[focalPlotIndex];
-					
+
 					boolean isFocalPlot = false;
 					if(focalPlot.equals("Y")) {
 						isFocalPlot = true;
@@ -829,7 +835,7 @@ public class ConfigLoader extends TsDBClient {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void readSensorDescriptionConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -854,7 +860,7 @@ public class ConfigLoader extends TsDBClient {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void readSensorUnitConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
@@ -896,14 +902,14 @@ public class ConfigLoader extends TsDBClient {
 			log.error("readVirtualPlotElevationConfig: columns not found");
 			return;
 		}*/
-		
+
 		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
 		ColumnReaderFloat elevationReader = table.createColumnReaderFloat("Elevation");
 		if(plotidReader==null||elevationReader==null) {
 			log.error("readVirtualPlotElevationConfig: columns not found");
 			return;
 		}
-		
+
 		for(String[] row:table.rows) {
 			String plotID = plotidReader.get(row);
 			float elevation = elevationReader.get(row);

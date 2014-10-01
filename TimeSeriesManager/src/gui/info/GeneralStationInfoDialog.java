@@ -1,5 +1,7 @@
 package gui.info;
 
+import gui.bridge.TableBridge;
+
 import java.rmi.RemoteException;
 
 import org.apache.logging.log4j.Logger;
@@ -23,7 +25,7 @@ public class GeneralStationInfoDialog extends Dialog {
 
 	private RemoteTsDB timeSeriesDatabase;
 
-	private TableViewBridge<GeneralStationInfo> tableViewBridge;
+	private TableBridge<GeneralStationInfo> tableViewBridge;
 
 	private Table table;
 
@@ -47,7 +49,7 @@ public class GeneralStationInfoDialog extends Dialog {
 		container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		TableViewer tableViewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		tableViewBridge = new TableViewBridge<GeneralStationInfo>(tableViewer);
+		tableViewBridge = new TableBridge<GeneralStationInfo>(tableViewer);
 
 		tableViewBridge.addColumnText("ID",50,GeneralStationInfo::getName);
 		tableViewBridge.addColumnText("Name",200,g->Util.ifnull(g.longName, "---"));

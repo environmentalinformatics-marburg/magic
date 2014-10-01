@@ -1,5 +1,8 @@
 package tsdb.remote;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.Util.log;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,7 +18,6 @@ import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.TsDBClient;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
@@ -24,10 +26,13 @@ import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
-public class ServerTsDB extends TsDBClient implements RemoteTsDB {
+public class ServerTsDB implements RemoteTsDB {
+	
+	protected final TsDB tsdb; //not null
 
 	public ServerTsDB(TsDB tsdb) throws RemoteException { // !!
-		super(tsdb);
+		throwNull(tsdb);
+		this.tsdb = tsdb;
 	}
 
 	@Override

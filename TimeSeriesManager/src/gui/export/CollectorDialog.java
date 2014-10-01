@@ -155,7 +155,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 
 		bindModel();
 		controller.initModel();
-		
+
 		onChangeDetail();
 
 		return area;
@@ -173,7 +173,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		btnExport.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				
+
 				System.out.println("save in CSV file");
 
 				FileDialog filedialog = new FileDialog(getShell(), SWT.SAVE);
@@ -184,14 +184,14 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 				String filename = filedialog.open();
 				if(filename!=null) {
 					System.out.println("Save to: " + filename);
-					
+
 					//controller.createZipFile(filename);
-					
-		
+
+
 					new Processing1Dialog(getShell(), controller, filename).open();
-					
-					
-					
+
+
+
 				}				
 			}
 		});
@@ -214,8 +214,10 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 		model.addPropertyChangeCallback("queryPlotInfos", this::onChangeQueryPlotInfos);
 		model.addPropertyChangeNotify("useInterpolation", this::onChangeDetail);
 		model.addPropertyChangeNotify("dataQuality", this::onChangeDetail);
+		model.addPropertyChangeNotify("writeDescription", this::onChangeDetail);
+		model.addPropertyChangeNotify("writeAllInOne", this::onChangeDetail);
 	}
-	
+
 	private void onChangeQuerySensorNames(String[] SensorNames) {
 		if(SensorNames!=null&&SensorNames.length>0) {
 			txtSensorNames.setText("");
@@ -226,7 +228,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 			txtSensorNames.setText("[empty]");
 		}
 	}
-	
+
 	private void onChangeQueryPlotInfos(PlotInfo[] queryPlotInfos) {
 		System.out.println("onChangeQueryPlotInfos");
 		if(queryPlotInfos!=null&&queryPlotInfos.length>0) {
@@ -238,7 +240,7 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 			txtQueryPlotInfos.setText("[empty]");
 		}		
 	}
-	
+
 	private void onChangeDetail() {
 		txtDetails.setText("");
 		if(model.getUseInterpolation()) {
@@ -249,5 +251,11 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 			txtDetails.append("quality check: "+dataQuality.getText()+"\n");
 		}
 		txtDetails.append("time steps: "+model.getAggregationInterval().getText()+"\n");
+		if(model.getWriteDescription()) {
+			txtDetails.append("write sensor description");
+		}
+		if(model.getWriteAllInOne()) {
+			txtDetails.append("write all plots in one file");
+		}
 	}
 }

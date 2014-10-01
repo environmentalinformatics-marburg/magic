@@ -32,4 +32,21 @@ public enum DataQuality {
 			return "unknown";
 		}		
 	}
+	
+	public String getTextGUI() {
+		switch(this) {
+		case NO:
+			return "0: no";
+		case PHYSICAL:
+			return "1: physical";
+		case STEP:
+			return "2: physical + step";
+		case EMPIRICAL:
+			return "3: physical + step + empirical";
+		case Na:
+			return "na";
+		default:
+			return "unknown";
+		}		
+	}
 }

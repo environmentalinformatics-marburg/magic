@@ -9,6 +9,7 @@ import tsdb.aggregated.iterator.MonthAggregationIterator;
 import tsdb.aggregated.iterator.WeekAggregationIterator;
 import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.util.iterator.TsIterator;
+import static tsdb.util.Util.log;
 
 /**
  * This node creates aggregated data from continuous input data.
