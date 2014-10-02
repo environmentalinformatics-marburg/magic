@@ -17,6 +17,5 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.core.commands_3.6.100.v20140528-1422.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common_3.6.200.v20130402-1505.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jface.databinding_1.6.200.v20140528-1422.jar"/>
-	<classpathentry kind="lib" path="lib/swing2swt.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

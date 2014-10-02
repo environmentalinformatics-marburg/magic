@@ -2,6 +2,8 @@ var region_input;
 var generalstation_input;
 var plot_input;
 var sensor_input;
+var aggregation_input;
+var aggregations = ["hour","day","week","month","year"];
 
 var sensors = "";
 
@@ -9,14 +11,30 @@ var getList = function(url) {
 }
 
 $(document).ready(function(){
-	region_input = $( "#region_input" );
-	region_input.selectmenu();
-	region_input.on( "selectmenuchange", function( event, ui ) {updateGeneralStations();} );
-	region_input = $("#region_input");
-	generalstation_input = $("#generalstation_input");
-	plot_input = $("#plot_input");
-	sensor_input = $("#sensor_input");
-	updataRegions();
+
+region_input = $("#region_input").selectmenu();
+region_input.on("selectmenuchange", function( event, ui ) {updateGeneralStations();} );
+
+generalstation_input = $("#generalstation_input").selectmenu()
+generalstation_input.on( "selectmenuchange", function( event, ui ) {updatePlots();} );
+
+plot_input = $("#plot_input").selectmenu();
+plot_input.on("selectmenuchange", function( event, ui ) {updateSensors();} );
+
+sensor_input = $("#sensor_input").selectmenu();
+sensor_input.on("selectmenuchange", function( event, ui ) {updateSensor();} );
+
+aggregation_input = $("#aggregation_input").selectmenu();
+//aggregation_input.on("selectmenuchange", function( event, ui ) {updateAggregation();} );
+$.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
+aggregation_input.selectmenu("refresh");
+
+$("#query_button").button().on("click",runQuery);
+
+$("#radio").buttonset();
+
+
+updataRegions();
 });
 
 var updataRegions = function() {
@@ -70,7 +88,10 @@ var updateSensor = function() {
 
 var runQuery = function() {
 	getID("result").innerHTML = "query...";
-	$.get("/tsdb/query?plot="+plot_input.val()+"&sensor="+sensors[sensor_input.val()][0])
+	var plotName = plot_input.val();
+	var sensorName = sensors[sensor_input.val()][0];
+	var aggregationName = aggregations[aggregation_input.val()];
+	$.get("/tsdb/query?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName)
 		.done(function(data) {
 					rows = splitData(data);
 					//createTable(rows); 
@@ -93,7 +114,7 @@ var updateView = function() {
 var createTable = function(rows) {
 	$("#result").empty();
 	var result = getID("result");
-	var table = newTable();
+	var table = newTable(result);
 	var trHeader = newTableRow(table);
 	newTableHeaderEntry(trHeader,"timestamp");
 	newTableHeaderEntry(trHeader,"value");		

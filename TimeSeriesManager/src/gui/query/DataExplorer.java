@@ -8,14 +8,13 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import swing2swt.layout.BorderLayout;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
-import org.eclipse.swt.layout.FillLayout;
 
 public class DataExplorer extends Composite {
 
@@ -88,7 +87,7 @@ public class DataExplorer extends Composite {
 				}
 			}
 		});
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new FillLayout(SWT.HORIZONTAL));
 
 		canvas = new Canvas(this, SWT.NONE);		
 		canvas.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -98,7 +97,6 @@ public class DataExplorer extends Composite {
 			}
 		});
 		canvas.setEnabled(false);
-		canvas.setLayoutData(BorderLayout.CENTER);
 
 		dataView = new TimeSeriesView();
 		dataView.setCanvas(canvas);

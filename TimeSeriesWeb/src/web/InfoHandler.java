@@ -35,6 +35,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		this.tsdb=tsdb;
 	}
 
+	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {				
 		response.setContentType("text/plain;charset=utf-8");
 
@@ -42,7 +43,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		System.out.println("target "+target);
 
 		PrintWriter writer = response.getWriter();
-
+		
 
 		boolean ret = false;
 
@@ -82,8 +83,9 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		case "/query": {
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
-			if(plot!=null) {
-				ret = handle_query(writer,plot,sensor);
+			String aggregation = request.getParameter("aggregation");
+			if(plot!=null&&sensor!=null&&aggregation!=null) {
+				ret = handle_query(writer,plot,sensor,aggregation);
 			} else {
 				log.warn("wrong call");
 			}
@@ -100,26 +102,31 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		}
 	}
 
-	private boolean handle_query(PrintWriter writer, String plot, String sensor) {
+	private boolean handle_query(PrintWriter writer, String plot, String sensor, String aggregation) {
 		try {
-			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, AggregationInterval.DAY, DataQuality.STEP, false);
-			if(ts!=null) {
-				TsIterator it = ts.tsIterator();
-				while(it.hasNext()) {
-					TimeSeriesEntry e = it.next(); 
-					writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
-					float value = e.data[0];
-					if(Float.isNaN(value)) {
-						value = 0f;
+			AggregationInterval agg = AggregationInterval.parse(aggregation);
+			if(agg!=null) {
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.STEP, false);
+				if(ts!=null) {
+					TsIterator it = ts.tsIterator();
+					while(it.hasNext()) {
+						TimeSeriesEntry e = it.next(); 
+						writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
+						float value = e.data[0];
+						if(Float.isNaN(value)) {
+							value = 0f;
+						}
+						writer.format(Locale.ENGLISH,"%.2f", value);
+						if(it.hasNext()) {
+							writer.print('\n');
+						}
 					}
-					writer.format(Locale.ENGLISH,"%.2f", value);
-					if(it.hasNext()) {
-						writer.print('\n');
-					}
+					return true;
+				} else {
+					log.warn("no data");
+					return false;
 				}
-				return true;
 			} else {
-				log.warn("no data");
 				return false;
 			}
 		} catch (RemoteException e) {

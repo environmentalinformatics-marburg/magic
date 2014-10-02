@@ -7,8 +7,9 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 
-import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
@@ -52,11 +53,21 @@ public class Main {
         InfoHandler infoHandler = new InfoHandler(tsdb);
         contextTsdb.setHandler(infoHandler);
         
+        ContextHandler contextExport = new ContextHandler("/export");
+        ExportHandler exportHandler = new ExportHandler(tsdb);
+        HashSessionManager manager = new HashSessionManager();
+                
+        manager.setMaxInactiveInterval(60*60);
+        SessionHandler sessions = new SessionHandler(manager);
+        contextExport.setHandler(sessions);
+        sessions.setHandler(exportHandler);
  
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[] {context, contextFR, contextStatic, contextTimeseries, contextTsdb});
+        contexts.setHandlers(new Handler[] {context, contextFR, contextStatic, contextTimeseries, contextTsdb, contextExport});
  
         server.setHandler(contexts);
+                
+        
         
         
         server.start();

@@ -25,6 +25,7 @@ public abstract class AbstractModel {
 		changeSupport.removePropertyChangeListener(propertyName, listener);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T> void addPropertyChangeCallback(String propertyName, CallBack<T> changeCallBack) {
 		addPropertyChangeListener(propertyName,  event -> changeCallBack.call((T)event.getNewValue()));
 	}

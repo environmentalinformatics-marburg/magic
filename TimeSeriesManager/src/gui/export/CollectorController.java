@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import sun.misc.FloatingDecimal;
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
@@ -24,8 +23,6 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
@@ -191,6 +188,7 @@ public class CollectorController implements TsDBLogger {
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
 							
+							@SuppressWarnings("resource")
 							PrintStream csvOut = new PrintStream(zipOutputStream);
 							StringBuilder stringbuilder = new StringBuilder();
 							stringbuilder.append("plotID");

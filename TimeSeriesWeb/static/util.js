@@ -12,7 +12,7 @@ var getID = function(id) {
 }
 
 var newTable = function(root) {
-	return result.appendChild(document.createElement("table"));
+	return root.appendChild(document.createElement("table"));
 }
 
 var newTableRow = function(table) {
@@ -29,4 +29,16 @@ var newTableHeaderEntry = function(row,text) {
 	var entry = row.appendChild(document.createElement("th"));
 	entry.appendChild(document.createTextNode(text));	
 	return entry;
+}
+
+var clear = function(element) {
+	element.textContent = "";
+}
+var clear_println = function(element,text) {
+	element.textContent = "";
+	element.appendChild(document.createElement("p")).appendChild(document.createTextNode(text));
+}
+
+var println = function(element,text) {
+	element.appendChild(document.createElement("p")).appendChild(document.createTextNode(text));
 }

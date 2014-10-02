@@ -27,8 +27,6 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 	private CollectorController controller;
 	private CollectorModel model;
 
-	private final RemoteTsDB tsdb;
-
 	protected Object result;
 	private Text txtSensorNames;
 	private Group grpRegion;
@@ -47,7 +45,6 @@ public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
 	 */
 	public CollectorDialog(Shell parentShell, RemoteTsDB tsdb) {
 		super(parentShell);
-		this.tsdb = tsdb;
 		this.controller = new CollectorController(tsdb);
 		this.model = controller.getModel();
 	}

@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
@@ -20,9 +22,6 @@ import tsdb.raw.TimeSeriesEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 
 public class StatisticsDialog extends Dialog {
 	

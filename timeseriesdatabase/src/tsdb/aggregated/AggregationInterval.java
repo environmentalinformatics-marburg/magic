@@ -64,6 +64,27 @@ public enum AggregationInterval {
 			return TsSchema.NO_CONSTANT_TIMESTEP;
 		}			
 	}
+	
+	public static AggregationInterval parse(String text) {
+		if(text==null) {
+			return null;
+		}
+		switch(text.trim().toLowerCase()) {
+		case "hour":
+			return AggregationInterval.HOUR;
+		case "day":
+			return AggregationInterval.DAY;
+		case "week":
+			return AggregationInterval.WEEK;
+		case "month":
+			return AggregationInterval.MONTH;
+		case "year":
+			return AggregationInterval.YEAR;
+		default:
+			log.warn("aggregation unknown: "+text);
+			return null;
+		}		
+	}
 
 
 }

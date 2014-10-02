@@ -35,6 +35,7 @@ public class TableBridge<E> extends ViewerComparator{
 	private boolean sortAscending = true;
 	private final TableViewer tableViewer;
 	private ArrayList<ColumnMapper> columnMappers = new ArrayList<ColumnMapper>();
+	@SuppressWarnings("unchecked")
 	private Function<Object,E> cast = (o)->(E)o;
 
 	public class ColumnMapper {
@@ -79,6 +80,7 @@ public class TableBridge<E> extends ViewerComparator{
 
 	public void addColumnFloat(String title, int textWidth, Function<E,Float> floatMapper) {
 		Function<Object,String> textMapper = o -> {
+			@SuppressWarnings("unchecked")
 			Float v = floatMapper.apply((E)o);
 			if(v==null||v==Float.MAX_VALUE||v==-Float.MAX_VALUE||v.isNaN()) {
 				return "---";
@@ -87,7 +89,9 @@ public class TableBridge<E> extends ViewerComparator{
 			}
 		};
 		BiFunction<Object,Object,Integer> compare = (o1,o2)->{
+			@SuppressWarnings("unchecked")
 			Float f1 = floatMapper.apply((E)o1);
+			@SuppressWarnings("unchecked")
 			Float f2 = floatMapper.apply((E)o2);
 			if(f1==null||f2==null) {
 				return 1;
@@ -159,6 +163,7 @@ public class TableBridge<E> extends ViewerComparator{
 	public void setFilter(Predicate<E> filter) {
 		if(filter!=null) {
 			ViewerFilter viewerFilter = new ViewerFilter() {			
+				@SuppressWarnings("unchecked")
 				@Override
 				public boolean select(Viewer viewer, Object parentElement, Object o) {
 					return filter.test((E)o);

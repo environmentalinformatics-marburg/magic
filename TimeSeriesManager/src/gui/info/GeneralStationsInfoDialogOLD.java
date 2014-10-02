@@ -1,8 +1,5 @@
 package gui.info;
 
-
-
-import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -19,8 +16,6 @@ import tsdb.util.Util;
 
 public class GeneralStationsInfoDialogOLD extends Dialog {
 	
-	private static Logger log = Util.log;
-
 	private TsDB timeSeriesDatabase; 
 
 	public GeneralStationsInfoDialogOLD(Shell parent, TsDB timeSeriesDatabase) {
