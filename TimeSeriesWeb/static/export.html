@@ -4,6 +4,7 @@
 <title>Export Time Series</title>
 <meta charset="utf-8">
 <script src="/static/jquery-2.1.1.js"></script>
+<script src="jquery-ui.js"></script>
 <script src="/static/util.js"></script>
 <script type="text/javascript">
 
@@ -28,11 +29,30 @@ $.get("/export/sensors").done(function(data) {
 		for(i in rows) {
 			println(sensors_output, rows[i]);
 		}
-	}).fail(function() {clear_println(sensors_output,"error getting data")});	
+	}).fail(function() {clear_println(sensors_output,"error getting data")});
+
+$("#choose_sensors").button();
+document.getElementById("choose_sensors").onclick = function() {
+	window.location = "/static/export_sensors.html";
+}		
+	
+$("#choose_plots").button();
+document.getElementById("choose_plots").onclick = function() {
+	window.location = "/static/export_plots.html";
+}
+
+$("#download").button();
+document.getElementById("download").onclick = function() {
+	window.location = "/export/result.zip";
+}	
 
 })
 
 </script>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
 </head>
 
 <body>
@@ -40,7 +60,9 @@ $.get("/export/sensors").done(function(data) {
 <h1 style="text-align:center">Export Time Series</h1>
 <hr/>
 <h3>Actions</h3>
-<p><a href="/static/export_plots.html">choose plots<a></p>
+<button id="choose_sensors">choose sensors</button>
+<button id="choose_plots">choose plots</button>
+<button id="download">download ZIP-File</button>
 <hr/>
 <h3>Details</h3>
 
