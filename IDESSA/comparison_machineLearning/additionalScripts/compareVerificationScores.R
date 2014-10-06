@@ -7,6 +7,7 @@ setwd(datapath)
 
 model=c("rf","nnet","avNNet","svm")
 time=c("day","inb","night")
+time=c("inb","night")
 
 ###### READ RAINRATE DATA
 
@@ -15,11 +16,11 @@ for (i in 1:length(time)){
   for (k in 1:length(model)){
     RAIN=read.csv(paste0("Rain_rfInput_vp03_",time[i],"_as/VerificationScores_",model[k],".csv"))
     RAINOUT=rbind(RAINOUT,
-                  data.frame("VALUE"=unlist(RAIN),
-                             "SCORE"=rep(names(RAIN),c(rep(nrow(RAIN),length(names(RAIN))))),
-                             "MODEL"=rep(toupper(model[k]),length(unlist(RAIN))),
-                             "TIME"=rep(toupper(time[i]),length(unlist(RAIN)))
-                  )
+               data.frame("VALUE"=unlist(RAIN),
+                              "SCORE"=rep(names(RAIN),c(rep(nrow(RAIN),length(names(RAIN))))),
+                              "MODEL"=rep(toupper(model[k]),length(unlist(RAIN))),
+                              "TIME"=rep(toupper(time[i]),length(unlist(RAIN)))
+              )
     )
   }
 }
@@ -32,11 +33,11 @@ for (i in 1:length(time)){
     RINFO=data.frame(RINFO,"AUC"=eval(parse(text=paste0("ROC$",model[k]))))
     
     RINFOOUT=rbind(RINFOOUT,
-                   data.frame("VALUE"=unlist(RINFO),
-                              "SCORE"=rep(names(RINFO),c(rep(nrow(RINFO),length(names(RINFO))))),
-                              "MODEL"=rep(toupper(model[k]),length(unlist(RINFO))),
-                              "TIME"=rep(toupper(time[i]),length(unlist(RINFO)))
-                   )
+                  data.frame("VALUE"=unlist(RINFO),
+                             "SCORE"=rep(names(RINFO),c(rep(nrow(RINFO),length(names(RINFO))))),
+                             "MODEL"=rep(toupper(model[k]),length(unlist(RINFO))),
+                             "TIME"=rep(toupper(time[i]),length(unlist(RINFO)))
+                  )
     )
   }
 }
@@ -47,9 +48,6 @@ for (i in 1:length(time)){
 #PLOT
 #########################
 library(scales)
-library(proto)
-library(ggplot2)
-library(grid)
 source("/home/hanna/Documents/Projects/IDESSA/Precipitation/1_comparisonML/additionalScripts/scriptsForPublication/geom_boxplot_noOutliers.R")
 
 bp.RINFOOUT <- ggplot(RINFOOUT, aes(x = MODEL, y = VALUE))+ 
@@ -63,7 +61,7 @@ bp.RINFOOUT <- ggplot(RINFOOUT, aes(x = MODEL, y = VALUE))+
         legend.key.size=unit(1,"cm"),
         strip.text.y = element_text(size = 16),
         strip.text.x = element_text(size = 16),
-        axis.text=element_text(size=10))
+        axis.text=element_text(size=14))
 
 
 
@@ -79,7 +77,7 @@ bp.RAINOUT <- ggplot(RAINOUT, aes(x = MODEL, y = VALUE))+
         legend.key.size=unit(1,"cm"),
         strip.text.y = element_text(size = 16),
         strip.text.x = element_text(size = 16),
-        axis.text=element_text(size=10))
+        axis.text=element_text(size=14))
 
 
 
@@ -90,5 +88,6 @@ dev.off()
 png(paste0(resultpath,"/bp.RAIN.png"),res=300,width=10,height=14,units = "in")
 print(bp.RAINOUT)
 dev.off()
+
 
 

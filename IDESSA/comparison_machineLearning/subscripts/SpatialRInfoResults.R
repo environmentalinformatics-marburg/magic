@@ -120,13 +120,16 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
 
   tmpdate=paste(unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene])
   datp[[1]]=update(datp[[1]],par.settings=list(superpose.polygon=list(col=c("palegreen3"," darkgreen","darkorange","red"))),
-                 auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,space="right",rectangles=TRUE), #columns=4
+                 #auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,space="right",rectangles=TRUE), #columns=4
+                 auto.key = list(text=c("reference: no rain, prediction: no rain","reference: rain, prediction: rain",
+                                        "reference: no rain, prediction: rain","reference: rain, prediction: no rain"), 
+                                 points=FALSE,space="top",rectangles=TRUE,columns=4), #columns=4
                  strip = strip.custom(bg = "grey20", 
                                       factor.levels =model,
                                       par.strip.text = list(
-                                        col = "white", font = 2, cex = 1)),
-                 main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
-                            substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
+                                        col = "white", font = 2, cex = 1))#,
+#                 main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
+#                            substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
   )
   tmp=datp[[1]]+ as.layer(lmplot, under = T)
   for (i in 2:length(model)){
