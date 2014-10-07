@@ -4,21 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.json.JSONObject;
+import org.json.JSONWriter;
 
 import tsdb.DataQuality;
 import tsdb.aggregated.AggregationInterval;
@@ -31,10 +28,20 @@ public class ExportHandler extends AbstractHandler {
 
 		public String[] plots;
 		public String[] sensors;
+		public boolean interpolate;
+		public boolean description;
+		public boolean allinone;
+		public AggregationInterval aggregationInterval;
+		public DataQuality quality;
 
 		public ExportModel() {
 			this.plots = new String[]{"plot1","plot2","plot3"};
 			this.sensors = new String[]{"sensor1","sensor2","sensor3","sensor4"};
+			this.interpolate = false;
+			this.description = true;
+			this.allinone = false;
+			this.aggregationInterval = AggregationInterval.DAY;
+			this.quality = DataQuality.STEP;
 		}
 	}
 
@@ -58,7 +65,6 @@ public class ExportHandler extends AbstractHandler {
 			model.sensors = new String[]{"Ta_200",};
 		}
 		ExportModel model = (ExportModel) session.getAttribute("ExportModel");
-
 		boolean ret = false;
 
 		switch(target) {
@@ -94,6 +100,15 @@ public class ExportHandler extends AbstractHandler {
 		}
 		case "/result.zip": {
 			ret = handle_download(response,model);
+			break;
+		}
+		case "/settings": {
+			ret = handle_settings(response.getWriter(),model);
+			break;
+		}
+		case "/apply_settings": {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+			ret = apply_settings(reader,model);
 			break;
 		}
 		default: {
@@ -155,9 +170,9 @@ public class ExportHandler extends AbstractHandler {
 			OutputStream outputstream = response.getOutputStream();
 			String[] sensorNames = model.sensors;
 			String[] plotIDs = model.plots;
-			AggregationInterval aggregationInterval = AggregationInterval.HOUR;
-			DataQuality dataQuality = DataQuality.NO;
-			boolean interpolated = false;
+			AggregationInterval aggregationInterval = model.aggregationInterval;
+			DataQuality dataQuality = model.quality;
+			boolean interpolated = model.interpolate;
 			ZipExport zipexport = new ZipExport(tsdb, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated);
 			zipexport.writeToStream(outputstream);
 			//writer.print("download");
@@ -166,6 +181,44 @@ public class ExportHandler extends AbstractHandler {
 			e.printStackTrace();
 			return false;
 		}	
+	}
+	
+	private boolean handle_settings(PrintWriter writer, ExportModel model) {
+		
+		JSONWriter json = new JSONWriter(writer);
+		json.object();
+		json.key("interpolate");
+		json.value(model.interpolate);
+		json.key("description");
+		json.value(model.description);
+		json.key("allinone");
+		json.value(model.allinone);
+		json.key("timestep");
+		json.value(model.aggregationInterval.getText());
+		json.key("quality");
+		json.value(model.quality.getText());
+		json.endObject();
+		
+		
+		return true;
+	}
+	
+	private boolean apply_settings(BufferedReader reader, ExportModel model) {
+		try {
+			String line = reader.readLine();
+			JSONObject json = new JSONObject(line);
+			model.interpolate = json.getBoolean("interpolate");
+			model.description = json.getBoolean("description");
+			model.allinone = json.getBoolean("allinone");
+			model.aggregationInterval = AggregationInterval.parse(json.getString("timestep"));
+			model.quality = DataQuality.parse(json.getString("quality"));
+			
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
 	}	
 
 }

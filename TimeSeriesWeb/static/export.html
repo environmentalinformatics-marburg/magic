@@ -3,8 +3,8 @@
 <head>
 <title>Export Time Series</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.js"></script>
-<script src="jquery-ui.js"></script>
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
 <script src="/static/util.js"></script>
 <script type="text/javascript">
 
@@ -12,6 +12,7 @@ $(document).ready(function(){
 
 var plots_output = getID("plots_output");
 var sensors_output = getID("sensors_output");
+var settings_output = getID("settings_output");
 
 clear_println(plots_output,"query data...");
 $.get("/export/plots").done(function(data) {
@@ -30,6 +31,39 @@ $.get("/export/sensors").done(function(data) {
 			println(sensors_output, rows[i]);
 		}
 	}).fail(function() {clear_println(sensors_output,"error getting data")});
+	
+clear_println(settings_output,"query data...");
+$.getJSON("/export/settings").done(function( data ) {
+		var json_settings = data;
+		console.log(JSON.stringify(json_settings));
+		
+		clear(settings_output);
+		//clear_println(settings_output,JSON.stringify(json_settings));
+		
+		var settings_array = [];
+
+		settings_array.push("time steps: "+json_settings.timestep);
+		
+		settings_array.push("quality check: "+json_settings.quality);
+		
+		if(json_settings.interpolate) {
+			settings_array.push("interpolate missing values");
+		}
+		
+		if(json_settings.description) {
+			settings_array.push("include sensor description");
+		}
+		
+		if(json_settings.allinone) {
+			settings_array.push("all plots in one file");
+		} else {
+			settings_array.push("one file per plot");
+		}		
+		
+		array_to_html_list(settings_output,settings_array);
+		
+	})
+	.fail(function(data) {clear_println(settings_output,"error getting data");});	
 
 $("#choose_sensors").button();
 document.getElementById("choose_sensors").onclick = function() {
@@ -44,7 +78,10 @@ document.getElementById("choose_plots").onclick = function() {
 $("#download").button();
 document.getElementById("download").onclick = function() {
 	window.location = "/export/result.zip";
-}	
+}
+
+$("#button_settings").button();
+document.getElementById("button_settings").onclick = function() {window.location = "/static/export_settings.html";};	
 
 })
 
@@ -56,23 +93,29 @@ document.getElementById("download").onclick = function() {
 </head>
 
 <body>
-<p style="text-align:right"><a href="/static/index.html">back to main menu<a><p>
+<p style="text-align:right"><a href="/static/index.html">back to main menu</a></p>
 <h1 style="text-align:center">Export Time Series</h1>
 <hr/>
 <h3>Actions</h3>
 <button id="choose_sensors">choose sensors</button>
 <button id="choose_plots">choose plots</button>
+<button id="button_settings">settings</button>
 <button id="download">download ZIP-File</button>
 <hr/>
-<h3>Details</h3>
+<h3>Summary of exported time series</h3>
 
+<div style="display:inline-block;width:100px;line-height:0;vertical-align:top">
+<h4>Sensors</h4>
+<div id="sensors_output"></div>
+</div>
+<div style="display:inline-block;width:100px;line-height:0;vertical-align:top">
+<h4>Plots</h4>
+<div id="plots_output"></div>
+</div>
+<div style="display:inline-block;line-height:0;vertical-align:top">
+<h4>Settings</h4>
+<div id="settings_output" style="height=200px"></div>
+</div>
 
-
-
-
-<p>
-<div  id="plots_output" style="display:inline-block;width:100px;line-height:0;vertical-align:top"></div>
-<div id="sensors_output" style="display:inline-block;width:100px;line-height:0;vertical-align:top"><p>asdsdd</p><p>asdsdd</p><p>asdsdd</p></div>
-</p>
 </body>
 </html>
