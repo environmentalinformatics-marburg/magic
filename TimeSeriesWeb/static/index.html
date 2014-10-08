@@ -7,11 +7,32 @@
 <link rel="stylesheet" href="jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
 
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+	$("button").button();
+	
+});
+
+
+</script>
+
 </head>
 
 <body>
 <h1 style="text-align:center">Time Series Web Interface</h1>
 <hr/>
+
+<div style="text-align:center">
+<button onclick="window.location = '/timeseries?plot=HEG01';">timeseries</button>
+<button onclick="window.location = '/static/console.html';">console</button>
+<button onclick="window.location = '/static/querytimeseries.html';">query time series</button>
+<button onclick="window.location = /static/export.html';">export time series</button>
+</div>
+
 
 <p><a href="/timeseries?plot=HEG01">timeseries<a></p>
 <p><a href="/static/console.html">console<a></p>

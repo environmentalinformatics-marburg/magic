@@ -42,3 +42,22 @@ var clear_println = function(element,text) {
 var println = function(element,text) {
 	element.appendChild(document.createElement("p")).appendChild(document.createTextNode(text));
 }
+
+$.postJSON = function(url, data, callback) {
+    return jQuery.ajax({
+        'type': 'POST',
+        'url': url,
+        'contentType': 'application/json',
+        'data': JSON.stringify(data),
+        //'dataType': 'json',  //received data type
+        'success': callback
+    });
+};
+
+var array_to_html_list = function(element,array) {
+	var list = element.appendChild(document.createElement("ul"));
+	for(i in array) {
+		list.appendChild(document.createElement("li")).appendChild(document.createTextNode(array[i]));
+	}
+}
+

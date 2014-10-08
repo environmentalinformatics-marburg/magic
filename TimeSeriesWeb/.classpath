@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.0-rc1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/timeseriesdatabase"/>
+	<classpathentry kind="lib" path="lib/json.jar" sourcepath="lib/source/json_src.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

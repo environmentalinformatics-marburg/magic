@@ -14,7 +14,7 @@ public enum DataQuality {
 	PHYSICAL,	//physical range check passed and step and empirical not passed
 	STEP,       //physical range check and step passed and empirical not passed
 	EMPIRICAL;   //physical range check and step and empirical passed
-	
+
 	public String getText() {
 		switch(this) {
 		case NO:
@@ -32,7 +32,7 @@ public enum DataQuality {
 			return "unknown";
 		}		
 	}
-	
+
 	public String getTextGUI() {
 		switch(this) {
 		case NO:
@@ -49,4 +49,25 @@ public enum DataQuality {
 			return "unknown";
 		}		
 	}
+
+	public static DataQuality parse(String text) {
+		if(text==null) {
+			return null;
+		}
+		switch(text) {
+		case "no":
+			return NO;
+		case "physical":
+			return PHYSICAL;
+		case "step":
+			return STEP;
+		case "empirical":
+			return EMPIRICAL;
+		case "na":
+			return Na;
+		default:
+			log.warn("data quality unknown");
+			return null;
+		}	
+	}	
 }

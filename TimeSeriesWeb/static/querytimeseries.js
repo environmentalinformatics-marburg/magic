@@ -130,7 +130,7 @@ var createDiagram = function(rows) {
 	var w = window.innerWidth-60;
 	var h = window.innerHeight-400;		
 	$("#result").empty();
-	var svg = d3.select("#result").append("svg").attr("width", w).attr("height", h);
+	var svg = d3.select("#result").append("svg").attr("width", w).attr("height", h).attr("style","background-color:#ffffff");
 	var padding = 40;
 	var parseDate = d3.time.format.utc("%Y-%m-%dT%H:%M").parse;
 	

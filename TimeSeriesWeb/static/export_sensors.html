@@ -3,8 +3,8 @@
 <head>
 <title>Export Time Series - choose sensors</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.js"></script>
-<script src="jquery-ui.js"></script>
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
 <script src="/static/util.js"></script>
 <script type="text/javascript">
 
@@ -89,12 +89,14 @@ $(document).ready(function(){
 		setStateReady();
 	}
 	
+	$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
 		setStateBusy();
 		window.location = "/static/export.html";
 		setStateReady();
 	}
 	
+	$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {	
 		setStateBusy();
 		$.post("/export/apply_sensors",arrayToText(chosen_sensors))

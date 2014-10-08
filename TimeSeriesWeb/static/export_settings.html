@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Export Time Series - settings</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="/static/util.js"></script>
+<script type="text/javascript">
+
+var json_settings;
+
+$(document).ready(function(){	
+	$("#button_cancel").button();
+	document.getElementById("button_cancel").onclick = function() {
+		window.location = "/static/export.html";
+	}
+	
+	$("#button_apply").button();
+	document.getElementById("button_apply").onclick = function() {
+
+		json_settings.interpolate = document.getElementById("interpolate").checked;
+		json_settings.description = document.getElementById("description").checked;
+		json_settings.allinone = document.getElementById("allinone").checked;
+		json_settings.timestep = document.getElementById("choose_aggregation").value;
+		json_settings.quality = document.getElementById("choose_quality").value;
+
+		$.postJSON("/export/apply_settings",json_settings)
+		 .done(function() {
+			window.location = "/static/export.html";
+		 })
+		 .fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);});	
+	 
+	}
+	
+	$.getJSON("/export/settings").done(function( data ) {
+		json_settings = data;
+		console.log(json_settings);
+		document.getElementById("interpolate").checked = json_settings.interpolate;
+		document.getElementById("description").checked = json_settings.description;
+		document.getElementById("allinone").checked = json_settings.allinone;
+		document.getElementById("choose_aggregation").value = json_settings.timestep;
+		document.getElementById("choose_quality").value = json_settings.quality;
+	})
+	.fail(function(data) {alert("error getting settings data: "+data);});
+
+})
+
+</script>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+</head>
+
+<body>
+<p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
+<h1 style="text-align:center">Export Time Series - settings</h1>
+<hr/>
+<h3>Actions</h3>
+<button id="button_cancel">cancel</button>
+<button id="button_apply">apply settings</button>
+<hr/>
+<h3>Settings</h3>
+
+<p>
+
+<label for="choose_aggregation">time steps</label>
+<select id="choose_aggregation">
+<option>hour</option>
+<option>day</option>
+<option>week</option>
+<option>month</option>
+<option>year</option>
+</select>
+&nbsp&nbsp&nbsp&nbsp&nbsp
+<label for="choose_quality">quality</label>
+<select id="choose_quality">
+<option value="no">0: no quality check</option>
+<option value="physical">1: just physical range check</option>
+<option value="step">2: physical range + step range check</option>
+<option value="empirical">3: physical range + step + empirical check</option>
+</select>
+
+</p>
+
+<p><input type="checkbox" id="interpolate"><label for="interpolate">try to interpolate missing data</label></p>
+<p><input type="checkbox" id="description"><label for="interpolate">include sensor description in ZIP-file</label></p>
+<p><input type="checkbox" id="allinone"><label for="interpolate">write all plots in one CSV-File</label></p>
+
+<p>
+
+</p>
+
+
+
+</body>
+</html>

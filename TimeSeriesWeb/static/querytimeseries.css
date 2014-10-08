@@ -37,3 +37,11 @@ select {
 body {
 	background-color:#e0d1c2;
 }
+
+table {
+	background-color:#ffffff;
+}
+
+li {
+	line-height:150%;
+}
