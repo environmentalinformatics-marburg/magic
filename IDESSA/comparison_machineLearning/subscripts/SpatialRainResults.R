@@ -55,6 +55,11 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   obsRaster=rasterize(cbind(modeldata$x[modeldata$chDate==unique(modeldata$chDate)[scene]],
                              modeldata$y[modeldata$chDate==unique(modeldata$chDate)[scene]]),x,field=obs)
   
+  rasterpathout= paste0(resultpath,"/Spatial_comp/radolan")
+  dir.create(rasterpathout)
+  writeRaster(obsRaster, filename=paste0(rasterpathout,"/",unique(modeldata$chDate)[scene],".tif"),overwrite=TRUE)
+  
+  
   tmpObsRaster=obsRaster
   values(tmpObsRaster)[!is.na(values(obsRaster))]=1
   xRaster=tmpObsRaster*x
@@ -84,6 +89,12 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
                                        y = list(at = yat, labels = ylabs))
   )
   
+  
+#  rasterpathout= paste0(resultpath,"/Spatial_comp/observed")
+#  dir.create(rasterpathout)
+#  writeRaster(datc[[1]], filename=paste0(rasterpathout,"/",unique(modeldata$chDate)[scene],".tif"),overwrite=TRUE)
+  
+  
 #############################
 #load prediction
 #############################
@@ -100,7 +111,9 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
     predRaster=rasterize(cbind(modeldata$x[modeldata$chDate==unique(modeldata$chDate)[scene]],
                      modeldata$y[modeldata$chDate==unique(modeldata$chDate)[scene]]),x,field=pred)
 
-
+    rasterpathout= paste0(resultpath,"/Spatial_comp/",model[i])
+    dir.create(rasterpathout)
+    writeRaster(predRaster, filename=paste0(rasterpathout,"/",unique(modeldata$chDate)[scene],".tif"),overwrite=TRUE)
 
     values(base)=NA
 
@@ -113,6 +126,12 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   #update base raster:
     datc[[i+1]]=rasterize(cbind(values(xRaster),values(yRaster)),base,field=values(tmpPredRaster))
 
+####################################################################################################################
+#Write rasters (for later aggregation)
+####################################################################################################################
+#  rasterpathout= paste0(resultpath,"/Spatial_comp/",model[i])
+#  dir.create(rasterpathout)
+#  writeRaster(datc[[i+1]], filename=paste0(rasterpathout,"/",unique(modeldata$chDate)[scene],".tif"),overwrite=TRUE)
 
 ####################################################################################################################
 #PLOT
