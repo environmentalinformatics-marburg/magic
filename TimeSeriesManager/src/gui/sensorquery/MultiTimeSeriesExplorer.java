@@ -67,7 +67,9 @@ public class MultiTimeSeriesExplorer extends Composite {
 		canvas.addPaintListener(e->onPaint(e.gc));
 
 		slider = new Slider(this, SWT.VERTICAL);		
-		slider.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false, 1, 1));
+		GridData gd_slider = new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1);
+		gd_slider.minimumWidth = 20;
+		slider.setLayoutData(gd_slider);
 		slider.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -86,7 +88,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 
 	public void addTimestampSeries(TimestampSeries timeSeries, AggregationInterval aggregationInterval, String title, TimestampSeries compare_timeSeries) {
 
-		TimeSeriesView timeSeriesView = new TimeSeriesView();
+		TimeSeriesView timeSeriesView = new TimeSeriesView(getDisplay());
 		if(timeSeries.getFirstTimestamp()<minTimestamp) {
 			if(viewMinTimestamp==minTimestamp) {
 				viewMinTimestamp = timeSeries.getFirstTimestamp();
@@ -103,7 +105,6 @@ public class MultiTimeSeriesExplorer extends Composite {
 		if(timeSeriesViews.isEmpty()) {
 			timeframeSlider.setSelectedRange(minTimestamp, maxTimestamp);
 		}
-		timeSeriesView.setCanvas(canvas);
 		timeSeriesView.updateViewData(timeSeries, aggregationInterval, title, compare_timeSeries);
 		timeSeriesViews.add(timeSeriesView);
 		timeSeriesCache.add(null);
@@ -162,7 +163,7 @@ public class MultiTimeSeriesExplorer extends Composite {
 					GC imageGC = new GC(image);
 					timeSeriesView.updateWindow(0, 0, width, height);
 					timeSeriesView.setTimeRange(viewMinTimestamp, viewMaxTimestamp);
-					timeSeriesView.paintCanvas(imageGC,false);
+					timeSeriesView.paintCanvas(imageGC,null);
 					gc.drawImage(image, xPos, yPos);
 
 					if(cache!=null) {

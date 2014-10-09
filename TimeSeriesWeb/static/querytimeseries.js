@@ -99,7 +99,7 @@ var runQuery = function() {
 					updateView();
 		})
 		.fail(function() {
-			getID("result").innerHTML = "error";
+			getID("result").innerHTML = "no data";
 		});	
 }
 

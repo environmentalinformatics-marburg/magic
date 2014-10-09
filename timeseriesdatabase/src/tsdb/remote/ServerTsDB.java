@@ -234,4 +234,22 @@ public class ServerTsDB implements RemoteTsDB {
 	public String[] getValidSchema(String plotID, String[] sensorNames) {
 		return tsdb.getValidSchema(plotID, sensorNames);
 	}
+	
+	long command_counter=0;
+
+	@Override
+	public long execute_console_command(String line) throws RemoteException {
+		
+		final long command_id = command_counter;
+		
+		
+		
+		return command_id;
+	}
+
+	@Override
+	public String[] console_comand_get_output() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -41,6 +41,9 @@ import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Pair;
 import tsdb.util.Util;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 
 public class QueryDialog extends Dialog {
 
@@ -74,7 +77,7 @@ public class QueryDialog extends Dialog {
 	private Label lblSensorUnitInfo;
 
 	private Composite composite;
-	
+
 	ComboBridge<PlotInfo> comboBridgePlotInfo;
 
 	private QueryModel model;
@@ -120,14 +123,32 @@ public class QueryDialog extends Dialog {
 	 */
 	private void createContents() {
 		shlAggregatedQuery = new Shell(getParent(), getStyle());
-		shlAggregatedQuery.setSize(781, 454);
+		shlAggregatedQuery.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				if(composite!=null) {
+					composite.layout();
+				}
+			}
+		});
+		shlAggregatedQuery.setSize(1000, 600);
 		shlAggregatedQuery.setText("Aggregated Query");
-		shlAggregatedQuery.setLayout(new GridLayout(1, false));
+		GridLayout gl_shlAggregatedQuery = new GridLayout(1, true);
+		gl_shlAggregatedQuery.horizontalSpacing = 0;
+		gl_shlAggregatedQuery.verticalSpacing = 0;
+		gl_shlAggregatedQuery.marginWidth = 0;
+		gl_shlAggregatedQuery.marginHeight = 0;
+		shlAggregatedQuery.setLayout(gl_shlAggregatedQuery);
 
 		composite = new Composite(shlAggregatedQuery, SWT.NONE);
-		composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		RowLayout rl_composite = new RowLayout(SWT.HORIZONTAL);
-		rl_composite.center = true;
+		rl_composite.spacing = 0;
+		rl_composite.marginTop = 0;
+		rl_composite.marginRight = 0;
+		rl_composite.marginLeft = 0;
+		rl_composite.marginBottom = 0;
+		rl_composite.fill = true;
 		composite.setLayout(rl_composite);
 
 		Group grpRegion = new Group(composite, SWT.NONE);
@@ -145,7 +166,8 @@ public class QueryDialog extends Dialog {
 
 		Group grpGeneral = new Group(composite, SWT.NONE);
 		grpGeneral.setText("General");
-		grpGeneral.setLayout(new RowLayout(SWT.HORIZONTAL));
+		RowLayout rl_grpGeneral = new RowLayout(SWT.HORIZONTAL);
+		grpGeneral.setLayout(rl_grpGeneral);
 
 		comboGeneralStation = new Combo(grpGeneral, SWT.READ_ONLY);
 		comboGeneralStation.setItems(new String[]{"-------------------------------"});
@@ -258,26 +280,27 @@ public class QueryDialog extends Dialog {
 		btnSaveInCsv.setText("export to CSV file");
 
 		grpInfo = new Group(composite, SWT.NONE);
+		grpInfo.setLayoutData(new RowData(300, -1));
 		grpInfo.setText("Info");
-		RowLayout rl_grpInfo = new RowLayout(SWT.VERTICAL);
-		rl_grpInfo.marginTop = 0;
-		rl_grpInfo.marginBottom = 0;
-		grpInfo.setLayout(rl_grpInfo);
+		grpInfo.setLayout(new GridLayout(1, false));
 
 		lblSensorInfo = new Label(grpInfo, SWT.NONE);
+		lblSensorInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 		lblSensorInfo.setText("New Label");
 
 		lblSensorUnitInfo = new Label(grpInfo, SWT.NONE);
+		lblSensorUnitInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 1, 1));
 		lblSensorUnitInfo.setText("New Label");
-		
-				dataExplorer = new DataExplorer(shlAggregatedQuery, SWT.NONE);
-				dataExplorer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-				dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+
+		dataExplorer = new DataExplorer(shlAggregatedQuery, SWT.NONE);
+		dataExplorer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		dataExplorer.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
 
 		Label labelStatus = new Label(shlAggregatedQuery, SWT.NONE);
+		labelStatus.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		labelStatus.setText("status");
 
-		/**canvasDataView = new Canvas(shell, SWT.NONE);
+		/*canvasDataView = new Canvas(shell, SWT.NONE);
 		canvasDataView.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent e) {
 				dataView.updateViewData();

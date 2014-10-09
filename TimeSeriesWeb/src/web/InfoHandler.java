@@ -42,39 +42,39 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		baseRequest.setHandled(true);
 		System.out.println("target "+target);
 
-		PrintWriter writer = response.getWriter();
+		
 		
 
 		boolean ret = false;
 
 		switch(target) {
 		case "/plots":
-			ret = handle_plots(writer);
+			ret = handle_plots(response.getWriter());
 			break;
 		case "/sensors":
-			ret = handle_sensors(writer);
+			ret = handle_sensors(response.getWriter());
 			break;
 		case "/region_list":
-			ret = handle_region_list(writer);
+			ret = handle_region_list(response.getWriter());
 			break;
 		case "/generalstation_list": {
 			String region = request.getParameter("region");
 			if(region!=null) {
-				ret = handle_generalstation_list(writer,region);
+				ret = handle_generalstation_list(response.getWriter(),region);
 			}			
 			break;
 		}
 		case "/plot_list": {
 			String generalstation = request.getParameter("generalstation");
 			if(generalstation!=null) {
-				ret = handle_plot_list(writer,generalstation);
+				ret = handle_plot_list(response.getWriter(),generalstation);
 			}			
 			break;
 		}
 		case "/sensor_list": {
 			String plot = request.getParameter("plot");
 			if(plot!=null) {
-				ret = handle_sensor_list(writer,plot);
+				ret = handle_sensor_list(response.getWriter(),plot);
 			} else {
 				log.warn("wrong call");
 			}
@@ -85,14 +85,25 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			String sensor = request.getParameter("sensor");
 			String aggregation = request.getParameter("aggregation");
 			if(plot!=null&&sensor!=null&&aggregation!=null) {
-				ret = handle_query(writer,plot,sensor,aggregation);
+				ret = handle_query(response.getWriter(),plot,sensor,aggregation);
 			} else {
 				log.warn("wrong call");
 			}
 			break;
 		}
+		/*case "/query_image": {
+			String plot = request.getParameter("plot");
+			String sensor = request.getParameter("sensor");
+			String aggregation = request.getParameter("aggregation");
+			if(plot!=null&&sensor!=null&&aggregation!=null) {
+				ret = handle_query_image(response,plot,sensor,aggregation);
+			} else {
+				log.warn("wrong call");
+			}
+			break;
+		}*/
 		default:
-			ret = handle_error(writer, target);
+			ret = handle_error(response.getWriter(), target);
 		}
 
 		if(ret) {
@@ -135,6 +146,52 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		}
 
 	}
+	
+	/*private boolean handle_query_image(HttpServletResponse response, String plot, String sensor, String aggregation) {
+		try {
+			response.setContentType("image/png");
+			AggregationInterval agg = AggregationInterval.parse(aggregation);
+			if(agg!=null) {
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.STEP, false);
+				if(ts!=null) {
+					Display display = new Display();
+					TimeSeriesView timeSeriesView = new TimeSeriesView(display);
+					timeSeriesView.updateViewData(ts, agg, "testing", null);
+					Image image = new Image(display,1500,400);
+					GC imageGC = new GC(image);
+					timeSeriesView.updateWindow(0, 0, 1500,400);
+					timeSeriesView.paintCanvas(imageGC,null);
+					imageGC.dispose();
+					
+					
+					ImageLoader loader = new ImageLoader();
+					loader.data = new ImageData[] {image.getImageData()};
+				    loader.save("swt.png", SWT.IMAGE_PNG);
+				    try {
+						loader.save(response.getOutputStream(), SWT.IMAGE_PNG);
+					} catch (IOException e) {
+						e.printStackTrace();
+						image.dispose();
+						display.dispose();
+						return false;
+					}
+					
+					
+					image.dispose();
+					display.dispose();
+					return true;
+				} else {
+					log.warn("no data");
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} catch (RemoteException e) {
+			log.warn(e);
+			return false;
+		}
+	}*/
 
 	private boolean handle_plots(PrintWriter writer) {
 		try {

@@ -70,5 +70,8 @@ public interface RemoteTsDB extends Remote {
 
 	String[] getValidSchema(String plotID, String[] sensorNames) throws RemoteException;
 	
+	long execute_console_command(String line) throws RemoteException;
+	String[] console_comand_get_output() throws RemoteException;
+	
 	
 }

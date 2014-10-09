@@ -38,6 +38,8 @@ import tsdb.remote.ServerTsDB;
 import tsdb.run.StartServerTsDB;
 
 public class TimeSeriesManager implements TsDBLogger {
+	
+	String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
 
 	public RemoteTsDB remoteTsDB;
 
@@ -116,7 +118,7 @@ public class TimeSeriesManager implements TsDBLogger {
 			System.out.println("this host IP is " + hostname);
 
 			//String server_url = "rmi://137.248.191.180:16826/ServerTsDB";
-			String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
+			
 
 			remoteTsDB = (RemoteTsDB) registry.lookup(server_url);
 
@@ -124,9 +126,14 @@ public class TimeSeriesManager implements TsDBLogger {
 
 		}
 
+		String connectionText="";
+		if(remoteTsDB.getClass().equals(ServerTsDB.class)) {
+			connectionText = "internal local connection";
+		} else {
+			connectionText = "remote connection "+server_url;
+		}
 
-
-		shell.setText("Time Series Database Manager");
+		shell.setText("Time Series Database Manager ["+connectionText+"]");
 		shell.setSize(300, 400);
 		shell.setLayout(new FillLayout());
 
@@ -136,7 +143,7 @@ public class TimeSeriesManager implements TsDBLogger {
 
 		addMenuItem(infoMenu,"sensors",x->(new NewSensorInfoDialog(shell,remoteTsDB)).open());
 		addMenuItem(infoMenu,"stations",x->(new StationsInfoDialog(shell,remoteTsDB)).open());
-		addMenuItem(infoMenu,"virtual plots",x->(new VirtualPlotInfoDialog(shell,remoteTsDB).open()));
+		addMenuItem(infoMenu,"virtual plots",x->(new VirtualPlotInfoDialog(shell,remoteTsDB)).open());
 		addMenuItem(infoMenu,"general stations",x->(new gui.info.GeneralStationInfoDialog(shell, remoteTsDB)).open());
 		addMenuItem(infoMenu,"logger types",x->(new LoggerTypeInfoDialog(shell, remoteTsDB)).open());
 		addMenuItem(infoMenu,"source catalog",x->(new NewSourceCatalogInfoDialog(shell, remoteTsDB)).open());

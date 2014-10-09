@@ -26,6 +26,15 @@ public class CreateStationGroupAverageCache implements TsDBLogger{
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
+		
+		run(tsdb);
+		
+		tsdb.close();
+		System.out.println("...end");
+	}
+	
+	public static void run(TsDB tsdb) {
+		
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
 		for(String group:tsdb.getGeneralStationGroups()) {
@@ -73,8 +82,7 @@ public class CreateStationGroupAverageCache implements TsDBLogger{
 				tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));
 				//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);
 			}
-		}
-		tsdb.close();
-		System.out.println("...end");
+		}		
+		
 	}
 }
