@@ -31,6 +31,12 @@ var newTableHeaderEntry = function(row,text) {
 	return entry;
 }
 
+var appendButton = function(element, text) {
+	var button = element.appendChild(document.createElement("button"));
+	button.appendChild(document.createTextNode(text));
+	return button;
+}
+
 var clear = function(element) {
 	element.textContent = "";
 }
@@ -50,6 +56,17 @@ $.postJSON = function(url, data, callback) {
         'contentType': 'application/json',
         'data': JSON.stringify(data),
         //'dataType': 'json',  //received data type
+        'success': callback
+    });
+};
+
+$.postJSONJSON = function(url, data, callback) {
+    return jQuery.ajax({
+        'type': 'POST',
+        'url': url,
+        'contentType': 'application/json',
+        'data': JSON.stringify(data),
+        'dataType': 'json',  //received data type
         'success': callback
     });
 };

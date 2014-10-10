@@ -10,6 +10,7 @@ import tsdb.Sensor;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.util.Pair;
 import tsdb.util.iterator.TsIterator;
 
 public interface RemoteTsDB extends Remote {
@@ -70,8 +71,9 @@ public interface RemoteTsDB extends Remote {
 
 	String[] getValidSchema(String plotID, String[] sensorNames) throws RemoteException;
 	
-	long execute_console_command(String line) throws RemoteException;
-	String[] console_comand_get_output() throws RemoteException;
+	long execute_console_command(String input_line) throws RemoteException;
+	
+	Pair<Boolean,String[]> console_comand_get_output(long commandThreadId) throws RemoteException;
 	
 	
 }

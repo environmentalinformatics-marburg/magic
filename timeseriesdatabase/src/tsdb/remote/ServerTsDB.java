@@ -5,9 +5,12 @@ import static tsdb.util.Util.log;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import tsdb.DataQuality;
@@ -24,6 +27,9 @@ import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.raw.TimestampSeries;
+import tsdb.run.ConsoleStarter;
+import tsdb.run.ConsoleRunner;
+import tsdb.util.Pair;
 import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB implements RemoteTsDB {
@@ -235,21 +241,44 @@ public class ServerTsDB implements RemoteTsDB {
 		return tsdb.getValidSchema(plotID, sensorNames);
 	}
 	
-	long command_counter=0;
-
-	@Override
-	public long execute_console_command(String line) throws RemoteException {
-		
-		final long command_id = command_counter;
-		
-		
-		
-		return command_id;
+	Long command_counter=0l;
+	
+	Map<Long,Pair<Thread,ConsoleRunner>> commandThreadMap = new ConcurrentHashMap<Long,Pair<Thread,ConsoleRunner>>();
+	
+	private long createCommandThreadId() {
+		synchronized (command_counter) {
+			final long commandThreadId = command_counter;
+			command_counter++;
+			return commandThreadId;
+		}
 	}
 
 	@Override
-	public String[] console_comand_get_output() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+	public long execute_console_command(String input_line) throws RemoteException {
+		final long commandThreadId = createCommandThreadId();
+		ConsoleRunner consolerunner = new ConsoleRunner(tsdb, input_line);
+		Thread commandThread = new Thread(consolerunner);		
+		commandThread.start();
+		System.out.println("execute_console_command: "+input_line+"     "+command_counter);
+		commandThreadMap.put(commandThreadId, new Pair<Thread,ConsoleRunner>(commandThread,consolerunner));
+		return commandThreadId;
+	}
+
+	@Override
+	public Pair<Boolean,String[]> console_comand_get_output(long commandThreadId) throws RemoteException {
+		Pair<Thread,ConsoleRunner> pair = commandThreadMap.get(commandThreadId);
+		if(pair==null) {
+			return null;
+		}
+		System.out.println("console_comand_get_output: "+commandThreadId);
+		Thread commandThread = pair.a;
+		ConsoleRunner consolerunner = pair.b;
+		boolean running = commandThread.isAlive(); //first
+		String[] output_lines = consolerunner.getOutputLines();  //and then
+		if(!running) {
+			commandThreadMap.remove(commandThreadId);
+		}
+
+		return new Pair<Boolean,String[]>(running,output_lines);
 	}
 }

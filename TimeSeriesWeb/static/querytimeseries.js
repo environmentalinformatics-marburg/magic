@@ -31,6 +31,8 @@ aggregation_input.selectmenu("refresh");
 
 $("#query_button").button().on("click",runQuery);
 
+$("#image_button").button().on("click",runImage);
+
 $("#radio").buttonset();
 
 
@@ -86,6 +88,13 @@ var updateSensor = function() {
 	getID("sensor_unit").innerHTML = row[2];
 }
 
+var getQueryParameters = function() {
+	var plotName = plot_input.val();
+	var sensorName = sensors[sensor_input.val()][0];
+	var aggregationName = aggregations[aggregation_input.val()];
+	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName;
+}
+
 var runQuery = function() {
 	getID("result").innerHTML = "query...";
 	var plotName = plot_input.val();
@@ -101,6 +110,14 @@ var runQuery = function() {
 		.fail(function() {
 			getID("result").innerHTML = "no data";
 		});	
+}
+
+var runImage = function() {
+	$("#result").empty();
+	var query = getQueryParameters();
+	var img = document.createElement("img");
+	img.setAttribute("src","/tsdb/query_image?"+query);
+	getID("result").appendChild(img);
 }
 
 var updateView = function() {

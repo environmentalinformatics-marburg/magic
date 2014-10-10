@@ -35,7 +35,8 @@ select {
 			}
 			
 body {
-	background-color:#e0d1c2;
+	/*background-color:#e0d1c2;*/
+	background-color:#f6f6f6;
 }
 
 table {

@@ -1,5 +1,7 @@
 package web;
 
+import java.util.concurrent.atomic.LongAdder;
+
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -61,6 +63,7 @@ public class Main {
         SessionHandler sessions = new SessionHandler(manager);
         contextExport.setHandler(sessions);
         sessions.setHandler(exportHandler);
+        new LongAdder();
  
         ContextHandlerCollection contexts = new ContextHandlerCollection();
         contexts.setHandlers(new Handler[] {context, contextFR, contextStatic, contextTimeseries, contextTsdb, contextExport});

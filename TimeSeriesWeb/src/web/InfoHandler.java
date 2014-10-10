@@ -1,18 +1,27 @@
 package web;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.json.JSONObject;
+import org.json.JSONWriter;
 
 import tsdb.DataQuality;
 import tsdb.Region;
@@ -24,6 +33,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.Pair;
 import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -42,8 +52,8 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		baseRequest.setHandled(true);
 		System.out.println("target "+target);
 
-		
-		
+
+
 
 		boolean ret = false;
 
@@ -91,7 +101,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			}
 			break;
 		}
-		/*case "/query_image": {
+		case "/query_image": {
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
 			String aggregation = request.getParameter("aggregation");
@@ -101,7 +111,32 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 				log.warn("wrong call");
 			}
 			break;
-		}*/
+		}
+
+		case "/execute_console_command": {
+			response.setContentType("application/json");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+			ret = handle_execute_console_command(reader, response.getWriter());
+			break;
+		}
+		case "/console_comand_get_output": {
+			response.setContentType("application/json");
+			String commandThreadIdText = request.getParameter("commandThreadId");
+			if(commandThreadIdText!=null) {
+				Long commandThreadId = null;
+				try {
+					commandThreadId = Long.parseLong(commandThreadIdText);
+				} catch(Exception e) {
+					log.warn(e);
+				}
+				if(commandThreadId!=null) {
+					ret = handle_console_comand_get_output(commandThreadId, response.getWriter());
+				}
+			} else {
+				log.warn("wrong call");
+			}
+			break;
+		}
 		default:
 			ret = handle_error(response.getWriter(), target);
 		}
@@ -111,6 +146,49 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		} else {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	private boolean handle_console_comand_get_output(Long commandThreadId, PrintWriter writer) {
+		try {
+			Pair<Boolean, String[]> pair = tsdb.console_comand_get_output(commandThreadId);
+			JSONWriter json_output = new JSONWriter(writer);
+			json_output.object();			
+			json_output.key("running");
+			json_output.value(pair.a);
+			json_output.key("output_lines");
+			json_output.array();
+			for(String line:pair.b) {
+				json_output.value(line);
+			}
+			json_output.endArray();
+			json_output.endObject();
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}	
+	}
+
+	private boolean handle_execute_console_command(BufferedReader reader, PrintWriter writer) {
+		try {
+			String jsonline = reader.readLine();
+			JSONObject json_input = new JSONObject(jsonline);
+			String input_line = json_input.getString("input_line");
+			System.out.println("input_line: "+input_line);
+
+			long commandThreadId = tsdb.execute_console_command(input_line);			
+
+			JSONWriter json_output = new JSONWriter(writer);
+			json_output.object();
+			json_output.key("commandThreadId");
+			json_output.value(commandThreadId);			
+			json_output.endObject();		
+
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}		
 	}
 
 	private boolean handle_query(PrintWriter writer, String plot, String sensor, String aggregation) {
@@ -146,44 +224,37 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		}
 
 	}
-	
-	/*private boolean handle_query_image(HttpServletResponse response, String plot, String sensor, String aggregation) {
+
+	private boolean handle_query_image(HttpServletResponse response, String plot, String sensor, String aggregation) {
 		try {
 			response.setContentType("image/png");
 			AggregationInterval agg = AggregationInterval.parse(aggregation);
 			if(agg!=null) {
 				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.STEP, false);
 				if(ts!=null) {
-					Display display = new Display();
-					TimeSeriesView timeSeriesView = new TimeSeriesView(display);
-					timeSeriesView.updateViewData(ts, agg, "testing", null);
-					Image image = new Image(display,1500,400);
-					GC imageGC = new GC(image);
-					timeSeriesView.updateWindow(0, 0, 1500,400);
-					timeSeriesView.paintCanvas(imageGC,null);
-					imageGC.dispose();
+					BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
+
 					
+					Graphics2D gc = bufferedImage.createGraphics();
+					gc.setBackground(new Color(255, 255, 255));
+					gc.setColor(new Color(0, 0, 0));
+					gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+					gc.dispose();
 					
-					ImageLoader loader = new ImageLoader();
-					loader.data = new ImageData[] {image.getImageData()};
-				    loader.save("swt.png", SWT.IMAGE_PNG);
-				    try {
-						loader.save(response.getOutputStream(), SWT.IMAGE_PNG);
+					new TimeSeriesDiagram(ts, agg).draw(new TimeSeriesPainterGraphics2D(bufferedImage));
+					
+					try {
+						//ImageIO.write(bufferedImage, "png", new File("C:/timeseriesdatabase_output/"+"img.png"));
+						ImageIO.write(bufferedImage, "png", response.getOutputStream());
+						return true;
 					} catch (IOException e) {
 						e.printStackTrace();
-						image.dispose();
-						display.dispose();
 						return false;
 					}
-					
-					
-					image.dispose();
-					display.dispose();
-					return true;
 				} else {
-					log.warn("no data");
 					return false;
 				}
+
 			} else {
 				return false;
 			}
@@ -191,7 +262,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			log.warn(e);
 			return false;
 		}
-	}*/
+	}
 
 	private boolean handle_plots(PrintWriter writer) {
 		try {
