@@ -29,9 +29,11 @@ aggregation_input = $("#aggregation_input").selectmenu();
 $.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
 aggregation_input.selectmenu("refresh");
 
-$("#query_button").button().on("click",runQueryTable);
+$("#query_button").button().on("click",runQuery);
 
-$("#image_button").button().on("click",runQueryDiagram);
+$("#image_button").button().on("click",runImage);
+
+$("#radio").buttonset();
 
 
 updataRegions();
@@ -93,7 +95,7 @@ var getQueryParameters = function() {
 	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName;
 }
 
-var runQueryTable = function() {
+var runQuery = function() {
 	getID("result").innerHTML = "query...";
 	var plotName = plot_input.val();
 	var sensorName = sensors[sensor_input.val()][0];
@@ -101,14 +103,16 @@ var runQueryTable = function() {
 	$.get("/tsdb/query?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName)
 		.done(function(data) {
 					rows = splitData(data);
-					createTable(rows); 
+					//createTable(rows); 
+					//createDiagram(rows);
+					updateView();
 		})
 		.fail(function() {
 			getID("result").innerHTML = "no data";
 		});	
 }
 
-var runQueryDiagram = function() {
+var runImage = function() {
 	$("#result").empty();
 	var query = getQueryParameters();
 	var image = new Image();
@@ -117,6 +121,17 @@ var runQueryDiagram = function() {
 		getID("result").innerHTML = "no data";
 	}
 	image.src = "/tsdb/query_image?"+query;
+	//var img = document.createElement("img");
+	//img.setAttribute("src","/tsdb/query_image?"+query);
+	//getID("result").appendChild(img);
+}
+
+var updateView = function() {
+	if(document.getElementById("radioTable").checked) {
+		createTable(rows);
+	} else {
+		createDiagram(rows);
+	}
 }
 
 var createTable = function(rows) {
@@ -133,3 +148,68 @@ var createTable = function(rows) {
 		newTableEntry(trRow,row[1]);
 	}	
 }
+
+var createDiagram = function(rows) {
+	var w = window.innerWidth-60;
+	var h = window.innerHeight-400;		
+	$("#result").empty();
+	var svg = d3.select("#result").append("svg").attr("width", w).attr("height", h).attr("style","background-color:#ffffff");
+	var padding = 40;
+	var parseDate = d3.time.format.utc("%Y-%m-%dT%H:%M").parse;
+	
+	var dataset = new Array(rows.length);
+	for (var i = 0; i < rows.length; ++i) {
+		dataset[i] = [parseDate(rows[i][0]),+rows[i][1]];
+	}
+	
+	var xScale = d3.time.scale()
+					    .domain(d3.extent(dataset, function(row) {return row[0];}))
+					    .range([padding,w-padding]);
+						
+	var yScale = d3.scale.linear()
+					 .domain([d3.min(dataset, function(d) {return d[1];}),
+					          d3.max(dataset, function(d) {return d[1];})
+							  ])
+					 .range([h-padding,padding])
+					 .nice();
+
+	var xAxis = d3.svg.axis()
+					.scale(xScale)
+					.orient("bottom");
+						  
+	var yAxis = d3.svg.axis()
+					  .scale(yScale)
+					  .orient("left");
+					  
+	var area = d3.svg.area()
+					.x(function(d) { return xScale(d[0]); })
+					.y0(function(d) { if(isNaN(d[1])) return h-padding; else return yScale(d[1]); })
+					.y1(h-padding);
+
+	svg.append("path")
+		   .datum(dataset)
+		   .attr("d", area)
+		   .attr("fill","rgb(230,230,230)");
+
+	svg.selectAll("circle").data(dataset).enter().append("circle")
+		   .attr("cx", function(d) {return xScale(d[0]);})
+		   .attr("cy", function(d) {return yScale(d[1]);})
+		   .attr("r", 0.5)
+		   .attr("fill", "rgb(0,0,0)");
+
+	svg.append("g").attr("class", "axis")
+				   .attr("transform", "translate(0,"+ (h-padding)+")")
+				   .call(xAxis);
+					   
+	svg.append("g").attr("class", "axis")
+				.attr("transform", "translate("+padding+",0)")
+			    .call(yAxis);		   
+
+}
+
+
+
+
+
+
+ 

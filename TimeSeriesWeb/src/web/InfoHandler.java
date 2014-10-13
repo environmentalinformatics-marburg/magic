@@ -90,6 +90,15 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			}
 			break;
 		}
+		case "/general_station_sensor_list": {
+			String general_station = request.getParameter("general_station");
+			if(general_station!=null) {
+				ret = handle_general_station_sensor_list(response.getWriter(),general_station);
+			} else {
+				log.warn("wrong call");
+			}
+			break;
+		}
 		case "/query": {
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
@@ -351,9 +360,31 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 					.filter(s->sensorMap.containsKey(s.name)&&s.isAggregable())
 					.map(s->s.name+";"+s.description+";"+s.unitDescription)
 					.toArray(String[]::new);
-
-
-			//String[] webList = 
+			if(webList!=null) {
+				writeStringArray(writer, webList);
+				return true;
+			} else {
+				log.warn("null");
+				System.out.println("null");
+				//log.warn("null: "+plot);
+				return false;
+			}			
+		} catch (Exception e) {
+			log.warn(e);
+			System.out.println(e);
+			return false;
+		}
+	}
+	
+	private boolean handle_general_station_sensor_list(PrintWriter writer, String general_station) {
+		try {
+			String[] sensorNames = tsdb.getGeneralStationSensorNames(general_station);
+			Map<String, Integer> sensorMap = Util.stringArrayToMap(sensorNames);
+			Sensor[] sensors = tsdb.getSensors();
+			String[] webList = Arrays.stream(sensors)
+					.filter(s->sensorMap.containsKey(s.name)&&s.isAggregable())
+					.map(s->s.name+";"+s.description+";"+s.unitDescription)
+					.toArray(String[]::new);
 			if(webList!=null) {
 				writeStringArray(writer, webList);
 				return true;

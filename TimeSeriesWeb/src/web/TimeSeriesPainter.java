@@ -1,6 +1,11 @@
 package web;
 
-public interface TimeSeriesPainter {	
+
+public interface TimeSeriesPainter {
+	
+	public enum PosHorizontal {LEFT,CENTER,RIGHT};
+	public enum PosVerical {TOP,CENTER,BOTTOM};
+	
 	float getMinX();
 	float getMinY();
 	float getMaxX();
@@ -9,4 +14,15 @@ public interface TimeSeriesPainter {
 	void drawLine(float x0, float y0, float x1, float y1);
 	void setColorValueLine();
 	void setColorConnectLine();
+	void setColorAxisLine();
+	void setColorZeroLine();
+	void setColorYScaleLine();
+	void setColorYScaleText();
+	void drawText(String text, float x, float y, PosHorizontal posHorizontal, PosVerical posVerical);
+	void setColorXScaleYearText();
+	void setColorXScaleYearLine();
+	void setColorXScaleMonthText();
+	void setColorXScaleMonthLine();
+	void setColorXScaleDayText();
+	void setColorXScaleDayLine();	
 }

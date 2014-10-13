@@ -3,12 +3,20 @@ package web;
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
 
+
+
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.eclipse.swt.graphics.Color;
 
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimeSeriesEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.util.Util;
+import web.TimeSeriesPainter.PosHorizontal;
+import web.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesDiagram {
 
@@ -132,7 +140,6 @@ public class TimeSeriesDiagram {
 
 	public void draw(TimeSeriesPainter tsp) {
 		throwNull(tsp);
-		tsp.setColor(0,0,0);
 
 		diagramMinX = tsp.getMinX()+borderLeft;
 		diagramMinY = tsp.getMinY()+borderTop;
@@ -151,10 +158,16 @@ public class TimeSeriesDiagram {
 		diagramTimestampFactor = diagramWidth/diagramTimestampRange;
 		diagramValueFactor = diagramHeigh/diagramValueRange;
 
+		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp);
+		timescale.draw(tsp, diagramMinX, diagramMaxX, diagramMaxY+1, diagramTimestampFactor,diagramMinY,diagramMaxY+3);
+		drawYScale(tsp);
+		drawAxis(tsp);
+		drawGraph(tsp);
+	}
+	
+	private void drawGraph(TimeSeriesPainter tsp) {
 		boolean hasPrev = false;
 		float prevY = 0;
-		float prevTimestamp = 0;
-
 		List<ValueLine> valueLineList = new ArrayList<ValueLine>(timestampseries.entryList.size());
 		List<ConnectLine> connectLineList = new ArrayList<ConnectLine>(timestampseries.entryList.size());
 
@@ -170,8 +183,6 @@ public class TimeSeriesDiagram {
 				valueLineList.add(new ValueLine(x0, x1, y));
 				if(hasPrev) {
 					connectLineList.add(new ConnectLine(x0, prevY, y));
-					//System.out.println("draw "+x+" "+y);
-					//timeSeriesPainter.drawLine(x, y, x2, y);
 				}
 				prevY = y;
 				hasPrev = true;
@@ -187,23 +198,58 @@ public class TimeSeriesDiagram {
 		tsp.setColorValueLine();
 		for(ValueLine valueLine:valueLineList) {
 			tsp.drawLine(valueLine.x0,valueLine.y,valueLine.x1,valueLine.y);
-		}
-
-		//*** start drawing
+		}		
+	}
+	
+	private void drawAxis(TimeSeriesPainter tsp) {
+		tsp.setColorAxisLine();
+		tsp.drawLine(diagramMinX , diagramMinY, diagramMaxX, diagramMinY); //x-Aches
+		tsp.drawLine(diagramMinX , diagramMaxY, diagramMaxX, diagramMaxY); //x-Grenze
+		tsp.drawLine(diagramMaxX , diagramMinY, diagramMaxX, diagramMaxY); // y-Achse
+		tsp.drawLine(diagramMinX , diagramMinY, diagramMinX, diagramMaxY); // y-Grenze
 		
-		/*
-
-		gc.setForeground(clrConnections);
-		for(int[] e:connectLineList) {
-			gc.drawLine(e[0], e[1], e[2], e[3]);
+		int zeroY = calcDiagramY(0f);
+		if(diagramMinY<=zeroY&&zeroY<=diagramMaxY) {
+			tsp.setColorZeroLine();
+			tsp.drawLine(diagramMinX , zeroY, diagramMaxX, zeroY);
+		}		
+	}
+	
+	private void drawYScale(TimeSeriesPainter tsp) {
+		int maxLines = (int) (diagramHeigh/17);
+		double minLineStep = diagramValueRange/maxLines;
+		double logMinLineStep = Math.pow(10d, Math.ceil(Math.log10(minLineStep)));
+		double lineStep = logMinLineStep;
+		if((diagramValueRange/(lineStep/5))<=maxLines) {
+			lineStep /= 5d;
+		} else if((diagramValueRange/(lineStep/2))<=maxLines) {
+			lineStep /= 2d;
 		}
-
-		gc.setForeground(clrValues);
-		for(int[] e:valueLineList) {
-			gc.drawLine(e[0], e[1], e[2], e[3]);
-		}
-		*/
-		//*** end drawing
+		double mod = diagramMinValue%lineStep;
+		float lineStart = (float) (mod>0d?diagramMinValue+lineStep-mod:diagramMinValue-mod);
+		drawYScale(tsp,lineStart,lineStep);		
+	}
+	
+	private void drawYScale(TimeSeriesPainter tsp, float lineStart, double lineStep) {
+		float line = lineStart;
+		while(line<=diagramMaxValue) {			
+			int y = calcDiagramY(line);
+			tsp.setColorYScaleLine();
+			tsp.drawLine(diagramMinX-1 , y, diagramMaxX, y);			
+			String valueText;
+			if(lineStep>=1d) {
+				valueText = Util.doubleToString0(line);
+			} else if(lineStep>=0.1d) {
+				valueText = Util.doubleToString1(line);
+			} else if(lineStep>=0.01d) {
+				valueText = Util.doubleToString2(line);
+			} else {
+				valueText = Util.doubleToStringFull(line);
+			}			
+			tsp.setColorYScaleText();
+			tsp.drawText(valueText,diagramMinX-3,y,PosHorizontal.RIGHT,PosVerical.CENTER);
+			line+=lineStep;
+		}		
 	}
 
 }

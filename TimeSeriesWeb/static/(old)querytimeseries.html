@@ -46,14 +46,22 @@
 </div>
 
 <div style="display:inline-block">
-<button id="query_button">query table</button>
-<button id="image_button">query diagram</button>
+<button id="query_button">query</button>
+<button id="image_button">image</button>
 </div>
 
 </div>
 
 Description: <label id="sensor_description">new2</label>
 Unit: <label id="sensor_unit">new2</label>
+
+<div>
+<label for="radio">view as</label>
+<div id="radio">
+<input type="radio" id="radioTable" name="radio" onchange="updateView()"><label for="radioTable">Table</label>
+<input type="radio" id="radioDiagram" name="radio" checked="checked" onchange="updateView()"><label for="radioDiagram">Diagram</label>
+</div>
+</div>
 
 <div id="result"></div>
 
