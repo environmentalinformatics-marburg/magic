@@ -122,7 +122,7 @@ dev.off()
 
 #######################Write all scores to table
 for (i in 1:length(RMSE)){
-  VerificationScores=data.frame("RMSE"=RMSE[[i]][,2],"ME"=ME[[i]][,2],"MAE"=MAE[[i]][,2],"Rsquared"=Rsquared[[i]][,2])
+  VerificationScores=data.frame("RMSE"=RMSE[[i]][,2],"ME"=ME[[i]][,2],"MAE"=MAE[[i]][,2],"RSQ"=Rsquared[[i]][,2])
   write.csv(VerificationScores,file=paste(resultpath,"/VerificationScores_",model[i],".csv",sep=""),row.names=FALSE)
 }
 
@@ -145,7 +145,7 @@ sdMAE=apply(MAE_all,2,sd)
 MAEMeanSD=paste(round(meanMAE,2),"+/-",round(sdMAE,2),sep="")
 
 performanceMeanSD=rbind(RMSEMeanSD,RsquaredMeanSD,MEMeanSD,MAEMeanSD)
-row.names(performanceMeanSD)=c("RMSE","RSquared","ME","MAE")
+row.names(performanceMeanSD)=c("RMSE","RSQ","ME","MAE")
 colnames(performanceMeanSD)=model
 
 write.csv(performanceMeanSD,file=paste(resultpath,"/PerformanceMeanAndSD.csv",sep=""))
