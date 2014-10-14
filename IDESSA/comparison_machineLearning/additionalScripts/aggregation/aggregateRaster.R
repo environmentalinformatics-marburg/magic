@@ -20,7 +20,7 @@ daytime=c("day","night","inb")
 ################################################################################
 # Working directory
 setwd(path.wd)
-source("../functions/aggRaster.R")
+source("aggRaster.R")
 # Required packages and functions
 library(raster)
 library(doParallel)
