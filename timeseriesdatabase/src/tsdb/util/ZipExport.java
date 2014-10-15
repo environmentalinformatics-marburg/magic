@@ -7,11 +7,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import tsdb.DataQuality;
 import tsdb.Sensor;
@@ -22,27 +25,27 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.RemoteTsDB;
 
 public class ZipExport {
-	
+
 	private final RemoteTsDB tsdb;
 
 	private Consumer<String> cbPrintLine = null;
-	
+
 	private String[] sensorNames;
 	private String[] plotIDs;
 	private AggregationInterval aggregationInterval;
 	private DataQuality dataQuality;
 	private boolean interpolated;
-	
+
 	public ZipExport(RemoteTsDB tsdb, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated) {
 		this.tsdb = tsdb;
-		
+
 		this.sensorNames = sensorNames;
 		this.plotIDs = plotIDs;
 		this.aggregationInterval = aggregationInterval;
 		this.dataQuality = dataQuality;
 		this.interpolated = interpolated;
 	}
-	
+
 	public void createZipFile(String filename) {
 		FileOutputStream fileOutputStream;
 		try {
@@ -54,8 +57,8 @@ public class ZipExport {
 		}
 		printLine("...finished");			
 	}
-	
-	
+
+
 	public void writeToStream(OutputStream outputstream) {	
 		printLine("start export...");
 		printLine("sensorNames: "+Util.arrayToString(sensorNames));
@@ -71,7 +74,7 @@ public class ZipExport {
 			ZipOutputStream zipOutputStream = new ZipOutputStream(outputstream);
 			zipOutputStream.setComment("new comment");
 			zipOutputStream.setLevel(9);
-			
+
 			zipOutputStream.putNextEntry(new ZipEntry("sensor_description.txt"));
 			PrintStream printStream = new PrintStream(zipOutputStream, true);
 			printStream.println("sensors:\t"+sensorNames.length);
@@ -102,7 +105,12 @@ public class ZipExport {
 							ZipEntry zipEntry = new ZipEntry(plotID+".csv");
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
-							
+
+							int[] pos = Util.stringArrayToPositionIndexArray(timeseries.parameterNames, schema, true, false);
+							System.out.println("schema "+Arrays.asList(schema));
+							System.out.println("parameterNames "+Arrays.asList(timeseries.parameterNames));
+							System.out.println(Arrays.asList(pos));
+
 							PrintStream csvOut = new PrintStream(zipOutputStream);
 							StringBuilder stringbuilder = new StringBuilder();
 							stringbuilder.append("plotID");
@@ -115,7 +123,7 @@ public class ZipExport {
 								stringbuilder.append(name);
 							}
 							csvOut.println(stringbuilder);
-							
+
 							for(TimeSeriesEntry entry:timeseries.entryList) {
 								StringBuilder s = new StringBuilder();
 								s.append(plotID);
@@ -123,17 +131,21 @@ public class ZipExport {
 								s.append(entry.timestamp);								
 								s.append(',');
 								s.append(TimeConverter.oleMinutesToText(entry.timestamp));
-								
-								Formatter formater = new Formatter(s,Locale.ENGLISH);								
-								for(float v:entry.data) {									
-									formater.format(",%3.3f", v);
 
+								Formatter formater = new Formatter(s,Locale.ENGLISH);								
+								for(float v:entry.data) {
+									if(Float.isNaN(v)) {
+										formater.format(",NA");	
+									} else {
+										//formater.format(",%3.3f", v);
+										formater.format(",%.2f", v);
+									}
 								}
 								csvOut.println(s);
 								formater.close();															
 							}
 							csvOut.flush();
-							
+
 							//CSV.write(timeseries.tsIterator(), true, zipOutputStream, ",", "Na", CSVTimeType.TIMESTAMP_AND_DATETIME, false, false);
 						} else {
 							printLine("not processed: "+plotID);
@@ -150,7 +162,7 @@ public class ZipExport {
 		}
 		printLine("...finished");
 	}
-	
+
 	public void setPrintCallback(Consumer<String> callback) {
 		this.cbPrintLine = callback;
 	}

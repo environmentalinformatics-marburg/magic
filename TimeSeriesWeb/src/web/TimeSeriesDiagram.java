@@ -243,6 +243,10 @@ public class TimeSeriesDiagram {
 				valueText = Util.doubleToString1(line);
 			} else if(lineStep>=0.01d) {
 				valueText = Util.doubleToString2(line);
+			} else if(lineStep>=0.001d) {
+				valueText = Util.doubleToString3(line);
+			} else if(lineStep>=0.0001d) {
+				valueText = Util.doubleToString4(line);								
 			} else {
 				valueText = Util.doubleToStringFull(line);
 			}			

@@ -87,6 +87,20 @@ public class Util {
 		return String.format("%.2f", value);
 	}
 	
+	public static String doubleToString3(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.3f", value);
+	}
+	
+	public static String doubleToString4(double value) {
+		if(Double.isNaN(value)) {
+			return " --- ";
+		}
+		return String.format("%.4f", value);
+	}	
+	
 	public static String doubleToStringFull(double value) {
 		if(Double.isNaN(value)) {
 			return " --- ";
@@ -490,6 +504,8 @@ public class Util {
 	public static String[] toArray(String e) {
 		return new String[]{e};
 	}
+
+	
 
 	
 }

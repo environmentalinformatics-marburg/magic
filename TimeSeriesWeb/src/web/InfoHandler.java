@@ -12,6 +12,8 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -81,6 +83,13 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			}			
 			break;
 		}
+		case "/region_plot_list": {
+			String region = request.getParameter("region");
+			if(region!=null) {
+				ret = handle_region_plot_list(response.getWriter(),region);
+			}			
+			break;
+		}		
 		case "/sensor_list": {
 			String plot = request.getParameter("plot");
 			if(plot!=null) {
@@ -99,6 +108,15 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			}
 			break;
 		}
+		case "/region_sensor_list": {
+			String region = request.getParameter("region");
+			if(region!=null) {
+				ret = handle_region_sensor_list(response.getWriter(),region);
+			} else {
+				log.warn("wrong call");
+			}
+			break;
+		}		
 		case "/query": {
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
@@ -212,9 +230,10 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 						writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
 						float value = e.data[0];
 						if(Float.isNaN(value)) {
-							value = 0f;
-						}
-						writer.format(Locale.ENGLISH,"%.2f", value);
+							writer.print("NA");
+						} else {
+							writer.format(Locale.ENGLISH,"%.2f", value);
+						}						
 						if(it.hasNext()) {
 							writer.print('\n');
 						}
@@ -239,7 +258,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			response.setContentType("image/png");
 			AggregationInterval agg = AggregationInterval.parse(aggregation);
 			if(agg!=null) {
-				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.STEP, false);
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.EMPIRICAL, false);
 				if(ts!=null) {
 					BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
 
@@ -350,6 +369,25 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			return false;
 		}
 	}
+	
+	private boolean handle_region_plot_list(PrintWriter writer, String regionName) {
+		try {
+			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			if(plotInfos!=null) {
+				String[] webList = Arrays.stream(plotInfos)
+						.filter(p->p.generalStationInfo.region.name.equals(regionName))
+						.map(p->p.name)
+						.toArray(String[]::new);
+				//String[] webList = Arrays.stream(generalStationInfos).map(g->g.name+","+g.longName).toArray(String[]::new);
+				writeStringArray(writer, webList);
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
 	private boolean handle_sensor_list(PrintWriter writer, String plot) {
 		try {
@@ -392,6 +430,33 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 				log.warn("null");
 				System.out.println("null");
 				//log.warn("null: "+plot);
+				return false;
+			}			
+		} catch (Exception e) {
+			log.warn(e);
+			System.out.println(e);
+			return false;
+		}
+	}
+	
+	private boolean handle_region_sensor_list(PrintWriter writer, String region) {
+		try {			
+			Set<String> sensorNameSet = new TreeSet<String>();
+			for(GeneralStationInfo generalStationInfo:tsdb.getGeneralStations()) {
+				System.out.println(generalStationInfo.name);
+				if(generalStationInfo.region.name.equals(region)) {
+					for(String sensorName:tsdb.getGeneralStationSensorNames(generalStationInfo.name)) {
+						sensorNameSet.add(sensorName);
+					}
+				}
+			}
+			String[] sensorNames = tsdb.getBaseSchema(sensorNameSet.toArray(new String[0]));			
+			if(sensorNames!=null) {
+				writeStringArray(writer, sensorNames);
+				return true;
+			} else {
+				log.warn("null");
+				System.out.println("null");
 				return false;
 			}			
 		} catch (Exception e) {

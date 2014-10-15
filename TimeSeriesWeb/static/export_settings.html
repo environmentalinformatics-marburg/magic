@@ -8,9 +8,28 @@
 <script src="/static/util.js"></script>
 <script type="text/javascript">
 
+var tasks = 0;
+
+var incTask = function() {
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
 var json_settings;
 
-$(document).ready(function(){	
+$(document).ready(function(){
+	incTask();	
 	$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
 		window.location = "/static/export.html";
@@ -18,7 +37,7 @@ $(document).ready(function(){
 	
 	$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {
-
+		incTask();
 		json_settings.interpolate = document.getElementById("interpolate").checked;
 		json_settings.description = document.getElementById("description").checked;
 		json_settings.allinone = document.getElementById("allinone").checked;
@@ -28,11 +47,13 @@ $(document).ready(function(){
 		$.postJSON("/export/apply_settings",json_settings)
 		 .done(function() {
 			window.location = "/static/export.html";
+			decTask();
 		 })
-		 .fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);});	
+		 .fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);decTask();});	
 	 
 	}
 	
+	incTask();
 	$.getJSON("/export/settings").done(function( data ) {
 		json_settings = data;
 		console.log(json_settings);
@@ -41,10 +62,12 @@ $(document).ready(function(){
 		document.getElementById("allinone").checked = json_settings.allinone;
 		document.getElementById("choose_aggregation").value = json_settings.timestep;
 		document.getElementById("choose_quality").value = json_settings.quality;
+		decTask();
 	})
-	.fail(function(data) {alert("error getting settings data: "+data);});
+	.fail(function(data) {alert("error getting settings data: "+data);decTask();});
 
-})
+	decTask();
+});
 
 </script>
 
@@ -56,6 +79,8 @@ $(document).ready(function(){
 <body>
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
 <h1 style="text-align:center">Export Time Series - settings</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
 <hr/>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>

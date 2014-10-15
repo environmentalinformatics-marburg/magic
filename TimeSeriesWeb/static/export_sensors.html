@@ -14,6 +14,24 @@ var available_select;
 var chosen_sensors = [];
 var available_sensors = ["plot0","plot1","plot2","plot3"];
 
+var tasks = 0;
+
+var incTask = function() {
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
 var update_chosen_select = function() {
 	chosen_select.innerHTML = "";
 	for(i in chosen_sensors) {
@@ -119,18 +137,31 @@ $(document).ready(function(){
 		setStateReady();
 	}).fail(function() {alert("error getting data");setStateReady();});
 	
-	setStateBusy();
-	$.get("/tsdb/sensor_list?plot=HEG01").done(function(data) {
-		available_sensors = [];
-		rows = splitData(data);
-		for(i in rows) {
-			available_sensors.push(rows[i][0]);
-		}
-		update_chosen_select();
-		update_available_select();
-		setStateReady();
-	}).fail(function() {alert("error getting data");setStateReady();});	
+	var get_sensor_list = function(region) {
+		setStateBusy();
+		$.get("/tsdb/region_sensor_list?region="+region).done(function(data) {
+			available_sensors = [];
+			rows = splitData(data);
+			for(i in rows) {
+				available_sensors.push(rows[i][0]);
+			}
+			update_chosen_select();
+			update_available_select();
+			setStateReady();
+		}).fail(function() {alert("error getting data");setStateReady();});
+	}
 
+	var get_region = function() {
+		incTask();
+		$.get("/export/region").done(function(data) {
+			var rows = splitData(data);	
+			var region = rows[0][0];
+			get_sensor_list(region);
+			decTask();
+		}).fail(function() {alert("error getting data");decTask();});	
+	}
+
+	get_region();
 	update_chosen_select();
 	update_available_select();
 	
@@ -147,7 +178,9 @@ $(document).ready(function(){
 <body>
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
 <h1 style="text-align:center">Export Time Series - choose sensors</h1>
-<p id="busy" style="text-align:right;visibility:hidden">busy...<p> 
+<p id="busy" style="text-align:right;visibility:hidden">busy...<p>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div> 
 <hr/>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
@@ -156,18 +189,18 @@ $(document).ready(function(){
 <h3>Select Sensors</h3>
 
 <p>
-<div style="display:inline-block;width:100px;vertical-align:top">
+<div style="display:inline-block;width:200px;vertical-align:top">
 <label for="chosen_select">Chosen Sensors</label>
-<select id="chosen_select" size="5" multiple="multiple" style="width:100px;height:300px">
+<select id="chosen_select" size="5" multiple="multiple" style="height:300px">
 <option>plt1</option>
 <option>plt2</option>
 </select>
 </div>
 <div style="display:inline-block;width:100px;vertical-align:top">
 </div>
-<div style="display:inline-block;width:100px;vertical-align:top">
+<div style="display:inline-block;width:200px;vertical-align:top">
 <label for="available_select">Available Sensors</label>
-<select id="available_select" size="5" multiple="multiple" style="width:100px;height:300px">
+<select id="available_select" size="5" multiple="multiple" style="height:300px">
 <option>plt1</option>
 <option>plt2</option>
 </select>

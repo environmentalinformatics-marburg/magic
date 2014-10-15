@@ -1,6 +1,7 @@
 package web;
 
 import java.io.BufferedReader;
+import static tsdb.util.Util.log;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -18,6 +19,7 @@ import org.json.JSONObject;
 import org.json.JSONWriter;
 
 import tsdb.DataQuality;
+import tsdb.Region;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.ZipExport;
@@ -33,6 +35,7 @@ public class ExportHandler extends AbstractHandler {
 		public boolean allinone;
 		public AggregationInterval aggregationInterval;
 		public DataQuality quality;
+		public Region region;
 
 		public ExportModel() {
 			this.plots = new String[]{"plot1","plot2","plot3"};
@@ -42,6 +45,7 @@ public class ExportHandler extends AbstractHandler {
 			this.allinone = false;
 			this.aggregationInterval = AggregationInterval.DAY;
 			this.quality = DataQuality.STEP;
+			this.region = null;
 		}
 	}
 
@@ -63,6 +67,11 @@ public class ExportHandler extends AbstractHandler {
 			session.setAttribute("ExportModel", model);
 			model.plots = new String[]{"HEG01","HEG02"};
 			model.sensors = new String[]{"Ta_200",};
+			try {
+				model.region = tsdb.getRegions()[0];
+			} catch(Exception e) {
+				log.error(e);
+			}
 		}
 		ExportModel model = (ExportModel) session.getAttribute("ExportModel");
 		boolean ret = false;
@@ -111,6 +120,15 @@ public class ExportHandler extends AbstractHandler {
 			ret = apply_settings(reader,model);
 			break;
 		}
+		case "/region": {
+			ret = handle_region(response.getWriter(),model);
+			break;
+		}
+		case "/apply_region": {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+			ret = handle_apply_region(reader,model);
+			break;
+		}		
 		default: {
 			ret = handle_error(response.getWriter(), target);
 		}
@@ -182,9 +200,9 @@ public class ExportHandler extends AbstractHandler {
 			return false;
 		}	
 	}
-	
+
 	private boolean handle_settings(PrintWriter writer, ExportModel model) {
-		
+
 		JSONWriter json = new JSONWriter(writer);
 		json.object();
 		json.key("interpolate");
@@ -198,11 +216,11 @@ public class ExportHandler extends AbstractHandler {
 		json.key("quality");
 		json.value(model.quality.getText());
 		json.endObject();
-		
-		
+
+
 		return true;
 	}
-	
+
 	private boolean apply_settings(BufferedReader reader, ExportModel model) {
 		try {
 			String line = reader.readLine();
@@ -212,13 +230,37 @@ public class ExportHandler extends AbstractHandler {
 			model.allinone = json.getBoolean("allinone");
 			model.aggregationInterval = AggregationInterval.parse(json.getString("timestep"));
 			model.quality = DataQuality.parse(json.getString("quality"));
-			
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
-		
-	}	
+
+	}
+
+	private boolean handle_region(PrintWriter writer, ExportModel model) {
+		writer.print(model.region.name+";"+model.region.longName);
+		return true;
+	}
+
+	private boolean handle_apply_region(BufferedReader reader, ExportModel model) {
+		try {
+			String line = reader.readLine();
+			for(Region region:tsdb.getRegions()) {
+				if(region.name.equals(line)) {
+					if(!model.region.name.equals(region.name)) {
+						model.region = region;
+						model.plots = new String[0];
+						model.sensors = new String[0];
+					}					
+					return true;
+				}
+			}
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 }

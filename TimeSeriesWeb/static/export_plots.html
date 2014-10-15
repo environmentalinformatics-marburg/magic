@@ -15,6 +15,24 @@ var available_select;
 var chosen_plots = [];
 var available_plots = ["plot0","plot1","plot2","plot3"];
 
+var tasks = 0;
+
+var incTask = function() {
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
 var update_chosen_select = function() {
 	chosen_select.innerHTML = "";
 	for(i in chosen_plots) {
@@ -90,7 +108,79 @@ $(document).ready(function(){
 		update_available_select();
 	}).fail(function() {alert("error getting data");});
 	
-	$.get("/tsdb/plot_list?generalstation=HEG").done(function(data) {
+	var update_filtered_available_select_from_regionName = function(regionName) {
+		$.get("/tsdb/region_plot_list?region="+regionName).done(function(data) {
+		var rows = splitData(data);
+		for(i in rows) {
+			available_plots.push(rows[i][0]);
+		}
+		update_chosen_select();
+		update_available_select();
+		}).fail(function() {plot_input.append(new Option("[error]","[error]"));});	
+	}
+	
+	var update_filtered_available_select_from_region = function() {
+		incTask();
+		$.get("/export/region").done(function(data) {
+			var rows = splitData(data);	
+			var region = rows[0][0];
+			update_filtered_available_select_from_regionName(region);
+			decTask();
+		}).fail(function() {alert("error getting data");decTask();});		
+	}
+	
+	var update_filtered_available_select_from_generalstation = function(generalstationName) {
+		$.get("/tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
+			var rows = splitData(data);
+			for(i in rows) {
+				available_plots.push(rows[i][0]);
+			}
+			update_chosen_select();
+			update_available_select();
+		}).fail(function() {plot_input.append(new Option("[error]","[error]"));});	
+	}
+	
+	
+	var update_filtered_available_select = function() {
+		var generalstationName = getID("general_select").value;
+		available_plots = [];
+		if(generalstationName==="all") {
+			update_filtered_available_select_from_region();			
+		} else {
+			update_filtered_available_select_from_generalstation(generalstationName);
+		}
+	}
+	
+	
+	var update_general_select = function(regionName) {
+		incTask();
+		var general_select = $("#general_select");
+		general_select.empty();
+		$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+			var rows = splitData(data);
+			general_select.append(new Option("[all]","all"));
+			$.each(rows, function(i,row) {general_select.append(new Option(row[1],row[0]));})
+			update_filtered_available_select();
+			decTask();		
+		}).fail(function() {general_select.append(new Option("[error]","[error]"));decTask();});		
+	}
+	
+	incTask();
+	$.get("/export/region").done(function(data) {
+		var rows = splitData(data);	
+		var region = rows[0][0];
+		update_general_select(region);
+		decTask();
+	}).fail(function() {alert("error getting data");decTask();});
+	
+
+	
+	
+	getID("general_select").onchange = update_filtered_available_select;
+	
+	
+	
+	/*$.get("/tsdb/plot_list?generalstation=HEG").done(function(data) {
 		available_plots = [];
 		rows = splitData(data);
 		for(i in rows) {
@@ -98,14 +188,14 @@ $(document).ready(function(){
 		}
 		update_chosen_select();
 		update_available_select();
-	}).fail(function() {alert("error getting data");});
+	}).fail(function() {alert("error getting data");});*/
 	
 	
 	
 
 	update_chosen_select();
 	update_available_select();
-})
+});
 
 </script>
 
@@ -117,6 +207,8 @@ $(document).ready(function(){
 <body>
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
 <h1 style="text-align:center">Export Time Series - choose plots</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
 <hr/>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
@@ -125,18 +217,20 @@ $(document).ready(function(){
 <h3>Select Plots</h3>
 
 <p>
-<div style="display:inline-block;width:100px;vertical-align:top">
+<div style="display:inline-block;width:200px;vertical-align:top">
 <label for="chosen_select">Chosen Plots</label>
-<select id="chosen_select" size="5" multiple="multiple" style="width:100px;height:300px">
+<select id="chosen_select" size="5" multiple="multiple" style="height:300px">
 <option>plt1</option>
 <option>plt2</option>
 </select>
 </div>
 <div style="display:inline-block;width:100px;vertical-align:top">
 </div>
-<div style="display:inline-block;width:100px;vertical-align:top">
-<label for="available_select">Available Plots</label>
-<select id="available_select" size="5" multiple="multiple" style="width:100px;height:300px">
+<div style="display:inline-block;width:200px;vertical-align:top">
+<label for="available_select">Available Plots</label><br/>
+<label for="general_select">filter by</label>
+<select id="general_select"></select>
+<select id="available_select" size="5" multiple="multiple" style="height:260px">
 <option>plt1</option>
 <option>plt2</option>
 </select>
