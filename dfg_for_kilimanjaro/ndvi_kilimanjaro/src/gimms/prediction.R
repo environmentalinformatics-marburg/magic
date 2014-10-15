@@ -81,6 +81,10 @@ col_names <- sapply(strsplit(names(mod_observed), "_"), "[[", 4)
 plt_obs <- extract(mod_observed, plt, df = TRUE)
 plt_obs$ID <- as.character(plt@data$PlotID)
 names(plt_obs)[2:ncol(plt_obs)] <- col_names
+tmp <- sortByElevation(plot_names = official_plots, 
+                           plot_shape = plt,
+                           val = plt_obs)
+
 plt_obs_mlt <- melt(plt_obs, variable.name = "month", value.name = "ndvi_obs")
 plt_obs_mlt$month <- as.character(plt_obs_mlt$month)
 
@@ -90,10 +94,10 @@ names(plt_prd)[2:ncol(plt_prd)] <- col_names
 plt_prd_mlt <- melt(plt_prd, variable.name = "month", value.name = "ndvi_prd")
 plt_prd_mlt$month <- as.character(plt_prd_mlt$month)
 
-plt_obs_prd <- merge(plt_obs_mlt, plt_prd_mlt, by = c(1, 2))
+plt_obs_prd <- merge(plt_obs_mlt, plt_prd_mlt, by = c(1, 2, 3), sort = FALSE)
 plt_obs_prd_mlt <- melt(plt_obs_prd, variable.name = "type")
 
-luc <- unique(substr(plt_obs_prd_mlt$ID, 1, 3))
+luc <- unique(plt_obs_prd_mlt$Habitat)
 
 # for (i in luc) {
 #   df <- plt_obs_prd_mlt %>% filter(substr(ID, 1, 3) == i)
@@ -106,17 +110,19 @@ luc <- unique(substr(plt_obs_prd_mlt$ID, 1, 3))
 #   print(p)
 # }
 
-png("vis/comparison_obs_prd.png", width = 22, height = 27, units = "cm", 
-    res = 300, pointsize = 15)
-ggplot(aes(x = as.Date(paste0(month, "01"), format = "%Y%m%d"), y = value, 
-           group = type, color = type), 
-       data = plt_obs_prd_mlt) + 
-  geom_line() + 
-  facet_wrap(~ ID, ncol = 5, scales = "free_y") + 
-  labs(x = "Time (months)", y = "NDVI") + 
-#   scale_linetype_manual("", values = c("ndvi_obs" = 1, "ndvi_prd" = 2), guide = FALSE) + 
-  scale_colour_manual("", values = c("ndvi_obs" = "grey65", "ndvi_prd" = "grey25"), guide = FALSE) + 
-  theme_bw() + 
-  theme(axis.text = element_text(size = 8), panel.grid = element_blank(), 
-        strip.text = element_text(size = 6, lineheight = .01))
-dev.off()
+# png("vis/comparison_obs_prd.png", width = 22, height = 27, units = "cm", 
+#     res = 300, pointsize = 15)
+# ggplot(aes(x = as.Date(paste0(month, "01"), format = "%Y%m%d"), y = value, 
+#            group = type, color = type), 
+#        data = plt_obs_prd_mlt) + 
+#   geom_line() + 
+#   geom_line(aes(group = type, linetype = type), stat = "hline", 
+#             yintercept = "mean", lwd = .05) + 
+#   facet_wrap(~ ID, ncol = 5) + 
+#   labs(x = "Time (months)", y = "NDVI") + 
+# #   scale_linetype_manual("", values = c("ndvi_obs" = 1, "ndvi_prd" = 2), guide = FALSE) + 
+#   scale_colour_manual("", values = c("ndvi_obs" = "grey65", "ndvi_prd" = "grey25"), guide = FALSE) + 
+#   theme_bw() + 
+#   theme(axis.text = element_text(size = 8), panel.grid = element_blank(), 
+#         strip.text = element_text(size = 6, lineheight = .01))
+# dev.off()
