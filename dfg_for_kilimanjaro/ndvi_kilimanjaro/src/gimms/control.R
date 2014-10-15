@@ -50,20 +50,51 @@ rst_gimms <-
   }
 
 
-## Monthly aggregation
+## Whittaker smoothing
 
 # Avl files
 fls_gimms <- list.files("data/rst/", pattern = "_crp_utm.tif$", 
                         full.names = TRUE)
 
+# Setup `orgTime` object -> replace %Y%m with %Y%m%d (compatible to `as.Date` in
+# `orgTime`)
+org_gimms <- basename(fls_gimms)
+org_gimms <- sapply(org_gimms, function(i) {
+  gsub(substr(i, 4, 9), paste0(substr(i, 4, 9), "01"), i)
+})
+org_gimms <- 
+  orgTime(org_gimms, pillow = 0, pos1 = 4, pos2 = 11, format = "%Y%m%d")
+
+# Perform Whittaker smoothing
+rst_gimms_wht <- 
+  whittaker.raster(fls_gimms, timeInfo = org_gimms, lambda = 6000, nIter = 3, 
+                   removeOutlier = TRUE, threshold = 0.2, groupYears = FALSE,
+                   outDirPath = "data/rst/whittaker", overwrite = TRUE)
+
+# Save Whittaker files separately
+rst_gimms_wht <- 
+  foreach(i = rst_gimms_wht[[1]], j = fls_gimms, .combine = "stack") %do% {
+            outdir <- paste0(dirname(j), "/whittaker")
+            outfile <- paste0(substr(basename(j), 1, nchar(basename(j))-4), "_wht")
+            file_out <- paste(outdir, outfile, sep = "/")
+            writeRaster(i, filename = file_out, format = "GTiff", overwrite = TRUE)
+          }
+
+
+## Monthly aggregation
+
+# Avl files
+fls_gimms_wht <- list.files("data/rst/whittaker", pattern = "_crp_utm_wht.tif$", 
+                            full.names = TRUE)
+
 # Outnames
-fls_out <- paste0(substr(basename(fls_gimms), 1, 9),
-                  substr(basename(fls_gimms), 17, (nchar(basename(fls_gimms))-4)), 
+fls_out <- paste0(substr(basename(fls_gimms_wht), 1, 9),
+                  substr(basename(fls_gimms_wht), 17, (nchar(basename(fls_gimms_wht))-4)), 
                   "_aggmax")
-fls_out <- paste0("data/rst/", unique(fls_out))
+fls_out <- paste(unique(dirname(fls_gimms_wht)), unique(fls_out), sep = "/")
 
 # Aggregation, `fun = max`
-rst_gimms_agg <- aggregateGimms(files = fls_gimms, 
+rst_gimms_agg <- aggregateGimms(files = fls_gimms_wht, 
                                 start = 4, stop = 9)
 
 # Output storage
@@ -76,37 +107,6 @@ ls_gimms_agg <- lapply(seq(nlayers(rst_gimms_agg)), function(i) {
 #                             full.names = TRUE)
 # ls_gimms_agg <- lapply(fls_gimms_agg, raster)
 rst_gimms_agg <- stack(ls_gimms_agg)
-
-
-## Whittaker smoothing
-
-fls_gimms_agg <- list.files("data/rst/", pattern = "aggmax.tif$", 
-                            full.names = TRUE)
-
-# Setup `orgTime` object -> replace %Y%m with %Y%m%d (compatible to `as.Date` in
-# `orgTime`)
-org_gimms_agg <- basename(fls_gimms_agg)
-org_gimms_agg <- sapply(org_gimms_agg, function(i) {
-  gsub(substr(i, 4, 9), paste0(substr(i, 4, 9), "01"), i)
-})
-                           
-org_gimms_agg <- orgTime(org_gimms_agg, nDays = "1 month", pillow = 0, 
-                         pos1 = 4, pos2 = 11, format = "%Y%m%d")
-
-rst_gimms_wht <- 
-  whittaker.raster(fls_gimms_agg, timeInfo = org_gimms_agg, lambda = "6000", 
-                   nIter = 3, outDirPath = "data/rst/", groupYears = FALSE, 
-                   overwrite = TRUE)
-
-# Save files separately
-rst_gimms_wht <- foreach(i = rst_gimms_wht[[1]], j = fls_gimms_agg, 
-                         .packages = lib, .combine = "stack") %dopar% {
-  file_out <- paste0(substr(j, 1, nchar(j)-4), "_wht")
-  writeRaster(i, filename = file_out, format = "GTiff", overwrite = TRUE)
-}
-
-# fls_gimms_wht <- list.files("data/rst", pattern = "_wht.tif$", full.names = TRUE)
-# rst_gimms_wht <- stack(fls_gimms_wht)
 
 # Deregister parallel backend
 stopCluster(cl)
