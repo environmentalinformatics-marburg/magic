@@ -197,6 +197,13 @@ public class Util {
 		}
 		return result;
 	}
+	public static String arrayToString(double[] a) {
+		String result="";
+		for(int i=0;i<a.length;i++) {
+			result+=a[i]+" ";
+		}
+		return result;
+	}
 	
 	public static <T> String arrayToString(T[] a) {
 		if(a==null) {

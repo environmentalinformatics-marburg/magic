@@ -50,3 +50,8 @@ li {
 ul {
 	padding-left:15px;
 }
+
+div.bg {
+	background-image: url(/static/timeseries_bg.png);
+	background-position: top left;
+}

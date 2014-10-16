@@ -17,12 +17,14 @@ public class PlotInfo implements Serializable {
 	public final GeneralStationInfo generalStationInfo;
 	public final boolean isStation;
 	public final boolean isVIP;
+	public final double[] geoPos;
 	
 	public PlotInfo(VirtualPlot virtualPlot) {
 		this.name = virtualPlot.plotID;
 		this.generalStationInfo = new GeneralStationInfo(virtualPlot.generalStation);
 		this.isStation = false;
 		this.isVIP = virtualPlot.isFocalPlot;
+		this.geoPos = new double[]{virtualPlot.geoPosEasting,virtualPlot.geoPosNorthing,virtualPlot.elevation};
 	}
 	
 	public PlotInfo(Station station) {
@@ -31,6 +33,7 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(station.generalStation);
 		this.isStation = true;
 		this.isVIP = station.isVIP();
+		this.geoPos = new double[]{station.geoPoslongitude,station.geoPosLatitude};
 	}
 	
 	public PlotInfo(String name, String generalName, String regionName) {
@@ -39,6 +42,7 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(generalName, regionName);
 		this.isStation = false;
 		this.isVIP = false;
+		this.geoPos = new double[]{};
 	}
 
 	@Override

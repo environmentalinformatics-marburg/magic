@@ -1,8 +1,20 @@
-var splitData = function(data) {
+/*var splitData = function(data) {
 	var lines = data.split(/\n/);
+	console.log("lines: ["+lines[0].length+"]");
 	var rows = new Array(lines.length);
 	for (var i = 0; i < lines.length; ++i) {
 		rows[i] = lines[i].split(';');
+	}
+	return rows;
+}*/
+
+var splitData = function(data) {
+	var lines = data.split(/\n/);
+	var rows = [];
+	for (var i in lines) {
+		if(lines[i].length>0) {
+			rows.push(lines[i].split(';'));
+		}
 	}
 	return rows;
 }

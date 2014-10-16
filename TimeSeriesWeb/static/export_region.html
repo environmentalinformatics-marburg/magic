@@ -88,6 +88,7 @@ var ready = function() {
 	document.getElementById("button_cancel").onclick = on_cancel;
 	document.getElementById("button_apply").onclick = on_apply;
 	decTask();
+	$("button").button();
 }
 
 $(document).ready(ready);
@@ -100,12 +101,13 @@ $(document).ready(ready);
 </head>
 
 <body>
-
+<div class="bg">
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
 <h1 style="text-align:center">Export Time Series - choose region</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
 <hr/>
+</div>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply settings</button>

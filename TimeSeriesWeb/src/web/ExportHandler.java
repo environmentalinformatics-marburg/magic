@@ -31,21 +31,33 @@ public class ExportHandler extends AbstractHandler {
 		public String[] plots;
 		public String[] sensors;
 		public boolean interpolate;
-		public boolean description;
+		public boolean desc_sensor;
+		public boolean desc_plot;
+		public boolean desc_settings;
 		public boolean allinone;
 		public AggregationInterval aggregationInterval;
 		public DataQuality quality;
 		public Region region;
+		public boolean col_plotid;
+		public boolean col_timestamp;
+		public boolean col_datetime;
+		public boolean write_header;
 
 		public ExportModel() {
 			this.plots = new String[]{"plot1","plot2","plot3"};
 			this.sensors = new String[]{"sensor1","sensor2","sensor3","sensor4"};
 			this.interpolate = false;
-			this.description = true;
+			this.desc_sensor = true;
+			this.desc_plot = true;
+			this.desc_settings = true;
 			this.allinone = false;
 			this.aggregationInterval = AggregationInterval.DAY;
 			this.quality = DataQuality.STEP;
 			this.region = null;
+			this.col_plotid = true;
+			this.col_timestamp = true;
+			this.col_datetime = true;
+			this.write_header = true;
 		}
 	}
 
@@ -182,39 +194,32 @@ public class ExportHandler extends AbstractHandler {
 		return true;
 	}
 
-	private boolean handle_download(HttpServletResponse response, ExportModel model) {
-		response.setContentType("application/zip");
-		try {
-			OutputStream outputstream = response.getOutputStream();
-			String[] sensorNames = model.sensors;
-			String[] plotIDs = model.plots;
-			AggregationInterval aggregationInterval = model.aggregationInterval;
-			DataQuality dataQuality = model.quality;
-			boolean interpolated = model.interpolate;
-			ZipExport zipexport = new ZipExport(tsdb, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated);
-			zipexport.writeToStream(outputstream);
-			//writer.print("download");
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}	
-	}
-
 	private boolean handle_settings(PrintWriter writer, ExportModel model) {
 
 		JSONWriter json = new JSONWriter(writer);
 		json.object();
 		json.key("interpolate");
 		json.value(model.interpolate);
-		json.key("description");
-		json.value(model.description);
+		json.key("desc_sensor");
+		json.value(model.desc_sensor);
+		json.key("desc_plot");
+		json.value(model.desc_plot);
+		json.key("desc_settings");
+		json.value(model.desc_settings);		
 		json.key("allinone");
 		json.value(model.allinone);
 		json.key("timestep");
 		json.value(model.aggregationInterval.getText());
 		json.key("quality");
 		json.value(model.quality.getText());
+		json.key("col_plotid");
+		json.value(model.col_plotid);
+		json.key("col_timestamp");
+		json.value(model.col_timestamp);
+		json.key("col_datetime");
+		json.value(model.col_datetime);		
+		json.key("write_header");
+		json.value(model.write_header);		
 		json.endObject();
 
 
@@ -226,10 +231,16 @@ public class ExportHandler extends AbstractHandler {
 			String line = reader.readLine();
 			JSONObject json = new JSONObject(line);
 			model.interpolate = json.getBoolean("interpolate");
-			model.description = json.getBoolean("description");
+			model.desc_sensor = json.getBoolean("desc_sensor");
+			model.desc_plot = json.getBoolean("desc_plot");
+			model.desc_settings = json.getBoolean("desc_settings");
 			model.allinone = json.getBoolean("allinone");
 			model.aggregationInterval = AggregationInterval.parse(json.getString("timestep"));
 			model.quality = DataQuality.parse(json.getString("quality"));
+			model.col_plotid = json.getBoolean("col_plotid");
+			model.col_timestamp = json.getBoolean("col_timestamp");
+			model.col_datetime = json.getBoolean("col_datetime");
+			model.write_header = json.getBoolean("write_header");
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -262,5 +273,32 @@ public class ExportHandler extends AbstractHandler {
 			return false;
 		}
 	}
+	
+	private boolean handle_download(HttpServletResponse response, ExportModel model) {
+		response.setContentType("application/zip");
+		try {
+			OutputStream outputstream = response.getOutputStream();
+			Region region = model.region;
+			String[] sensorNames = model.sensors;
+			String[] plotIDs = model.plots;
+			AggregationInterval aggregationInterval = model.aggregationInterval;
+			DataQuality dataQuality = model.quality;
+			boolean interpolated = model.interpolate;
+			boolean allinone = model.allinone;
+			boolean desc_sensor = model.desc_sensor;
+			boolean desc_plot = model.desc_plot;
+			boolean desc_settings = model.desc_settings;
+			boolean col_plotid = model.col_plotid;
+			boolean col_timestamp = model.col_timestamp;
+			boolean col_datetime = model.col_datetime;
+			boolean write_header = model.write_header;
+			ZipExport zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header);
+			boolean ret = zipexport.writeToStream(outputstream);
+			return ret;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}	
+	}	
 
 }

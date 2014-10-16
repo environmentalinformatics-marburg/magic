@@ -128,8 +128,10 @@ $(document).ready(function(){
 	setStateBusy();
 	$.get("/export/sensors").done(function(data) {		
 		chosen_sensors = [];
+		console.log("data: ["+data+"]");
 		rows = splitData(data);
 		for(i in rows) {
+			console.log("row: ["+rows[i]+"]");
 			chosen_sensors.push(rows[i][0]);
 		}
 		update_chosen_select();
@@ -176,12 +178,14 @@ $(document).ready(function(){
 </head>
 
 <body>
+<div class="bg">
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
 <h1 style="text-align:center">Export Time Series - choose sensors</h1>
 <p id="busy" style="text-align:right;visibility:hidden">busy...<p>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div> 
 <hr/>
+</div>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply chosen sensors</button>

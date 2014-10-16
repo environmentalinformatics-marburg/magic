@@ -171,27 +171,9 @@ $(document).ready(function(){
 		var region = rows[0][0];
 		update_general_select(region);
 		decTask();
-	}).fail(function() {alert("error getting data");decTask();});
+	}).fail(function() {alert("error getting data");decTask();});	
 	
-
-	
-	
-	getID("general_select").onchange = update_filtered_available_select;
-	
-	
-	
-	/*$.get("/tsdb/plot_list?generalstation=HEG").done(function(data) {
-		available_plots = [];
-		rows = splitData(data);
-		for(i in rows) {
-			available_plots.push(rows[i][0]);
-		}
-		update_chosen_select();
-		update_available_select();
-	}).fail(function() {alert("error getting data");});*/
-	
-	
-	
+	getID("general_select").onchange = update_filtered_available_select;	
 
 	update_chosen_select();
 	update_available_select();
@@ -202,14 +184,34 @@ $(document).ready(function(){
 <link rel="stylesheet" href="jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
 
+<style type="text/css">
+
+#box_centered {
+    display:inline-block;
+    width:200px;
+    vertical-align:top
+    background: yellow;
+    padding: 2em 0;
+}
+
+.button_centered {
+    display: table;
+    margin: 0 auto;
+}
+
+ 
+</style>
+
 </head>
 
 <body>
+<div class="bg">
 <p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
 <h1 style="text-align:center">Export Time Series - choose plots</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
 <hr/>
+</div>
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply chosen plots</button>
@@ -224,9 +226,13 @@ $(document).ready(function(){
 <option>plt2</option>
 </select>
 </div>
-<div style="display:inline-block;width:100px;vertical-align:top">
+<div id="box_centered" style="display:inline-block;width:200px;vertical-align:top">
+<button class="button_centered" title="choose selected plot">&lt;</button>
+<button class="button_centered" title="remove selected plot">&gt;</button>
+<button class="button_centered" title="choose all plots">&lt;&lt;</button>
+<button class="button_centered" title="remove all plots">&gt;&gt;</button>
 </div>
-<div style="display:inline-block;width:200px;vertical-align:top">
+<div style="display:inline-block;width:200px;vertical-align:top;text-align:center">
 <label for="available_select">Available Plots</label><br/>
 <label for="general_select">filter by</label>
 <select id="general_select"></select>
