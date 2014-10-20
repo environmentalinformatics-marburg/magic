@@ -13,7 +13,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Fun.Tuple2;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
@@ -80,10 +80,10 @@ public class CacheStorage {
 
 	}
 
-	public ConcurrentNavigableMap<Long, TimeSeriesEntry> queryMap(String streamName, Long begin, Long end) {
+	public ConcurrentNavigableMap<Long, TsEntry> queryMap(String streamName, Long begin, Long end) {
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		if(schemaMap.containsKey(streamName)) {
-			ConcurrentNavigableMap<Long, TimeSeriesEntry> map = db.getTreeMap(dbName);
+			ConcurrentNavigableMap<Long, TsEntry> map = db.getTreeMap(dbName);
 			if(begin!=null) {
 				Long fromKey = begin;
 				if(end!=null) {
@@ -109,14 +109,14 @@ public class CacheStorage {
 	public  TsIterator query(String streamName, Long begin, Long end) {		
 		TsSchema schema = schemaMap.get(streamName);
 		if(schema!=null) {
-			Iterator<TimeSeriesEntry> it = queryMap(streamName,begin,end).values().iterator();			
+			Iterator<TsEntry> it = queryMap(streamName,begin,end).values().iterator();			
 			TsIterator it2 = new TsIterator(schema) {
 				@Override
 				public boolean hasNext() {
 					return it.hasNext();
 				}
 				@Override
-				public TimeSeriesEntry next() {
+				public TsEntry next() {
 					return it.next();
 				}
 				@Override
@@ -140,15 +140,15 @@ public class CacheStorage {
 
 		schemaMap.put(streamName, input_iterator.getSchema());
 		
-		Iterator<Tuple2<Long, TimeSeriesEntry>> bulk_iterator = new Iterator<Tuple2<Long,TimeSeriesEntry>>() {
+		Iterator<Tuple2<Long, TsEntry>> bulk_iterator = new Iterator<Tuple2<Long,TsEntry>>() {
 			@Override
 			public boolean hasNext() {
 				return input_iterator.hasNext();
 			}
 			@Override
-			public Tuple2<Long, TimeSeriesEntry> next() {
-				TimeSeriesEntry e = input_iterator.next();
-				return new Tuple2<Long, TimeSeriesEntry>(e.timestamp, e);
+			public Tuple2<Long, TsEntry> next() {
+				TsEntry e = input_iterator.next();
+				return new Tuple2<Long, TsEntry>(e.timestamp, e);
 			}
 		};
 		

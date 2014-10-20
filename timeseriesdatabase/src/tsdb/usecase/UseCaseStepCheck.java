@@ -5,7 +5,7 @@ import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TsDB;
 import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.iterator.TsIterator;
@@ -43,7 +43,7 @@ public class UseCaseStepCheck {
 		TsIterator it = qp.query_raw_with_bad_quality_removed(plotID, sensorNames, null, null, DataQuality.NO);
 		//SchemaIterator<TimestampSeriesEntry> it = timeSeriesDatabase.queryBaseAggregated(plotID,sensorNames,null,null,false,false,false);
 		while(it.hasNext()) {
-			TimeSeriesEntry e = it.next();
+			TsEntry e = it.next();
 			System.out.println(e);
 			//System.out.print(e.timestamp+" ");
 			//Util.printArray(e.data);

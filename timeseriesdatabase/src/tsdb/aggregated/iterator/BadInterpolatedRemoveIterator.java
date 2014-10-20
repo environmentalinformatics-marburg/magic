@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import tsdb.Sensor;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
@@ -16,7 +16,7 @@ import tsdb.util.iterator.TsIterator;
  */
 public class BadInterpolatedRemoveIterator extends InputProcessingIterator {
 	
-	private TimeSeriesEntry prev;
+	private TsEntry prev;
 	private Sensor[] sensors;
 	
 	public static TsSchema createSchema(TsSchema input_schema) {
@@ -34,9 +34,9 @@ public class BadInterpolatedRemoveIterator extends InputProcessingIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(input_iterator.hasNext()) {
-			TimeSeriesEntry current = input_iterator.next();
+			TsEntry current = input_iterator.next();
 			
 			boolean someInterpolated= false;
 			for(int i=0;i<current.interpolated.length;i++) {
@@ -61,7 +61,7 @@ public class BadInterpolatedRemoveIterator extends InputProcessingIterator {
 				}				
 				prev = current;
 				if(someChecksFailed) {
-					return new TimeSeriesEntry(current.timestamp, data, current.qualityFlag, null, interpolated);
+					return new TsEntry(current.timestamp, data, current.qualityFlag, null, interpolated);
 				} else {
 					return current;
 				}

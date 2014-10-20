@@ -1,6 +1,6 @@
 package tsdb.util.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 
@@ -14,9 +14,9 @@ public class SchemaConverterIterator extends InputProcessingIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(input_iterator.hasNext()) {
-			TimeSeriesEntry e = input_iterator.next();
+			TsEntry e = input_iterator.next();
 			float[] data = new float[inputPos.length];
 			for(int i=0;i<data.length;i++) {
 				int pos = inputPos[i];
@@ -26,7 +26,7 @@ public class SchemaConverterIterator extends InputProcessingIterator {
 					data[i] = e.data[pos];
 				}					
 			}
-			return new TimeSeriesEntry(e.timestamp,data);
+			return new TsEntry(e.timestamp,data);
 		} else {
 			return null;
 		}

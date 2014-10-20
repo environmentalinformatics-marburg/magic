@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
@@ -59,7 +59,7 @@ public class ASCTimeSeries {
 	}
 	
 	public TimestampSeries readEntriesASCVariant() {
-		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
+		List<TsEntry> resultList = new ArrayList<TsEntry>();
 		
 		long timestamp = -1;
 		timestampStart = -1;
@@ -105,7 +105,7 @@ public class ASCTimeSeries {
 				}
 			}
 
-			resultList.add(new TimeSeriesEntry(timestamp,data));
+			resultList.add(new TsEntry(timestamp,data));
 			timestampPrev = timestamp;
 		}
 		timestampEnd = timestamp;		
@@ -298,7 +298,7 @@ public class ASCTimeSeries {
 			log.error("isASCVariant");
 			return null;
 		}
-		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
+		List<TsEntry> resultList = new ArrayList<TsEntry>();
 
 		timestampStart = -1;
 		timestampEnd = -1;
@@ -354,7 +354,7 @@ public class ASCTimeSeries {
 				}
 			}
 
-			resultList.add(new TimeSeriesEntry(timestamp,data));
+			resultList.add(new TsEntry(timestamp,data));
 			timestampPrev = timestamp;
 		}
 		timestampEnd = timestamp;		
@@ -393,7 +393,7 @@ public class ASCTimeSeries {
 
 			List<Event> eventList = new ArrayList<Event>(timestampSeries.entryList.size());
 
-			for(TimeSeriesEntry entry:timestampSeries.entryList) {
+			for(TsEntry entry:timestampSeries.entryList) {
 				Float[] eventData = new Float[targetSchema.length];
 				for(int schemaIndex=0;schemaIndex<targetSchema.length;schemaIndex++) {
 					int sourceIndex = sourcePos[schemaIndex];

@@ -7,7 +7,7 @@ import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.Pair;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
@@ -276,9 +276,9 @@ public class BaseAggregationIterator extends InputProcessingIterator implements 
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		while(input_iterator.hasNext()) { // begin of while-loop for raw input-events
-			TimeSeriesEntry entry = input_iterator.next();
+			TsEntry entry = input_iterator.next();
 			long timestamp = entry.timestamp;
 			float[] inputData = entry.data;
 
@@ -287,7 +287,7 @@ public class BaseAggregationIterator extends InputProcessingIterator implements 
 				if(aggregation_timestamp>-1) { // if not init timestamp
 					Pair<float[], DataQuality[]> aggregatedPair = aggregateCollectedData();
 					if(aggregatedPair!=null) {
-						TimeSeriesEntry resultElement = new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);					
+						TsEntry resultElement = new TsEntry(aggregation_timestamp,aggregatedPair);					
 						aggregation_timestamp = nextAggTimestamp;
 						collectQuality(entry.qualityFlag);
 						collectValues(inputData, timestamp);
@@ -311,7 +311,7 @@ public class BaseAggregationIterator extends InputProcessingIterator implements 
 		//process last aggregate if there is some collected data left
 		Pair<float[], DataQuality[]> aggregatedPair = aggregateCollectedData();
 		if(aggregatedPair!=null) {
-			return new TimeSeriesEntry(aggregation_timestamp,aggregatedPair);
+			return new TsEntry(aggregation_timestamp,aggregatedPair);
 		}
 		return null; //no elements left
 	}

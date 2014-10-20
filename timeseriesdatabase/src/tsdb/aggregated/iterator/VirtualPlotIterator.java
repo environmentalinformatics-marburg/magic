@@ -1,7 +1,7 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.DataQuality;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
@@ -32,7 +32,7 @@ public class VirtualPlotIterator extends MoveIterator {
 	private final TsIterator[] processing_iterator;
 	private int currentElements;
 	private long currentTimestamp;
-	private TimeSeriesEntry[] processing_current;
+	private TsEntry[] processing_current;
 	private int[][] processing_position_index;
 
 	private boolean processQualityFlags;
@@ -42,7 +42,7 @@ public class VirtualPlotIterator extends MoveIterator {
 
 		this.result_schema = result_schema;
 		this.processing_iterator = input_iterator;
-		this.processing_current = new TimeSeriesEntry[processing_iterator.length];
+		this.processing_current = new TsEntry[processing_iterator.length];
 		this.processing_position_index = new int[processing_iterator.length][];
 		this.processQualityFlags = getSchema().hasQualityFlags;
 
@@ -66,15 +66,15 @@ public class VirtualPlotIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(currentElements==0) {
 			return null;
 		}
 
-		float[] resultData = TimeSeriesEntry.getNanData(result_schema.length);
+		float[] resultData = TsEntry.getNanData(result_schema.length);
 		DataQuality[] resultFlags = null;
 		if(processQualityFlags) {
-			resultFlags = TimeSeriesEntry.getNanQuality(result_schema.length);
+			resultFlags = TsEntry.getNanQuality(result_schema.length);
 		}
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) { //loop over iterators with iterator_index
 			if(processing_current[iterator_index]!=null) {
@@ -103,7 +103,7 @@ public class VirtualPlotIterator extends MoveIterator {
 			}
 		}
 		//result element
-		TimeSeriesEntry resultTimeSeriesEntry = new TimeSeriesEntry(currentTimestamp, resultData, resultFlags);
+		TsEntry resultTimeSeriesEntry = new TsEntry(currentTimestamp, resultData, resultFlags);
 
 		//set next element timestamp
 		currentTimestamp=Long.MAX_VALUE;

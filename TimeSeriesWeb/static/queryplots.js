@@ -2,6 +2,9 @@ var region_select;
 var generalstation_select;
 var plot_select;
 var aggregation_select;
+var quality_select;
+var qualities = ["no", "physical", "step", "empirical"];
+var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 
 var tasks = 0;
 
@@ -28,6 +31,8 @@ $(document).ready(function(){
 	generalstation_select = $("#generalstation_select");
 	plot_select = $("#plot_select");
 	aggregation_select = $("#aggregation_select");
+	quality_select = $("#quality_select");
+	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updatePlots;	
@@ -92,6 +97,8 @@ var addDiagram = function(plotName, sensorName, sensorDesc, sensorUnit) {
 	var sensorResultTitle = sensorResult.appendChild(document.createElement("div"));
 	sensorResultTitle.innerHTML += "query "+sensorName+"...";
 	var aggregationName = aggregation_select.val();
+	var qualityName = qualities[quality_select.val()];
+	var interpolatedName = ""+getID("interpolated").checked;
 	incTask();
 	var image = new Image();
 	sensorResult.appendChild(image);
@@ -105,6 +112,6 @@ var addDiagram = function(plotName, sensorName, sensorDesc, sensorUnit) {
 		sensorResult.removeChild(image);
 		decTask();
 	}
-	image.src = "/tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName;
+	image.src = "/tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName;
 	decTask();	
 }

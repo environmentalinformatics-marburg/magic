@@ -10,7 +10,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.TsDBLogger;
@@ -80,7 +80,7 @@ public class CreateProcessedFiles implements TsDBLogger {
 								
 								long count = 0;
 								TimestampSeries timestampSeries = TimestampSeries.create(it);
-								for(TimeSeriesEntry e:timestampSeries.entryList) {
+								for(TsEntry e:timestampSeries.entryList) {
 									if(!Float.isNaN(e.data[0])) {
 										count++;
 									}

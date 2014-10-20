@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import tsdb.TimeConverter;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.Table;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
@@ -44,7 +44,7 @@ public class CSVIterator extends TsIterator implements TsDBLogger{
 	}
 
 	@Override
-	public TimeSeriesEntry next() {		
+	public TsEntry next() {		
 		String[] row = rows[currIndex];
 		currIndex++;
 		long timestamp = TimeConverter.parseTimestamp(row[0], row[1], true);		
@@ -57,6 +57,6 @@ public class CSVIterator extends TsIterator implements TsDBLogger{
 				log.warn(e+ "   csv line "+(currIndex+1)+"  in "+filename);
 			}
 		}
-		return new TimeSeriesEntry(timestamp,data);
+		return new TsEntry(timestamp,data);
 	}
 }

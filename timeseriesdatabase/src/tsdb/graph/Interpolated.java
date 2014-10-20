@@ -1,11 +1,14 @@
 package tsdb.graph;
 
 import java.util.ArrayList;
+
 import static tsdb.util.AssumptionCheck.throwNulls;
+
 import java.util.Arrays;
 import java.util.List;
 
 import tsdb.Station;
+import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.Interpolator;
@@ -132,7 +135,7 @@ public class Interpolated extends Continuous.Abstract {
 		int linearInterpolatedCount = Interpolator.processOneValueGaps(sourceTimeSeries);
 		long interpolationStart = sourceTimeSeries.getFirstTimestamp();
 		long interpolationEnd = sourceTimeSeries.getLastTimestamp();
-
+		
 		List<TimeSeries> interpolationTimeSeriesTemp = new ArrayList<TimeSeries>();
 		int sourcesLinearInterpolationCount=0;
 		for(Continuous interpolationSource:interpolationSources) {

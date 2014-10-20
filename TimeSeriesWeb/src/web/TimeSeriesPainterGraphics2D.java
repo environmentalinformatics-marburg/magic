@@ -66,19 +66,62 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void drawLine(float x0, float y0, float x1, float y1) {
-		gc.drawLine((int)x0, (int)y0, (int)x1, (int)y1);
-		
+		gc.drawLine((int)x0, (int)y0, (int)x1, (int)y1);		
+	}
+	
+	@Override
+	public void fillRect(float xMin, float yMin, float xMax, float yMax) {
+		gc.fillRect((int)xMin, (int)yMin, (int)(xMax-xMin), (int)(yMax-yMin));
 	}
 
 	@Override
-	public void setColorValueLine() {
+	public void setColorValueLineTemperature() {
+		gc.setColor(new Color(220, 0, 0));
+	}
+	
+	@Override
+	public void setColorValueLineTemperatureSecondary() {
+		gc.setColor(new Color(156,232,17));
+	}
+
+	@Override
+	public void setColorConnectLineTemperature() {
+		gc.setColor(new Color(220,180,180));		
+	}
+	
+	@Override
+	public void setColorConnectLineTemperatureSecondary() {
+		gc.setColor(new Color(132,150,99));		
+	}
+	
+	@Override
+	public void setColorValueLineUnknown() {
 		gc.setColor(color_black);
-		
+	}
+	
+	@Override
+	public void setColorValueLineUnknownSecondary() {
+		gc.setColor(new Color(156,232,17));
 	}
 
 	@Override
-	public void setColorConnectLine() {
+	public void setColorConnectLineUnknown() {
 		gc.setColor(color_grey);		
+	}
+	
+	@Override
+	public void setColorConnectLineUnknownSecondary() {
+		gc.setColor(new Color(132,150,99));		
+	}
+	
+	@Override
+	public void setColorRectWater() {
+		gc.setColor(new Color(0, 0, 200));		
+	}
+	
+	@Override
+	public void setColorRectWaterSecondary() {
+		gc.setColor(new Color(156,232,17));		
 	}
 
 	@Override

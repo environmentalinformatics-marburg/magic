@@ -1,6 +1,6 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
@@ -24,11 +24,11 @@ public class DifferentialIterator extends InputProcessingIterator {
 	}	
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(!input_iterator.hasNext()) {
 			return null;
 		}
-		TimeSeriesEntry element = input_iterator.next();
+		TsEntry element = input_iterator.next();
 		float[] curr = element.data;
 		float[] data = new float[schema.length];
 		for(int col=0;col<schema.length;col++) {
@@ -39,6 +39,6 @@ public class DifferentialIterator extends InputProcessingIterator {
 			}
 			prev[col] = curr[col];
 		}
-		return new TimeSeriesEntry(element.timestamp, data);
+		return new TsEntry(element.timestamp, data);
 	}
 }

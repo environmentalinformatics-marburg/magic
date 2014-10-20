@@ -1,6 +1,6 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
@@ -29,9 +29,9 @@ public class NanRemoveIterator extends InputProcessingIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		while(input_iterator.hasNext()) {
-			TimeSeriesEntry next = input_iterator.next();
+			TsEntry next = input_iterator.next();
 			int counter = 0;
 			for(float v:next.data) {
 				if(!Float.isNaN(v)) {

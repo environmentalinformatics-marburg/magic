@@ -2,6 +2,7 @@ package web;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
+import static tsdb.util.Util.log;
 
 
 
@@ -11,8 +12,9 @@ import java.util.List;
 
 import org.eclipse.swt.graphics.Color;
 
+import tsdb.SensorCategory;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
 import web.TimeSeriesPainter.PosHorizontal;
@@ -22,6 +24,7 @@ public class TimeSeriesDiagram {
 
 	private final TimestampSeries timestampseries;
 	private final AggregationInterval aggregationInterval;
+	private final SensorCategory diagramType;
 
 	private long aggregationTimeInterval;
 
@@ -35,10 +38,10 @@ public class TimeSeriesDiagram {
 	private long dataMaxTimestamp;
 	private long dataTimestampRange;
 
-	private static final float borderTop = 10;
+	private static final float borderTop = 5;
 	private static final float borderBottom = 15;
 	private static final float borderLeft = 40;
-	private static final float borderRight = 10;
+	private static final float borderRight = 5;
 
 	private float diagramMinX;
 	private float diagramMinY;
@@ -56,10 +59,11 @@ public class TimeSeriesDiagram {
 	private float diagramTimestampFactor;
 	private float diagramValueFactor;
 
-	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval) {
+	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType) {
 		throwNulls(timestampseries,aggregationInterval);
 		this.timestampseries = timestampseries;
 		this.aggregationInterval = aggregationInterval;
+		this.diagramType = diagramType;
 
 		aggregationTimeInterval = 60;
 		switch(aggregationInterval) {
@@ -87,7 +91,7 @@ public class TimeSeriesDiagram {
 		dataCount = 0f;
 		dataSum = 0f;
 
-		for(TimeSeriesEntry entry:timestampseries) {
+		for(TsEntry entry:timestampseries) {
 			float value = entry.data[0];
 			if(!Float.isNaN(value)) {
 				if(value<dataMinValue) {
@@ -139,6 +143,10 @@ public class TimeSeriesDiagram {
 	}
 
 	public void draw(TimeSeriesPainter tsp) {
+		draw(tsp, null);
+	}
+
+	public void draw(TimeSeriesPainter tsp, TimestampSeries compareTs) {
 		throwNull(tsp);
 
 		diagramMinX = tsp.getMinX()+borderLeft;
@@ -162,16 +170,19 @@ public class TimeSeriesDiagram {
 		timescale.draw(tsp, diagramMinX, diagramMaxX, diagramMaxY+1, diagramTimestampFactor,diagramMinY,diagramMaxY+3);
 		drawYScale(tsp);
 		drawAxis(tsp);
-		drawGraph(tsp);
+		if(compareTs!=null) {
+			drawGraph(tsp,compareTs,false);
+		}
+		drawGraph(tsp,timestampseries,true);		
 	}
-	
-	private void drawGraph(TimeSeriesPainter tsp) {
+
+	private void drawGraph(TimeSeriesPainter tsp, TimestampSeries ts, boolean isPrimary) {
 		boolean hasPrev = false;
 		float prevY = 0;
-		List<ValueLine> valueLineList = new ArrayList<ValueLine>(timestampseries.entryList.size());
-		List<ConnectLine> connectLineList = new ArrayList<ConnectLine>(timestampseries.entryList.size());
+		List<ValueLine> valueLineList = new ArrayList<ValueLine>(ts.entryList.size());
+		List<ConnectLine> connectLineList = new ArrayList<ConnectLine>(ts.entryList.size());
 
-		for(TimeSeriesEntry entry:timestampseries) {
+		for(TsEntry entry:ts) {
 			float timestamp = entry.timestamp;
 			float value = entry.data[0];
 			if(Float.isNaN(value)) {
@@ -189,32 +200,87 @@ public class TimeSeriesDiagram {
 			}
 
 		}
-		
-		tsp.setColorConnectLine();
+
+		switch(diagramType) {
+		case TEMPERATURE:
+			drawDiagramTemperature(tsp, valueLineList, connectLineList, isPrimary);
+			break;
+		case WATER:
+			drawDiagramWater(tsp, valueLineList, connectLineList, isPrimary);
+			break;
+		case OTHER:
+			drawDiagramUnknown(tsp, valueLineList, connectLineList, isPrimary);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}
+	}
+
+	private void drawDiagramTemperature(TimeSeriesPainter tsp, List<ValueLine> valueLineList, List<ConnectLine> connectLineList, boolean isPrimary) {
+		if(isPrimary) {
+			tsp.setColorConnectLineTemperature();
+		} else {
+			tsp.setColorConnectLineTemperatureSecondary();	
+		}
 		for(ConnectLine connectLine:connectLineList) {
 			tsp.drawLine(connectLine.x, connectLine.y0, connectLine.x, connectLine.y1);
 		}
-		
-		tsp.setColorValueLine();
+
+		if(isPrimary) {
+			tsp.setColorValueLineTemperature();
+		} else {
+			tsp.setColorValueLineTemperatureSecondary();	
+		}
 		for(ValueLine valueLine:valueLineList) {
 			tsp.drawLine(valueLine.x0,valueLine.y,valueLine.x1,valueLine.y);
-		}		
+		}
 	}
-	
+
+	private void drawDiagramWater(TimeSeriesPainter tsp, List<ValueLine> valueLineList, List<ConnectLine> connectLineList, boolean isPrimary) {
+		if(isPrimary) {
+			tsp.setColorRectWater();
+		} else {
+			tsp.setColorRectWaterSecondary();	
+		}
+		for(ValueLine valueLine:valueLineList) {
+			tsp.fillRect(valueLine.x0, valueLine.y, valueLine.x1, diagramMaxY);
+		}
+	}
+
+	private void drawDiagramUnknown(TimeSeriesPainter tsp, List<ValueLine> valueLineList, List<ConnectLine> connectLineList, boolean isPrimary) {
+		if(isPrimary) {
+			tsp.setColorConnectLineUnknown();
+		} else {
+			tsp.setColorConnectLineUnknownSecondary();	
+		}
+		for(ConnectLine connectLine:connectLineList) {
+			tsp.drawLine(connectLine.x, connectLine.y0, connectLine.x, connectLine.y1);
+		}
+
+		if(isPrimary) {
+			tsp.setColorValueLineUnknown();
+		} else {
+			tsp.setColorValueLineUnknownSecondary();	
+		}
+		for(ValueLine valueLine:valueLineList) {
+			tsp.drawLine(valueLine.x0,valueLine.y,valueLine.x1,valueLine.y);
+		}
+	}
+
 	private void drawAxis(TimeSeriesPainter tsp) {
 		tsp.setColorAxisLine();
 		tsp.drawLine(diagramMinX , diagramMinY, diagramMaxX, diagramMinY); //x-Aches
 		tsp.drawLine(diagramMinX , diagramMaxY, diagramMaxX, diagramMaxY); //x-Grenze
 		tsp.drawLine(diagramMaxX , diagramMinY, diagramMaxX, diagramMaxY); // y-Achse
 		tsp.drawLine(diagramMinX , diagramMinY, diagramMinX, diagramMaxY); // y-Grenze
-		
+
 		int zeroY = calcDiagramY(0f);
 		if(diagramMinY<=zeroY&&zeroY<=diagramMaxY) {
 			tsp.setColorZeroLine();
 			tsp.drawLine(diagramMinX , zeroY, diagramMaxX, zeroY);
 		}		
 	}
-	
+
 	private void drawYScale(TimeSeriesPainter tsp) {
 		int maxLines = (int) (diagramHeigh/17);
 		double minLineStep = diagramValueRange/maxLines;
@@ -229,7 +295,7 @@ public class TimeSeriesDiagram {
 		float lineStart = (float) (mod>0d?diagramMinValue+lineStep-mod:diagramMinValue-mod);
 		drawYScale(tsp,lineStart,lineStep);		
 	}
-	
+
 	private void drawYScale(TimeSeriesPainter tsp, float lineStart, double lineStep) {
 		float line = lineStart;
 		while(line<=diagramMaxValue) {			

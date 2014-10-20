@@ -2,7 +2,7 @@ package tsdb.aggregated.iterator;
 
 import java.util.Map;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
@@ -59,12 +59,12 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 	}
 	
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		
 		if(!input_iterator.hasNext()) {
 			return null;
 		}
-		TimeSeriesEntry element = input_iterator.next();
+		TsEntry element = input_iterator.next();
 		
 		//float[] diff = new float[columns];
 		float[] sum = new float[columns];
@@ -107,7 +107,7 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 			}
 		}
 		
-		return new TimeSeriesEntry(element.timestamp, resultData);		
+		return new TsEntry(element.timestamp, resultData);		
 	}
 	
 	@Override

@@ -4,6 +4,9 @@ var plot_input;
 var sensor_input;
 var aggregation_input;
 var aggregations = ["hour","day","week","month","year"];
+var quality_input;
+var qualities = ["no", "physical", "step", "empirical"];
+var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 
 var sensors = "";
 
@@ -43,9 +46,12 @@ sensor_input = $("#sensor_input").selectmenu();
 sensor_input.on("selectmenuchange", function( event, ui ) {updateSensor();} );
 
 aggregation_input = $("#aggregation_input").selectmenu();
-//aggregation_input.on("selectmenuchange", function( event, ui ) {updateAggregation();} );
 $.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
 aggregation_input.selectmenu("refresh");
+
+quality_input = $("#quality_input").selectmenu();
+$.each(qualitiesText, function(i,text) {quality_input.append(new Option(text,i));});
+quality_input.selectmenu("refresh");
 
 $("#query_button").button().on("click",runQueryTable);
 
@@ -118,16 +124,16 @@ var getQueryParameters = function() {
 	var plotName = plot_input.val();
 	var sensorName = sensors[sensor_input.val()][0];
 	var aggregationName = aggregations[aggregation_input.val()];
-	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName;
+	var qualityName = qualities[quality_input.val()];
+	var interpolatedName = ""+getID("interpolated").checked;
+	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName;
 }
 
 var runQueryTable = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
-	var plotName = plot_input.val();
-	var sensorName = sensors[sensor_input.val()][0];
-	var aggregationName = aggregations[aggregation_input.val()];
-	$.get("/tsdb/query?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName)
+	var query = getQueryParameters();
+	$.get("/tsdb/query?"+query)
 		.done(function(data) {
 			rows = splitData(data);
 			createTable(rows);

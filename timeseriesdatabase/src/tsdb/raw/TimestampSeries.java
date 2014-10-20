@@ -20,14 +20,14 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 	
 	private static final long serialVersionUID = 6078067255995220349L;
 	
-	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TimeSeriesEntry>(0),null);
+	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TsEntry>(0),null);
 	
 	public String[] parameterNames;	
-	public List<TimeSeriesEntry> entryList;
+	public List<TsEntry> entryList;
 	public Integer timeinterval; // null if raw data
 	
 	
-	public TimestampSeries(String[] parameterNames, List<TimeSeriesEntry> entryList,Integer timeinterval) {
+	public TimestampSeries(String[] parameterNames, List<TsEntry> entryList,Integer timeinterval) {
 		this.parameterNames = parameterNames;
 		this.entryList = entryList;
 		this.timeinterval = timeinterval;
@@ -39,9 +39,9 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 			//new Exception().printStackTrace(System.out);
 			return null;
 		}
-		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
+		List<TsEntry> entryList = new ArrayList<TsEntry>();
 		while(input_iterator.hasNext()) {
-			TimeSeriesEntry next = input_iterator.next();
+			TsEntry next = input_iterator.next();
 			entryList.add(next);
 		}
 		return new TimestampSeries(input_iterator.getNames(), entryList, null);
@@ -57,7 +57,7 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 		}
 		s+='\n';
 		for(int i=0;i<n;i++) {			
-			TimeSeriesEntry entry = entryList.get(i);
+			TsEntry entry = entryList.get(i);
 			float[] data = entry.data;
 			s+="["+entry.timestamp+"   "+TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"]\t";
 			for(int c=0;c<data.length;c++) {
@@ -74,7 +74,7 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 		for(int i=0;i<parameterNames.length;i++) {
 			columnEntryCounter[i] = 0;
 		}
-		for(TimeSeriesEntry entry:entryList) {
+		for(TsEntry entry:entryList) {
 			for(int i=0;i<parameterNames.length;i++) {
 				if(!Float.isNaN(entry.data[i])) {
 					columnEntryCounter[i]++;
@@ -103,13 +103,13 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 		for(int i=0;i<newSize;i++) {
 			newParameterNames[i] = parameterNames[newPos[i]];
 		}
-		List<TimeSeriesEntry> newEntryList = new ArrayList<TimeSeriesEntry>(entryList.size());
-		for(TimeSeriesEntry entry:entryList) {
+		List<TsEntry> newEntryList = new ArrayList<TsEntry>(entryList.size());
+		for(TsEntry entry:entryList) {
 			float[] newData = new float[newSize];
 			for(int i=0;i<newSize;i++) {
 				newData[i] = entry.data[newPos[i]];
 			}
-			newEntryList.add(new TimeSeriesEntry(entry.timestamp,newData));
+			newEntryList.add(new TsEntry(entry.timestamp,newData));
 		}
 		parameterNames = newParameterNames;
 		entryList = newEntryList;
@@ -184,8 +184,8 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 	}*/
 	
 	public TimestampSeries getTimeInterval(long start, long end) {
-		List<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
-		for(TimeSeriesEntry entry:entryList) {
+		List<TsEntry> resultList = new ArrayList<TsEntry>();
+		for(TsEntry entry:entryList) {
 			long timestamp = entry.timestamp;
 			if( start<=timestamp && timestamp<=end ) {
 				resultList.add(entry);
@@ -200,7 +200,7 @@ public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
 
 		List<Long> gapList = new ArrayList<Long>();
 		long currentTimeStamp = -1;
-		for(TimeSeriesEntry entry:entryList) {
+		for(TsEntry entry:entryList) {
 			if(!Float.isNaN(entry.data[columnID])) {
 				long nextTimeStamp = entry.timestamp;
 				if(currentTimeStamp>-1&&currentTimeStamp+timeinterval<nextTimeStamp) {

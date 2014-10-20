@@ -9,7 +9,7 @@ import tsdb.TsDBFactory;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
 public class GritBotDataCreation {
@@ -38,7 +38,7 @@ public class GritBotDataCreation {
 		PrintStream printStream = new PrintStream(filename);
 		
 		while(it.hasNext()) {
-			TimeSeriesEntry e = it.next();
+			TsEntry e = it.next();
 			
 			LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(e.timestamp);
 			

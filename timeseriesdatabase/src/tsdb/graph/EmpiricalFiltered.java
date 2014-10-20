@@ -34,9 +34,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 		this.stationName = stationName;
 	}
 
-	public static Continuous create(TsDB tsdb, Continuous continuous, String plotID) {
-		
-		
+	public static Continuous create(TsDB tsdb, Continuous continuous, String plotID) {		
 		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());
 		return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
 	}

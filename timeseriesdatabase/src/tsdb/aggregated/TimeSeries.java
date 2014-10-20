@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import tsdb.DataQuality;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
@@ -57,11 +57,23 @@ public class TimeSeries implements TsIterable {
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
-		this.data = data;
-		this.dataQuality = dataQuality;
-		this.dataInterpolated = dataInterpolated;
-		this.hasDataQualityFlag = false;
-		this.hasDataInterpolatedFlag = false;
+		this.data = data;	
+		
+		if(dataQuality!=null) {
+			this.dataQuality = dataQuality;
+			this.hasDataQualityFlag = true;
+		} else {
+			this.dataQuality = null;
+			this.hasDataQualityFlag = false;
+		}
+		
+		if(dataInterpolated!=null) {
+			this.dataInterpolated = dataInterpolated;
+			this.hasDataInterpolatedFlag = true;
+		} else {
+			this.dataInterpolated = null;
+			this.hasDataInterpolatedFlag = false;
+		}		
 	}
 
 	/**
@@ -87,7 +99,7 @@ public class TimeSeries implements TsIterable {
 			return null; // not data in input_iterator
 		}
 
-		ArrayList<TimeSeriesEntry> entryList = Util.iteratorToList(input_iterator);		
+		ArrayList<TsEntry> entryList = Util.iteratorToList(input_iterator);		
 		long startTimestamp = entryList.get(0).timestamp;
 		float[][] data = new float[schema.length][entryList.size()];
 		DataQuality[][] dataQuality = new DataQuality[schema.length][entryList.size()];
@@ -95,7 +107,7 @@ public class TimeSeries implements TsIterable {
 
 		long timestamp=-1;
 		for(int i=0;i<entryList.size();i++) {
-			TimeSeriesEntry entry = entryList.get(i);
+			TsEntry entry = entryList.get(i);
 			if(timestamp==-1||timestamp+tsSchema.timeStep==entry.timestamp) {
 				for(int column=0;column<schema.length;column++) {
 					data[column][i] = entry.data[column];
@@ -117,12 +129,7 @@ public class TimeSeries implements TsIterable {
 		}
 
 		TimeSeries result = new TimeSeries(input_iterator.getProcessingChain(),schema, startTimestamp, tsSchema.timeStep, data, dataQuality, dataInterpolated);
-
-		result.hasDataQualityFlag = input_iterator.getSchema().hasQualityFlags;
-		result.hasDataInterpolatedFlag = false; //TODO
-
 		return result;
-
 	}
 
 	/**
@@ -153,8 +160,8 @@ public class TimeSeries implements TsIterable {
 			log.error("error");
 		}
 
-		Iterator<TimeSeriesEntry> it = timestampSeries.entryList.iterator();
-		TimeSeriesEntry nextEntry;		
+		Iterator<TsEntry> it = timestampSeries.entryList.iterator();
+		TsEntry nextEntry;		
 		if(it.hasNext()) {
 			nextEntry = it.next();
 			if(nextEntry.timestamp%timeStep!=0) {
@@ -404,7 +411,7 @@ public class TimeSeries implements TsIterable {
 		}
 
 		@Override
-		public TimeSeriesEntry next() {
+		public TsEntry next() {
 			if(hasNext()) {
 				if(pos>=0 && pos<data[0].length) {					
 					float[] resultData = new float[parameterNames.length];
@@ -417,11 +424,11 @@ public class TimeSeries implements TsIterable {
 					}
 					long timestamp = startTimestamp+(pos*timeStep);
 					pos++;
-					return new TimeSeriesEntry(timestamp,resultData,resultQuality,null,resultInterpolated);					
+					return new TsEntry(timestamp,resultData,resultQuality,null,resultInterpolated);					
 				} else {
 					long timestamp = startTimestamp+(pos*timeStep);
 					pos++;
-					return TimeSeriesEntry.createNaN(timestamp, parameterNames.length);
+					return TsEntry.createNaN(timestamp, parameterNames.length);
 				}
 			} else {
 				throw new RuntimeException("iterator out of range");

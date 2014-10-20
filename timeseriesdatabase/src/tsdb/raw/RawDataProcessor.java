@@ -35,7 +35,7 @@ public class RawDataProcessor implements TsDBLogger {
 	}
 
 	public TimestampSeries process(Iterator<Event> it) {	
-		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
+		List<TsEntry> entryList = new ArrayList<TsEntry>();
 		
 		Long prevTimestamp = null;
 		float[] prevData = null;
@@ -70,7 +70,7 @@ public class RawDataProcessor implements TsDBLogger {
 				} else {
 					//no step check
 				}
-				entryList.add(new TimeSeriesEntry(timestamp,data));
+				entryList.add(new TsEntry(timestamp,data));
 			}
 			prevTimestamp = timestamp;
 			prevData = data;

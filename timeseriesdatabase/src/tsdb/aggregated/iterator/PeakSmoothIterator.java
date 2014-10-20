@@ -1,7 +1,7 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
@@ -45,9 +45,9 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 		super(input_iterator, createSchema(input_iterator.getSchema()));
 		columns = input_iterator.getNames().length;
 		if(input_iterator.hasNext()) {
-			TimeSeriesEntry first = input_iterator.next();	
+			TsEntry first = input_iterator.next();	
 			if(input_iterator.hasNext()) {
-				TimeSeriesEntry second = input_iterator.next();
+				TsEntry second = input_iterator.next();
 				long deltaTime = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(second.timestamp)-(BaseAggregationTimeUtil.calcBaseAggregationTimestamp(first.timestamp)+TIMESTEP); //??				
 				updateFillData(deltaTime,second.data);
 				currentTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(first.timestamp) + TIMESTEP;
@@ -61,12 +61,12 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(currentTimestamp<=nextTimestamp) {
 			return generateNext();
 		} else {
 			while(input_iterator.hasNext()) {
-				TimeSeriesEntry next = input_iterator.next();
+				TsEntry next = input_iterator.next();
 				nextTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(next.timestamp);
 				long deltaTime = nextTimestamp-(currentTimestamp-TIMESTEP);
 				//System.out.println("delta time: "+deltaTime+" MAX_FILL_TIME_INTERVAL: "+MAX_FILL_TIME_INTERVAL);
@@ -89,8 +89,8 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 		}
 	}
 
-	private TimeSeriesEntry generateNext() {
-		TimeSeriesEntry result = new TimeSeriesEntry(currentTimestamp, fillData);
+	private TsEntry generateNext() {
+		TsEntry result = new TsEntry(currentTimestamp, fillData);
 		currentTimestamp += TIMESTEP;
 		return result;
 	}

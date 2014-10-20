@@ -2,7 +2,7 @@ package tsdb.raw.iterator;
 
 import java.util.Iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -29,7 +29,7 @@ public class EventConverterIterator extends TsIterator {
 	}
 
 	@Override
-	public TimeSeriesEntry next() {
+	public TsEntry next() {
 		Event event = inputIterator.next();
 		//System.out.println("event: "+event);
 		Object[] payload = event.getPayload();
@@ -37,6 +37,6 @@ public class EventConverterIterator extends TsIterator {
 		for(int i=0;i<schema.length;i++) {
 			data[i] = (float) payload[eventPos[i]];
 		}
-		return new TimeSeriesEntry(event.getTimestamp(),data);
+		return new TsEntry(event.getTimestamp(),data);
 	}
 }

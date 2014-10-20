@@ -52,6 +52,7 @@ public enum DataQuality {
 
 	public static DataQuality parse(String text) {
 		if(text==null) {
+			log.warn("data quality null");
 			return null;
 		}
 		switch(text) {

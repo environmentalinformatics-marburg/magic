@@ -2,7 +2,7 @@ package tsdb.aggregated.iterator;
 
 import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
@@ -22,7 +22,7 @@ public class NanGapIterator extends InputProcessingIterator implements TsDBLogge
 	 * timestamp of next Element to output
 	 */
 	long currTimestamp;
-	TimeSeriesEntry nextElement;
+	TsEntry nextElement;
 
 	Long endTimestamp;
 
@@ -107,14 +107,14 @@ public class NanGapIterator extends InputProcessingIterator implements TsDBLogge
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		//System.out.println(this.getClass()+"  getNext()");
 		if(nextElement==null) {// ******************  no elements left in input_iterator ********************************************
 			if(endTimestamp==null) {
 				return null;
 			} else {
 				if(currTimestamp<=endTimestamp) {
-					TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getNames().length);
+					TsEntry nanElement = TsEntry.createNaN(currTimestamp, input_iterator.getNames().length);
 					currTimestamp += schema.timeStep;
 					//System.out.println(this.getClass()+" "+currTimestamp+" "+nanElement);
 					return nanElement;
@@ -122,15 +122,18 @@ public class NanGapIterator extends InputProcessingIterator implements TsDBLogge
 					return null;
 				}
 			}
+		} else if(endTimestamp!=null&&nextElement.timestamp>endTimestamp) {
+			nextElement = null;
+			return null;
 		} else if(currTimestamp<nextElement.timestamp) { // ************** next element higher than current timestamp ****************
-			TimeSeriesEntry nanElement = TimeSeriesEntry.createNaN(currTimestamp, input_iterator.getNames().length);
+			TsEntry nanElement = TsEntry.createNaN(currTimestamp, input_iterator.getNames().length);
 			currTimestamp += schema.timeStep;
 			return nanElement;
 		} else if(currTimestamp==nextElement.timestamp) { // ************* current element timestamp equal to current timestamp ******
 			currTimestamp += schema.timeStep;
-			TimeSeriesEntry currElement = nextElement;			
+			TsEntry currElement = nextElement;			
 			if(input_iterator.hasNext()) {
-				TimeSeriesEntry temp = input_iterator.next();
+				TsEntry temp = input_iterator.next();
 				if(temp.timestamp<=nextElement.timestamp) {
 					log.error("timestamp error in input iterator");
 				}

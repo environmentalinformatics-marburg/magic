@@ -10,7 +10,7 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
@@ -78,9 +78,9 @@ public class TestingCalibration {
 		}
 
 		@Override
-		protected TimeSeriesEntry getNext() {
+		protected TsEntry getNext() {
 			if(input_iterator.hasNext()) {
-				TimeSeriesEntry curr = input_iterator.next();
+				TsEntry curr = input_iterator.next();
 				float value = curr.data[0];
 				float result;
 				if((!Float.isNaN(prev))&&(!Float.isNaN(value))&&(value<200)&&(value-prev)>=0) {
@@ -89,7 +89,7 @@ public class TestingCalibration {
 					result = Float.NaN;
 				}
 				prev = value;
-				return new TimeSeriesEntry(curr.timestamp, new float[]{curr.data[0],result});
+				return new TsEntry(curr.timestamp, new float[]{curr.data[0],result});
 			} else
 				return null;
 		}
@@ -216,7 +216,7 @@ public class TestingCalibration {
 		}
 
 		@Override
-		protected TimeSeriesEntry getNext() {
+		protected TsEntry getNext() {
 			return null;
 		}
 

@@ -9,7 +9,7 @@ import tsdb.QueryProcessor;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.CSV;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
@@ -75,14 +75,14 @@ public class EmpiricalDiff {
 				return itBase.hasNext();
 			}
 			@Override
-			public TimeSeriesEntry next() {
-				TimeSeriesEntry base = itBase.next();
+			public TsEntry next() {
+				TsEntry base = itBase.next();
 				if(!Float.isNaN(base.data[0])) {
 					float avgCnt = 0;
 					float avgSum = 0;
 					float minDiff = Float.MAX_VALUE;
 					for(int i=0;i<NEAR_STATIONS;i++) {
-						TimeSeriesEntry near = itNear[i].next();
+						TsEntry near = itNear[i].next();
 						if(!Float.isNaN(near.data[0])) {
 							if(base.timestamp!=near.timestamp) {
 								System.out.println(base.timestamp+" "+near.timestamp);
@@ -114,13 +114,13 @@ public class EmpiricalDiff {
 						stepValue = Float.NaN;
 					}
 					prevValue = base.data[0];
-					return new TimeSeriesEntry(base.timestamp, new float[]{base.data[0],minDiff,avgSum/avgCnt,valid_min_Value,valid_avg_Value,stepValue});
+					return new TsEntry(base.timestamp, new float[]{base.data[0],minDiff,avgSum/avgCnt,valid_min_Value,valid_avg_Value,stepValue});
 				} else {
 					for(int i=0;i<NEAR_STATIONS;i++) {
 						itNear[i].next();						
 					}
 					prevValue = Float.NaN;
-					return new TimeSeriesEntry(base.timestamp, new float[]{base.data[0],Float.NaN,Float.NaN,Float.NaN});
+					return new TsEntry(base.timestamp, new float[]{base.data[0],Float.NaN,Float.NaN,Float.NaN});
 				}
 			}
 			@Override

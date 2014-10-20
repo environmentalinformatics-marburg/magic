@@ -113,6 +113,7 @@ public class TsDBFactory {
 			//*** global config start
 			configLoader.readSensorDescriptionConfig(configDirectory+"sensor_description.ini");
 			configLoader.readSensorUnitConfig(configDirectory+"sensor_unit.ini");
+			configLoader.readSensorCategoryConfig(configDirectory+"sensor_category.ini");
 			//*** global config end
 			
 			tsdb.createPlotMap();

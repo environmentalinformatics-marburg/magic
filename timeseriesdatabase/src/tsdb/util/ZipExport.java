@@ -22,7 +22,7 @@ import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
@@ -166,6 +166,7 @@ public class ZipExport {
 							}
 						}
 					} catch (Exception e) {
+						e.printStackTrace();
 						log.error(e);
 					}
 				}				
@@ -308,7 +309,7 @@ public class ZipExport {
 
 
 
-		for(TimeSeriesEntry entry:timeseries.entryList) {
+		for(TsEntry entry:timeseries.entryList) {
 			boolean isFirst = true;
 			StringBuilder s = new StringBuilder();
 			if(col_plotid) {

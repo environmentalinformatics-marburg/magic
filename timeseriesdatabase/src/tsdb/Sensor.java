@@ -58,6 +58,8 @@ public class Sensor implements Serializable {
 	
 	public String unitDescription;
 	
+	public SensorCategory category;
+	
 	public Sensor(String name) {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;
@@ -67,6 +69,7 @@ public class Sensor implements Serializable {
 		baseAggregationType = AggregationType.NONE;
 		useInterpolation = false;
 		empiricalDiff = null;
+		category = SensorCategory.OTHER;
 	}
 	
 	/**
@@ -105,11 +108,11 @@ public class Sensor implements Serializable {
 	}
 	
 	public float getStepMin() {
-		return physicalMin;
+		return stepMin;
 	}
 	
 	public float getStepMax() {
-		return physicalMax;
+		return stepMax;
 	}
 	
 	public Float getEmpiricalDiff() {

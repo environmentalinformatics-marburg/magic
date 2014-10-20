@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tsdb.StationProperties;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import de.umr.jepc.store.Event;
 
@@ -112,7 +112,7 @@ public class Loader_pu2 extends AbstractLoader {
 	@Override
 	protected List<Event> toEvents(TimestampSeries timestampSeries) {
 		List<Event> eventList = new ArrayList<Event>(timestampSeries.entryList.size());
-		for(TimeSeriesEntry entry:timestampSeries.entryList) {
+		for(TsEntry entry:timestampSeries.entryList) {
 			Float[] eventData = new Float[sourcePos.length];
 			for(int schemaIndex=0;schemaIndex<sourcePos.length;schemaIndex++) {
 				int sourceIndex = sourcePos[schemaIndex];

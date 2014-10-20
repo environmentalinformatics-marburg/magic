@@ -12,19 +12,19 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class TimeSeriesEntry implements Serializable {
+public class TsEntry implements Serializable {
 	private static final long serialVersionUID = -4568612556987905958L;
 	public final long timestamp;	
 	public final float[] data;
 	public final DataQuality[] qualityFlag; // maybe null
 	public final int[][] qualityCounter; // maybe null
 	public final boolean[] interpolated; // maybe null
-	
-	public TimeSeriesEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter) {
+
+	public TsEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter) {
 		this(timestamp, data, qualityFlag, qualityCounter, null);
 	}
-	
-	public TimeSeriesEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter,boolean[] interpolated) {
+
+	public TsEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter,boolean[] interpolated) {
 		this.timestamp = timestamp;
 		this.data = data;
 		this.qualityFlag = qualityFlag;
@@ -32,27 +32,27 @@ public class TimeSeriesEntry implements Serializable {
 		this.interpolated = interpolated;
 	}
 
-	public TimeSeriesEntry(long timestamp,float[] data) {
+	public TsEntry(long timestamp,float[] data) {
 		this(timestamp, data, null, null, null);
 	}
 
-	public TimeSeriesEntry(long timestamp, float[] data, DataQuality[] qualityFlag) {
+	public TsEntry(long timestamp, float[] data, DataQuality[] qualityFlag) {
 		this(timestamp, data, qualityFlag, null, null);
 	}
-	
-	public TimeSeriesEntry(long timestamp, Pair<float[],DataQuality[]> dataPair) {
+
+	public TsEntry(long timestamp, Pair<float[],DataQuality[]> dataPair) {
 		this(timestamp,dataPair.a,dataPair.b);
 	}
-	
-	public TimeSeriesEntry(long timestamp, Object unused, Pair<float[],int[][]> dataPair) {		
+
+	public TsEntry(long timestamp, Object unused, Pair<float[],int[][]> dataPair) {		
 		this(timestamp,dataPair.a, null,dataPair.b, null);
 		if(unused!=null) {
 			throw new RuntimeException();
 		}
 	}
 
-	public static TimeSeriesEntry createNaN(long timestamp, int columnCount) {
-		return new TimeSeriesEntry(timestamp, getNanData(columnCount), getNanQuality(columnCount));
+	public static TsEntry createNaN(long timestamp, int columnCount) {
+		return new TsEntry(timestamp, getNanData(columnCount), getNanQuality(columnCount));
 	}
 
 	public static float[] getNanData(int columnCount) {
@@ -62,7 +62,7 @@ public class TimeSeriesEntry implements Serializable {
 		}
 		return data;
 	}
-	
+
 	public static DataQuality[] getNanQuality(int columnCount) {
 		DataQuality[] qualityFlag = new DataQuality[columnCount];
 		for(int i=0;i<columnCount;i++) {
@@ -73,14 +73,14 @@ public class TimeSeriesEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return " < "+timestamp+": "+TimeConverter.oleMinutesToLocalDateTime(timestamp)+" > "+Util.arrayToString(data)+" "+qualityFlagToString();
+		return timestamp+"|"+TimeConverter.oleMinutesToLocalDateTime(timestamp)+" "+Util.arrayToString(data)+" "+qualityFlagToString()+" "+interpolatedFlagToString()+" "+qualityCounterToString();
 	}
 
 	public String qualityFlagToString() {
 		if(qualityFlag==null) {
-			return "[--]";
+			return "q-";
 		} else {
-			String s="[";
+			String s="q";
 			for(int qIndex=0; qIndex<qualityFlag.length; qIndex++) {
 				switch(qualityFlag[qIndex]) {
 				case Na:
@@ -103,9 +103,34 @@ public class TimeSeriesEntry implements Serializable {
 
 				}
 			}
-			return s+"]";
+			return s;
 		}
 	}
+
+	private String interpolatedFlagToString() {
+		if(interpolated==null) {
+			return "i-";
+		} else {
+			String s="i";
+			for(int qIndex=0; qIndex<interpolated.length; qIndex++) {
+				if(interpolated[qIndex]) {
+					s+="1";
+				} else {
+					s+="0";
+				}				
+			}
+			return s;			
+		}
+	}
+	
+	private String qualityCounterToString() {
+		if(qualityCounter==null) {
+			return "c-";
+		} else {
+			return "c?";
+		}
+	}
+
 
 
 }

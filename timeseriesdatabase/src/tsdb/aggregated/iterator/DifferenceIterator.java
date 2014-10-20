@@ -1,6 +1,6 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.NewProcessingChain;
 import tsdb.util.iterator.NewProcessingChainMultiSources;
@@ -36,9 +36,9 @@ public class DifferenceIterator extends TsIterator {
 	}
 
 	@Override
-	public TimeSeriesEntry next() {
-		TimeSeriesEntry element = input_iterator.next();
-		TimeSeriesEntry genElement = compare_iterator.next();
+	public TsEntry next() {
+		TsEntry element = input_iterator.next();
+		TsEntry genElement = compare_iterator.next();
 		long timestamp = element.timestamp;
 		if(timestamp!= genElement.timestamp) {
 			throw new RuntimeException("iterator error");
@@ -52,7 +52,7 @@ public class DifferenceIterator extends TsIterator {
 				result[colIndex] = (element.data[colIndex]-refValues[colIndex])-genElement.data[colIndex];	
 			}
 		}
-		return new TimeSeriesEntry(timestamp,result);
+		return new TsEntry(timestamp,result);
 	}
 
 	@Override

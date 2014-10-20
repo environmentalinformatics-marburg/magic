@@ -10,7 +10,7 @@ import tsdb.aggregated.iterator.ApplyIterator;
 import tsdb.aggregated.iterator.LinearIterpolationIterator;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.aggregated.iterator.ProjectionIterator;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
@@ -20,7 +20,7 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 @Deprecated
-public class Builder implements Iterable<TimeSeriesEntry> {
+public class Builder implements Iterable<TsEntry> {
 	
 	public static Builder base_aggregated(QueryProcessor qp, String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality) {
 		return new Builder(()->qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality), queryStart, queryEnd);
@@ -46,7 +46,7 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 		return new NanGapIterator(it,start,end);
 	}
 	
-	public static TsIterator apply(TsIterator it, Function<TimeSeriesEntry,TimeSeriesEntry> mapper) {
+	public static TsIterator apply(TsIterator it, Function<TsEntry,TsEntry> mapper) {
 		return new ApplyIterator(it,mapper);
 	}
 	
@@ -73,7 +73,7 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 	}
 	
 	@Override
-	public Iterator<TimeSeriesEntry> iterator() {
+	public Iterator<TsEntry> iterator() {
 		return create();
 	}
 	
@@ -125,7 +125,7 @@ public class Builder implements Iterable<TimeSeriesEntry> {
 	 * @param mapper
 	 * @return
 	 */
-	public Builder apply(Function<TimeSeriesEntry,TimeSeriesEntry> mapper) {
+	public Builder apply(Function<TsEntry,TsEntry> mapper) {
 		return new Builder(()->apply(this.create(),mapper),this.queryStart,this.queryEnd);
 	}
 	

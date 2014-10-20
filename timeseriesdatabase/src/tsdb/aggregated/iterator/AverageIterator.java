@@ -4,7 +4,7 @@ import static tsdb.util.AssumptionCheck.throwEmpty;
 
 import java.util.Map;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
@@ -45,7 +45,7 @@ public class AverageIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		long timestamp = -1;
 		int[] value_cnt = new int[this.schema.length];
 		float[] value_sum = new float[this.schema.length];				
@@ -53,7 +53,7 @@ public class AverageIterator extends MoveIterator {
 			if(!it.hasNext()) {
 				return null;
 			}
-			TimeSeriesEntry element = it.next();
+			TsEntry element = it.next();
 			if(timestamp==-1) {
 				timestamp = element.timestamp;
 			} else {
@@ -81,7 +81,7 @@ public class AverageIterator extends MoveIterator {
 				value_avg[i] = Float.NaN;
 			}
 		}
-		return new TimeSeriesEntry(timestamp, value_avg);	
+		return new TsEntry(timestamp, value_avg);	
 	}
 	
 	@Override

@@ -28,9 +28,10 @@ import org.json.JSONWriter;
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
+import tsdb.SensorCategory;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
@@ -121,8 +122,10 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
 			String aggregation = request.getParameter("aggregation");
+			String quality = request.getParameter("quality");
+			String interpolated = request.getParameter("interpolated");
 			if(plot!=null&&sensor!=null&&aggregation!=null) {
-				ret = handle_query(response.getWriter(),plot,sensor,aggregation);
+				ret = handle_query(response.getWriter(),plot,sensor,aggregation,quality,interpolated);
 			} else {
 				log.warn("wrong call");
 			}
@@ -132,8 +135,10 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			String plot = request.getParameter("plot");
 			String sensor = request.getParameter("sensor");
 			String aggregation = request.getParameter("aggregation");
+			String quality = request.getParameter("quality");
+			String interpolated = request.getParameter("interpolated");
 			if(plot!=null&&sensor!=null&&aggregation!=null) {
-				ret = handle_query_image(response,plot,sensor,aggregation);
+				ret = handle_query_image(response,plot,sensor,aggregation,quality,interpolated);
 			} else {
 				log.warn("wrong call");
 			}
@@ -218,15 +223,40 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		}		
 	}
 
-	private boolean handle_query(PrintWriter writer, String plot, String sensor, String aggregation) {
+	private boolean handle_query(PrintWriter writer, String plot, String sensor, String aggregation, String quality, String interpolated) {
+		DataQuality dataQuality = null;
+		try {
+			dataQuality = DataQuality.parse(quality);
+		} catch (Exception e) {
+			log.warn(e);
+		}
+		if(dataQuality==null) {
+			dataQuality = DataQuality.STEP;
+		}
+
+		boolean isInterpolated = false;
+		if(interpolated!=null) {
+			switch(interpolated) {
+			case "true":
+				isInterpolated = true;
+				break;
+			case "false":
+				isInterpolated = false;
+				break;
+			default:
+				log.warn("unknown input");
+				isInterpolated = false;				
+			}
+		}
+
 		try {
 			AggregationInterval agg = AggregationInterval.parse(aggregation);
 			if(agg!=null) {
-				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.STEP, false);
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, dataQuality, isInterpolated);
 				if(ts!=null) {
 					TsIterator it = ts.tsIterator();
 					while(it.hasNext()) {
-						TimeSeriesEntry e = it.next(); 
+						TsEntry e = it.next(); 
 						writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
 						float value = e.data[0];
 						if(Float.isNaN(value)) {
@@ -253,24 +283,66 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 
 	}
 
-	private boolean handle_query_image(HttpServletResponse response, String plot, String sensor, String aggregation) {
+	private boolean handle_query_image(HttpServletResponse response, String plot, String sensorName, String aggregation, String quality, String interpolated) {
+		DataQuality dataQuality = null;
+		try {
+			dataQuality = DataQuality.parse(quality);
+		} catch (Exception e) {
+			log.warn(e);
+		}
+		if(dataQuality==null) {
+			dataQuality = DataQuality.STEP;
+		}
+		boolean isInterpolated = false;
+		if(interpolated!=null) {
+			switch(interpolated) {
+			case "true":
+				isInterpolated = true;
+				break;
+			case "false":
+				isInterpolated = false;
+				break;
+			default:
+				log.warn("unknown input");
+				isInterpolated = false;				
+			}
+		}
+
 		try {
 			response.setContentType("image/png");
 			AggregationInterval agg = AggregationInterval.parse(aggregation);
 			if(agg!=null) {
-				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, DataQuality.EMPIRICAL, false);
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated);
+				TimestampSeries compareTs = null;
+				try {
+					compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false);
+				} catch(Exception e) {
+					log.warn(e);
+				}
 				if(ts!=null) {
 					BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
 
-					
+
 					Graphics2D gc = bufferedImage.createGraphics();
 					gc.setBackground(new Color(255, 255, 255));
 					gc.setColor(new Color(0, 0, 0));
 					gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 					gc.dispose();
-					
-					new TimeSeriesDiagram(ts, agg).draw(new TimeSeriesPainterGraphics2D(bufferedImage));
-					
+
+
+					SensorCategory diagramType = SensorCategory.OTHER;
+					try {
+						Sensor sensor = tsdb.getSensor(sensorName);
+						if(sensor!=null) {
+							diagramType = sensor.category;
+						}
+					} catch(Exception e) {
+						log.warn(e);
+					}
+
+
+					new TimeSeriesDiagram(ts, agg, diagramType).draw(new TimeSeriesPainterGraphics2D(bufferedImage),compareTs);
+
 					try {
 						//ImageIO.write(bufferedImage, "png", new File("C:/timeseriesdatabase_output/"+"img.png"));
 						ImageIO.write(bufferedImage, "png", response.getOutputStream());
@@ -287,6 +359,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 				return false;
 			}
 		} catch (RemoteException e) {
+			e.printStackTrace();
 			log.warn(e);
 			return false;
 		}
@@ -369,7 +442,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			return false;
 		}
 	}
-	
+
 	private boolean handle_region_plot_list(PrintWriter writer, String regionName) {
 		try {
 			PlotInfo[] plotInfos = tsdb.getPlotInfos();
@@ -413,7 +486,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			return false;
 		}
 	}
-	
+
 	private boolean handle_general_station_sensor_list(PrintWriter writer, String general_station) {
 		try {
 			String[] sensorNames = tsdb.getGeneralStationSensorNames(general_station);
@@ -438,7 +511,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			return false;
 		}
 	}
-	
+
 	private boolean handle_region_sensor_list(PrintWriter writer, String region) {
 		try {			
 			Set<String> sensorNameSet = new TreeSet<String>();

@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Display;
 
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
 
@@ -136,7 +136,7 @@ public class TimeSeriesView {
 		dataCount = 0f;
 		dataSum = 0f;
 
-		for(TimeSeriesEntry entry:timeSeries) {
+		for(TsEntry entry:timeSeries) {
 			float value = entry.data[0];
 			if(!Float.isNaN(value)) {
 				if(value<dataMinValue) {
@@ -453,7 +453,7 @@ public class TimeSeriesView {
 		List<int[]> connectLineList = new ArrayList<int[]>(used_timeseries.entryList.size());
 		List<int[]> valueLineList = new ArrayList<int[]>(used_timeseries.entryList.size());
 
-		for(TimeSeriesEntry entry:used_timeseries) {	
+		for(TsEntry entry:used_timeseries) {	
 			float value = entry.data[0];
 			double timestamp = entry.timestamp;
 			if(!Float.isNaN(value)) {				

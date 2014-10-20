@@ -9,7 +9,7 @@ import tsdb.GeneralStation;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.Builder;
 import tsdb.util.CSV;
 import tsdb.util.iterator.TsIterator;
@@ -24,11 +24,11 @@ public class UseCaseAverageGeneralStationQuery {
 	
 	private static final String CSV_OUTPUT_PATH = TsDBFactory.get_CSV_output_path();
 	
-	private static Function<TimeSeriesEntry, TimeSeriesEntry> createDiffFunc(TsIterator compareIt) {
-		return new Function<TimeSeriesEntry, TimeSeriesEntry>() {			
+	private static Function<TsEntry, TsEntry> createDiffFunc(TsIterator compareIt) {
+		return new Function<TsEntry, TsEntry>() {			
 			@Override
-			public TimeSeriesEntry apply(TimeSeriesEntry element) {
-				TimeSeriesEntry genElement = compareIt.next();
+			public TsEntry apply(TsEntry element) {
+				TsEntry genElement = compareIt.next();
 				long timestamp = element.timestamp;
 				if(timestamp!= genElement.timestamp) {
 					throw new RuntimeException("iterator error");
@@ -43,7 +43,7 @@ public class UseCaseAverageGeneralStationQuery {
 						} 
 					} 
 				}				
-				return new TimeSeriesEntry(timestamp,result);
+				return new TsEntry(timestamp,result);
 			}
 		};		
 	}
@@ -92,12 +92,12 @@ public class UseCaseAverageGeneralStationQuery {
 			String streamName = generalStation.name;
 			Long begin = null;
 			Long end = null;
-			ConcurrentNavigableMap<Long, TimeSeriesEntry> map = timeSeriesDatabase.cacheStorage.queryMap(streamName, begin, end);
+			ConcurrentNavigableMap<Long, TsEntry> map = timeSeriesDatabase.cacheStorage.queryMap(streamName, begin, end);
 			System.out.println(generalStation.name+": "+TimeConverter.oleMinutesToLocalDateTime(map.firstKey())+"\t-\t"+TimeConverter.oleMinutesToLocalDateTime(map.lastKey()));
 			Timer timer = new Timer();
 			timer.start(generalStation.name);
 			int count = 0;
-			for(TimeSeriesEntry value:map.values()) {
+			for(TsEntry value:map.values()) {
 				count++;
 			}
 			timer.stop(generalStation.name);

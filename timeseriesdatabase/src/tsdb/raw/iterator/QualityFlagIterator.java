@@ -3,7 +3,7 @@ package tsdb.raw.iterator;
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
@@ -46,9 +46,9 @@ public class QualityFlagIterator extends InputProcessingIterator {
 	}
 	
 	@Override
-	public TimeSeriesEntry getNext() {
+	public TsEntry getNext() {
 		if(input_iterator.hasNext()) {
-			TimeSeriesEntry currEntry = input_iterator.next();
+			TsEntry currEntry = input_iterator.next();
 			long currTimestamp = currEntry.timestamp;
 			float[] currData = currEntry.data;
 			DataQuality[] flags = new DataQuality[schema.length];
@@ -74,7 +74,7 @@ public class QualityFlagIterator extends InputProcessingIterator {
 				} 
 				flags[columnIndex] = currQuality;
 			}
-			return new TimeSeriesEntry(currTimestamp, currData, flags);
+			return new TsEntry(currTimestamp, currData, flags);
 		} else {
 			return null; // no elements left
 		}

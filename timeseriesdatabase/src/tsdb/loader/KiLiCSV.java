@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.TsDBLogger;
 import de.umr.jepc.store.Event;
@@ -103,7 +103,7 @@ public class KiLiCSV implements TsDBLogger {
 		}		
 		String[] columnNames = columnNamesList.toArray(new String[0]);
 		
-		ArrayList<TimeSeriesEntry> resultList = new ArrayList<TimeSeriesEntry>();
+		ArrayList<TsEntry> resultList = new ArrayList<TsEntry>();
 
 		long timestampStart = 0;
 		long timestampEnd = 0;
@@ -166,7 +166,7 @@ public class KiLiCSV implements TsDBLogger {
 				}
 			}
 			
-			resultList.add(new TimeSeriesEntry(timestamp,data));
+			resultList.add(new TsEntry(timestamp,data));
 		}
 
 		bufferedReader.close();

@@ -1,7 +1,7 @@
 package tsdb.raw.iterator;
 
 import tsdb.DataQuality;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsDBLogger;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
@@ -34,8 +34,8 @@ public class LowQualityToNanIterator extends InputIterator implements TsDBLogger
 	}
 
 	@Override
-	public TimeSeriesEntry next() {
-		TimeSeriesEntry next = input_iterator.next();
+	public TsEntry next() {
+		TsEntry next = input_iterator.next();
 		float[] data = next.data;
 		DataQuality[] qualityFlag = next.qualityFlag;
 		float[] resultData = new float[schema.length];
@@ -69,6 +69,6 @@ public class LowQualityToNanIterator extends InputIterator implements TsDBLogger
 				resultData[i] = Float.NaN;
 			}
 		}
-		return new TimeSeriesEntry(next.timestamp,resultData,qualityFlag);
+		return new TsEntry(next.timestamp,resultData,qualityFlag);
 	}
 }

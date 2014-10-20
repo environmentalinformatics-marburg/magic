@@ -17,7 +17,7 @@ import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.Differential;
 import tsdb.graph.QueryPlan;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.iterator.TsIteratorIterator;
 
@@ -71,7 +71,7 @@ public class CreateSteps {
 				
 				ArrayList<Float> result_list = new ArrayList<Float>();
 				while(result_iterator.hasNext())  {
-					TimeSeriesEntry element = result_iterator.next();
+					TsEntry element = result_iterator.next();
 					float value = element.data[0];
 					if(!Float.isNaN(value)) {
 						result_list.add(value);

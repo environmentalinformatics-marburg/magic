@@ -1,15 +1,15 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
 public class LinearIterpolationIterator extends InputProcessingIterator {
 	
-	TimeSeriesEntry prev = null;
-	TimeSeriesEntry curr = null;
-	TimeSeriesEntry next = null;
+	TsEntry prev = null;
+	TsEntry curr = null;
+	TsEntry next = null;
 	
 	private int interpolationCount = 0;
 	
@@ -34,7 +34,7 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {
+	protected TsEntry getNext() {
 		if(next==null) {// no elements left
 			return null;
 		}
@@ -66,7 +66,7 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 					result[i] = curr.data[i];
 				}
 			}
-			TimeSeriesEntry res = new TimeSeriesEntry(curr.timestamp, result);
+			TsEntry res = new TsEntry(curr.timestamp, result);
 			System.out.println("-"+curr);
 			System.out.println("+"+res);			
 			return res;

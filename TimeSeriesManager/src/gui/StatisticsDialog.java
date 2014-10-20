@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import tsdb.TimeConverter;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -124,7 +124,7 @@ public class StatisticsDialog extends Dialog {
 				//println(null);
 			} else {
 				long entry_counter = 0;
-				TimeSeriesEntry e=null;
+				TsEntry e=null;
 				Long start=null;
 				Long end=null;
 				//Timer timer = new Timer();

@@ -1,8 +1,9 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.DataQuality;
+import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.NewProcessingChain;
@@ -29,8 +30,9 @@ public class EmpiricalIterator extends TsIterator {
 		Aggregation aggregation = Aggregation.CONSTANT_STEP;
 		schema.throwNoBaseAggregation();
 		int timeStep = BaseAggregationTimeUtil.AGGREGATION_TIME_INTERVAL;
-		//TODO quality flag
-		return new TsSchema(schema.names, aggregation, timeStep, isContinuous);
+		schema.throwNoQualityFlags();
+		boolean hasQualityFlags = true;
+		return new TsSchema(schema.names, aggregation, timeStep, isContinuous, hasQualityFlags);
 	}
 
 	public EmpiricalIterator(TsIterator input_iterator, TsIterator compare_iterator, Float[] maxDiff, float[] refValues) {
@@ -43,13 +45,18 @@ public class EmpiricalIterator extends TsIterator {
 
 	@Override
 	public boolean hasNext() {
-		return input_iterator.hasNext();
+		boolean hasNext = input_iterator.hasNext();
+		boolean hasNextCompare = compare_iterator.hasNext();
+		if(hasNext&&!hasNextCompare) {
+			throw new RuntimeException("hasNext&&!hasNextCompare  "+TimeConverter.oleMinutesToText(input_iterator.next().timestamp));
+		}
+		return hasNext;
 	}
 
 	@Override
-	public TimeSeriesEntry next() {
-		TimeSeriesEntry element = input_iterator.next();
-		TimeSeriesEntry genElement = compare_iterator.next();
+	public TsEntry next() {
+		TsEntry element = input_iterator.next();
+		TsEntry genElement = compare_iterator.next();
 		long timestamp = element.timestamp;
 		if(timestamp!= genElement.timestamp) {
 			throw new RuntimeException("iterator error");
@@ -77,30 +84,7 @@ public class EmpiricalIterator extends TsIterator {
 			}
 			//System.out.println(element.qualityFlag[colIndex]+"  "+element.data[colIndex]+":  "+genElement.data[colIndex]+"  "+maxDiff[colIndex]+" -> "+Math.abs(result[colIndex]-genElement.data[colIndex])+"  "+resultQf[colIndex]+"  "+result[colIndex]);
 		}
-
-
-
-
-
-		/*
-		float[] result = new float[outputTimeSeriesSchema.columns];
-		for(int colIndex=0;colIndex<outputTimeSeriesSchema.columns;colIndex++) {
-			result[colIndex] = element.data[colIndex];			
-			if(!Float.isNaN(genElement.data[colIndex])) { // general values is not nan
-				if(!Float.isNaN(element.data[colIndex])) { // value is not nan
-					Float maxdiff = maxDiff[colIndex];
-					if(maxdiff!=null) { // maxDiff value is present
-						float diff = Math.abs(element.data[colIndex]-genElement.data[colIndex]);
-						if(maxdiff<diff) { // passed not empirical check
-							result[colIndex] = Float.NaN;
-						}
-					} 
-				} 
-			}			
-		}*/
-
-
-		return new TimeSeriesEntry(timestamp,result);
+		return new TsEntry(timestamp,result,resultQf);
 	}
 
 	@Override

@@ -885,6 +885,31 @@ public class ConfigLoader {
 			e.printStackTrace();
 		}
 	}
+	
+	public void readSensorCategoryConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+
+			Section section = ini.get("sensor_category");
+			if(section!=null) {
+				Map<String, String> nameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:nameMap.entrySet()) {
+					String sensorName = entry.getKey();
+					String sensorCategory = entry.getValue();
+					Sensor sensor = tsdb.getSensor(sensorName);
+					if(sensor!=null) {
+						sensor.category = SensorCategory.parse(sensorCategory);
+					} else {
+						log.warn("read sensor category; sensor not found: "+sensorName);
+					}
+				}
+			} else {
+				log.warn("sensor_unit section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}	
 
 	public static String loggerPropertyKiLiToLoggerName(String s) {
 		if((s.charAt(0)>='0'&&s.charAt(0)<='9')&&(s.charAt(1)>='0'&&s.charAt(1)<='9')&&(s.charAt(2)>='0'&&s.charAt(2)<='9')){

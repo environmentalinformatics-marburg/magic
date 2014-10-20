@@ -7,7 +7,7 @@ import java.io.PrintStream;
 import java.util.Locale;
 
 import tsdb.TimeConverter;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.iterator.TsIterable;
 import tsdb.util.iterator.TsIterator;
 
@@ -112,7 +112,7 @@ public class CSV implements TsDBLogger{
 
 			while(it.hasNext()) {
 
-				TimeSeriesEntry entry = it.next();	
+				TsEntry entry = it.next();	
 				long timestamp = entry.timestamp;
 				float[] data = entry.data;
 

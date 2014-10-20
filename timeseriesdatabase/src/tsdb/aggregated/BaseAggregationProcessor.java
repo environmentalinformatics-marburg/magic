@@ -9,7 +9,7 @@ import java.util.Map;
 
 import tsdb.Sensor;
 import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
@@ -187,7 +187,7 @@ public class BaseAggregationProcessor {
 		long aggregation_timestamp = -1;
 
 		//list of aggregated data entries
-		List<TimeSeriesEntry> entryList = new ArrayList<TimeSeriesEntry>();
+		List<TsEntry> entryList = new ArrayList<TsEntry>();
 
 		while(it.hasNext()) { // begin of while-loop for raw input-events
 			Event event = it.next();
@@ -199,7 +199,7 @@ public class BaseAggregationProcessor {
 				if(aggregation_timestamp>-1) { // if not init timestamp
 					float[] data = aggregateCollectedData();
 					if(data!=null) {
-						entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
+						entryList.add(new TsEntry(aggregation_timestamp,data));
 					}
 				}
 				//reset values for next aggregate
@@ -243,7 +243,7 @@ public class BaseAggregationProcessor {
 		//process last aggregate if there is some collected data left
 		float[] data = aggregateCollectedData();
 		if(data!=null) {
-			entryList.add(new TimeSeriesEntry(aggregation_timestamp,data));
+			entryList.add(new TsEntry(aggregation_timestamp,data));
 		}
 
 		//create resulting TimeSeries Object

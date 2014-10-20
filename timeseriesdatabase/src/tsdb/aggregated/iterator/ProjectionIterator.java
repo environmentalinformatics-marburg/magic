@@ -1,6 +1,7 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.DataQuality;
+import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
@@ -33,12 +34,29 @@ public class ProjectionIterator extends InputIterator {
 	}
 
 	@Override
-	public TimeSeriesEntry next() {
-		TimeSeriesEntry element = input_iterator.next();
+	public TsEntry next() {
+		TsEntry element = input_iterator.next();
 		float[] data = new float[schema.length];
+		if(element.interpolated!=null)
 		for(int i=0;i<schema.length;i++) {
 			data[i] = element.data[eventPos[i]];
 		}
-		return new TimeSeriesEntry(element.timestamp,data);
+		DataQuality[] qualityFlag = null;
+		if(element.qualityFlag!=null) {
+			qualityFlag = new DataQuality[schema.length];
+			for(int i=0;i<schema.length;i++) {
+				qualityFlag[i] = element.qualityFlag[eventPos[i]];
+			}
+		}
+		boolean[] interpolated = null;
+		if(element.interpolated!=null) {
+			interpolated = new boolean[schema.length];
+			for(int i=0;i<schema.length;i++) {
+				interpolated[i] = element.interpolated[eventPos[i]];
+			}
+		}
+		int[][] qualityCounter = null; //TODO		
+		return new TsEntry(element.timestamp, data, qualityFlag, qualityCounter, interpolated);
+		//return new TsEntry(element.timestamp,data);
 	}
 }

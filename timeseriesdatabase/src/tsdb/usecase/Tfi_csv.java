@@ -16,7 +16,7 @@ import tsdb.graph.Continuous;
 import tsdb.graph.Node;
 import tsdb.graph.PeakSmoothed;
 import tsdb.loader.TimeSeriesLoaderKiLi;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.iterator.TsIterator;
 

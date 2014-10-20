@@ -4,7 +4,7 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -43,17 +43,17 @@ public class Addition implements Continuous {
 		
 		return new InputProcessingIterator(input_iterator,input_iterator.getSchema()) {
 			@Override
-			protected TimeSeriesEntry getNext() {
+			protected TsEntry getNext() {
 				if(!input_iterator.hasNext()) {
 					return null;
 				}
-				TimeSeriesEntry element = input_iterator.next();
+				TsEntry element = input_iterator.next();
 				float[] data = element.data;
 				float[] result = new float[data.length];
 				for(int i=0;i<data.length;i++) {
 					result[i] = data[i]+value;
 				}
-				return new TimeSeriesEntry(element.timestamp, result);
+				return new TsEntry(element.timestamp, result);
 			}			
 		};
 	}

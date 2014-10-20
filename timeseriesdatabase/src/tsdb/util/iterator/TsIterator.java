@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TsSchema;
 
-public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChainEntry {
+public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry {
 
 	protected final TsSchema schema;
 	
@@ -50,7 +50,7 @@ public abstract class TsIterator implements Iterator<TimeSeriesEntry>, Processin
 	
 	public void writeConsole() {
 		while(this.hasNext()) {
-			TimeSeriesEntry e = this.next();
+			TsEntry e = this.next();
 			System.out.println(e);
 		}		
 	}

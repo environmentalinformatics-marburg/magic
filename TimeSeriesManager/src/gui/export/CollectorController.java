@@ -18,7 +18,7 @@ import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
@@ -202,7 +202,7 @@ public class CollectorController implements TsDBLogger {
 							}
 							csvOut.println(stringbuilder);
 							
-							for(TimeSeriesEntry entry:timeseries.entryList) {
+							for(TsEntry entry:timeseries.entryList) {
 								StringBuilder s = new StringBuilder();
 								s.append(plotID);
 								s.append(',');
