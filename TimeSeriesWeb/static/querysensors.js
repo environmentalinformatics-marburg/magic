@@ -30,7 +30,7 @@ $(document).ready(function(){
 });
 
 var incTask = function() {
-	getID("query_sensor").disabled = true;
+	runDisabled(true);
 	tasks++;	
 	getID("status").innerHTML = "busy ("+tasks+")...";
 }
@@ -39,12 +39,16 @@ var decTask = function() {
 	tasks--;
 	if(tasks===0) {
 		getID("status").innerHTML = "ready";
-		getID("query_sensor").disabled = false;
+		runDisabled(false);
 	} else if(tasks<0){
 		getID("status").innerHTML = "error";
 	} else {
 		getID("status").innerHTML = "busy ("+tasks+")...";
 	}
+}
+
+function runDisabled(disabled) {
+	$(".blockable").prop( "disabled",disabled);
 }
 
 var updataRegions = function() {

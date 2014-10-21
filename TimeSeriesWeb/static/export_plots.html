@@ -68,12 +68,44 @@ var arrayToText = function(a) {
 	return s;
 }
 
+function on_choose_selected_button() {
+	$.each(available_select.selectedOptions, function(i,option) {
+		chosen_plots.push(available_plots[option.value]);
+	});
+	update_chosen_select();
+	update_available_select();
+}
+
+function on_remove_selected_button() {
+	var removed_count = 0;
+	$.each(chosen_select.selectedOptions, function(i,option) {
+		chosen_plots.splice(option.value-removed_count,1);
+		removed_count++;
+	});	
+	update_chosen_select();
+	update_available_select();
+}
+
+function on_choose_all_button() {
+	$.each(available_select, function(i,option) {
+		chosen_plots.push(available_plots[option.value]);
+	});
+	update_chosen_select();
+	update_available_select();
+}
+
+function on_remove_all_button() {
+	chosen_plots = [];
+	update_chosen_select();
+	update_available_select();
+}
+
 $(document).ready(function(){
 	
 	$("button").button().tooltip();
 
 	chosen_select = document.getElementById("chosen_select");
-	available_select = document.getElementById("available_select");
+	available_select = document.getElementById("available_select");	
 	
 	chosen_select.ondblclick = function(){
 		chosen_plots.splice(chosen_select.value,1);
@@ -100,6 +132,11 @@ $(document).ready(function(){
 		 })
 		 .fail(function() {alert("error sending data");})		 
 	}
+	
+	getID("choose_selected_button").onclick = on_choose_selected_button;
+	getID("remove_selected_button").onclick = on_remove_selected_button;
+	getID("choose_all_button").onclick = on_choose_all_button;
+	getID("remove_all_button").onclick = on_remove_all_button;	
 	
 	$.get("/export/plots").done(function(data) {
 		chosen_plots = [];
@@ -230,10 +267,10 @@ $(document).ready(function(){
 </select>
 </div>
 <div id="box_centered" style="display:inline-block;width:200px;vertical-align:top">
-<button class="button_centered" title="choose selected plot">&lt;</button>
-<button class="button_centered" title="remove selected plot">&gt;</button>
-<button class="button_centered" title="choose all plots">&lt;&lt;</button>
-<button class="button_centered" title="remove all plots">&gt;&gt;</button>
+<button class="button_centered" title="choose selected plot" id="choose_selected_button">&lt;</button>
+<button class="button_centered" title="remove selected plot" id="remove_selected_button">&gt;</button>
+<button class="button_centered" title="choose all (filtered) plots" id="choose_all_button">&lt;&lt;</button>
+<button class="button_centered" title="remove all chosen plots" id="remove_all_button">&gt;&gt;</button>
 </div>
 <div style="display:inline-block;width:200px;vertical-align:top;text-align:center">
 <label for="available_select">Available Plots</label><br/>

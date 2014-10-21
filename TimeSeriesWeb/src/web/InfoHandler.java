@@ -53,8 +53,8 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 		response.setContentType("text/plain;charset=utf-8");
 
 		baseRequest.setHandled(true);
-		System.out.println("target "+target);
-
+		log.warn("target "+request.getRequestURI());
+		
 
 
 

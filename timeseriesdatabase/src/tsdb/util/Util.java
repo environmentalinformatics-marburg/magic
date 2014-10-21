@@ -19,8 +19,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.simple.SimpleLogger;
+import org.apache.logging.log4j.util.PropertiesUtil;
+import org.apache.logging.log4j.util.Strings;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
@@ -38,7 +42,9 @@ public class Util {
 	/**
 	 * Default logger
 	 */
-	public static final Logger log = LogManager.getLogger("general");
+	public static final Logger log = LogManager.getLogger("tsdb");
+	//private static final PropertiesUtil PROPS = new PropertiesUtil("log4j2.StatusLogger.properties");
+	//public static final Logger log = new SimpleLogger("StatusLogger", Level.ERROR, false, true, false, false, Strings.EMPTY, null, PROPS, System.err);
 
 	/**
 	 * convert float to String with two fractional digits

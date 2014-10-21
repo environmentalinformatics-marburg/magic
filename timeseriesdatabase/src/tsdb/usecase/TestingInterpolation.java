@@ -1,5 +1,6 @@
 package tsdb.usecase;
 
+
 import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
@@ -9,15 +10,21 @@ import tsdb.graph.QueryPlan;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingInterpolation {
+	
+//	private static final Log logger = LogFactory.getLog(EventStoreConfig.class);
 
 	public static void main(String[] args) {
+		
+	//	logger.error("_...__----_-----");
+		
+		
 		TsDB tsdb = TsDBFactory.createDefault();
 		String plotID = "cof1";
 		//String plotID = "gra1";
 		//String plotID = "sun1";
 		//String plotID = "cof3";
 		String[] columnNames = new String[]{"Ta_200"};
-		AggregationInterval aggregationInterval = AggregationInterval.DAY;
+		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
 		DataQuality dataQuality = DataQuality.EMPIRICAL;
 		boolean interpolated = true;
 		Node ts = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
@@ -30,6 +37,8 @@ public class TestingInterpolation {
 		
 		
 		System.out.println(it.getSchema());
+		
+		
 
 	}
 

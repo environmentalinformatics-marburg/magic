@@ -37,7 +37,6 @@ public class ProjectionIterator extends InputIterator {
 	public TsEntry next() {
 		TsEntry element = input_iterator.next();
 		float[] data = new float[schema.length];
-		if(element.interpolated!=null)
 		for(int i=0;i<schema.length;i++) {
 			data[i] = element.data[eventPos[i]];
 		}

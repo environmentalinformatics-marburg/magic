@@ -83,11 +83,52 @@ var setStateReady = function() {
 	}
 }
 
+function on_choose_selected_button() {
+	setStateBusy();
+	$.each(available_select.selectedOptions, function(i,option) {
+		chosen_sensors.push(available_sensors[option.value]);
+	});
+	update_chosen_select();
+	update_available_select();	
+	setStateReady();
+}
+
+function on_remove_selected_button() {
+	setStateBusy();
+	var removed_count = 0;
+	$.each(chosen_select.selectedOptions, function(i,option) {
+		chosen_sensors.splice(option.value-removed_count,1);
+		removed_count++;
+	});		
+	update_chosen_select();
+	update_available_select();
+	setStateReady();
+}
+
+function on_choose_all_button() {
+	setStateBusy();
+	$.each(available_select, function(i,option) {
+		chosen_sensors.push(available_sensors[option.value]);
+	});
+	update_chosen_select();
+	update_available_select();	
+	setStateReady();
+}
+
+function on_remove_all_button() {
+	setStateBusy();
+	chosen_sensors = [];	
+	update_chosen_select();
+	update_available_select();
+	setStateReady();
+	/*chosen_plots = [];
+	update_chosen_select();
+	update_available_select();*/
+}
+
 $(document).ready(function(){
 	setStateBusy();
 	
-
-
 	chosen_select = document.getElementById("chosen_select");
 	available_select = document.getElementById("available_select");
 
@@ -124,6 +165,11 @@ $(document).ready(function(){
 		 })
 		 .fail(function() {alert("error sending data");setStateReady();})		 
 	}
+	
+	getID("choose_selected_button").onclick = on_choose_selected_button;
+	getID("remove_selected_button").onclick = on_remove_selected_button;
+	getID("choose_all_button").onclick = on_choose_all_button;
+	getID("remove_all_button").onclick = on_remove_all_button;	
 	
 	setStateBusy();
 	$.get("/export/sensors").done(function(data) {		
@@ -168,12 +214,32 @@ $(document).ready(function(){
 	update_available_select();
 	
 	setStateReady();
+	
+	$("button").button().tooltip();
 })
 
 </script>
 
 <link rel="stylesheet" href="jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+<style type="text/css">
+
+#box_centered {
+    display:inline-block;
+    width:200px;
+    vertical-align:top
+    background: yellow;
+    padding: 2em 0;
+}
+
+.button_centered {
+    display: table;
+    margin: 0 auto;
+}
+
+ 
+</style>
 
 </head>
 
@@ -200,8 +266,14 @@ $(document).ready(function(){
 <option>plt2</option>
 </select>
 </div>
-<div style="display:inline-block;width:100px;vertical-align:top">
+
+<div id="box_centered" style="display:inline-block;width:200px;vertical-align:top">
+<button class="button_centered" title="choose selected sensors" id="choose_selected_button">&lt;</button>
+<button class="button_centered" title="remove selected sensors" id="remove_selected_button">&gt;</button>
+<button class="button_centered" title="choose all sensors" id="choose_all_button">&lt;&lt;</button>
+<button class="button_centered" title="remove all chosen sensors" id="remove_all_button">&gt;&gt;</button>
 </div>
+
 <div style="display:inline-block;width:200px;vertical-align:top">
 <label for="available_select">Available Sensors</label>
 <select id="available_select" size="5" multiple="multiple" style="height:300px">

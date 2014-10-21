@@ -44,7 +44,8 @@ public class ASCTimeSeries {
 
 	public ASCTimeSeries(Path filename) throws IOException {
 		this.filename = filename;
-		this.bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
+		//this.bufferedReader = Files.newBufferedReader(filename,Charset.defaultCharset());
+		this.bufferedReader = Files.newBufferedReader(filename,Charset.forName("windows-1252"));
 		Stream<String> lines = bufferedReader.lines();
 		iterator_lines = lines.iterator();
 		readHeader();

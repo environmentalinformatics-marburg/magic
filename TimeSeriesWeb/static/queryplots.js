@@ -9,6 +9,7 @@ var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + s
 var tasks = 0;
 
 var incTask = function() {
+	runDisabled(true);
 	tasks++;	
 	getID("status").innerHTML = "busy ("+tasks+")...";
 }
@@ -17,11 +18,16 @@ var decTask = function() {
 	tasks--;
 	if(tasks===0) {
 		getID("status").innerHTML = "ready";
+		runDisabled(false);
 	} else if(tasks<0){
 		getID("status").innerHTML = "error";
 	} else {
 		getID("status").innerHTML = "busy ("+tasks+")...";
 	}
+}
+
+function runDisabled(disabled) {
+	$(".blockable").prop( "disabled",disabled);
 }
 
 

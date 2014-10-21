@@ -5,12 +5,14 @@
 <meta charset="utf-8">
 <script src="/static/jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/d3.min.js"></script>
 <script src="/static/util.js"></script>
 <script src="/static/querytimeseries.js"></script>
 <link rel="stylesheet" href="jquery-ui.css">
-<link rel="stylesheet" type="text/css" href="table.css">
-<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+<style>
+select {
+	width: 220px;
+}
+</style>
 </head>
 
 <body>
@@ -26,58 +28,44 @@
 
 <div style="display:inline-block">
 <label for="region_input">Region</label>
-<select id="region_input" class="blockable"></select>
+<select id="region_input"></select>
 </div>
 
 <div style="display:inline-block">
 <label for="generalstation_input">General Station</label>
-<select id="generalstation_input" class="blockable"></select>
+<select id="generalstation_input"></select>
 </div>
 
 <div style="display:inline-block">
 <label for="plot_input">Plot</label>
-<select id="plot_input" class="blockable"></select>
+<select id="plot_input"></select>
 </div>
 
 <div style="display:inline-block">
 <label for="sensor_input">Sensor</label>
-<select id="sensor_input" class="blockable"></select>
+<select id="sensor_input"></select>
 </div>
 
 <div style="display:inline-block">
 <label for="aggregation_input">Aggregation</label>
-<select id="aggregation_input" class="blockable"></select>
+<select id="aggregation_input"></select>
 </div>
 
 <div style="display:inline-block">
-<label for="quality_input">Quality Check</label>
-<select id="quality_input" class="blockable"></select>
-</div>
-
-
-
-
-<div style="display:inline-block">
-<input type="checkbox" id="interpolated" class="blockable">Interpolated</input>
-<label for="query_button"></label>
-<button id="query_button" class="blockable">query table</button>
+<label for="query_button">Aggregation</label>
+<button id="query_button">query table</button>
 </div>
 
 <div style="display:inline-block">
-<label for="image_button"></label>
-<button id="image_button" class="blockable">query diagram</button>
+<label for="image_button">Aggregation</label>
+<button id="image_button">query diagram</button>
 
 </div>
 
 </div>
-
-<input type="text" id="time_range_text" readonly="readonly"></input>
-<div id="time_range"></div>
 
 Description: <label id="sensor_description">new2</label>
 Unit: <label id="sensor_unit">new2</label>
-
-
 
 <div id="result"></div>
 

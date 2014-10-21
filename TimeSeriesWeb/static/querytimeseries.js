@@ -13,6 +13,7 @@ var sensors = "";
 var tasks = 0;
 
 var incTask = function() {
+	runDisabled(true);
 	tasks++;	
 	getID("status").innerHTML = "busy ("+tasks+")...";
 }
@@ -21,6 +22,7 @@ var decTask = function() {
 	tasks--;
 	if(tasks===0) {
 		getID("status").innerHTML = "ready";
+		runDisabled(false);
 	} else if(tasks<0){
 		getID("status").innerHTML = "error";
 	} else {
@@ -28,11 +30,22 @@ var decTask = function() {
 	}
 }
 
+function runDisabled(disabled) {
+	var disableText;
+	if(disabled) {
+		disableText = "disable";
+	} else {
+		disableText = "enable";
+	}
+	$("#query_button").button(disableText);
+	$("#image_button").button(disableText);
+}
+
 var getList = function(url) {
 }
 
 $(document).ready(function(){
-incTask();
+
 region_input = $("#region_input").selectmenu();
 region_input.on("selectmenuchange", function( event, ui ) {updateGeneralStations();} );
 
@@ -57,11 +70,29 @@ $("#query_button").button().on("click",runQueryTable);
 
 $("#image_button").button().on("click",runQueryDiagram);
 
+incTask();
 
 updataRegions();
 
 decTask();
+
+$("#time_range").slider({range:true,min:2008*12,max:2014*12,values: [ 2008*12, 2014*12 ],slide:update_time_range_text});
+update_time_range_text();
+
 });
+
+var month_text = ["err","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+
+function valueToDate(value) {
+	var m = value%12;
+	var y = (value-m)/12;
+	return month_text[(m+1)]+" "+y;
+}
+
+function update_time_range_text() {
+ $("#time_range_text").val( valueToDate($( "#time_range" ).slider( "values", 0 )) +
+" - " + valueToDate($( "#time_range" ).slider( "values", 1 )) );
+}
 
 var updataRegions = function() {
 	incTask();
