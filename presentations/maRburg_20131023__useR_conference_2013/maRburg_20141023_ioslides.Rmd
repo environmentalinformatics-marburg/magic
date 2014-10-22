@@ -1,0 +1,169 @@
+---
+title: "The R User Conference 2013"
+author: "Insa Otte & Florian Detsch"
+date: "October 23, 2014"
+output: 
+  ioslides_presentation:
+    logo: "figures/user2013_logo2.jpg"
+---
+
+## Outline
+
+* Time schedule
+
+* Code snippets
+    + `ggplot2`
+    + `Rcpp`
+    
+* Outlook
+
+## Time schedule
+
+<div class="columns-2">
+  <font size="6"><b>Tuesday</b> (tutorials)</font>  
+  
+  <font size="6"><b>Wednesday to Friday</b></font>  
+</div>
+
+<div class="columns-2">
+  <div class="left-col">
+  - `Rcpp` and C++
+  - `ggplot2`
+  - Classification with individual and ensemble trees
+  - Interactive web graphics with R and `googleVis`
+  - Cloud computing
+  - Bayesian networks  
+  </div>
+
+  <div class="right-col">
+  - Invited talks
+      - Duncan Murdoch
+      - Hadley Wickham
+      - Steve Scott
+  - Contributed talks
+  - Poster sessions
+  - Tapas breaks :-)
+  </div>
+</div>
+
+## Package 'Rcpp'
+
+* written by Dirk Eddelbuettel and Romain Francois
+* seamless R and C++ integration
+    + supports many R data types
+    + provides typical R functions and C++ classes  
+
+<center> <img src="figures/seamless_scl.png" alt="seamless.png" height="300"> </center>
+
+----
+
+<font size="6"><b>Why use C++ integration in R?</b></font>
+ 
+Sometimes, R code is just not fast enough...
+
+----
+
+* Loops that cannot be vectorized because subsequent iterations depend on 
+previous ones
+
+```{r count}
+# Count interations
+
+for (i in 1:10) {
+  if (i == 1) {
+    nIter <- i
+  } else {
+    nIter <- nIter + 1  
+  }
+}
+```
+
+----
+
+* Recursive function calls
+
+```{r fibonacci}
+# Fibonacci sequence
+
+fibonacci <- function(x) {
+  if (x < 2) {
+    return(x)
+  } else {
+    return(fibonacci(x-1) + fibonacci(x-2))
+  }
+}
+
+sapply(1:10, fibonacci)
+```
+
+----
+
+<font size="6"><b>An Example: the `sum` function</b></font>
+
+
+* Base-R approach
+```{r sum}
+x <- 1:10000
+
+sum(x)
+```
+
+----
+
+<font size="6"><b>An Example: the `sum` function</b></font>
+
+* Custom R approach
+```{r sumR}
+sumR <- function(x) {
+  
+  total <- 0
+  for (i in 1:length(x)) {
+    total <- total + x[i]
+  }
+  
+  return(total)
+}
+
+sumR(x)
+```
+
+----
+
+<font size="6"><b>An Example: the `sum` function</b></font>
+
+* `Rcpp` approach
+```{r sumC}
+library(Rcpp)
+
+cppFunction('double sumC(NumericVector x) {
+            
+  int n = x.size();
+  double total = 0;
+  for(int i = 0; i < n; ++i) {
+    total += x[i];
+  }
+  
+  return total;
+}')
+
+sumC(x)
+```
+
+----
+
+<font size="6"><b>An Example: the `sum` function</b></font>
+
+Speed test: 
+
+```{r speed_test}
+library(microbenchmark)
+
+microbenchmark(sum(x), sumR(x), sumC(x), times = 1000L)
+```
+
+----
+
+<center>
+  <img src="http://www.edii.uclm.es/~useR-2013/pics/grouph.jpg" alt="group_image" width="800">
+  Thank you for your attention!
+</center>

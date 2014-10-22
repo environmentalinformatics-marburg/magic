@@ -1,0 +1,16 @@
+{
+    "contents" : "The R User Conference 2013\n========================================================\nauthor: Insa Otte, Florian Detsch\ndate: October 23, 2014\n\nOutline\n========================================================\n\n* Time schedule\n\n* Code snippets\n  + `ggplot2`\n  + `Rcpp`\n  \n* Outlook\n\nTime schedule\n========================================================\n\nRcpp\n========================================================\n\n* written by Dirk Eddelbuettel and Romain Francois\n* seamless R and C++ integration\n  + supports many R data types\n  + provides typical R functions and C++ classes  \n\n<center> <img src=\"figures/seamless_scl.png\" alt=\"seamless.png\" height=\"400\"> </center>\n\nRcpp\n========================================================\ntitle: false \n\n**Why use C++ integration in R?**  \n\nSometimes, R code is just not fast enough...\n\n* loops that cannot be vectorized because subsequent iterations depend on \nprevious ones\n\n```{r count}\n# Count interations\n\nfor (i in 1:10) {\n  if (i == 1) {\n    nIter <- i\n  } else {\n    nIter <- nIter + 1  \n  }\n}\n```\n\nRcpp\n========================================================\ntitle: false \n\n**Why use C++ integration in R?**  \n\nSometimes, R code is just not fast enough...\n\n* recursive function calls\n\n```{r fibonacci}\n# Fibonacci sequence\n\nfibonacci <- function(x) {\n  if (x < 2) {\n    return(x)\n  } else {\n    return(fibonacci(x-1) + fibonacci(x-2))\n  }\n}\n\nsapply(1:10, fibonacci)\n```\n\nRcpp\n========================================================\ntitle: false\n\n**An Example: the `sum` function**\n\n\n* Base-R approach\n```{r sum}\nx <- 5\ny <- 10\n\nsum(x, y)\n```\n\nRcpp\n========================================================\ntitle: false\n\n**An Example: the `sum` function**\n\n* Manual R approach\n```{r sumR}\nsumR <- function(x, y) {\n  return(x + y)\n}\n\nx <- 5\ny <- 10\n\nsumR(x, y)\n```\n\nRcpp\n========================================================\ntitle: false\n\n**An Example: the `sum` function**\n\n* `Rcpp` approach\n```{r sumC}\nlibrary(Rcpp)\n\ncppFunction('double sumC(int x, int y) {\n              return x + y;\n            }')\n\nx <- 5\ny <- 10\n\nsumC(x, y)\n```\n\nRcpp\n========================================================\ntitle: false\n\n**An Example: the `sum` function**\n\n```{r identical_sum}\nall(identical(sum(x, y), sumR(x, y)), \n    identical(sum(x, y), sumC(x, y)))\n```\n\nFinal\n========================================================\ntitle: false\n\n<center>\n<img src=\"http://www.edii.uclm.es/~useR-2013/pics/grouph.jpg\" alt=\"group_image\" width=\"1024\">\n\nThank you for your attention!\n</center>",
+    "created" : 1413899580582.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "883251071",
+    "id" : "D5431F2A",
+    "lastKnownWriteTime" : 1413899582,
+    "path" : "/media/envin/XChange/presentations/maRburg_20141023/maRburg_20141023.Rpres",
+    "project_path" : "maRburg_20141023.Rpres",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_presentation"
+}
