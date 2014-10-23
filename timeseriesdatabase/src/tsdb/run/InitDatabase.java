@@ -3,19 +3,23 @@ package tsdb.run;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.TimeSeriesLoaderBE;
 import tsdb.loader.TimeSeriesLoaderKiLi;
-import tsdb.util.TsDBLogger;
 
 /**
  * UseCaseInitDatabase loads source data into an emptied database.
  * @author woellauer
  *
  */
-public class InitDatabase implements TsDBLogger {
+public class InitDatabase {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {
 		System.out.println("begin...");

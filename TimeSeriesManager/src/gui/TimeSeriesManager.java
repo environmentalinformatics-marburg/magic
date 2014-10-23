@@ -18,6 +18,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
@@ -31,13 +33,14 @@ import org.eclipse.swt.widgets.Text;
 
 import tsdb.TsDBFactory;
 import tsdb.TsDB;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.run.StartServerTsDB;
 
-public class TimeSeriesManager implements TsDBLogger {
+public class TimeSeriesManager {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
 

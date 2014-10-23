@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
-public class Loader_new_tfi implements TsDBLogger {
+public class Loader_new_tfi {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final TimestampSeries timestampSeries;
 	private String[] inputSchema = null;

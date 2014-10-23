@@ -1,4 +1,4 @@
-package web;
+package tsdb.web;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 

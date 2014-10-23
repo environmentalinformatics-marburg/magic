@@ -4,6 +4,8 @@ import gui.bridge.TableBridge;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -19,10 +21,11 @@ import org.eclipse.swt.widgets.Table;
 import tsdb.TimeConverter;
 import tsdb.catalog.SourceEntry;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
-public class NewSourceCatalogInfoDialog extends Dialog implements TsDBLogger {
+public class NewSourceCatalogInfoDialog extends Dialog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	protected Object result;
 	protected Shell shell;

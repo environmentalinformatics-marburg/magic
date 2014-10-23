@@ -3,6 +3,9 @@ package tsdb.run;
 import java.io.File;
 import java.time.LocalDateTime;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.QueryProcessor;
 import tsdb.TimeConverter;
@@ -13,7 +16,6 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.CSV;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
@@ -22,7 +24,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class CreateProcessedFiles implements TsDBLogger {
+public class CreateProcessedFiles {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
 

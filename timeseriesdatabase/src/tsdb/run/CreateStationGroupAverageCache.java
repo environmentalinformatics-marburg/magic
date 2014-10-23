@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
@@ -13,7 +16,6 @@ import tsdb.graph.Averaged;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
-import tsdb.util.TsDBLogger;
 import static tsdb.util.AssumptionCheck.*;
 /**
  * Generates time series for general stations with average of contained station values
@@ -21,7 +23,9 @@ import static tsdb.util.AssumptionCheck.*;
  * @author woellauer
  *
  */
-public class CreateStationGroupAverageCache implements TsDBLogger{
+public class CreateStationGroupAverageCache {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	public interface CbPrint {
 		public void println(String text);

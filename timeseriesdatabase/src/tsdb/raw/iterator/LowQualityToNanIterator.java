@@ -1,8 +1,10 @@
 package tsdb.raw.iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.raw.TsEntry;
-import tsdb.util.TsDBLogger;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -11,7 +13,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class LowQualityToNanIterator extends InputIterator implements TsDBLogger {
+public class LowQualityToNanIterator extends InputIterator {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private DataQuality targetDataQuality;
 

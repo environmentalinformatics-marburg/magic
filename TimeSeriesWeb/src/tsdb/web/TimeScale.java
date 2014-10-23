@@ -1,4 +1,4 @@
-package web;
+package tsdb.web;
 
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -8,8 +8,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 
 import tsdb.TimeConverter;
-import web.TimeSeriesPainter.PosHorizontal;
-import web.TimeSeriesPainter.PosVerical;
+import tsdb.web.TimeSeriesPainter.PosHorizontal;
+import tsdb.web.TimeSeriesPainter.PosVerical;
 
 public class TimeScale {
 

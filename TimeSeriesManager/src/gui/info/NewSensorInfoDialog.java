@@ -4,6 +4,8 @@ import gui.bridge.TableBridge;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,9 +23,10 @@ import org.eclipse.swt.widgets.Table;
 import tsdb.Sensor;
 import tsdb.aggregated.AggregationType;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TsDBLogger;
 
-public class NewSensorInfoDialog extends Dialog implements TsDBLogger {
+public class NewSensorInfoDialog extends Dialog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final RemoteTsDB tsdb;
 

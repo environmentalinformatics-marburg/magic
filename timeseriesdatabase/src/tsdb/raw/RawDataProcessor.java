@@ -5,8 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
@@ -24,7 +26,9 @@ import de.umr.jepc.store.Event;
  */
 
 @Deprecated
-public class RawDataProcessor implements TsDBLogger {
+public class RawDataProcessor {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	String[] parameterNames;
 	int[] eventPos;// mapping of input event columns to output data columns

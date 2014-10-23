@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jetty-server-9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.server.source_9.2.3.v20140905.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-9.2.3.v20140905.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-http-9.2.3.v20140905.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-io-9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.util.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.http.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.io.source_9.2.3.v20140905.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/timeseriesdatabase"/>
 	<classpathentry kind="lib" path="lib/json.jar" sourcepath="lib/source/json_src.jar"/>
 	<classpathentry kind="lib" path="/TimeSeriesManager/lib/windows/org.eclipse.swt.win32.win32.x86_64_3.103.0.v20140605-2012.jar" sourcepath="/TimeSeriesManager/lib/source/org.eclipse.swt.win32.win32.x86_64.source_3.103.0.v20140605-2012.jar"/>

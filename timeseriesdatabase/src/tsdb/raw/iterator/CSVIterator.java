@@ -3,14 +3,18 @@ package tsdb.raw.iterator;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
 import tsdb.raw.TsEntry;
 import tsdb.util.Table;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
-public class CSVIterator extends TsIterator implements TsDBLogger{
+public class CSVIterator extends TsIterator {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static TsSchema createSchema(String[] sensorNames) {
 		return new TsSchema(sensorNames);

@@ -12,15 +12,18 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.TsDBLogger;
 import de.umr.jepc.store.Event;
 
-public class KiLiCSV implements TsDBLogger {
+public class KiLiCSV {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	public final String serial;
 	public final TreeMap<Long, Event> eventMap;

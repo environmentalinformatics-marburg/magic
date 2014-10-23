@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
@@ -23,10 +26,11 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 
-public class CollectorController implements TsDBLogger {
+public class CollectorController {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private CollectorModel model;
 

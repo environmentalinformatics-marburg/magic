@@ -1,6 +1,7 @@
 package tsdb.util;
 
-import static tsdb.util.TsDBLogger.log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Methods of this class throw exeption and add an entry in log if an assumtion is false.
@@ -8,6 +9,8 @@ import static tsdb.util.TsDBLogger.log;
  *
  */
 public final class AssumptionCheck {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private AssumptionCheck(){}
 

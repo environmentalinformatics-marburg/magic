@@ -1,17 +1,13 @@
-package web;
-
-import static tsdb.util.Util.log;
+package tsdb.web;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -23,6 +19,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
@@ -40,11 +38,13 @@ import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
-public class TsDBAPIHandler extends AbstractHandler implements TsDBLogger{ 
+public class TsDBAPIHandler extends AbstractHandler {
+	
+	private static final Logger log = LogManager.getLogger();
+	
 	private final RemoteTsDB tsdb;
 
 	public TsDBAPIHandler(RemoteTsDB tsdb) {

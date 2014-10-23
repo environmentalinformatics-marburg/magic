@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -15,7 +17,6 @@ import org.gdal.osr.SpatialReference;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.util.TsDBLogger;
 import static tsdb.util.AssumptionCheck.*;
 
 /**
@@ -24,7 +25,9 @@ import static tsdb.util.AssumptionCheck.*;
  * @author woellauer
  *
  */
-public class Create_ki_elevation implements TsDBLogger {
+public class Create_ki_elevation {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) throws FileNotFoundException {
 

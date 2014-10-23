@@ -6,15 +6,19 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
-import tsdb.util.TsDBLogger;
 
 /**
  * UniversalDataBinFile reads, cleans and structures data of a UDBF-File.
  * @author woellauer
  *
  */
-public class UniversalDataBinFile implements TsDBLogger {
+public class UniversalDataBinFile {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	final int MAX_VALID_ROW_ID = 30000;
 	

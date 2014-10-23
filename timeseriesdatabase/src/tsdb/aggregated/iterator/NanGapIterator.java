@@ -1,9 +1,11 @@
 package tsdb.aggregated.iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.raw.TsEntry;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
@@ -16,7 +18,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class NanGapIterator extends InputProcessingIterator implements TsDBLogger {
+public class NanGapIterator extends InputProcessingIterator {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 	 * timestamp of next Element to output

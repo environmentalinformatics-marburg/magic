@@ -1,9 +1,13 @@
 package tsdb.graph;
 
-import tsdb.util.TsDBLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.util.iterator.TsIterator;
 
-public class Statistics implements TsDBLogger {
+public class Statistics {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	public static class StatisticsData {
 		public final long columns;

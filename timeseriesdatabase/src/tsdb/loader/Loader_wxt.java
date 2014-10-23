@@ -3,12 +3,17 @@ package tsdb.loader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.StationProperties;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import de.umr.jepc.store.Event;
 
 public class Loader_wxt extends AbstractLoader {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private enum ProcessingType {NONE,COPY,SWDR_300,SWUR_300,LWDR_300,LWUR_300};
 	

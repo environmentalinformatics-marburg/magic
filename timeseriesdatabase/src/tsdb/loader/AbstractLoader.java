@@ -3,14 +3,18 @@ package tsdb.loader;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.raw.TimestampSeries;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
-public abstract class AbstractLoader implements TsDBLogger {
+public abstract class AbstractLoader {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	protected final String[] inputSchema;
 	protected final StationProperties properties;

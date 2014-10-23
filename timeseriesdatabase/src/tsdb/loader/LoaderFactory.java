@@ -1,9 +1,13 @@
 package tsdb.loader;
 
-import tsdb.StationProperties;
-import tsdb.util.TsDBLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class LoaderFactory implements TsDBLogger {
+import tsdb.StationProperties;
+
+public class LoaderFactory {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private LoaderFactory(){}
 	

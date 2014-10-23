@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
-import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesEntryIterator;
 import tsdb.util.iterator.TsIterable;
@@ -16,7 +18,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class TimestampSeries implements TsIterable, Serializable, TsDBLogger {
+public class TimestampSeries implements TsIterable, Serializable {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private static final long serialVersionUID = 6078067255995220349L;
 	

@@ -1,19 +1,23 @@
 package tsdb.aggregated.iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationType;
 import tsdb.raw.TsEntry;
 import tsdb.util.Pair;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
 
-public abstract class AbstractAggregationIterator extends InputProcessingIterator implements TsDBLogger {
+public abstract class AbstractAggregationIterator extends InputProcessingIterator {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private final Sensor[] sensors;
 	

@@ -3,9 +3,13 @@ package tsdb.util;
 import java.io.FileReader;
 
 import static tsdb.util.AssumptionCheck.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -14,7 +18,9 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author woellauer
  *
  */
-public class Table implements TsDBLogger {
+public class Table {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static class ColumnReader {
 		public final int rowIndex;

@@ -1,5 +1,7 @@
 package gui.export;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -20,9 +22,10 @@ import org.eclipse.swt.widgets.Text;
 import tsdb.DataQuality;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TsDBLogger;
 
-public class CollectorDialog extends TitleAreaDialog implements TsDBLogger {
+public class CollectorDialog extends TitleAreaDialog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private CollectorController controller;
 	private CollectorModel model;

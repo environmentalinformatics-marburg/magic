@@ -5,6 +5,8 @@ package gui.export;
 import gui.bridge.CheckButtonBridge;
 import gui.bridge.ComboBridge;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -23,9 +25,10 @@ import org.eclipse.swt.widgets.Text;
 
 import tsdb.DataQuality;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.util.TsDBLogger;
 
-public class DetailDialog extends TitleAreaDialog implements TsDBLogger {
+public class DetailDialog extends TitleAreaDialog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private CollectorModel model;
 

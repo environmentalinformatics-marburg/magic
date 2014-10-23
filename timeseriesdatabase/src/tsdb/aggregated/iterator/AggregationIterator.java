@@ -5,6 +5,9 @@ import static tsdb.util.AssumptionCheck.throwTrue;
 import java.time.LocalDateTime;
 import java.time.Month;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
@@ -13,7 +16,6 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.AggregationType;
 import tsdb.raw.TsEntry;
 import tsdb.util.Pair;
-import tsdb.util.TsDBLogger;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
@@ -26,7 +28,9 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 @Deprecated
-public class AggregationIterator extends InputProcessingIterator implements TsDBLogger  {
+public class AggregationIterator extends InputProcessingIterator {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private static final int QUALITY_COUNTERS = 5;
 	

@@ -1,8 +1,9 @@
-package web;
+package tsdb.web;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
 import static tsdb.util.Util.log;
+
 
 
 
@@ -17,8 +18,8 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
-import web.TimeSeriesPainter.PosHorizontal;
-import web.TimeSeriesPainter.PosVerical;
+import tsdb.web.TimeSeriesPainter.PosHorizontal;
+import tsdb.web.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesDiagram {
 

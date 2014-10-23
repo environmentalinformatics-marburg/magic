@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Locale;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.TimeConverter;
 import tsdb.raw.TsEntry;
 import tsdb.util.iterator.TsIterable;
@@ -16,7 +19,9 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class CSV implements TsDBLogger{
+public class CSV {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static void writeNoHeader(TsIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		write(it, false, filename, separator, nanText, csvTimeType, false, false);
