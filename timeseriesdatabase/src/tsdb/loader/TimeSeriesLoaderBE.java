@@ -1,7 +1,6 @@
 package tsdb.loader;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import static tsdb.util.Util.log;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -16,6 +15,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.catalog.SourceEntry;
@@ -28,6 +30,8 @@ import de.umr.jepc.store.Event;
  *
  */
 public class TimeSeriesLoaderBE {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private final TsDB tsdb; //not null
 	

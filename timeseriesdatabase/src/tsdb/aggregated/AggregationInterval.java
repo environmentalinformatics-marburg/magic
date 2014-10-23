@@ -1,6 +1,8 @@
 package tsdb.aggregated;
 
-import static tsdb.util.Util.log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 
@@ -10,6 +12,8 @@ public enum AggregationInterval {
 	WEEK, 
 	MONTH, 
 	YEAR;
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	public String getText() {
 		switch(this) {

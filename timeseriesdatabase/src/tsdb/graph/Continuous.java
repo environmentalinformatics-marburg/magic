@@ -1,13 +1,16 @@
 package tsdb.graph;
 
 import static tsdb.util.AssumptionCheck.throwNull;
+
+import org.apache.logging.log4j.LogManager;
+
 import tsdb.Station;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
 import tsdb.util.iterator.TsIterator;
-import static tsdb.util.Util.log;
+
 
 /**
  * This node creates continuous values from a source with gaps in time.
@@ -54,11 +57,11 @@ public interface Continuous extends Node {
 				return null;
 			}
 			if(start!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
-				log.warn("start timestamp not alligned: "+start+"   "+TimeConverter.oleMinutesToText(start));
+				LogManager.getLogger().warn("start timestamp not alligned: "+start+"   "+TimeConverter.oleMinutesToText(start));
 				start = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(start); // TODO ?
 			}
 			if(end!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
-				log.warn("end timestamp not alligned: "+end+"   "+TimeConverter.oleMinutesToText(end));
+				LogManager.getLogger().warn("end timestamp not alligned: "+end+"   "+TimeConverter.oleMinutesToText(end));
 				end = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(end); // TODO ?
 			}
 			NanGapIterator continuous = new NanGapIterator(input_iterator, start, end);

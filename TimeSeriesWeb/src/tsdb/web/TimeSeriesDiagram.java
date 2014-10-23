@@ -2,15 +2,12 @@ package tsdb.web;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
-import static tsdb.util.Util.log;
-
-
-
-
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.graphics.Color;
 
 import tsdb.SensorCategory;
@@ -22,6 +19,8 @@ import tsdb.web.TimeSeriesPainter.PosHorizontal;
 import tsdb.web.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesDiagram {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final TimestampSeries timestampseries;
 	private final AggregationInterval aggregationInterval;

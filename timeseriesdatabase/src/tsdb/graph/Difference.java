@@ -1,12 +1,14 @@
 package tsdb.graph;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.DifferenceIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
-import static tsdb.util.Util.log;
 
 /**
  * This Node creates difference values between two sources.
@@ -14,6 +16,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class Difference extends Continuous.Abstract {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private final Continuous source;
 	private final Continuous compareSource;

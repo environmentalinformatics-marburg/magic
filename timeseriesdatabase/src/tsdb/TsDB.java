@@ -1,7 +1,5 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -9,6 +7,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -20,6 +21,8 @@ import tsdb.catalog.SourceCatalog;
  *
  */
 public class TsDB {
+		
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 	 * map regionName -> Region

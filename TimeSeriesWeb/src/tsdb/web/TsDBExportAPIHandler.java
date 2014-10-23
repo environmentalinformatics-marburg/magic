@@ -2,8 +2,6 @@ package tsdb.web;
 
 import java.io.BufferedReader;
 
-import static tsdb.util.Util.log;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -16,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.eclipse.jetty.server.Request;
@@ -30,6 +30,8 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.ZipExport;
 
 public class TsDBExportAPIHandler extends AbstractHandler {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private static class ExportModel{
 

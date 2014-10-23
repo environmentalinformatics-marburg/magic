@@ -1,12 +1,12 @@
 package tsdb.aggregated;
 
-import static tsdb.util.Util.log;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
 
@@ -16,6 +16,8 @@ import tsdb.TimeConverter;
  *
  */
 public class Interpolator {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 	 * count of values for training to fill one gap

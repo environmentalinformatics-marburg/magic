@@ -1,12 +1,14 @@
 package tsdb;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import static tsdb.util.Util.log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -19,6 +21,8 @@ import tsdb.util.Util;
  *
  */
 public class VirtualPlot {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	protected final TsDB tsdb; //not null
 	

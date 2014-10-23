@@ -1,11 +1,12 @@
 package tsdb.aggregated;
 
-import static tsdb.util.Util.log;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.Sensor;
 import tsdb.TsDB;
@@ -31,6 +32,8 @@ import de.umr.jepc.store.Event;
  */
 @Deprecated
 public class BaseAggregationProcessor {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	String[] parameterNames;
 	Sensor[] sensors;

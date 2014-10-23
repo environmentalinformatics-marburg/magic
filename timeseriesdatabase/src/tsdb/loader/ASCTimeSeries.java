@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
@@ -22,7 +23,7 @@ import de.umr.jepc.store.Event;
 
 public class ASCTimeSeries {
 
-	private static final Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	public boolean isDataFile = true;
 

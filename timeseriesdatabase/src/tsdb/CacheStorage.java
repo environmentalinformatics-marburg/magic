@@ -1,13 +1,13 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -23,6 +23,8 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class CacheStorage {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private static final String DB_NAME_METADATA_SCHEMA = "schema";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";

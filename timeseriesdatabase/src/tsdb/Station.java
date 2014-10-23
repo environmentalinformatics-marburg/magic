@@ -8,13 +8,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.aggregated.AggregationType;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.store.Event;
-import static tsdb.util.Util.log;
 
 /**
  * This class contains metadata that is associated with a station (plotID).
@@ -22,6 +24,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class Station {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private final TsDB tsdb; //not null
 	

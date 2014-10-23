@@ -4,6 +4,7 @@ import gui.bridge.TableBridge;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.graphics.Point;
@@ -22,7 +23,7 @@ import org.eclipse.swt.layout.FillLayout;
 
 public class VirtualPlotInfoDialog extends Dialog {
 	
-	private static Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	private RemoteTsDB timeSeriesDatabase;
 	private Table table;

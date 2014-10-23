@@ -1,9 +1,10 @@
 package tsdb.aggregated;
 
-import static tsdb.util.Util.log;
-
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.raw.TsEntry;
@@ -21,6 +22,8 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class TimeSeries implements TsIterable {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	//used for metadata, may be null
 	//private final NewProcessingChain processingChain;

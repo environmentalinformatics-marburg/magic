@@ -1,7 +1,5 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -13,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -22,6 +22,8 @@ import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
 public class StreamStorageMapDB implements StreamStorage{
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private static final String DB_NAME_STREAM_METADATA = "StreamMetadata";
 	private static final String DB_NAME_STREAM_PREFIX = "stream_";

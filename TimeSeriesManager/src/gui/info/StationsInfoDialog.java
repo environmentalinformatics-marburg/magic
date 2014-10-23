@@ -1,9 +1,8 @@
 package gui.info;
 
-
-
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -21,7 +20,7 @@ import tsdb.util.Util;
 
 public class StationsInfoDialog extends Dialog {
 
-	private static Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	RemoteTsDB timeSeriesDatabase; 
 

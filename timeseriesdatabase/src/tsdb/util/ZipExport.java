@@ -1,7 +1,5 @@
 package tsdb.util;
 
-import static tsdb.util.Util.log;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +15,9 @@ import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
@@ -29,6 +30,8 @@ import tsdb.remote.RemoteTsDB;
 import static tsdb.util.AssumptionCheck.throwNull;;
 
 public class ZipExport {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final RemoteTsDB tsdb;
 

@@ -8,11 +8,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.AverageIterator;
 import tsdb.util.iterator.TsIterator;
-import static tsdb.util.Util.log;
 
 /**
  * This node creates average values per time step over all sources.
@@ -20,6 +22,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class Averaged extends Continuous.Abstract {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	private final List<Continuous> sources; //not null
 	private final String[] schema; //not null

@@ -3,6 +3,7 @@ package tsdb.usecase;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.QueryProcessor;
@@ -21,7 +22,7 @@ public class TestingCalibration {
 
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
 
-	private static final Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {
 		System.out.println("start...");

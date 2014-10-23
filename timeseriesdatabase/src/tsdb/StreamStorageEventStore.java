@@ -1,7 +1,5 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -9,6 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -21,6 +22,8 @@ import de.umr.jepc.util.enums.TimeRepresentation;
  *
  */
 public class StreamStorageEventStore implements StreamStorage {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private TimeSplitBTreeEventStore store;
 

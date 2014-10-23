@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,7 +26,7 @@ import tsdb.util.iterator.TsIterator;
 
 public class StatisticsDialog extends Dialog {
 	
-	private static Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 	
 	private RemoteTsDB tsdb;
 

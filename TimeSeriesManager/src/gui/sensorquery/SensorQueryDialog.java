@@ -5,6 +5,7 @@ import gui.sensorquery.QuerySensorModel.ViewType;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -58,7 +59,7 @@ public class SensorQueryDialog extends Dialog {
 
 	}
 
-	private static final Logger log = Util.log;	
+	private static final Logger log = LogManager.getLogger();
 
 	private RemoteTsDB tsdb;
 

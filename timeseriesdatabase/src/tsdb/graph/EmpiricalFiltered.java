@@ -1,12 +1,15 @@
 package tsdb.graph;
 
 import static tsdb.util.AssumptionCheck.throwNulls;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.EmpiricalIterator;
 import tsdb.aggregated.iterator.ProjectionIterator;
 import tsdb.util.iterator.TsIterator;
-import static tsdb.util.Util.log;
 
 /**
  * This node filters values based on the difference to a reference source.
@@ -14,6 +17,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class EmpiricalFiltered extends Continuous.Abstract {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final Continuous source; //not null
 	private final Continuous compareSource; //not null	

@@ -1,13 +1,13 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
@@ -20,6 +20,8 @@ import tsdb.util.Util;
  */
 public class TsDBFactory {
 	
+	private static final Logger log = LogManager.getLogger();
+	
 	static String CONFIG_DIRECTORY = "config/";
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
 	static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
@@ -30,9 +32,6 @@ public class TsDBFactory {
 	public static String SOURCE_KILI_TFI_PATH = "c:/timeseriesdatabase_data_source_structure_kili_tfi";
 	
 	public static TsDB createDefault() {
-		//System.out.println("JVM bits: "+System.getProperty("sun.arch.data.model"));		
-		
-		
 		try {
 			Wini ini;
 			if(Files.exists(Paths.get("database_paths.ini"))) {

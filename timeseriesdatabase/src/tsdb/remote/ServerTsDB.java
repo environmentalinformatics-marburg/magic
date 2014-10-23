@@ -1,7 +1,6 @@
 package tsdb.remote;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import static tsdb.util.Util.log;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -12,6 +11,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
@@ -33,6 +35,8 @@ import tsdb.util.Pair;
 import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB implements RemoteTsDB {
+	
+	private static final Logger log = LogManager.getLogger();
 	
 	protected final TsDB tsdb; //not null
 

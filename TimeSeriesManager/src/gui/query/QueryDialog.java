@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
@@ -41,13 +42,14 @@ import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Pair;
 import tsdb.util.Util;
+
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 
 public class QueryDialog extends Dialog {
 
-	private static Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	private RemoteTsDB tsdb;
 

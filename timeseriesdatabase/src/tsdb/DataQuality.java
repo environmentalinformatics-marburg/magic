@@ -1,6 +1,7 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * for data values: highest passed quality check
@@ -14,6 +15,8 @@ public enum DataQuality {
 	PHYSICAL,	//physical range check passed and step and empirical not passed
 	STEP,       //physical range check and step passed and empirical not passed
 	EMPIRICAL;   //physical range check and step and empirical passed
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public String getText() {
 		switch(this) {

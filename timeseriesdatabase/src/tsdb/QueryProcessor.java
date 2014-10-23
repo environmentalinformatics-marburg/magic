@@ -3,9 +3,11 @@ package tsdb;
 import java.util.ArrayList;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import static tsdb.util.Util.log;
 
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.aggregated.AggregationInterval;
 import tsdb.aggregated.BaseAggregationTimeUtil;
@@ -32,6 +34,8 @@ import tsdb.util.iterator.TsIterator;
  */
 @Deprecated
 public class QueryProcessor{
+	
+	private static final Logger log = LogManager.getLogger();
 
 	final int STATION_INTERPOLATION_COUNT = 15;		
 	final int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks

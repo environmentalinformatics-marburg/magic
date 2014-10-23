@@ -4,6 +4,7 @@ import gui.info.SourceViewComparator.SortType;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -26,15 +27,15 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
 
 public class SourceCatalogInfoDialog extends Dialog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText("Database Source Catalog");
 
-	}
-
-	private static Logger log = Util.log;
+	}	
 
 	private RemoteTsDB timeSeriesDatabase;
 	private Table table;

@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
@@ -26,7 +28,6 @@ import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.Attribute.DataType;
-import static tsdb.util.Util.log;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase
@@ -34,6 +35,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class ConfigLoader {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb; //not null
 

@@ -4,6 +4,7 @@ import gui.bridge.TableBridge;
 
 import java.rmi.RemoteException;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.TableViewer;
@@ -21,7 +22,7 @@ import tsdb.util.Util;
 
 public class GeneralStationInfoDialog extends Dialog {
 
-	private static Logger log = Util.log;
+	private static final Logger log = LogManager.getLogger();
 
 	private RemoteTsDB timeSeriesDatabase;
 
