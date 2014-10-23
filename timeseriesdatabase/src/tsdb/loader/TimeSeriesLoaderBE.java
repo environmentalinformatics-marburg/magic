@@ -122,37 +122,31 @@ public class TimeSeriesLoaderBE {
 		}
 	}
 	
-	/**
-	 * Reads all UDBF-Files of one directory and inserts the data entries into database
-	 * @param stationPath
-	 */
-	public void loadDirectoryOfOneStation(Station station, Path stationPath) {
-		log.info("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
-		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
-
-		Map<String,List<Path>> fileNameMap = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
-
+	
+	private void collectFlatDirectoryOfOneStation(Path directory, TreeMap<String,List<Path>> mapPrefixFilename) {
 		try {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(stationPath, x -> x.toString().endsWith(".dat"));
+			DirectoryStream<Path> stream = Files.newDirectoryStream(directory, x -> x.toString().endsWith(".dat"));
 			for(Path path:stream) {				
 				String fileName = path.getFileName().toString();
 				String prefix = fileName.substring(0,fileName.indexOf('_'));
 
-				List<Path> list = fileNameMap.get(prefix);
+				List<Path> list = mapPrefixFilename.get(prefix);
 				if(list==null) {
 					list = new ArrayList<Path>();
-					fileNameMap.put(prefix, list);
+					mapPrefixFilename.put(prefix, list);
 				}
 				list.add(path);
 			}
 			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-
+		}		
+	}
+	
+	public void loadWithMapPrefixFilenameOfOneStation(Station station, TreeMap<String, List<Path>> mapPrefixFilename) {
 		TreeMap<Long,Event> eventMap = new TreeMap<Long,Event>();
 
-		for(Entry<String, List<Path>> entry:fileNameMap.entrySet()) {
+		for(Entry<String, List<Path>> entry:mapPrefixFilename.entrySet()) {
 			//String prefix = entry.getKey();
 			List<Path> pathList = entry.getValue();	
 
@@ -251,8 +245,23 @@ public class TimeSeriesLoaderBE {
 		if(eventMap.size()>0) {
 			tsdb.streamStorage.insertData(station.stationID, eventMap);			
 		} else {
-			log.warn("no data to insert: "+stationPath);
-		}
+			log.warn("no data to insert: "+station);
+		}		
+	}
+	
+	/**
+	 * Reads all UDBF-Files of one directory and inserts the data entries into database
+	 * @param stationPath
+	 */
+	public void loadDirectoryOfOneStation(Station station, Path stationPath) {
+		log.info("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
+		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
+
+		TreeMap<String,List<Path>> mapPrefixFilename = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
+
+		collectFlatDirectoryOfOneStation(stationPath,mapPrefixFilename);
+
+		loadWithMapPrefixFilenameOfOneStation(station, mapPrefixFilename);
 	}
 	
 	/**

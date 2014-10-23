@@ -31,13 +31,6 @@ public class Main {
 		
         Server server = new Server(8080);
         
-        ContextHandler context = new ContextHandler("/");
-        context.setContextPath("/");
-        context.setHandler(new TestingHandler("Root Hello"));
- 
-        ContextHandler contextFR = new ContextHandler("/fr");
-        contextFR.setHandler(new TestingHandler("Bonjoir"));
-        
         ContextHandler contextStatic = new ContextHandler("/static");
         ResourceHandler resource_handler = new ResourceHandler();
         resource_handler.setDirectoriesListed(true);
@@ -47,16 +40,12 @@ public class Main {
         handlers.setHandlers(new Handler[] {resource_handler, new DefaultHandler()});
         contextStatic.setHandler(handlers);
         
-        ContextHandler contextTimeseries = new ContextHandler("/timeseries");
-        TimeSeriesHandler timeSeriesHandler = new TimeSeriesHandler(tsdb);
-        contextTimeseries.setHandler(timeSeriesHandler);
-        
         ContextHandler contextTsdb = new ContextHandler("/tsdb");
-        InfoHandler infoHandler = new InfoHandler(tsdb);
+        TsDBAPIHandler infoHandler = new TsDBAPIHandler(tsdb);
         contextTsdb.setHandler(infoHandler);
         
         ContextHandler contextExport = new ContextHandler("/export");
-        ExportHandler exportHandler = new ExportHandler(tsdb);
+        TsDBExportAPIHandler exportHandler = new TsDBExportAPIHandler(tsdb);
         HashSessionManager manager = new HashSessionManager();
                 
         manager.setMaxInactiveInterval(60*60);
@@ -66,7 +55,7 @@ public class Main {
         new LongAdder();
  
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[] {context, contextFR, contextStatic, contextTimeseries, contextTsdb, contextExport});
+        contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport});
  
         server.setHandler(contexts);
                 

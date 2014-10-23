@@ -1,5 +1,7 @@
 package web;
 
+import static tsdb.util.Util.log;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -41,22 +44,18 @@ import tsdb.util.TsDBLogger;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
-public class InfoHandler extends AbstractHandler implements TsDBLogger{ 
+public class TsDBAPIHandler extends AbstractHandler implements TsDBLogger{ 
 	private final RemoteTsDB tsdb;
 
-	public InfoHandler(RemoteTsDB tsdb) {
+	public TsDBAPIHandler(RemoteTsDB tsdb) {
 		this.tsdb=tsdb;
 	}
 
 	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {				
-		response.setContentType("text/plain;charset=utf-8");
-
+	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	
+		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("tsdb", target, baseRequest));	
 		baseRequest.setHandled(true);
-		log.warn("target "+request.getRequestURI());
-		
-
-
+		response.setContentType("text/plain;charset=utf-8");
 
 		boolean ret = false;
 
@@ -170,7 +169,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 			break;
 		}
 		default:
-			ret = handle_error(response.getWriter(), target);
+			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
 		}
 
 		if(ret) {
@@ -390,7 +389,7 @@ public class InfoHandler extends AbstractHandler implements TsDBLogger{
 	}
 
 	private boolean handle_error(PrintWriter writer, String target) {
-		writer.println("error: unknown query: "+target);
+		writer.println("tsdb API error: unknown query: "+target);
 		return false;
 	}
 

@@ -1,11 +1,14 @@
 package web;
 
 import java.io.BufferedReader;
+
 import static tsdb.util.Util.log;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import javax.servlet.ServletException;
@@ -13,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
@@ -24,7 +29,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.ZipExport;
 
-public class ExportHandler extends AbstractHandler {
+public class TsDBExportAPIHandler extends AbstractHandler {
 
 	private static class ExportModel{
 
@@ -63,13 +68,14 @@ public class ExportHandler extends AbstractHandler {
 
 	private final RemoteTsDB tsdb;
 
-	public ExportHandler(RemoteTsDB tsdb) {
+	public TsDBExportAPIHandler(RemoteTsDB tsdb) {
 		this.tsdb = tsdb;
 	}
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		System.out.println("ExportHandler: "+target);
+		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("export", target, baseRequest));		
+		
 		baseRequest.setHandled(true);
 		response.setContentType("text/plain;charset=utf-8");
 
@@ -142,7 +148,7 @@ public class ExportHandler extends AbstractHandler {
 			break;
 		}		
 		default: {
-			ret = handle_error(response.getWriter(), target);
+			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
 		}
 		}
 
@@ -154,7 +160,7 @@ public class ExportHandler extends AbstractHandler {
 	}
 
 	private boolean handle_error(PrintWriter writer, String target) {
-		writer.println("error: unknown query: "+target);
+		writer.println("tsdb export API error: unknown query: "+target);
 		return false;
 	}
 
