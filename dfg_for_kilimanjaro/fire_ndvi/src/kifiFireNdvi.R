@@ -13,7 +13,7 @@ lib <- c("doParallel", "raster", "rgdal", "randomForest",
          "latticeExtra", "popbio", "ggplot2")
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
-fun <- paste0("src/", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
+fun <- paste0("src/", c("probRst.R", "myMinorTick.R", 
                         "ndviCell.R", "evalTree.R", "splitRaster.R"))
 sapply(fun, source)
 
@@ -25,39 +25,49 @@ registerDoParallel(cl <- makeCluster(3))
 
 ## MODIS NDVI 
 
-# Import Whittaker-filled files (2003-2013)
-ndvi.rst.wht <- lapply(c("mod13q1", "myd13q1"), function(i) {
+# MODIS platforms
+sensors <- c("mod13q1", "myd13q1")
+
+# Time range
+st_year <- "2003"
+nd_year <- "2013"
+
+# Import raster data and corresponding dates for each sensor separately
+ndvi.rst.wht <- lapply(sensors, function(i) {
+  # Import Whittaker-filled files (2003-2013)
   ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
-                         pattern = "^NDVI_Yearly.*_year.*.tif$", 
-                         full.names = TRUE)
+                         pattern = "^WHT.*.tif$", full.names = TRUE)
   
-  st <- ifelse(i == "mod13q1", "2001", "2003")
-  nd <- "2013"
+  st <- grep(st_year, ndvi.fls)[1]
+  nd <- grep(nd_year, ndvi.fls)[length(grep(nd_year, ndvi.fls))]
   
-  ndvi.fls <- ndvi.fls[grep(st, ndvi.fls):grep(nd, ndvi.fls)]
+  ndvi.fls <- ndvi.fls[st:nd]
   ndvi.rst <- stack(ndvi.fls)
   
   # Import corresponding date information
-  ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/outProj/", 
+  ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/ndvi_clrk", 
                               pattern = paste0(toupper(i), ".*_NDVI.tif$"))
-  ndvi.fls.init <- ndvi.fls.init[grep(st, ndvi.fls.init)[1]:
-                                   grep(nd, ndvi.fls.init)[length(grep(nd, ndvi.fls.init))]]
+  
+  st_init <- grep(st_year, ndvi.fls.init)[1]
+  nd_init <- grep(nd_year, ndvi.fls.init)[length(grep(nd_year, ndvi.fls.init))]
+  
+  ndvi.fls.init <- ndvi.fls.init[st_init:nd_init]
   ndvi.dates <- as.Date(substr(ndvi.fls.init, 10, 16), format = "%Y%j")
   
-  # Return RasterStack and corresponding layer dates
+  # List raster data and corresponding dates
   return(list(ndvi.rst, ndvi.dates))
 })
 
 # Rearrange raster layers according to date information
-dates <- do.call("c", sapply(ndvi.rst.wht, "[[", 2))
+dates <- do.call("c", lapply(ndvi.rst.wht, "[[", 2))
 index <- order(dates)
 dates <- dates[index]
 
-ndvi.stck.wht <- stack(sapply(ndvi.rst.wht, "[[", 1))
+ndvi.stck.wht <- stack(lapply(ndvi.rst.wht, "[[", 1))
 ndvi.stck.wht <- ndvi.stck.wht[[index]]
 
 # Setup time series
-ndvi.ts <- do.call("c", lapply(2001:2013, function(i) { 
+ndvi.ts <- do.call("c", lapply(st_year:nd_year, function(i) { 
   seq(as.Date(paste(i, "01", "01", sep = "-")), 
       as.Date(paste(i, "12", "31", sep = "-")), 8)
 }))
