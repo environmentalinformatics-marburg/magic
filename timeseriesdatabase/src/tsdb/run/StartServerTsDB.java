@@ -19,6 +19,16 @@ public class StartServerTsDB {
 	public static int SERVER_PORT = 16826;
 
 	public static void main(String[] args) throws RemoteException {
+		
+		System.out.println("open database...");
+		TsDB tsdb = TsDBFactory.createDefault();
+		ServerTsDB servertsdb = new ServerTsDB(tsdb);
+		RemoteTsDB remoteTsDB = servertsdb;
+		
+		run(remoteTsDB);		
+	}
+	
+	public static void run(RemoteTsDB remoteTsDB) throws RemoteException {
 		/*System.out.println("start...");
 		TsDB tsdb = FactoryTsDB.createDefault();
 		try {
@@ -61,10 +71,8 @@ public class StartServerTsDB {
 
 		RemoteServer.setLog(System.out);
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> System.out.println(e));
-		System.out.println("open database...");
-		TsDB tsdb = TsDBFactory.createDefault();
-		ServerTsDB servertsdb = new ServerTsDB(tsdb);
-		RemoteTsDB remoteTsDB = servertsdb;
+		
+		
 		System.out.println("create registry...");
 		Registry registry = LocateRegistry.createRegistry(REGISTRY_PORT);
 		System.out.println("bind remote...");

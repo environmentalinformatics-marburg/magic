@@ -4,8 +4,11 @@ import java.util.ArrayList;
 
 import tsdb.Sensor;
 import tsdb.Station;
+import tsdb.StationProperties;
+import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.util.TimestampInterval;
 
 public class ConsoleRunner implements Runnable {
 
@@ -30,11 +33,14 @@ public class ConsoleRunner implements Runnable {
 			return;
 		}
 		String command = line;
+		String parameter="";
 		int endIndex = line.indexOf(' ');
 		if(endIndex>=0) {
 			command = line.substring(0, endIndex);
+			parameter = line.substring(endIndex);
 		}
 		command = command.trim().toLowerCase();
+		parameter = parameter.trim().toLowerCase();
 		//System.out.println("command: ["+command+"]");
 		switch(command) {
 		case "intro":
@@ -63,21 +69,75 @@ public class ConsoleRunner implements Runnable {
 			break;
 		case "help":
 			command_help();
-			break;			
+			break;
+		case "info":
+			command_info(parameter);
+			break;
 		default:
 			command_unknown(command);
 		}
 	}
 
+	private void command_info(String parameter) {
+		int endIndex = parameter.indexOf(':');
+		if(endIndex<0) {
+			println("info no type of info: "+parameter);
+			return;
+		}
+		String type = parameter.substring(0, endIndex);
+		String arg = parameter.substring(endIndex+1);
+		type = type.trim().toLowerCase();
+		arg = arg.trim();
+		switch(type) {
+		case "plot":
+			command_info_plot(arg);
+			break;
+		default:
+			println("unknown type: "+type);
+		}
+	}
+	
+	private void command_info_plot(String plot) {
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plot.toLowerCase());
+		String plotID = plot;
+		if(virtualPlot!=null) {
+			plotID = virtualPlot.plotID;
+			println("virtual plot: "+plotID+" in "+virtualPlot.generalStation.name+" ("+virtualPlot.generalStation.longName+")");
+			println("position: "+virtualPlot.geoPosEasting+" "+virtualPlot.geoPosNorthing+" elevation: "+virtualPlot.elevation);
+			
+			StringBuilder s = new StringBuilder();
+			s.append("stations: ");
+			for(TimestampInterval<StationProperties> interval:virtualPlot.intervalList) {
+				s.append(interval.value.get_serial());
+				s.append(' ');
+			}
+			println(s.toString());
+			long[] baseInterval = virtualPlot.getTimestampBaseInterval();
+			if(baseInterval!=null) {
+				println("data time span: "+TimeConverter.oleMinutesToText(baseInterval[0])+" - "+TimeConverter.oleMinutesToText(baseInterval[1]));
+			}
+			return;
+		}
+		Station station = tsdb.getStation(plot.toUpperCase());
+		if(station!=null) {
+			plotID = station.stationID;
+			println("station plot: "+plotID+" in "+station.generalStation.name+" ("+station.generalStation.longName+")");
+			println("position: "+station.geoPoslongitude+" "+station.geoPoslongitude);
+			return;
+		}
+		println("unknown plot: "+plot);
+	}
+
+
 	private void command_help() {
 		println("With this console commands can be executed at tsdb server.");
-		
+
 	}
 
 
 	private void command_stations() {
 		for(Station station:tsdb.getStations()) {
-				println(station.stationID);
+			println(station.stationID);
 		}		
 	}
 

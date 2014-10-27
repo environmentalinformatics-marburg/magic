@@ -12,5 +12,7 @@
 	<classpathentry kind="lib" path="/TimeSeriesManager/lib/windows/org.eclipse.swt.win32.win32.x86_64_3.103.0.v20140605-2012.jar" sourcepath="/TimeSeriesManager/lib/source/org.eclipse.swt.win32.win32.x86_64.source_3.103.0.v20140605-2012.jar"/>
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/log4j-api-2.0.2.jar" sourcepath="/timeseriesdatabase/lib/source/log4j-api-2.0.2-sources.jar"/>
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/log4j-core-2.0.2.jar" sourcepath="/timeseriesdatabase/lib/source/log4j-core-2.0.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.7.jar" sourcepath="lib/source/slf4j-api-1.7.7-sources.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.0.2.jar" sourcepath="lib/source/log4j-slf4j-impl-2.0.2-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -26,6 +26,7 @@ public class TsDBFactory {
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
 	static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
 	
+	public static String SOURCE_BE_TSM_PATH = "c:/timeseriesdatabase_data_source_be_tsm";
 	public static String SOURCE_BE_STRUCTURE_ONE_PATH = "c:/timeseriesdatabase_data_source_structure_one";
 	public static String SOURCE_BE_STRUCTURE_TWO_PATH = "c:/timeseriesdatabase_data_source_structure_two";
 	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
@@ -51,6 +52,9 @@ public class TsDBFactory {
 			}
 			if(pathMap.containsKey("CACHE_DIRECTORY")) {
 				CACHE_DIRECTORY = pathMap.get("CACHE_DIRECTORY");
+			}
+			if(pathMap.containsKey("SOURCE_BE_TSM_PATH")) {
+				SOURCE_BE_TSM_PATH = pathMap.get("SOURCE_BE_TSM_PATH");
 			}
 			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_ONE_PATH")) {
 				SOURCE_BE_STRUCTURE_ONE_PATH = pathMap.get("SOURCE_BE_STRUCTURE_ONE_PATH");

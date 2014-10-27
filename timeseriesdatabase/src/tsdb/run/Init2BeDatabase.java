@@ -17,6 +17,7 @@ public class Init2BeDatabase {
 		// *** workaround for not created database files ... 
 		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		timeSeriesDatabase.clear();
+		timeSeriesDatabase.close();
 		
 		timeSeriesDatabase = TsDBFactory.createDefault();
 		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
@@ -31,7 +32,7 @@ public class Init2BeDatabase {
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
 		
 		System.gc();
-		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get("c:/timeseriesdatabase_data_source_be_182_gsm"));
+		timeseriesloaderBE.loadDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_data_source_be_tsm"));
 		System.gc();
 		
 		

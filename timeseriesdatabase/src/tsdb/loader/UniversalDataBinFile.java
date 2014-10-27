@@ -17,11 +17,11 @@ import tsdb.TimeConverter;
  *
  */
 public class UniversalDataBinFile {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	final int MAX_VALID_ROW_ID = 30000;
-	
+
 	private Path filename;
 	private int fileSize;
 	private MappedByteBuffer mappedByteBuffer;
@@ -31,25 +31,32 @@ public class UniversalDataBinFile {
 	private tsdb.TimeConverter timeConverter;
 	private int dataSectionStartFilePosition;
 	private SensorHeader[] sensorHeaders;
-	
+	private boolean empty = false;
+
 	public class DataRow {
-		
+
 		public final int id;
 		public final float[] data; 
-		
+
 		public DataRow(int id, float[] data) {
 			this.id = id;
 			this.data = data;
 		}
 
 	}
-	
+
 	public UniversalDataBinFile(Path fileName) throws IOException {
 		this.filename = fileName;
 		initFile();
-		readHeader();
+		if(!empty) {
+			readHeader();
+		}
 	}
-	
+
+	public boolean isEmpty() {
+		return empty;
+	}
+
 	public void close() {
 		try {
 			fileChannel.close();
@@ -58,7 +65,7 @@ public class UniversalDataBinFile {
 			log.error(e);
 		}
 	}
-	
+
 	private void initFile() throws IOException {
 		fileInputStream = new FileInputStream(filename.toString());
 		fileChannel = fileInputStream.getChannel();
@@ -66,16 +73,17 @@ public class UniversalDataBinFile {
 			throw new RuntimeException("File > Integer.MAX_VALUE: "+fileChannel.size());
 		}
 		fileSize = (int) fileChannel.size();
+		empty = fileSize==0;
 		mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize);
 	}
-	
+
 	private void readHeader() throws IOException {
 		fileChannel.position(0);
 
 		byte isBigEndian = mappedByteBuffer.get();
 		//System.out.println(isBigEndian+"\tisBigEndian");
 		if(isBigEndian!=1) {
-			throw new RuntimeException("Universal-Data-Bin-File variant not implemented");
+			throw new RuntimeException("no valid Universal-Data-Bin-File header");
 		}		
 		short version = mappedByteBuffer.getShort();
 		//System.out.println(version+"\tversion");
@@ -107,36 +115,36 @@ public class UniversalDataBinFile {
 		//System.out.println(sampleRate+"\tsampleRate");
 		variableCount = mappedByteBuffer.getShort();
 		//System.out.println(variableCount+" variableCount");
-		
+
 		timeConverter = new TimeConverter(startTimeToDayFactor, dActTimeToSecondFactor, startTime, sampleRate);
-		
+
 		readSensorHeaders();
-		
+
 		int headerEndPosition = mappedByteBuffer.position();
-		
+
 		//System.out.println(headerEndPosition+"\theaderEndPosition");
-		
+
 		final int MIN_SEPARATION_CHARACTERS = 8;
-		
+
 		int minDataStartPosition = headerEndPosition + MIN_SEPARATION_CHARACTERS;
-		
+
 		final int ALIGN_GRID_SIZE = 16;
-		
+
 		int offset = (minDataStartPosition % ALIGN_GRID_SIZE)==0?0:ALIGN_GRID_SIZE - (minDataStartPosition % ALIGN_GRID_SIZE);
-		
+
 		//System.out.println(offset+" offset");
-		
+
 		dataSectionStartFilePosition = minDataStartPosition + offset;
-		
+
 		//System.out.println(dataSectionStartFilePosition+"\tdataSectionStartFilePosition");
-	
-		
+
+
 	}
-	
+
 	private void readSensorHeaders() {
-		
+
 		sensorHeaders = new SensorHeader[variableCount];
-		
+
 		for(int i=0;i<variableCount;i++) {
 			short nameLen = mappedByteBuffer.getShort();
 			//System.out.println(nameLen+"\tnameLen");
@@ -166,10 +174,10 @@ public class UniversalDataBinFile {
 			}
 			byte b = mappedByteBuffer.get();
 			//System.out.println(b+"\t?");
-			
+
 			sensorHeaders[i] = new SensorHeader(name,unit,dataType);			
 		}
-		
+
 		int nullCount=0;
 		for(int i=0;i<sensorHeaders.length;i++) {
 			if(sensorHeaders[i].dataType==0) {
@@ -177,7 +185,7 @@ public class UniversalDataBinFile {
 				//System.out.println("warning: header entry with no data: "+sensorHeaders[i].name+"\t"+sensorHeaders[i].unit);
 			}
 		}
-		
+
 		if(nullCount>0) {
 			SensorHeader[] temp = new SensorHeader[sensorHeaders.length-nullCount];
 			int c=0;
@@ -191,7 +199,7 @@ public class UniversalDataBinFile {
 			variableCount = (short) sensorHeaders.length;
 		}		
 	}
-	
+
 	/**
 	 * Reads all data rows from file without further processing.
 	 * @return Array of Datarows
@@ -215,16 +223,16 @@ public class UniversalDataBinFile {
 				throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
 			}			
 		}
-		
+
 		if((fileSize-dataSectionStartFilePosition)%dataRowByteSize!=0){
 			log.warn("file end not at row boundary: "+filename+"\t"+fileSize+"\t"+dataSectionStartFilePosition+"\t"+dataRowByteSize+"\t"+(fileSize-dataSectionStartFilePosition)%dataRowByteSize+"\t"+timeConverter.getStartDateTime());
 			//return null;
 		}
-		
+
 		int dataEntryCount = (fileSize-dataSectionStartFilePosition)/dataRowByteSize;
-		
+
 		DataRow[] datarows = new DataRow[dataEntryCount];
-		
+
 		for(int i=0;i<dataEntryCount;i++) {
 			float[] data = new float[variableCount];
 			int rowID = mappedByteBuffer.getInt();
@@ -242,18 +250,18 @@ public class UniversalDataBinFile {
 				default:
 					throw new RuntimeException("type not implemented:\t"+sensorHeaders[sensorID].dataType);
 				}
-				
+
 			}
 			datarows[i] = new DataRow(rowID, data);
 		}
 		return datarows;
 	}
-	
+
 	public UDBFTimestampSeries getUDBFTimeSeries() {
 		DataRow[] dataRows = readDataRows();
-		
+
 		int maxRowID = -1;
-		
+
 		for(int i=0;i<dataRows.length;i++) {
 			int id = dataRows[i].id;
 			if(id>=0&&id<=MAX_VALID_ROW_ID) {
@@ -262,12 +270,12 @@ public class UniversalDataBinFile {
 				}
 			}
 		}		
-		
+
 		DataRow[] tempRows = new DataRow[maxRowID+1];
-				
+
 		int badRowCounter = 0;
 		int idPos = -1;
-		
+
 		for(int r=0;r<dataRows.length;r++) {
 			int id = dataRows[r].id;
 			if(id>=0&&id<=MAX_VALID_ROW_ID) {
@@ -276,7 +284,7 @@ public class UniversalDataBinFile {
 				badRowCounter++;
 			}
 		}
-		
+
 		int rowCount=0;
 		int gapCount=0;
 		for(int r=0;r<tempRows.length;r++) {
@@ -286,7 +294,7 @@ public class UniversalDataBinFile {
 				rowCount++;
 			}
 		}
-		
+
 		long[] time = new long[rowCount];
 		float[][] data = new float[rowCount][];
 		for(int rowIndex=0; rowIndex<rowCount; rowIndex++) {
@@ -297,7 +305,7 @@ public class UniversalDataBinFile {
 			if(tempRows[tempRowsIndex]!=null) {
 				for(int sensorIndex=0;sensorIndex<sensorHeaders.length;sensorIndex++) {
 					data[dataRowIndex][sensorIndex] = tempRows[tempRowsIndex].data[sensorIndex];
-					
+
 				}
 				time[dataRowIndex] =  timeConverter.getStartTimeOleMinutes()+(tempRows[tempRowsIndex].id*timeConverter.getTimeStepMinutes());
 				if(time[dataRowIndex]==58508670) {
@@ -306,7 +314,7 @@ public class UniversalDataBinFile {
 				dataRowIndex++;
 			}
 		}
-		
+
 		return new UDBFTimestampSeries(filename, sensorHeaders, timeConverter, time, data);
 	}
 }

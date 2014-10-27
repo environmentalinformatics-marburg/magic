@@ -30,19 +30,19 @@ import de.umr.jepc.store.Event;
  *
  */
 public class TimeSeriesLoaderBE {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final TsDB tsdb; //not null
-	
+
 	private final long minTimestamp;
-	
+
 	public TimeSeriesLoaderBE(TsDB tsdb, long minTimestamp) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 		this.minTimestamp = minTimestamp;
 	}
-	
+
 	/**
 	 * specific to BE:
 	 * read files with root folder
@@ -70,7 +70,31 @@ public class TimeSeriesLoaderBE {
 			log.error(e);
 		}		
 	}
-	
+
+	public void loadDirectory_with_stations_flat(Path rootPath) {
+		try {
+			log.info("loadDirectory_with_stations_flat:\t"+rootPath);
+			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath);
+			for(Path stationPath:stream) {
+				try {
+					String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();
+					Station station = tsdb.getStation(stationID);					
+					if(station!=null) {
+						loadDirectoryOfOneStation(station,stationPath);
+					} else {				
+						log.error("station does not exist in database:\t"+stationID);
+
+					}
+				} catch(Exception e) {
+					log.error("loadDirectory_with_stations_flat in directory stations: "+stationPath+"   "+e);
+				}
+			}
+			stream.close();
+		} catch (Exception e) {
+			log.error("loadDirectory_with_stations_flat in directory root loop: "+rootPath+"   "+e);
+		}		
+	}
+
 	/**
 	 * loads all files of all exploratories
 	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
@@ -89,7 +113,7 @@ public class TimeSeriesLoaderBE {
 			log.error(e);
 		}
 	}
-	
+
 	/**
 	 * loads all files of one exploratory HEG, HEW, ...
 	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
@@ -125,29 +149,35 @@ public class TimeSeriesLoaderBE {
 			log.error(e);
 		}
 	}
-	
-	
+
+
 	private void collectFlatDirectoryOfOneStation(Path directory, TreeMap<String,List<Path>> mapPrefixFilename) {
 		try {
+			log.trace("collectFlatDirectoryOfOneStation: "+directory);
 			DirectoryStream<Path> stream = Files.newDirectoryStream(directory, x -> x.toString().endsWith(".dat"));
-			for(Path path:stream) {				
-				String fileName = path.getFileName().toString();
-				String prefix = fileName.substring(0,fileName.indexOf('_'));
-
-				List<Path> list = mapPrefixFilename.get(prefix);
-				if(list==null) {
-					list = new ArrayList<Path>();
-					mapPrefixFilename.put(prefix, list);
+			for(Path pathfilename:stream) {				
+				try {
+					String fileName = pathfilename.getFileName().toString();
+					String prefix = fileName.substring(0,fileName.indexOf('_'));
+					List<Path> list = mapPrefixFilename.get(prefix);
+					if(list==null) {
+						list = new ArrayList<Path>();
+						mapPrefixFilename.put(prefix, list);
+					}
+					list.add(pathfilename);
+				} catch(Exception e) {
+					log.error("collectFlatDirectoryOfOneStation file:  "+pathfilename+"  "+e);
 				}
-				list.add(path);
 			}
 			stream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("collectFlatDirectoryOfOneStation root loop:  "+directory+"  "+e);
 		}		
 	}
-	
+
 	public void loadWithMapPrefixFilenameOfOneStation(Station station, TreeMap<String, List<Path>> mapPrefixFilename) {
+		log.trace("loadWithMapPrefixFilenameOfOneStation: "+station.stationID);		
+
 		TreeMap<Long,Event> eventMap = new TreeMap<Long,Event>();
 
 		for(Entry<String, List<Path>> entry:mapPrefixFilename.entrySet()) {
@@ -159,13 +189,15 @@ public class TimeSeriesLoaderBE {
 			for(Path path:pathList) {
 				try {
 					UDBFTimestampSeries timeSeries = readUDBFTimeSeries(station.stationID, path);
-					List<Event> eventList = translateToEvents(station, timeSeries, minTimestamp);
-					if(eventList!=null) {
-						eventsList.add(eventList);
-						
-						tsdb.sourceCatalog.insert(new SourceEntry(path,station.stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
+					if(timeSeries!=null) {
+						List<Event> eventList = translateToEvents(station, timeSeries, minTimestamp);
+						if(eventList!=null) {
+							eventsList.add(eventList);
+							tsdb.sourceCatalog.insert(new SourceEntry(path,station.stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
+						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					log.error("file not read: "+path+"\t"+e);
 				}
 			}
@@ -252,22 +284,26 @@ public class TimeSeriesLoaderBE {
 			log.warn("no data to insert: "+station);
 		}		
 	}
-	
+
 	/**
 	 * Reads all UDBF-Files of one directory and inserts the data entries into database
 	 * @param stationPath
 	 */
 	public void loadDirectoryOfOneStation(Station station, Path stationPath) {
-		log.info("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
-		System.out.println("load station:\t"+stationPath+"\tplotID:\t"+station.stationID);
-
-		TreeMap<String,List<Path>> mapPrefixFilename = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
-
-		collectFlatDirectoryOfOneStation(stationPath,mapPrefixFilename);
-
-		loadWithMapPrefixFilenameOfOneStation(station, mapPrefixFilename);
+		try {
+			log.info("loadDirectoryOfOneStation:\t"+stationPath+"\tplotID:\t"+station.stationID);
+			TreeMap<String,List<Path>> mapPrefixFilename = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
+			collectFlatDirectoryOfOneStation(stationPath,mapPrefixFilename);
+			if(!mapPrefixFilename.isEmpty()) {
+				loadWithMapPrefixFilenameOfOneStation(station, mapPrefixFilename);
+			} else {
+				log.info("loadDirectoryOfOneStation: no files found in "+stationPath);
+			}
+		} catch(Exception e) {
+			log.error("loadDirectoryOfOneStation:  "+station+"  "+stationPath+"  "+e);
+		}
 	}
-	
+
 	/**
 	 * Reads an UDBF-File and return structured data as UDBFTimeSeries Object.
 	 * @param filename
@@ -277,11 +313,17 @@ public class TimeSeriesLoaderBE {
 	public static UDBFTimestampSeries readUDBFTimeSeries(String stationID, Path filename) throws IOException {
 		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+stationID);
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
-		UDBFTimestampSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
-		udbFile.close();
-		return udbfTimeSeries;
+		if(!udbFile.isEmpty()){
+			UDBFTimestampSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
+			udbFile.close();
+			return udbfTimeSeries;
+		} else {
+			log.info("empty file: "+filename);
+			udbFile.close();
+			return null;
+		}		
 	}
-	
+
 	/**
 	 * Convertes rows of input file data into events with matching schema of the event stream of this plotID 
 	 * @param udbfTimeSeries
@@ -351,7 +393,7 @@ public class TimeSeriesLoaderBE {
 			if(timestamp<minTimestamp) {
 				continue;
 			}
-			
+
 			// one input row
 			float[] row = udbfTimeSeries.data[rowIndex];
 
@@ -369,7 +411,7 @@ public class TimeSeriesLoaderBE {
 			if(udbfTimeSeries.time[rowIndex]==58508670) {
 				System.out.println("write time 58508670 in "+station.stationID+"\t"+udbfTimeSeries.filename);
 			}
-				resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
+			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
 		}
 
 		return resultList;
