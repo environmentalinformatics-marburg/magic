@@ -4,8 +4,7 @@ kifiRemoveDuplicates <- function(hdf.path,
                                  ...) {
   
   # Packages
-  lib <- c("raster")
-  sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
+  stopifnot(require(raster))
   
   # Retrieve DAYSOFYEAR for both TERRA (MOD) and AQUA (MYD)
   hdf.info <- lapply(hdf.pattern, function(i) {
@@ -14,7 +13,8 @@ kifiRemoveDuplicates <- function(hdf.path,
     
     tmp.fls.doy <- sapply(tmp.fls, function(j) {
       tmp.info <- GDALinfo(j, returnScaleOffset = FALSE, silent = TRUE)
-      tmp.doy <- attr(tmp.info, "mdata")[grep("DAYSOFYEAR", attr(tmp.info, "mdata"))]
+      mdata <- attr(tmp.info, "mdata")
+      tmp.doy <- mdata[grep("DAYSOFYEAR", mdata)]
       
       return(unlist(strsplit(substr(tmp.doy, 12, nchar(tmp.doy)), ", ")))
     })
@@ -23,7 +23,7 @@ kifiRemoveDuplicates <- function(hdf.path,
   })
   
   # Remove duplicated RasterLayers from data
-  hdf.doy.dupl <- lapply(c(1, 2), function(i) which(duplicated(as.Date(do.call("c", hdf.info[[i]])))))
+  hdf.doy.dupl <- lapply(seq(hdf.info), function(i) which(duplicated(as.Date(do.call("c", hdf.info[[i]])))))
   
   data <- lapply(seq(data), function(i) {
     data[[i]][[-hdf.doy.dupl[[i]]]]

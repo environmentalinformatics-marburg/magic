@@ -13,8 +13,7 @@ lib <- c("doParallel", "raster", "rgdal", "randomForest",
          "latticeExtra", "popbio", "zoo", "ggplot2")
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
-fun <- paste0("src/", c("probRst.R", "myMinorTick.R", 
-                        "ndviCell.R", "evalTree.R", "splitRaster.R"))
+fun <- paste0("src/", c("probRst.R", "ndviCell.R", "evalTree.R"))
 sapply(fun, source)
 
 # Parallelization
@@ -34,9 +33,13 @@ nd_year <- "2013"
 
 # Import raster data and corresponding dates for each sensor separately
 ndvi.rst.wht <- lapply(sensors, function(i) {
-  # Import Whittaker-filled files (2003-2013)
-  ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
-                         pattern = "^WHT.*.tif$", full.names = TRUE)
+#   # Import Whittaker-filled files (2003-2013)
+#   ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
+#                          pattern = "^WHT.*.tif$", full.names = TRUE)
+  
+  # Import quality-controlled MODIS NDVI data
+  ndvi.fls <- list.files("data/processed", pattern = paste0("^BF.*", toupper(i)), 
+                         full.names = TRUE)
   
   st <- grep(ifelse(i == "mod13q1", st_year, "2003"), ndvi.fls)[1]
   nd <- grep(nd_year, ndvi.fls)[length(grep(nd_year, ndvi.fls))]
