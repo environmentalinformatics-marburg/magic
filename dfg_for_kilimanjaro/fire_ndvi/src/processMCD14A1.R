@@ -83,8 +83,8 @@ processMCD14A1 <- function(sensors = c("MOD", "MYD"),
   
   # Reclassify
   modis_fire_reclass <- lapply(modis.fire.overlay, function(i) {
-    if (!is.na(i)) {
-      file_out <- paste(outdir, "/RCL_", names(i))
+    if (!is.logical(i)) {
+      file_out <- paste0(outdir, "/RCL_", names(i))
       reclassify(i, rcl.mat, right = NA, 
                  filename = file_out, format = "GTiff", overwrite = TRUE)
     } else {
