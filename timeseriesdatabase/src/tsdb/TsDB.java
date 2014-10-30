@@ -21,7 +21,7 @@ import tsdb.catalog.SourceCatalog;
  *
  */
 public class TsDB {
-		
+
 	private static final Logger log = LogManager.getLogger();
 
 	/**
@@ -66,7 +66,7 @@ public class TsDB {
 
 
 	private Map<String,VirtualPlot> virtualplotMap;
-	
+
 	//Map PlotID -> Plot Object
 	private Map<String,Plot> plotMap;
 
@@ -109,7 +109,7 @@ public class TsDB {
 		this.cacheStorage = new CacheStorage(cachePath);
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
-		
+
 		this.plotMap = new TreeMap<String,Plot>();
 
 		this.sourceCatalog = new SourceCatalog(databasePath);
@@ -328,8 +328,14 @@ public class TsDB {
 		return set;
 	}
 
-	public Stream<String> getStationAndVirtualPlotNames(String group) {
+	public Stream<String> getStationAndVirtualPlotNames(String group) {		
 		return getGeneralStationsOfGroup(group).flatMap(gs->gs.getStationAndVirtualPlotNames());
+	}
+
+	public Stream<String> getPlotNames() {
+		Stream<String> stationStream = stationMap.values().stream().filter(s->s.isPlot).map(s->s.stationID);
+		Stream<String> virtualPlotStream = virtualplotMap.keySet().stream();
+		return Stream.concat(stationStream,virtualPlotStream);
 	}
 
 	//*********************************************** end GeneralStation *************************************************
@@ -554,7 +560,7 @@ public class TsDB {
 			}
 		}
 	}
-	
+
 	/**
 	 * Get an array of reference values of sensors at plotID.
 	 * @param plotID

@@ -2,6 +2,7 @@ package tsdb.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 import tsdb.DataQuality;
 import tsdb.LoggerType;
@@ -11,6 +12,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
+import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TsIterator;
 
 public interface RemoteTsDB extends Remote {
@@ -74,6 +76,7 @@ public interface RemoteTsDB extends Remote {
 	long execute_console_command(String input_line) throws RemoteException;
 	
 	Pair<Boolean,String[]> console_comand_get_output(long commandThreadId) throws RemoteException;
-	
-	
+
+	ArrayList<TimestampInterval<String>> getTimeSpanList() throws RemoteException;
+	ArrayList<TimestampInterval<String>> getTimeSpanList(String generalStationName) throws RemoteException;
 }

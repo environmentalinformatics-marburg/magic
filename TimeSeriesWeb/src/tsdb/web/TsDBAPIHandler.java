@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -38,13 +39,14 @@ import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
+import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class TsDBAPIHandler extends AbstractHandler {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final RemoteTsDB tsdb;
 
 	public TsDBAPIHandler(RemoteTsDB tsdb) {
@@ -168,6 +170,17 @@ public class TsDBAPIHandler extends AbstractHandler {
 			}
 			break;
 		}
+		case "/plot_info": {
+			response.setContentType("application/json");
+			ret = handle_plot_info(response.getWriter());
+			break;
+		}
+		case "/timespan": {
+			String general_station = request.getParameter("general_station");
+			response.setContentType("application/json");
+			ret = handle_timespan(response.getWriter(), general_station);
+			break;
+		}
 		default:
 			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
 		}
@@ -177,6 +190,43 @@ public class TsDBAPIHandler extends AbstractHandler {
 		} else {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	private boolean handle_timespan(PrintWriter writer, String general_station) {	
+		try {
+			ArrayList<TimestampInterval<String>> tsl = null;
+			if(general_station==null) {
+				tsl = tsdb.getTimeSpanList();
+			} else {
+				tsl = tsdb.getTimeSpanList(general_station);
+			}
+			if(tsl!=null) {
+				JSONWriter json_output = new JSONWriter(writer);
+				json_output.array();
+				for(TimestampInterval<String> i:tsl) {
+					json_output.object();
+					json_output.key("plot");
+					json_output.value(i.value);
+					json_output.key("first_timestamp");
+					json_output.value(i.start);
+					json_output.key("last_timestamp");
+					json_output.value(i.end);
+					json_output.key("first_datetime");
+					json_output.value(TimeConverter.oleMinutesToText(i.start));
+					json_output.key("last_datetime");
+					json_output.value(TimeConverter.oleMinutesToText(i.end));				
+					json_output.endObject();
+				}
+				json_output.endArray();
+				return true;
+			} else {				
+				return false;
+			}
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			return false;
+		}		
 	}
 
 	private boolean handle_console_comand_get_output(Long commandThreadId, PrintWriter writer) {
@@ -375,6 +425,36 @@ public class TsDBAPIHandler extends AbstractHandler {
 			return false;
 		}
 	}
+
+	private boolean handle_plot_info(PrintWriter writer) {
+		try {
+			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			JSONWriter json_output = new JSONWriter(writer);
+			json_output.array();
+			for(PlotInfo plotInfo:plotInfos) {			
+
+				json_output.object();
+				json_output.key("name");
+				json_output.value(plotInfo.name);
+				json_output.key("general");
+				json_output.value(plotInfo.generalStationInfo.longName);
+				json_output.key("pos");
+				if(plotInfo.geoPos!=null) {
+					json_output.array();
+					for(double v:plotInfo.geoPos) {
+						json_output.value(v);
+					}
+					json_output.endArray();
+				}
+				json_output.endObject();
+			}
+			json_output.endArray();
+			return true;
+		} catch (Exception e) {
+			log.error(e);
+			return false;
+		}
+	}	
 
 	private boolean handle_sensors(PrintWriter writer) {
 		try {

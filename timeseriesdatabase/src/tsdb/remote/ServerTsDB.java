@@ -32,6 +32,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.run.ConsoleStarter;
 import tsdb.run.ConsoleRunner;
 import tsdb.util.Pair;
+import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB implements RemoteTsDB {
@@ -284,5 +285,37 @@ public class ServerTsDB implements RemoteTsDB {
 		}
 
 		return new Pair<Boolean,String[]>(running,output_lines);
+	}
+	
+	@Override 
+	public ArrayList<TimestampInterval<String>> getTimeSpanList() {
+		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
+		
+		tsdb.getPlotNames().forEach(plotID->{
+			long[] interval = tsdb.getTimeInterval(plotID);
+			if(interval!=null) {
+				result.add(new TimestampInterval<String>(plotID, interval[0], interval[1]));
+			}
+		});		
+		
+		return result;
+	}
+
+	@Override
+	public ArrayList<TimestampInterval<String>> getTimeSpanList(String generalStationName) throws RemoteException {
+		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+		if(generalStation==null) {
+			log.warn("generalStationName not found: "+generalStationName);
+			return null;
+		}
+		generalStation.getStationAndVirtualPlotNames().forEach(plotID->{
+			long[] interval = tsdb.getTimeInterval(plotID);
+			if(interval!=null) {
+				result.add(new TimestampInterval<String>(plotID, interval[0], interval[1]));
+			}
+		});
+		
+		return result;
 	}
 }

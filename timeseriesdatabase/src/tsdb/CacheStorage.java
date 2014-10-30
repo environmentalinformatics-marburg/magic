@@ -52,13 +52,18 @@ public class CacheStorage {
 	public CacheStorage(String cachePath) {
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
 				.compressionEnable()
-				//.transactionDisable()
-				.mmapFileEnable()
+				//.transactionDisable() //not safe
+				//.mmapFileEnable() //slow commit and close!!!
+				.mmapFileEnablePartial()
 				.asyncWriteEnable()
 				.asyncWriteFlushDelay(500)
+				//.cacheSize(100000)
 				.cacheSize(1000000)
 				.closeOnJvmShutdown()
 				.make();
+
+		
+		
 		
 		if(db.getAll().containsKey(DB_NAME_METADATA_SCHEMA)) {
 			this.schemaMap = db.getTreeMap(DB_NAME_METADATA_SCHEMA);
