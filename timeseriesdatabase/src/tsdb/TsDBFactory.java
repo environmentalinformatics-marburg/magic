@@ -2,6 +2,7 @@ package tsdb;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -21,12 +22,13 @@ import tsdb.util.Util;
 public class TsDBFactory {
 	
 	private static final Logger log = LogManager.getLogger();
-	
+
 	static String CONFIG_DIRECTORY = "config/";
 	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
 	static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
 	
 	public static String SOURCE_BE_TSM_PATH = "c:/timeseriesdatabase_data_source_be_tsm";
+	public static String SOURCE_KI_TSM_PATH = "c:/timeseriesdatabase_data_source_ki_tsm";
 	public static String SOURCE_BE_STRUCTURE_ONE_PATH = "c:/timeseriesdatabase_data_source_structure_one";
 	public static String SOURCE_BE_STRUCTURE_TWO_PATH = "c:/timeseriesdatabase_data_source_structure_two";
 	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
@@ -55,6 +57,9 @@ public class TsDBFactory {
 			}
 			if(pathMap.containsKey("SOURCE_BE_TSM_PATH")) {
 				SOURCE_BE_TSM_PATH = pathMap.get("SOURCE_BE_TSM_PATH");
+			}
+			if(pathMap.containsKey("SOURCE_KI_TSM_PATH")) {
+				SOURCE_KI_TSM_PATH = pathMap.get("SOURCE_KI_TSM_PATH");
 			}
 			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_ONE_PATH")) {
 				SOURCE_BE_STRUCTURE_ONE_PATH = pathMap.get("SOURCE_BE_STRUCTURE_ONE_PATH");

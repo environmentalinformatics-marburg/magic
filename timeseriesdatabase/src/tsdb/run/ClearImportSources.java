@@ -39,9 +39,10 @@ public class ClearImportSources {
 		log.info("from "+TsDBFactory.SOURCE_BE_TSM_PATH);
 		timeseriesloaderBE.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_BE_TSM_PATH));
 		System.gc();
-		log.info("import KiLi from structure_kili");
+		/*log.info("import KiLi from structure_kili");
 		log.info("from "+TsDBFactory.SOURCE_KILI_PATH);
-		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(TsDBFactory.SOURCE_KILI_PATH));
+		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(TsDBFactory.SOURCE_KILI_PATH));*/
+		timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_KI_TSM_PATH));
 		System.gc();
 		log.info("import KiLi from structure_kili_tfi");
 		log.info("from "+TsDBFactory.SOURCE_KILI_TFI_PATH);

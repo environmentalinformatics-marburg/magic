@@ -30,11 +30,11 @@ import de.umr.jepc.store.Event;
  *
  */
 public class TimeSeriesLoaderKiLi {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final TsDB tsdb; //not null
-	
+
 	public TimeSeriesLoaderKiLi(TsDB tsdb) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
@@ -63,6 +63,10 @@ public class TimeSeriesLoaderKiLi {
 		} catch (IOException e) {
 			log.error(e);
 		}
+		loadWithAscCollectorMap(ascCollectorMap);		
+	}
+
+	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {	
 		for(Path ascPath:ascCollectorMap.values()) {
 			System.out.println("asc file: "+ascPath);
 
@@ -116,9 +120,7 @@ public class TimeSeriesLoaderKiLi {
 				csvtimeSeries.close();
 			} catch(Exception e) {
 				log.error(e+" in "+ascPath);
-			}					
-
-
+			}
 		}		
 	}	
 
@@ -253,5 +255,24 @@ public class TimeSeriesLoaderKiLi {
 		} else {
 			log.warn("empty file: "+path);
 		}
+	}
+
+	public void loadDirectory_with_stations_flat(Path root) {
+		log.info("loadDirectory_with_stations_flat:\t"+root);		
+		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();		
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(root);
+			for(Path subPath:stream) {
+				if(Files.isDirectory(subPath)) {
+					loadOneDirectory_structure_kili(subPath, ascCollectorMap);
+				} else {
+					log.warn("file in root directory: "+subPath);
+				}
+			}
+			stream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}
+		loadWithAscCollectorMap(ascCollectorMap);
 	}
 }

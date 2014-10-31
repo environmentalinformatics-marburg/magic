@@ -1,5 +1,7 @@
 package tsdb.util;
 
+import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -156,5 +158,16 @@ public final class AssumptionCheck {
 		if(array==null||array.length==0) {
 			throw new RuntimeException("array empty");
 		}		
+	}
+	
+	public static void throwNotContained(String[] source, String[] target) {
+		throwNull(source);
+		throwNull(target);
+		Map<String, Integer> map = Util.stringArrayToMap(target);
+		for(String name:source) {
+			if(!map.containsKey(name)) {
+				throw new RuntimeException("name not in target: "+name+"   "+Util.arrayToString(target));
+			}
+		}
 	}
 }
