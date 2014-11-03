@@ -41,6 +41,26 @@ public class SensorMeta {
 		this.list = list;
 	}
 	
+	public int[] getInterval() {
+		if(list.isEmpty()) {
+			return null;
+		}
+		int minTimestamp = Integer.MAX_VALUE;
+		int maxTimestamp = Integer.MIN_VALUE;
+		for(ChunkMetaEntry entry:list) {
+			if(entry.firstTimestamp<minTimestamp) {
+				minTimestamp = entry.firstTimestamp;
+			}
+			if(maxTimestamp<entry.lastTimestamp) {
+				maxTimestamp = entry.lastTimestamp;
+			}
+		}
+		if(minTimestamp == Integer.MAX_VALUE || maxTimestamp == Integer.MIN_VALUE) {
+			return null;
+		}
+		return new int[]{minTimestamp,maxTimestamp};
+	}
+	
 	private static class SensorMetaSerializer implements Serializer<SensorMeta>, Serializable {
 		private static final long serialVersionUID = -4064482638307132258L;
 		@Override

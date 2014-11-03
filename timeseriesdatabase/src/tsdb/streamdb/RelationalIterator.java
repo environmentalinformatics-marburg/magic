@@ -45,7 +45,7 @@ public class RelationalIterator extends TsIterator {
 			float[] data = new float[schema.length];
 			for(int i=0;i<schema.length;i++) {
 				final int pos = posIndex[i];
-				if(pos!=-1&&next[pos].timestamp==timestamp) {
+				if(pos!=-1&&next[pos]!=null&&next[pos].timestamp==timestamp) {
 					data[i] = next[pos].value;
 					if(iterators[pos].hasNext()) {
 						next[pos] = iterators[pos].next();

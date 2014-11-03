@@ -18,7 +18,7 @@ public class RunTest3 {
 		int count = 0;
 		for(int i=10;i<25;i++) {
 			String stationName = "HEG"+i;
-			ArrayList<DataEntry> data = streamDB.readData(stationName, sensorName);
+			DataEntry[] data = streamDB.readData(stationName, sensorName);
 			for(DataEntry entry:data) {
 				count++;
 			}
@@ -27,7 +27,7 @@ public class RunTest3 {
 		long time_start_intern = System.currentTimeMillis();
 		for(int i=10;i<25;i++) {
 			String stationName = "HEG"+i;
-			ArrayList<DataEntry> data = streamDB.readData(stationName, sensorName);
+			DataEntry[] data = streamDB.readData(stationName, sensorName);
 			for(DataEntry entry:data) {
 				count++;
 			}

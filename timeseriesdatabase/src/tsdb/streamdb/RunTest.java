@@ -36,8 +36,8 @@ public class RunTest {
 				if(!sensorName.equals("Ta_200")) {
 					continue;
 				}
-				ArrayList<DataEntry> data = streamDB.readData(stationName, sensorName);
-				station_value_count += data.size();
+				DataEntry[] data = streamDB.readData(stationName, sensorName);
+				station_value_count += data.length;
 				total_sensor_count++;
 			}
 			total_value_count += station_value_count;

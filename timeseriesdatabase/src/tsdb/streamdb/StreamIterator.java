@@ -1,6 +1,7 @@
 package tsdb.streamdb;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +14,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 	
 	private static final Logger log = LogManager.getLogger();
 
-	private final BTreeMap<Integer, ArrayList<DataEntry>> sensorChunkMap;
+	private final BTreeMap<Integer, DataEntry[]> sensorChunkMap;
 	public final int minTimestamp;
 	public final int maxTimestamp;
 	
@@ -23,7 +24,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 	private final Iterator<ChunkMetaEntry> chunkListIterator;
 	private Iterator<DataEntry> dataEntryIterator;
 
-	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, ArrayList<DataEntry>> sensorChunkMap, int minTimestamp, int maxTimestamp) {
+	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, DataEntry[]> sensorChunkMap, int minTimestamp, int maxTimestamp) {
 		this.sensorChunkMap = sensorChunkMap;
 		this.stationName = sensorMeta.stationName;
 		this.sensorName = sensorMeta.name;
@@ -31,7 +32,6 @@ public class StreamIterator implements Iterator<DataEntry> {
 		this.maxTimestamp = maxTimestamp;
 		ArrayList<ChunkMetaEntry> list = new ArrayList<ChunkMetaEntry>();		
 		for(ChunkMetaEntry entry:sensorMeta.list) {
-			log.info("entry: "+entry.firstTimestamp+"  "+entry.lastTimestamp);
 			if(minTimestamp <= entry.lastTimestamp && entry.firstTimestamp <= maxTimestamp) {
 				list.add(entry);
 			}
@@ -41,18 +41,26 @@ public class StreamIterator implements Iterator<DataEntry> {
 		if(chunkListIterator.hasNext()) {
 			nextChunk();
 		} else {
-			this.dataEntryIterator = new ArrayList<DataEntry>(0).iterator();
+			this.dataEntryIterator = Collections.emptyIterator();
 		}
 
 	}
 
 	private void nextChunk() {
 		ChunkMetaEntry chunkEntry = chunkListIterator.next();
-		ArrayList<DataEntry> dataEntryList = sensorChunkMap.get(chunkEntry.firstTimestamp);
-		if(minTimestamp<=chunkEntry.firstTimestamp&&chunkEntry.lastTimestamp<=maxTimestamp) {
-			dataEntryIterator = dataEntryList.iterator();
+		DataEntry[] chunk = sensorChunkMap.get(chunkEntry.firstTimestamp);
+		if(minTimestamp<=chunkEntry.firstTimestamp) {
+			if(chunkEntry.lastTimestamp<=maxTimestamp) {
+				dataEntryIterator = new SimpleIterator(chunk);
+			} else {
+				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
+			}
 		} else {
-			dataEntryIterator = new ClipIterator(dataEntryList.iterator(), minTimestamp, maxTimestamp);
+			if(chunkEntry.lastTimestamp<=maxTimestamp) {
+				dataEntryIterator = new SimpleIterator(chunk,minTimestamp);
+			} else {
+				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
+			}
 		}
 	}
 
@@ -72,40 +80,49 @@ public class StreamIterator implements Iterator<DataEntry> {
 		return dataEntryIterator.next();
 	}
 	
-	private static class ClipIterator implements Iterator<DataEntry> {		
-		final Iterator<DataEntry> iterator;
-		final int maxTimestamp;		
-		DataEntry curr;		
-		public ClipIterator(Iterator<DataEntry> iterator, int minTimestamp, int maxTimestamp) {
-			this.iterator = iterator;
-			this.maxTimestamp = maxTimestamp;
-			while(iterator.hasNext()) {
-				curr = iterator.next();
-				if(curr.timestamp>=minTimestamp) {
-					if(curr.timestamp<=maxTimestamp) {
-						return;
-					} else {
-						curr = null;
-						return;
-					}
-				}
+	private static class SimpleIterator implements Iterator<DataEntry> {		
+		private final DataEntry[] chunk;
+		private int currentPos;		
+		public SimpleIterator(DataEntry[] chunk) {
+			this.chunk = chunk;
+			this.currentPos = 0;
+		}
+		public SimpleIterator(DataEntry[] chunk, int minTimestamp) {
+			this.chunk = chunk;
+			this.currentPos = 0;
+			while(currentPos!=chunk.length&&chunk[currentPos].timestamp<minTimestamp) {
+				currentPos++;
 			}
-			curr = null;
 		}
 		@Override
 		public boolean hasNext() {
-			return curr!=null;
+			return currentPos!=chunk.length;
 		}
 		@Override
 		public DataEntry next() {
-			DataEntry r = curr;
-			if(iterator.hasNext()) {
-				curr = iterator.next();
-				if(maxTimestamp<curr.timestamp) {
-					curr = null;
-				}
-			}
-			return r;
+			return chunk[currentPos++];
 		}		
-	}	
+	}
+	
+	private static class ClipIterator implements Iterator<DataEntry> {		
+		private final DataEntry[] chunk;
+		private final int maxTimestamp;
+		private int currentPos;		
+		public ClipIterator(DataEntry[] chunk, int minTimestamp, int maxTimestamp) {
+			this.chunk = chunk;
+			this.maxTimestamp = maxTimestamp;
+			this.currentPos = 0;
+			while(currentPos!=chunk.length&&chunk[currentPos].timestamp<minTimestamp) {
+				currentPos++;
+			}
+		}
+		@Override
+		public boolean hasNext() {
+			return currentPos!=chunk.length&&chunk[currentPos].timestamp<=maxTimestamp;
+		}
+		@Override
+		public DataEntry next() {
+			return chunk[currentPos++];
+		}		
+	}
 }

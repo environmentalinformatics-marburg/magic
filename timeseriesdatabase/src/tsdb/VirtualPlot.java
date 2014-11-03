@@ -21,11 +21,11 @@ import tsdb.util.Util;
  *
  */
 public class VirtualPlot {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	protected final TsDB tsdb; //not null
-	
+
 	public final String plotID;
 	public final GeneralStation generalStation;
 
@@ -190,7 +190,39 @@ public class VirtualPlot {
 		long[] result = null;
 		for(TimestampInterval<StationProperties> entry:intervalList) {
 			long[] interval = tsdb.getTimeInterval(entry.value.get_serial());
+
 			if(interval!=null) {
+				Long partStart = entry.value.get_date_start();
+				if(partStart!=null) {
+					if(interval[1]<partStart) {
+						interval = null;
+					} else if(interval[0]<partStart) {
+						interval[0] = partStart;				
+					}
+				}
+			}
+			if(interval!=null) {
+				Long partEnd = entry.value.get_date_end();
+				if(partEnd!=null) {
+					if(partEnd<interval[0]) {
+						interval = null;
+					} else if(partEnd<interval[1]) {
+						interval[1] = partEnd;
+					}
+				}
+			}
+			if(interval!=null) {				
+				Long partStart = entry.value.get_date_start();
+				if(partStart!=null&&interval[0]<partStart) {
+					interval[0] = partStart;
+				}
+				Long partEnd = entry.value.get_date_end();
+				if(partEnd!=null&&partEnd<interval[1]) {
+					interval[1] = partEnd;
+				}
+				if(interval[0]>interval[1]) {
+					log.info("interval[0]>interval[1]"+interval[0]+"  "+interval[1]+"    "+entry.value.get_date_start()+"  "+entry.value.get_date_end());
+				}
 				if(result==null) {
 					result = interval;
 				} else {

@@ -99,6 +99,7 @@ public class TsDB {
 
 		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
 		//this.streamStorage = new StreamStorageMapDB(databasePath);
+		//this.streamStorage = new StreamStorageStreamDB();
 		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
 		generalStationMap = new TreeMap<String, GeneralStation>();

@@ -18,6 +18,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -200,6 +201,12 @@ public class StreamStorageMapDB implements StreamStorage{
 
 	@Override
 	public long[] getTimeInterval(String streamName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp,  String[] eventSchema) {
 		// TODO Auto-generated method stub
 		return null;
 	}

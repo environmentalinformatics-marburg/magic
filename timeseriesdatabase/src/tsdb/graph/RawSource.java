@@ -50,7 +50,8 @@ public class RawSource extends Node.Abstract {
 
 	@Override
 	public TsIterator get(Long start, Long end) {
-		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
+		return tsdb.streamStorage.getRawIterator(station.stationID, schema, start, end, station.loggerType.sensorNames);
+		/*Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
 		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
 			return null;
 		}
@@ -58,7 +59,7 @@ public class RawSource extends Node.Abstract {
 		if(!raw_iterator.hasNext()) {
 			return null;
 		}
-		return raw_iterator;
+		return raw_iterator;*/
 	}
 
 	@Override

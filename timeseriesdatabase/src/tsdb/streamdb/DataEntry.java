@@ -23,25 +23,25 @@ public class DataEntry {
 		return timestamp+" "+TimeConverter.oleMinutesToText((long) timestamp)+" "+value;
 	}
 
-	private static class ChunkSerializerSimple implements Serializer<ArrayList<DataEntry>>, Serializable {
+	private static class ChunkSerializerSimple implements Serializer<DataEntry[]>, Serializable {
 		private static final long serialVersionUID = -5944450269165056735L;
 		@Override
-		public void serialize(DataOutput out, ArrayList<DataEntry> value)
+		public void serialize(DataOutput out, DataEntry[] value)
 				throws IOException {
-			out.writeInt(value.size());
+			out.writeInt(value.length);
 			for(DataEntry entry:value) {
 				out.writeInt(entry.timestamp);
 				out.writeFloat(entry.value);
 			}
 		}
 		@Override
-		public ArrayList<DataEntry> deserialize(DataInput in, int available) throws IOException {
+		public DataEntry[] deserialize(DataInput in, int available) throws IOException {
 			int count = in.readInt();
-			ArrayList<DataEntry> a = new ArrayList<DataEntry>(count);
-			for(int i=0;i<count;i++) {
+			DataEntry[] a = new DataEntry[count];
+			for(int i=0;i<a.length;i++) {
 				int t = in.readInt();
 				float v = in.readFloat();
-				a.add(new DataEntry(t,v));
+				a[i] = new DataEntry(t,v);
 			}
 			return a;
 		}
@@ -51,14 +51,13 @@ public class DataEntry {
 		}		
 	};
 
-	public static final Serializer<ArrayList<DataEntry>> CHUNK_SERIALIZER_SIMPLE = new ChunkSerializerSimple();
+	public static final Serializer<DataEntry[]> CHUNK_SERIALIZER_SIMPLE = new ChunkSerializerSimple();
 
-	private static class ChunkSerializerDeltaTime implements Serializer<ArrayList<DataEntry>>, Serializable {
+	private static class ChunkSerializerDeltaTime implements Serializer<DataEntry[]>, Serializable {
 		private static final long serialVersionUID = -5944450269165056735L;
 		@Override
-		public void serialize(DataOutput out, ArrayList<DataEntry> value)
-				throws IOException {
-			out.writeInt(value.size());
+		public void serialize(DataOutput out, DataEntry[] value) throws IOException {
+			out.writeInt(value.length);
 			int prev = 0;
 			for(DataEntry entry:value) {
 				out.writeInt(entry.timestamp-prev);
@@ -69,18 +68,18 @@ public class DataEntry {
 			}
 		}
 		@Override
-		public ArrayList<DataEntry> deserialize(DataInput in, int available) throws IOException {
+		public DataEntry[] deserialize(DataInput in, int available) throws IOException {
 			int count = in.readInt();
 			int[] timestamps = new int[count];
 			int curr = 0;
-			for(int i=0;i<count;i++) {
+			for(int i=0;i<timestamps.length;i++) {
 				curr += in.readInt();
 				timestamps[i] = curr;
 			}
-			ArrayList<DataEntry> a = new ArrayList<DataEntry>(count);
+			DataEntry[] a = new DataEntry[count];
 			for(int i=0;i<count;i++) {
 				float v = in.readFloat();
-				a.add(new DataEntry(timestamps[i],v));
+				a[i] = new DataEntry(timestamps[i],v);
 			}
 			return a;
 		}
@@ -90,14 +89,14 @@ public class DataEntry {
 		}		
 	};
 	
-	public static final Serializer<ArrayList<DataEntry>> CHUNK_SERIALIZER_DELTA_TIME = new ChunkSerializerDeltaTime();
+	public static final Serializer<DataEntry[]> CHUNK_SERIALIZER_DELTA_TIME = new ChunkSerializerDeltaTime();
 	
-	private static class ChunkSerializerDeltaTimeDeltaIntValue implements Serializer<ArrayList<DataEntry>>, Serializable {
+	private static class ChunkSerializerDeltaTimeDeltaIntValue implements Serializer<DataEntry[]>, Serializable {
 		private static final long serialVersionUID = -5944450269165056735L;
 		@Override
-		public void serialize(DataOutput out, ArrayList<DataEntry> value)
+		public void serialize(DataOutput out, DataEntry[] value)
 				throws IOException {
-			out.writeInt(value.size());
+			out.writeInt(value.length);
 			int prev = 0;
 			for(DataEntry entry:value) {
 				out.writeInt(entry.timestamp-prev);
@@ -114,19 +113,19 @@ public class DataEntry {
 			}
 		}
 		@Override
-		public ArrayList<DataEntry> deserialize(DataInput in, int available) throws IOException {
+		public DataEntry[] deserialize(DataInput in, int available) throws IOException {
 			int count = in.readInt();
 			int[] timestamps = new int[count];
 			int curr = 0;
-			for(int i=0;i<count;i++) {
+			for(int i=0;i<timestamps.length;i++) {
 				curr += in.readInt();
 				timestamps[i] = curr;
 			}
-			ArrayList<DataEntry> a = new ArrayList<DataEntry>(count);
+			DataEntry[] a = new DataEntry[count];
 			int currValue = 0; 
-			for(int i=0;i<count;i++) {
+			for(int i=0;i<a.length;i++) {
 				currValue += in.readInt();
-				a.add(new DataEntry(timestamps[i],currValue/1000f)); // no mul for better rounding!!!
+				a[i] = new DataEntry(timestamps[i],currValue/1000f); // no mul for better rounding!!!
 			}
 			return a;
 		}
@@ -136,5 +135,5 @@ public class DataEntry {
 		}		
 	};
 	
-	public static final Serializer<ArrayList<DataEntry>> CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE = new ChunkSerializerDeltaTimeDeltaIntValue();
+	public static final Serializer<DataEntry[]> CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE = new ChunkSerializerDeltaTimeDeltaIntValue();
 }

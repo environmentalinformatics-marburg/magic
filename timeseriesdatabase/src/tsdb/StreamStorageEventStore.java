@@ -11,6 +11,8 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.raw.iterator.EventConverterIterator;
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 import de.umr.jepc.store.btree.TimeSplitBTreeEventStore;
@@ -152,6 +154,19 @@ public class StreamStorageEventStore implements StreamStorage {
 				return store.getHistory(streamName);
 			}
 		}
+	}
+	
+	@Override
+	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp, String[] eventSchema) {		
+		Iterator<Event> rawEventIterator = queryRawEvents(stationName, minTimestamp, maxTimestamp);
+		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
+			return null;
+		}
+		EventConverterIterator raw_iterator = new EventConverterIterator(eventSchema, rawEventIterator, sensorNames);
+		if(!raw_iterator.hasNext()) {
+			return null;
+		}
+		return raw_iterator;
 	}
 
 	public void getInfo() {

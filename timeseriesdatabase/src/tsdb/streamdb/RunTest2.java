@@ -14,7 +14,7 @@ public class RunTest2 {
 		String stationName = "HEG48";
 		String sensorName = "Albedo";
 		
-		ArrayList<DataEntry> data = streamDB.readData(stationName, sensorName);
+		DataEntry[] data = streamDB.readData(stationName, sensorName);
 		
 		for(DataEntry entry:data) {
 			System.out.println(entry.timestamp+" "+entry.value);

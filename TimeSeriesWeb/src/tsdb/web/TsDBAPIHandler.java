@@ -366,7 +366,8 @@ public class TsDBAPIHandler extends AbstractHandler {
 				try {
 					compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false);
 				} catch(Exception e) {
-					log.warn(e);
+					e.printStackTrace();
+					log.warn(e,e);
 				}
 				if(ts!=null) {
 					BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);

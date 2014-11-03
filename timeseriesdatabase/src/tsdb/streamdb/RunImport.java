@@ -76,7 +76,7 @@ public class RunImport {
 						s.append(schema[i]);
 						s.append(':');
 						s.append(sensor[i].size());
-						streamDB.insertData(station.stationID, schema[i], sensor[i]);
+						streamDB.insertData(station.stationID, schema[i], sensor[i].toArray(new DataEntry[0]));
 					}
 				}
 				log.info(tsdbImportMarker,s);

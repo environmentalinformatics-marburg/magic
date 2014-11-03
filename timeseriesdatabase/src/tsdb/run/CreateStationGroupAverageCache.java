@@ -56,6 +56,8 @@ public class CreateStationGroupAverageCache {
 	
 	public void run() {
 		
+		long startRunTime = System.currentTimeMillis();
+		
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
 		for(String group:tsdb.getGeneralStationGroups()) {
@@ -103,7 +105,10 @@ public class CreateStationGroupAverageCache {
 				tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));
 				//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);
 			}
-		}		
+		}
+		
+		long endRunTime = System.currentTimeMillis();
+		cbPrint.println("run time: "+(endRunTime-startRunTime)+" s");
 		
 	}
 }

@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
@@ -47,6 +48,8 @@ public interface StreamStorage {
 	 * @return iterator of events
 	 */
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end);
+	
+	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp, String[] eventSchema);
 	
 	public void getInfo();
 
