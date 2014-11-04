@@ -18,7 +18,7 @@ for (i in 1:length(time)){
     RAIN=read.csv(paste0("Rain_rfInput_vp03_",time[i],"_as/VerificationScores_",model[k],".csv"))
     RAINOUT=rbind(RAINOUT,
                data.frame("VALUE"=unlist(RAIN),
-                              "SCORE"=rep(c("RMSE","ME","MAE","RSQ"),c(rep(nrow(RAIN),length(names(RAIN))))),
+                              "SCORE"=rep(c("RMSE","ME","MAE","Rsq"),c(rep(nrow(RAIN),length(names(RAIN))))),
                               "MODEL"=rep(toupper(model[k]),length(unlist(RAIN))),
                               "TIME"=rep(toupper(time[i]),length(unlist(RAIN)))
               )

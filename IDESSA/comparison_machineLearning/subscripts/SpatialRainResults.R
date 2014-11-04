@@ -198,7 +198,7 @@ diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20",
                              substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
 )
 
-tmp=datp[[1]]+ as.layer(lmplot, under = T)
+tmp=c(datp[[1]]+ as.layer(lmplot, under = T))
 for (i in 2:(length(model)+1)){
   tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
 }
@@ -213,13 +213,28 @@ for (i in 2:length(model)){
   tmp2=c(tmp2,diffp[[i]]+ as.layer(lmplot, under = T))
 }
 
-  comb <- c(tmp, 
-            x.same=T, y.same=T, layout = c(5, 1))
-  png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
-            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
-   print(comb)
-  dev.off()
+comb <- c(tmp,
+          x.same=T, y.same=T, layout = c(3,2))
+png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
+print(comb)
+dev.off()
 
+####for publication
+datp[[2]]=update(datp[[2]],strip = strip.custom(bg = "grey20", 
+                                                factor.levels =paste0(c(model,"observed"),"[mm/1h]"),
+                                                par.strip.text = list(
+                                                  col = "white", font = 2, cex = 1)),
+                 main="")
+  comb <- c(datp[[2]]+ as.layer(lmplot, under = T),datp[[3]]+ as.layer(lmplot, under = T), 
+            datp[[4]]+ as.layer(lmplot, under = T),datp[[5]]+ as.layer(lmplot, under = T),
+            datp[[1]]+ as.layer(lmplot, under = T),
+            x.same=T, y.same=T, layout = c(2,3))
+  png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],"pub.png",sep=""),width=12,height=12,units = "in",res=300)
+  print(comb)
+  dev.off()
+######
 combV2 <- c(tmp3, 
               x.same=T, y.same=T, layout = c(3, 1))
 
