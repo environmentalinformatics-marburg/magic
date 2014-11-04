@@ -9,22 +9,22 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
-	
+
 	Graphics2D gc;
-	
+
 	float minX;
 	float minY;
 	float maxX;
 	float maxY;
-	
+
 	Color color_black = new Color(0,0,0);
 	Color color_grey = new Color(190,190,190);
 	Color color_light_blue = new Color(220,220,255);
-	
+
 	public TimeSeriesPainterGraphics2D(BufferedImage bufferedImage) {
 		this(bufferedImage.createGraphics(),0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
 	}
-	
+
 	public TimeSeriesPainterGraphics2D(Graphics2D gc,float minX, float minY, float maxX, float maxY) {
 		throwNull(gc);
 		gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -61,14 +61,14 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	@Override
 	public void setColor(int r, int g, int b) {
 		gc.setColor(new Color(r,g,b));
-		
+
 	}
 
 	@Override
 	public void drawLine(float x0, float y0, float x1, float y1) {
 		gc.drawLine((int)x0, (int)y0, (int)x1, (int)y1);		
 	}
-	
+
 	@Override
 	public void fillRect(float xMin, float yMin, float xMax, float yMax) {
 		gc.fillRect((int)xMin, (int)yMin, (int)(xMax-xMin), (int)(yMax-yMin));
@@ -78,7 +78,7 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	public void setColorValueLineTemperature() {
 		gc.setColor(new Color(220, 0, 0));
 	}
-	
+
 	@Override
 	public void setColorValueLineTemperatureSecondary() {
 		gc.setColor(new Color(156,232,17));
@@ -88,17 +88,17 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	public void setColorConnectLineTemperature() {
 		gc.setColor(new Color(220,180,180));		
 	}
-	
+
 	@Override
 	public void setColorConnectLineTemperatureSecondary() {
 		gc.setColor(new Color(132,150,99));		
 	}
-	
+
 	@Override
 	public void setColorValueLineUnknown() {
 		gc.setColor(color_black);
 	}
-	
+
 	@Override
 	public void setColorValueLineUnknownSecondary() {
 		gc.setColor(new Color(156,232,17));
@@ -108,17 +108,17 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	public void setColorConnectLineUnknown() {
 		gc.setColor(color_grey);		
 	}
-	
+
 	@Override
 	public void setColorConnectLineUnknownSecondary() {
 		gc.setColor(new Color(132,150,99));		
 	}
-	
+
 	@Override
 	public void setColorRectWater() {
 		gc.setColor(new Color(0, 0, 200));		
 	}
-	
+
 	@Override
 	public void setColorRectWaterSecondary() {
 		gc.setColor(new Color(156,232,17));		
@@ -191,7 +191,7 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	@Override
 	public void setColorXScaleMonthText() {
 		gc.setColor(new Color(100,100,100));
-		
+
 	}
 
 	@Override
@@ -207,6 +207,77 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	@Override
 	public void setColorXScaleDayText() {
 		gc.setColor(new Color(150,150,150));		
+	}
+
+	private static final float minValue = -10f;
+	private static final float maxValue = 30f;
+	private static final Color[] indexedColors;
+	static {
+		indexedColors = new Color[6*256];
+		for(int i=0;i<indexedColors.length;i++) {
+			
+			float v = ((float)i)/((float)(indexedColors.length-1));
+			
+			indexedColors[i] = getSpectraColor(v);
+			
+		}
+	}
+
+	private static Color getSpectraColor(float value) {
+		
+		//float x = 380f+(value*(780f-380f));
+		float x = 380f+(value*(645f-380f));
+		
+		float r=0f;
+		float g=0f;
+		float b=0f;
+		if ((x>=380f)&&(x<=440f)) { 
+			r = -1f*(x-440f)/(440f-380f);
+			g = 0f;
+			b = 1f;
+		}
+		if ((x>=440f)&&(x<=490f)) {
+			r = 0f;
+			g = (x-440f)/(490f-440f);
+			b = 1f;
+		}
+		if ((x>=490f)&&(x<=510f)) { 
+			r = 0f;
+			g = 1f;
+			b = -1f*(x-510f)/(510f-490f);
+		}
+		if ((x>=510f)&&(x<=580f)) { 
+			r = (x-510f)/(580f-510f);
+			g = 1f;
+			b = 0f;
+		}
+		if ((x>=580f)&&(x<=645f)) {
+			r = 1f;
+			g = -1f*(x-645f)/(645f-580f);
+			b = 0f;
+		}
+		/*if ((x>=645f)&&(x<=780f)) {
+			r = 1f;
+			g = 0f;
+			b = 0f;
+		}*/
+		return new Color((int)(r*255f),(int)(g*255f),(int)(b*255f));
+	}
+
+	@Override
+	public void setIndexedColor(float value) {
+		//getSpectraColor(380);
+		if(value>minValue) {
+			if(value<maxValue) {
+				float f = (value-minValue)/(maxValue-minValue);
+				gc.setColor(indexedColors[(int) (f*(indexedColors.length-1f))]);
+				
+			} else {
+				gc.setColor(indexedColors[indexedColors.length-1]);
+			}
+		} else {
+			gc.setColor(indexedColors[0]);
+		}
 	}
 
 }

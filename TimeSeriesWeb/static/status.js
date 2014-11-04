@@ -55,6 +55,7 @@ var updateGeneralStations = function() {
 	generalstation_select.empty();	
 	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
+		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
 		decTask();	
 	}).fail(function() {generalstation_select.append(new Option("[error]","[error]"));decTask();});
@@ -65,7 +66,15 @@ var updateGeneralStations = function() {
 var runQuery = function() {
 	getID("result").innerHTML = "Getting data from server. This may take some time...";
 	generalStationName = generalstation_select.val();
-	$.getJSON("/tsdb/timespan?general_station="+generalStationName).done(function(interval) {
+	
+	var queryText = "";
+	if(generalstation_select.val()==="[all]") {
+		queryText = "region="+region_select.val();
+	} else {
+		queryText = "general_station="+generalStationName;
+	}
+	
+	$.getJSON("/tsdb/timespan?"+queryText).done(function(interval) {
 		getID("result").innerHTML = "";
 		var min_last = 999999999;
 		var max_last = 0;

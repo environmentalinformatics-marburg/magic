@@ -78,5 +78,6 @@ public interface RemoteTsDB extends Remote {
 	Pair<Boolean,String[]> console_comand_get_output(long commandThreadId) throws RemoteException;
 
 	ArrayList<TimestampInterval<String>> getTimeSpanList() throws RemoteException;
-	ArrayList<TimestampInterval<String>> getTimeSpanList(String generalStationName) throws RemoteException;
+	ArrayList<TimestampInterval<String>> getTimeSpanListByGeneralStation(String generalStationName) throws RemoteException;
+	ArrayList<TimestampInterval<String>> getTimeSpanListByRegion(String regionName) throws RemoteException;
 }

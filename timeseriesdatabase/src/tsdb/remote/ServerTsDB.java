@@ -36,9 +36,9 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB implements RemoteTsDB {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	protected final TsDB tsdb; //not null
 
 	public ServerTsDB(TsDB tsdb) throws RemoteException { // !!
@@ -245,11 +245,11 @@ public class ServerTsDB implements RemoteTsDB {
 	public String[] getValidSchema(String plotID, String[] sensorNames) {
 		return tsdb.getValidSchema(plotID, sensorNames);
 	}
-	
+
 	Long command_counter=0l;
-	
+
 	Map<Long,Pair<Thread,ConsoleRunner>> commandThreadMap = new ConcurrentHashMap<Long,Pair<Thread,ConsoleRunner>>();
-	
+
 	private long createCommandThreadId() {
 		synchronized (command_counter) {
 			final long commandThreadId = command_counter;
@@ -286,23 +286,23 @@ public class ServerTsDB implements RemoteTsDB {
 
 		return new Pair<Boolean,String[]>(running,output_lines);
 	}
-	
+
 	@Override 
 	public ArrayList<TimestampInterval<String>> getTimeSpanList() {
 		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
-		
+
 		tsdb.getPlotNames().forEach(plotID->{
 			long[] interval = tsdb.getTimeInterval(plotID);
 			if(interval!=null) {
 				result.add(new TimestampInterval<String>(plotID, interval[0], interval[1]));
 			}
 		});		
-		
+
 		return result;
 	}
 
 	@Override
-	public ArrayList<TimestampInterval<String>> getTimeSpanList(String generalStationName) throws RemoteException {
+	public ArrayList<TimestampInterval<String>> getTimeSpanListByGeneralStation(String generalStationName) throws RemoteException {
 		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
 		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 		if(generalStation==null) {
@@ -315,7 +315,21 @@ public class ServerTsDB implements RemoteTsDB {
 				result.add(new TimestampInterval<String>(plotID, interval[0], interval[1]));
 			}
 		});
-		
+
+		return result;
+	}
+
+	@Override
+	public ArrayList<TimestampInterval<String>> getTimeSpanListByRegion(String regionName) throws RemoteException {
+		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
+		tsdb.getGeneralStations(regionName).forEach(generalStation->{
+			generalStation.getStationAndVirtualPlotNames().forEach(plotID->{
+				long[] interval = tsdb.getTimeInterval(plotID);
+				if(interval!=null) {
+					result.add(new TimestampInterval<String>(plotID, interval[0], interval[1]));
+				}
+			});	
+		});
 		return result;
 	}
 }

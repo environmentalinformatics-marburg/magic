@@ -145,7 +145,19 @@ public class TsDBAPIHandler extends AbstractHandler {
 			}
 			break;
 		}
-
+		case "/query_heatmap": {
+			String plot = request.getParameter("plot");
+			String sensor = request.getParameter("sensor");
+			String aggregation = request.getParameter("aggregation");
+			String quality = request.getParameter("quality");
+			String interpolated = request.getParameter("interpolated");
+			if(plot!=null&&sensor!=null&&aggregation!=null) {
+				ret = handle_query_heatmap(response,plot,sensor,aggregation,quality,interpolated);
+			} else {
+				log.warn("wrong call");
+			}
+			break;
+		}
 		case "/execute_console_command": {
 			response.setContentType("application/json");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
@@ -177,8 +189,9 @@ public class TsDBAPIHandler extends AbstractHandler {
 		}
 		case "/timespan": {
 			String general_station = request.getParameter("general_station");
+			String region = request.getParameter("region");
 			response.setContentType("application/json");
-			ret = handle_timespan(response.getWriter(), general_station);
+			ret = handle_timespan(response.getWriter(), general_station,region);
 			break;
 		}
 		default:
@@ -192,15 +205,20 @@ public class TsDBAPIHandler extends AbstractHandler {
 		}
 	}
 
-	private boolean handle_timespan(PrintWriter writer, String general_station) {	
+	private boolean handle_timespan(PrintWriter writer, String general_station, String region) {	
 		try {
 			ArrayList<TimestampInterval<String>> tsl = null;
-			if(general_station==null) {
+			if(general_station==null&&region==null) {
 				tsl = tsdb.getTimeSpanList();
-			} else {
-				tsl = tsdb.getTimeSpanList(general_station);
+			} else if(general_station!=null&&region==null){
+				tsl = tsdb.getTimeSpanListByGeneralStation(general_station);
+			} else if(general_station==null&&region!=null){
+				tsl = tsdb.getTimeSpanListByRegion(region);				
+			} else if(general_station==null&&region!=null){
+				log.warn("handle_timespan: wrong parameters");
 			}
 			if(tsl!=null) {
+				tsl.sort(TimestampInterval.END_COMPARATOR);
 				JSONWriter json_output = new JSONWriter(writer);
 				json_output.array();
 				for(TimestampInterval<String> i:tsl) {
@@ -392,6 +410,78 @@ public class TsDBAPIHandler extends AbstractHandler {
 
 
 					new TimeSeriesDiagram(ts, agg, diagramType).draw(new TimeSeriesPainterGraphics2D(bufferedImage),compareTs);
+
+					try {
+						//ImageIO.write(bufferedImage, "png", new File("C:/timeseriesdatabase_output/"+"img.png"));
+						ImageIO.write(bufferedImage, "png", response.getOutputStream());
+						return true;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return false;
+					}
+				} else {
+					return false;
+				}
+
+			} else {
+				return false;
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			log.warn(e);
+			return false;
+		}
+	}
+	
+	private boolean handle_query_heatmap(HttpServletResponse response, String plot, String sensorName, String aggregation, String quality, String interpolated) {
+		DataQuality dataQuality = null;
+		try {
+			dataQuality = DataQuality.parse(quality);
+		} catch (Exception e) {
+			log.warn(e);
+		}
+		if(dataQuality==null) {
+			dataQuality = DataQuality.STEP;
+		}
+		boolean isInterpolated = false;
+		if(interpolated!=null) {
+			switch(interpolated) {
+			case "true":
+				isInterpolated = true;
+				break;
+			case "false":
+				isInterpolated = false;
+				break;
+			default:
+				log.warn("unknown input");
+				isInterpolated = false;				
+			}
+		}
+
+		try {
+			response.setContentType("image/png");
+			AggregationInterval agg = AggregationInterval.parse(aggregation);
+			if(agg!=null) {
+				TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated);
+				TimestampSeries compareTs = null;
+				try {
+					compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false);
+				} catch(Exception e) {
+					e.printStackTrace();
+					log.warn(e,e);
+				}
+				if(ts!=null) {
+					BufferedImage bufferedImage = new BufferedImage(1500, 24*4, java.awt.image.BufferedImage.TYPE_INT_RGB);
+
+
+					/*Graphics2D gc = bufferedImage.createGraphics();
+					gc.setBackground(new Color(255, 255, 255));
+					gc.setColor(new Color(0, 0, 0));
+					gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+					gc.dispose();*/
+
+
+					new TimeSeriesHeatMap(ts).draw(new TimeSeriesPainterGraphics2D(bufferedImage));
 
 					try {
 						//ImageIO.write(bufferedImage, "png", new File("C:/timeseriesdatabase_output/"+"img.png"));

@@ -33,5 +33,6 @@ public interface TimeSeriesPainter {
 	void setColorConnectLineUnknown();
 	void setColorConnectLineUnknownSecondary();
 	void setColorRectWater();	
-	void setColorRectWaterSecondary();	
+	void setColorRectWaterSecondary();
+	void setIndexedColor(float value);	
 }
