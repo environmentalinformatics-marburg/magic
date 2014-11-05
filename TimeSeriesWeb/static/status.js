@@ -65,13 +65,12 @@ var updateGeneralStations = function() {
 
 var runQuery = function() {
 	getID("result").innerHTML = "Getting data from server. This may take some time...";
-	generalStationName = generalstation_select.val();
-	
+	generalStationName = generalstation_select.val();	
 	var queryText = "";
-	if(generalstation_select.val()==="[all]") {
+	if(generalStationName==="[all]") {
 		queryText = "region="+region_select.val();
 	} else {
-		queryText = "general_station="+generalStationName;
+		queryText = "generalstation="+generalStationName;
 	}
 	
 	$.getJSON("/tsdb/timespan?"+queryText).done(function(interval) {

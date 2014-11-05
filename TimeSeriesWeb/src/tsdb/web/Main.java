@@ -15,6 +15,8 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
+import tsdb.web.api.TsDBAPIHandler;
+import tsdb.web.api.TsDBExportAPIHandler;
 
 public class Main {
 

@@ -78,7 +78,7 @@ var updateSensors = function() {
 	incTask();
 	var general_station = generalstation_select.val();
 	sensor_select.empty();	
-	$.get("/tsdb/general_station_sensor_list?general_station="+general_station).done(function(data) {
+	$.get("/tsdb/sensor_list?general_station="+general_station).done(function(data) {
 		var rows = splitData(data);
 		sensors = rows
 		//$.each(sensors, function(i,row) {document.getElementById("sensor_select").add(new Option(row[0],i));})

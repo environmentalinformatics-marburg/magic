@@ -303,6 +303,7 @@ public class ServerTsDB implements RemoteTsDB {
 
 	@Override
 	public ArrayList<TimestampInterval<String>> getTimeSpanListByGeneralStation(String generalStationName) throws RemoteException {
+		System.out.println("*********************************************  getTimeSpanListByGeneralStation   "+generalStationName);
 		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
 		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 		if(generalStation==null) {

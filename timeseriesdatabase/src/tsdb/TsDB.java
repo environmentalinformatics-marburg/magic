@@ -97,9 +97,9 @@ public class TsDB {
 
 		this.regionMap = new TreeMap<String,Region>();
 
-		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
+		//this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
 		//this.streamStorage = new StreamStorageMapDB(databasePath);
-		//this.streamStorage = new StreamStorageStreamDB();
+		this.streamStorage = new StreamStorageStreamDB();
 		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
 		generalStationMap = new TreeMap<String, GeneralStation>();

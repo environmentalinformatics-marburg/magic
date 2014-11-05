@@ -209,8 +209,8 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		gc.setColor(new Color(150,150,150));		
 	}
 
-	private static final float minValue = -10f;
-	private static final float maxValue = 30f;
+	private float minValue = -10f;
+	private float maxValue = 30f;
 	private static final Color[] indexedColors;
 	static {
 		indexedColors = new Color[6*256];
@@ -278,6 +278,12 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		} else {
 			gc.setColor(indexedColors[0]);
 		}
+	}
+	
+	@Override
+	public void setIndexedColorRange(float min, float max) {
+		minValue = min;
+		maxValue = max;
 	}
 
 }
