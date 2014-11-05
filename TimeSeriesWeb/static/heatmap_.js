@@ -1,10 +1,12 @@
 var region_select;
 var generalstation_select;
 var sensor_select;
+var time_select;
 var quality_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
-
+var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014"];
+var testingImage = "";
 
 var sensors;
 
@@ -15,8 +17,10 @@ $(document).ready(function(){
 	region_select = $("#region_select");
 	generalstation_select = $("#generalstation_select");
 	sensor_select = $("#sensor_select");
+	time_select = $("#time_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
+	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updateSensors;	
@@ -127,11 +131,24 @@ var addDiagram = function(plotName, sensorName) {
 	plotResultTitle.innerHTML += "query "+plotName+"...";
 	var qualityName = qualities[quality_select.val()];
 	var interpolatedName = ""+getID("interpolated").checked;
+	var timeParameter = "";
+	var timeName = timeText[time_select.val()];
+	if(timeName!="[all]") {
+		timeParameter = "&year="+timeName;
+	}
 	var image = new Image();
+	var need_to_scale = true;
 	plotResult.appendChild(image);
 	image.onload = function() {
 		plotResultTitle.innerHTML = plotName;
 		decTask();
+		testingImage = image;
+		if(need_to_scale) {
+			need_to_scale = false;
+			image.width = image.width*3;
+			//image.height = image.height*3;
+			image.height = 24*3;
+		}
 	}
 	image.onerror = function() {	
 		/*plotResultTitle.innerHTML = plotName+": no data";
@@ -140,5 +157,5 @@ var addDiagram = function(plotName, sensorName) {
 		plotResult.innerHTML = "";
 		decTask();
 	}
-	image.src = "/tsdb/query_heatmap?plot="+plotName+"&sensor="+sensorName+"&quality="+qualityName+"&interpolated="+interpolatedName;	
+	image.src = "/tsdb/query_heatmap?plot="+plotName+"&sensor="+sensorName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;	
 }

@@ -22,9 +22,10 @@ public class TimeSeriesHeatMap {
 			float value = entry.data[0];
 			if(!Float.isNaN(value)) {
 				tsp.setIndexedColor(value);
-				float x = ((entry.timestamp-start)/60)/24;
-				float y = (((entry.timestamp-start)/60)%24)*4;
-				tsp.drawLine(x, y, x, y+3);
+				float x = (((entry.timestamp-start)/60)/24)*1;
+				float y = (((entry.timestamp-start)/60)%24)*1;
+				tsp.drawLine(x, y, x, y);
+				//tsp.fillRect(x, y, x+4, y+4);
 			}
 		}
 		

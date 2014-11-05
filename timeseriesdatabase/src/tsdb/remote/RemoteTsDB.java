@@ -18,7 +18,7 @@ import tsdb.util.iterator.TsIterator;
 public interface RemoteTsDB extends Remote {
 	
 	//ok
-	TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) throws RemoteException;
+	TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) throws RemoteException;
 
 	//ok
 	TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) throws RemoteException;

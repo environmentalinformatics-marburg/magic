@@ -103,7 +103,7 @@ public class Handler_query_image extends MethodHandler {
 		}		
 
 		try {
-			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated);
+			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated, null, null);
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
@@ -111,7 +111,7 @@ public class Handler_query_image extends MethodHandler {
 			}
 			TimestampSeries compareTs = null;
 			try {
-				compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false);
+				compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false, null, null);
 			} catch(Exception e) {
 				e.printStackTrace();
 				log.warn(e,e);

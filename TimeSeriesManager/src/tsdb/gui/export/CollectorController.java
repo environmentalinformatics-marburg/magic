@@ -186,7 +186,7 @@ public class CollectorController {
 					String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 					System.out.println(Util.arrayToString(schema));
 					if(!Util.empty(schema)) {
-						TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated);
+						TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, null, null);
 						if(timeseries!=null) {
 							ZipEntry zipEntry = new ZipEntry(plotID+".csv");
 							zipOutputStream.putNextEntry(zipEntry);

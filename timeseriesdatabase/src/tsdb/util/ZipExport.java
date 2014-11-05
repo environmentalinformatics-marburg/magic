@@ -137,7 +137,7 @@ public class ZipExport {
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
-							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated);
+							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, null, null);
 							if(timeseries!=null) {								
 								writeTimeseries(timeseries,plotID,csvOut);								
 							} else {
@@ -155,7 +155,7 @@ public class ZipExport {
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
-							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated);
+							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, null, null);
 							if(timeseries!=null) {
 								zipOutputStream.putNextEntry(new ZipEntry(plotID+".csv"));
 								PrintStream csvOut = new PrintStream(zipOutputStream,false);

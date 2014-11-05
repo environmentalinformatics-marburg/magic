@@ -350,8 +350,8 @@ public class SensorQueryDialog extends Dialog {
 
 				try {
 					if(!Util.empty(tsdb.getValidSchema(name, sensorNames))) {
-						ts = tsdb.plot(queryType,name, sensorNames, aggregationInterval, dataQuality, false);
-						ts_compare = tsdb.plot(queryType,name, sensorNames, aggregationInterval, DataQuality.NO, false);
+						ts = tsdb.plot(queryType,name, sensorNames, aggregationInterval, dataQuality, false, null, null);
+						ts_compare = tsdb.plot(queryType,name, sensorNames, aggregationInterval, DataQuality.NO, false, null, null);
 					}
 				} catch(Exception e) {
 					e.printStackTrace();

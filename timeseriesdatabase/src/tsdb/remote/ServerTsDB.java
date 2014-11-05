@@ -47,7 +47,7 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
-	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
+	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
 		Node node = null;
 		if(queryType==null||queryType.equals("standard")) {		
 			node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
@@ -59,7 +59,7 @@ public class ServerTsDB implements RemoteTsDB {
 		if(node==null) {
 			return null;
 		}
-		TsIterator it = node.get(null, null);
+		TsIterator it = node.get(start, end);
 		if(it==null||!it.hasNext()) {
 			return null;
 		}

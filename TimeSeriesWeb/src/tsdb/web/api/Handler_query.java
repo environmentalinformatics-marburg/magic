@@ -96,7 +96,7 @@ public class Handler_query extends MethodHandler {
 		}		
 
 		try {
-			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, dataQuality, isInterpolated);
+			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensor}, agg, dataQuality, isInterpolated, null, null);
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
