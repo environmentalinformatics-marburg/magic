@@ -139,6 +139,7 @@ public class Station {
 		return stationID+"("+loggerType.typeName+")";
 	}
 
+	@Deprecated
 	public TsIterator queryRaw(String[] querySchema, Long start, Long end) {		
 		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(stationID,start,end);
 		if(rawEventIterator==null) {

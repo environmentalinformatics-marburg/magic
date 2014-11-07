@@ -91,15 +91,16 @@ public class TsDB {
 	 * create a new TimeSeriesDatabase object and connects to stored database files
 	 * @param databasePath
 	 * @param evenstoreConfigFile
+	 * @param streamdbPathPrefix 
 	 */
-	public TsDB(String databasePath, String evenstoreConfigFile, String cachePath) {		
+	public TsDB(String databasePath, String evenstoreConfigFile, String cachePath, String streamdbPathPrefix) {		
 		log.trace("create TimeSeriesDatabase");		
 
 		this.regionMap = new TreeMap<String,Region>();
 
 		//this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
 		//this.streamStorage = new StreamStorageMapDB(databasePath);
-		this.streamStorage = new StreamStorageStreamDB();
+		this.streamStorage = new StreamStorageStreamDB(streamdbPathPrefix);
 		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
 		generalStationMap = new TreeMap<String, GeneralStation>();

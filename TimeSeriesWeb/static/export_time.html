@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Export Time Series - time</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="/static/util.js"></script>
+<script type="text/javascript">
+
+var tasks = 0;
+
+var incTask = function() {
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
+var getTimespan = function() {
+	incTask();
+	$.get("/export/timespan").done(function(data) {
+		var value = +data;
+		if(value===0) {
+			time_select.val(0);
+		} else {
+			time_select.val(1+value-2008);
+		}		
+		decTask();
+	}).fail(function() {alert("error getting data");decTask();});
+}
+
+var on_cancel = function() {
+	window.location = "/static/export.html";
+}
+
+function on_apply() {
+	var value = time_select.val();
+	if(value>0) {
+		value = timeText[value]; 
+	}
+
+	incTask();
+	json_settings.timestep = document.getElementById("choose_aggregation").value;
+	json_settings.timespan = value;
+	$.postJSON("/export/apply_settings",json_settings)
+		.done(function() {
+			window.location = "/static/export.html";
+			decTask();
+		 })
+		.fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);decTask();});	
+
+		 
+}
+
+var time_select;
+var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014"];
+
+$(document).ready(function(){
+	incTask();
+
+	time_select = $("#time_select");
+
+	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});	
+	//getTimespan();
+	
+	document.getElementById("button_cancel").onclick = on_cancel;
+	document.getElementById("button_apply").onclick = on_apply;
+	
+	
+	incTask();
+	$.getJSON("/export/settings").done(function( data ) {
+		json_settings = data;
+		console.log(json_settings);
+		
+		var value = +json_settings.timespan;
+		if(value===0) {
+			time_select.val(0);
+		} else {
+			time_select.val(1+value-2008);
+		}	
+		
+		
+		document.getElementById("choose_aggregation").value = json_settings.timestep;
+		decTask();
+	})
+	.fail(function(data) {alert("error getting settings data: "+data);decTask();});
+	
+
+	decTask();
+});
+
+</script>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+</head>
+
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
+<h1 style="text-align:center">Export Time Series - time</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+<hr/>
+</div>
+<h3>Actions</h3>
+<button id="button_cancel">cancel</button>
+<button id="button_apply">apply time</button>
+<hr/>
+<h3>Time</h3>
+
+<div>
+<label for="time_select">timespan of year&nbsp;&nbsp;&nbsp;</label>
+<select id="time_select" class="blockable"></select>
+</div>
+<br>
+<br>
+<div>
+<label for="choose_aggregation">with time steps of&nbsp;&nbsp;&nbsp;</label>
+<select id="choose_aggregation">
+<option>hour</option>
+<option>day</option>
+<option>week</option>
+<option>month</option>
+<option>year</option>
+</select>
+</div>
+
+
+
+
+</body>
+</html>

@@ -2,11 +2,13 @@ var region_input;
 var generalstation_input;
 var plot_input;
 var sensor_input;
+var time_input;
 var aggregation_input;
 var aggregations = ["hour","day","week","month","year"];
 var quality_input;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
+var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014"];
 
 var sensors = "";
 
@@ -58,6 +60,10 @@ plot_input.on("selectmenuchange", function( event, ui ) {updateSensors();} );
 sensor_input = $("#sensor_input").selectmenu();
 sensor_input.on("selectmenuchange", function( event, ui ) {updateSensor();} );
 
+time_input = $("#time_input").selectmenu();
+$.each(timeText, function(i,text) {time_input.append(new Option(text,i));});
+time_input.selectmenu("refresh");
+
 aggregation_input = $("#aggregation_input").selectmenu();
 $.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
 aggregation_input.selectmenu("refresh");
@@ -76,11 +82,12 @@ updataRegions();
 
 decTask();
 
-$("#time_range").slider({range:true,min:2008*12,max:2014*12,values: [ 2008*12, 2014*12 ],slide:update_time_range_text});
-update_time_range_text();
+//$("#time_range").slider({range:true,min:2008*12,max:2014*12,values: [ 2008*12, 2014*12 ],slide:update_time_range_text});
+//update_time_range_text();
 
 });
 
+/*
 var month_text = ["err","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 function valueToDate(value) {
@@ -93,6 +100,7 @@ function update_time_range_text() {
  $("#time_range_text").val( valueToDate($( "#time_range" ).slider( "values", 0 )) +
 " - " + valueToDate($( "#time_range" ).slider( "values", 1 )) );
 }
+*/
 
 var updataRegions = function() {
 	incTask();
@@ -157,7 +165,12 @@ var getQueryParameters = function() {
 	var aggregationName = aggregations[aggregation_input.val()];
 	var qualityName = qualities[quality_input.val()];
 	var interpolatedName = ""+getID("interpolated").checked;
-	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName;
+	var timeParameter = "";
+	var timeName = timeText[time_input.val()];
+	if(timeName!="[all]") {
+		timeParameter = "&year="+timeName;
+	}	
+	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
 }
 
 var runQueryTable = function() {

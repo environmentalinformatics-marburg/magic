@@ -98,7 +98,8 @@ public class TimeSeriesManager {
 					String databaseDirectory = "c:/timeseriesdatabase_database/";
 					String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
 					String cacheDirectory = "c:/timeseriesdatabase_cache/";
-					TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory);
+					String streamdbPathPrefix = "c:/timeseriesdatabase_storage/db";
+					TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory, streamdbPathPrefix);
 					this.remoteTsDB =  new ServerTsDB(tsDB);
 				}
 				

@@ -8,8 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 
-import tsdb.streamdb.SensorMeta.ChunkMetaEntry;
-
 public class StreamIterator implements Iterator<DataEntry> {
 	
 	private static final Logger log = LogManager.getLogger();
@@ -21,42 +19,34 @@ public class StreamIterator implements Iterator<DataEntry> {
 	public final String stationName;
 	public final String sensorName;
 
-	private final Iterator<ChunkMetaEntry> chunkListIterator;
+	private final Iterator<ChunkMeta> chunkMetaIterator;
 	private Iterator<DataEntry> dataEntryIterator;
 
-	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, DataEntry[]> sensorChunkMap, int minTimestamp, int maxTimestamp) {
+	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, DataEntry[]> sensorChunkMap, int minTimestamp, int maxTimestamp) {
 		this.sensorChunkMap = sensorChunkMap;
 		this.stationName = sensorMeta.stationName;
-		this.sensorName = sensorMeta.name;
+		this.sensorName = sensorMeta.sensorName;
 		this.minTimestamp = minTimestamp;
 		this.maxTimestamp = maxTimestamp;
-		ArrayList<ChunkMetaEntry> list = new ArrayList<ChunkMetaEntry>();		
-		for(ChunkMetaEntry entry:sensorMeta.list) {
-			if(minTimestamp <= entry.lastTimestamp && entry.firstTimestamp <= maxTimestamp) {
-				list.add(entry);
-			}
-		}
-		
-		this.chunkListIterator = list.iterator();
-		if(chunkListIterator.hasNext()) {
+		this.chunkMetaIterator = ChunkMeta.createIterator(chunkMetaMap, minTimestamp, maxTimestamp);
+		if(chunkMetaIterator.hasNext()) {
 			nextChunk();
 		} else {
 			this.dataEntryIterator = Collections.emptyIterator();
 		}
-
 	}
 
 	private void nextChunk() {
-		ChunkMetaEntry chunkEntry = chunkListIterator.next();
-		DataEntry[] chunk = sensorChunkMap.get(chunkEntry.firstTimestamp);
-		if(minTimestamp<=chunkEntry.firstTimestamp) {
-			if(chunkEntry.lastTimestamp<=maxTimestamp) {
+		ChunkMeta chunkMeta = chunkMetaIterator.next();
+		DataEntry[] chunk = sensorChunkMap.get(chunkMeta.firstTimestamp);
+		if(minTimestamp<=chunkMeta.firstTimestamp) {
+			if(chunkMeta.lastTimestamp<=maxTimestamp) {
 				dataEntryIterator = new SimpleIterator(chunk);
 			} else {
 				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
 			}
 		} else {
-			if(chunkEntry.lastTimestamp<=maxTimestamp) {
+			if(chunkMeta.lastTimestamp<=maxTimestamp) {
 				dataEntryIterator = new SimpleIterator(chunk,minTimestamp);
 			} else {
 				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
@@ -67,7 +57,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 	@Override
 	public boolean hasNext() {
 		while(!dataEntryIterator.hasNext()) {
-			if(!chunkListIterator.hasNext()) {
+			if(!chunkMetaIterator.hasNext()) {
 				return false;
 			}
 			nextChunk();

@@ -19,8 +19,8 @@ public class StreamStorageStreamDB implements StreamStorage {
 	
 	private StreamDB streamdb;
 	
-	public StreamStorageStreamDB() {
-		this.streamdb = new StreamDB();
+	public StreamStorageStreamDB(String streamdbPathPrefix) {
+		this.streamdb = new StreamDB(streamdbPathPrefix);
 	}
 
 	@Override

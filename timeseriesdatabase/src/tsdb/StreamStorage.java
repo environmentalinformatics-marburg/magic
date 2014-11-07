@@ -47,6 +47,7 @@ public interface StreamStorage {
 	 * @param end may be null
 	 * @return iterator of events
 	 */
+	@Deprecated
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end);
 	
 	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp, String[] eventSchema);

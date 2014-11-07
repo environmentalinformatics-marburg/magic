@@ -133,7 +133,8 @@ public class Handler_query_heatmap extends MethodHandler {
 			case "Tsky":
 			case "Tgnd":
 			case "Trad":
-				tsp.setIndexedColorRange(-10, 30);
+				//tsp.setIndexedColorRange(-10, 30);
+				tsp.setIndexedColorRange(-20, 45);
 				break;
 			case "Albedo":
 				tsp.setIndexedColorRange(0.1f, 0.3f);

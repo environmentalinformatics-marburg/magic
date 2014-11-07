@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TsDBFactory;
 import tsdb.raw.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -15,13 +16,20 @@ public class TestingRelationalIterator {
 
 	public static void main(String[] args) {
 		long time_start = System.currentTimeMillis();
-		StreamDB streamDB = new StreamDB();
+		StreamDB streamDB = new StreamDB(TsDBFactory.STREAMDB_PATH_PREFIX);
 		{
 			String stationName = "HEG01";
 			String sensorName = "Ta_200";
 
 			StreamIterator sit = streamDB.getSensorIterator(stationName, sensorName, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			StreamIterator sit2 = streamDB.getSensorIterator(stationName, "rH_200", Integer.MIN_VALUE, Integer.MAX_VALUE);
+			
+			while(sit.hasNext()) {
+				DataEntry entry = sit.next();
+				System.out.println(entry);
+			}
+			
+			
+			/*StreamIterator sit2 = streamDB.getSensorIterator(stationName, "rH_200", Integer.MIN_VALUE, Integer.MAX_VALUE);
 
 			//RelationalIterator it = new RelationalIterator(new StreamIterator[]{sit,sit2},new String[]{"1","x","Ta_200","y","rH_200","f"});
 			String[] sensorNames = new String[]{"Ta_200","rH_200","x"};
@@ -32,7 +40,7 @@ public class TestingRelationalIterator {
 			while(it.hasNext()) {
 				TsEntry entry = it.next();
 				System.out.println(entry);
-			}
+			}*/
 		}
 		
 		/*for(String stationName:streamDB.getStationNames()) {

@@ -211,7 +211,7 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	private float minValue = -10f;
 	private float maxValue = 30f;
-	private static final Color[] indexedColors;
+	private static Color[] indexedColors;
 	static {
 		indexedColors = new Color[6*256];
 		for(int i=0;i<indexedColors.length;i++) {
@@ -221,6 +221,10 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 			indexedColors[i] = getSpectraColor(v);
 			
 		}
+	}
+	
+	public static void setIndexedColors(Color[] indexedColors) {
+		TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
 	}
 
 	private static Color getSpectraColor(float value) {

@@ -32,6 +32,8 @@ var plots_output = getID("plots_output");
 var sensors_output = getID("sensors_output");
 var settings_output = getID("settings_output");
 var region_output = getID("region_output");
+var timespan_output = getID("timespan_output");
+var aggregation_output = getID("aggregation_output");
 
 clear_println(region_output,"query data...");
 incTask();
@@ -41,6 +43,21 @@ $.get("/export/region").done(function(data) {
 		region_output.innerHTML = rows[0][1];
 		decTask();
 	}).fail(function() {clear_println(region_output,"error getting data");decTask();});
+	
+clear_println(timespan_output,"query data...");
+/*incTask();
+$.get("/export/timespan").done(function(data) {
+		var value = +data;
+		var timespanText = "[not valid timespan]";
+		if(value===0) {
+			timespanText = "[all]";
+		} else {
+			timespanText = "year "+value;
+		}
+		
+		timespan_output.innerHTML = timespanText;
+		decTask();
+	}).fail(function() {clear_println(timespan_output,"error getting data");decTask();});*/	
 
 clear_println(plots_output,"query data...");
 incTask();
@@ -72,7 +89,16 @@ $.getJSON("/export/settings").done(function( data ) {
 		clear(settings_output);
 		var settings_array = [];
 		//{"col_plotid":true,"col_timestamp":false,"col_datetime":false}
-		settings_array.push("time steps: "+json_settings.timestep);		
+		
+		var value = +json_settings.timespan;
+		var timespanText = "[not valid timespan]";
+		if(value===0) {
+			timespanText = "[all]";
+		} else {
+			timespanText = "year "+value;
+		}		
+		timespan_output.innerHTML = timespanText;
+		aggregation_output.innerHTML = json_settings.timestep;		
 		settings_array.push("quality check: "+json_settings.quality);		
 		if(json_settings.interpolate) {
 			settings_array.push("interpolate missing values");
@@ -114,6 +140,11 @@ document.getElementById("choose_sensors").onclick = function() {
 $("#choose_plots").button();
 document.getElementById("choose_plots").onclick = function() {
 	window.location = "/static/export_plots.html";
+}
+
+$("#choose_time").button();
+document.getElementById("choose_time").onclick = function() {
+	window.location = "/static/export_time.html";
 }
 
 $("#download").button();
@@ -167,6 +198,8 @@ var show_instructions = function() {
 <button id="choose_region">choose region</button>
 <button id="choose_sensors">choose sensors</button>
 <button id="choose_plots">choose plots</button>
+<button id="choose_time">choose time</button>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <button id="button_settings">settings</button>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 <button id="download"><b>download ZIP-File</b></button>
@@ -175,7 +208,16 @@ var show_instructions = function() {
 <hr/>
 
 <h3>Summary of exported time series</h3>
-<h4 style="display:inline-block">Region&nbsp; &nbsp; &nbsp;</h4><div id="region_output" style="display:inline-block"></div>
+<h4 style="display:inline-block">Region&nbsp; &nbsp; &nbsp;</h4>
+<div id="region_output" style="display:inline-block"></div>
+<br/>
+<h4 style="display:inline-block">Time&nbsp; &nbsp; &nbsp;</h4>
+timespan of &nbsp;&nbsp;
+<b><div id="timespan_output" style="display:inline-block"></div></b>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+with time steps of &nbsp;&nbsp;
+<b><div id="aggregation_output" style="display:inline-block"></div></b>
+<br/>
 <br/>
 <div style="display:inline-block;width:200px;line-height:0;vertical-align:top">
 <h4>Sensors</h4>

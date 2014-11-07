@@ -10,38 +10,29 @@ import org.mapdb.Serializer;
 public class SensorMeta {
 	
 	private static final String DB_NAME_SENSOR_CHUNK_MAP_PREFIX = "sensorChunkMap/";
-	
-	public static class ChunkMetaEntry {
-		public int firstTimestamp;
-		public int lastTimestamp;
-		public ChunkMetaEntry(int firstTimestamp, int lastTimestamp) {
-			this.firstTimestamp = firstTimestamp;
-			this.lastTimestamp = lastTimestamp;
-		}
-	}
+	private static final String DB_NAME_SENSOR_CHUNKMETA_MAP_PREFIX = "sensorChunkMetaMap/";
 	
 	public final String db_name_sensor_chunk_map;
+	public final String db_name_sensor_chunkmeta_map;
 	
 	public final String stationName;
-	public final String name;
+	public final String sensorName;
 
-	public ArrayList<ChunkMetaEntry> list;
-	
-	public SensorMeta(String stationName, String name) {
+	public SensorMeta(String stationName, String sensorName) {
 		this.stationName = stationName;
-		this.name = name;
-		this.db_name_sensor_chunk_map = DB_NAME_SENSOR_CHUNK_MAP_PREFIX+stationName+"/"+name;
-		this.list = new ArrayList<ChunkMetaEntry>(); 
+		this.sensorName = sensorName;
+		this.db_name_sensor_chunk_map = DB_NAME_SENSOR_CHUNK_MAP_PREFIX+stationName+"/"+sensorName;
+		this.db_name_sensor_chunkmeta_map = DB_NAME_SENSOR_CHUNKMETA_MAP_PREFIX+stationName+"/"+sensorName;
 	}
 	
-	private SensorMeta(String stationName, String name, String db_name_sensor_chunk_map, ArrayList<ChunkMetaEntry> list) {
+	private SensorMeta(String stationName, String sensorName, String db_name_sensor_chunk_map, String db_name_sensor_chunkmeta_map) {
 		this.stationName = stationName;
-		this.name = name;
+		this.sensorName = sensorName;
 		this.db_name_sensor_chunk_map = db_name_sensor_chunk_map;
-		this.list = list;
+		this.db_name_sensor_chunkmeta_map = db_name_sensor_chunkmeta_map;
 	}
 	
-	public int[] getInterval() {
+	/*public int[] getInterval() {
 		if(list.isEmpty()) {
 			return null;
 		}
@@ -59,7 +50,7 @@ public class SensorMeta {
 			return null;
 		}
 		return new int[]{minTimestamp,maxTimestamp};
-	}
+	}*/
 	
 	private static class SensorMetaSerializer implements Serializer<SensorMeta>, Serializable {
 		private static final long serialVersionUID = -4064482638307132258L;
@@ -67,27 +58,17 @@ public class SensorMeta {
 		public void serialize(DataOutput out, SensorMeta value)
 				throws IOException {
 			out.writeUTF(value.stationName);
-			out.writeUTF(value.name);
+			out.writeUTF(value.sensorName);
 			out.writeUTF(value.db_name_sensor_chunk_map);
-			out.writeInt(value.list.size());
-			for(ChunkMetaEntry entry:value.list) {
-				out.writeInt(entry.firstTimestamp);
-				out.writeInt(entry.lastTimestamp);
-			}
+			out.writeUTF(value.db_name_sensor_chunkmeta_map);
 		}
 		@Override
 		public SensorMeta deserialize(DataInput in, int available) throws IOException {			
-			String sn = in.readUTF();
-			String n = in.readUTF();
-			String d = in.readUTF();
-			int count = in.readInt();
-			ArrayList<ChunkMetaEntry> a = new ArrayList<ChunkMetaEntry>(count);
-			for(int i=0;i<count;i++) {
-				int f = in.readInt();
-				int l = in.readInt(); 
-				a.add(new ChunkMetaEntry(f,l));
-			}
-			return new SensorMeta(sn,n,d,a);
+			String stationName = in.readUTF();
+			String sensorName = in.readUTF();
+			String db_name_sensor_chunk_map = in.readUTF();
+			String db_name_sensor_chunkmeta_map = in.readUTF();
+			return new SensorMeta(stationName,sensorName,db_name_sensor_chunk_map,db_name_sensor_chunkmeta_map);
 		}
 		@Override
 		public int fixedSize() {

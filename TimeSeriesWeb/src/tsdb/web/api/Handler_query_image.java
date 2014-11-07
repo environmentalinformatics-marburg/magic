@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -100,10 +101,30 @@ public class Handler_query_image extends MethodHandler {
 				log.warn("unknown input");
 				isInterpolated = false;				
 			}
-		}		
+		}
+		
+		String timeYear = request.getParameter("year");
+		Long startTime = null;
+		Long endTime = null;
+		if(timeYear!=null) {
+			try {
+				int year = Integer.parseInt(timeYear);
+				if(year<2008||year>2014) {
+					log.error("year out of range "+year);
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					return;
+				}
+				startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+				endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+			} catch (Exception e) {
+				log.error(e);
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+			}
+		}
 
 		try {
-			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated, null, null);
+			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated, startTime, endTime);
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
@@ -111,7 +132,7 @@ public class Handler_query_image extends MethodHandler {
 			}
 			TimestampSeries compareTs = null;
 			try {
-				compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false, null, null);
+				compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false, startTime, endTime);
 			} catch(Exception e) {
 				e.printStackTrace();
 				log.warn(e,e);

@@ -11,16 +11,16 @@ public class StationMeta {
 	
 	private static final String DB_NAME_SENSOR_MAP_PREFIX = "sensorMap/";
 	
-	public final String name;
+	public final String stationName;
 	public final String db_name_sensor_map;
 	
-	public StationMeta(String name) {
-		this.name = name;
-		this.db_name_sensor_map = DB_NAME_SENSOR_MAP_PREFIX+name;
+	public StationMeta(String stationName) {
+		this.stationName = stationName;
+		this.db_name_sensor_map = DB_NAME_SENSOR_MAP_PREFIX+stationName;
 	}
 	
 	private StationMeta(String name, String db_name_sensor_map) {
-		this.name = name;
+		this.stationName = name;
 		this.db_name_sensor_map = db_name_sensor_map;
 	}
 	
@@ -29,7 +29,7 @@ public class StationMeta {
 		@Override
 		public void serialize(DataOutput out, StationMeta value)
 				throws IOException {
-			out.writeUTF(value.name);
+			out.writeUTF(value.stationName);
 			out.writeUTF(value.db_name_sensor_map);
 		}
 		@Override

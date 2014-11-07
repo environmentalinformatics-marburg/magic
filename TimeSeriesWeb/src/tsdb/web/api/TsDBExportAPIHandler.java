@@ -15,8 +15,6 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
@@ -24,6 +22,7 @@ import org.json.JSONWriter;
 
 import tsdb.DataQuality;
 import tsdb.Region;
+import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.ZipExport;
@@ -49,6 +48,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		public boolean col_timestamp;
 		public boolean col_datetime;
 		public boolean write_header;
+		public int timespan;
 
 		public ExportModel() {
 			this.plots = new String[]{"plot1","plot2","plot3"};
@@ -65,6 +65,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			this.col_timestamp = true;
 			this.col_datetime = true;
 			this.write_header = true;
+			this.timespan = 0; // all
 		}
 	}
 
@@ -148,7 +149,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 			ret = handle_apply_region(reader,model);
 			break;
-		}		
+		}
 		default: {
 			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
 		}
@@ -227,7 +228,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		json.key("col_datetime");
 		json.value(model.col_datetime);		
 		json.key("write_header");
-		json.value(model.write_header);		
+		json.value(model.write_header);
+		json.key("timespan");
+		json.value(model.timespan);	
 		json.endObject();
 
 
@@ -249,6 +252,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			model.col_timestamp = json.getBoolean("col_timestamp");
 			model.col_datetime = json.getBoolean("col_datetime");
 			model.write_header = json.getBoolean("write_header");
+			model.timespan = json.getInt("timespan");
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -300,7 +304,16 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			boolean col_timestamp = model.col_timestamp;
 			boolean col_datetime = model.col_datetime;
 			boolean write_header = model.write_header;
-			ZipExport zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header);
+			Long startTimestamp;
+			Long endTimestamp;
+			if(model.timespan==0) {
+				startTimestamp = null;
+				endTimestamp = null;
+			} else {
+				startTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 1, 1, 0, 0));
+				endTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 12, 31, 23, 0));
+			}			
+			ZipExport zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,startTimestamp,endTimestamp);
 			boolean ret = zipexport.writeToStream(outputstream);
 			return ret;
 		} catch (IOException e) {

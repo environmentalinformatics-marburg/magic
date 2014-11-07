@@ -1,10 +1,12 @@
 var region_select;
 var generalstation_select;
 var sensor_select;
+var time_select;
 var aggregation_select;
 var quality_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
+var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014"];
 
 
 var sensors;
@@ -16,9 +18,11 @@ $(document).ready(function(){
 	region_select = $("#region_select");
 	generalstation_select = $("#generalstation_select");
 	sensor_select = $("#sensor_select");
+	time_select = $("#time_select");
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
+	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updateSensors;	
@@ -68,6 +72,7 @@ var updateGeneralStations = function() {
 	generalstation_select.empty();	
 	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
+		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
 		updateSensors();
 		decTask();		
@@ -76,9 +81,15 @@ var updateGeneralStations = function() {
 
 var updateSensors = function() {
 	incTask();
-	var general_station = generalstation_select.val();
+	var queryText = "";
+	var generalStationName = generalstation_select.val();	
+	if(generalStationName==="[all]") {
+		queryText = "region="+region_select.val();
+	} else {
+		queryText = "general_station="+generalStationName;
+	}
 	sensor_select.empty();	
-	$.get("/tsdb/sensor_list?general_station="+general_station).done(function(data) {
+	$.get("/tsdb/sensor_list?"+queryText).done(function(data) {
 		var rows = splitData(data);
 		sensors = rows
 		//$.each(sensors, function(i,row) {document.getElementById("sensor_select").add(new Option(row[0],i));})
@@ -100,8 +111,14 @@ var runQuerySensor = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
 	var sensorName = sensors[sensor_select.val()][0];
-	var generalstationName = generalstation_select.val();
-	$.get("/tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
+	generalStationName = generalstation_select.val();	
+	var queryText = "";
+	if(generalStationName==="[all]") {
+		queryText = "region="+region_select.val();
+	} else {
+		queryText = "generalstation="+generalStationName;
+	}
+	$.get("/tsdb/plot_list?"+queryText).done(function(data) {
 		getID("result").innerHTML = "";	
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {addDiagram(row[0],sensorName);})
@@ -117,6 +134,11 @@ var addDiagram = function(plotName, sensorName) {
 	var aggregationName = aggregation_select.val();
 	var qualityName = qualities[quality_select.val()];
 	var interpolatedName = ""+getID("interpolated").checked;
+	var timeParameter = "";
+	var timeName = timeText[time_select.val()];
+	if(timeName!="[all]") {
+		timeParameter = "&year="+timeName;
+	}	
 	var image = new Image();
 	plotResult.appendChild(image);
 	image.onload = function() {
@@ -129,5 +151,5 @@ var addDiagram = function(plotName, sensorName) {
 		plotResult.removeChild(image);
 		decTask();
 	}
-	image.src = "/tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName;	
+	image.src = "/tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;	
 }

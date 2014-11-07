@@ -51,8 +51,10 @@ public class ZipExport {
 	private final boolean col_timestamp;
 	private final boolean col_datetime;
 	private final boolean write_header;
+	private final Long startTimestamp;
+	private final Long endTimestamp;
 
-	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header) {
+	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header, Long startTimestamp, Long endTimestamp) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 
@@ -70,6 +72,8 @@ public class ZipExport {
 		this.col_timestamp = col_timestamp;
 		this.col_datetime = col_datetime;
 		this.write_header = write_header;
+		this.startTimestamp = startTimestamp;
+		this.endTimestamp = endTimestamp;
 	}
 
 	public boolean createZipFile(String filename) {
@@ -137,7 +141,7 @@ public class ZipExport {
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
-							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, null, null);
+							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, startTimestamp, endTimestamp);
 							if(timeseries!=null) {								
 								writeTimeseries(timeseries,plotID,csvOut);								
 							} else {
@@ -155,7 +159,7 @@ public class ZipExport {
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
-							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, null, null);
+							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, startTimestamp, endTimestamp);
 							if(timeseries!=null) {
 								zipOutputStream.putNextEntry(new ZipEntry(plotID+".csv"));
 								PrintStream csvOut = new PrintStream(zipOutputStream,false);

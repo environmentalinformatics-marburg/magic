@@ -1,6 +1,11 @@
 package tsdb.web;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.concurrent.atomic.LongAdder;
+
+import javax.imageio.ImageIO;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -30,12 +35,29 @@ public class Main {
 
 
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());
-		
+
 		run(tsdb);
 
 	}
 
 	public static void run(RemoteTsDB tsdb) throws Exception {
+
+		try{
+			BufferedImage rainbow = ImageIO.read(new File("static/rainbow.png"));
+			Color[] indexedColors = new Color[rainbow.getWidth()];
+			for(int i=0;i<indexedColors.length;i++) {
+				int c = rainbow.getRGB(i, 0);
+				Color color = new Color(c);
+				System.out.println(c+"  "+color);
+				indexedColors[i] = color;
+			}
+			TimeSeriesPainterGraphics2D.setIndexedColors(indexedColors);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+
+
 		Server server = new Server(8080);
 
 		ContextHandler contextStatic = new ContextHandler("/static");

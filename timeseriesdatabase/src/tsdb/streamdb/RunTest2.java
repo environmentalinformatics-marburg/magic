@@ -1,12 +1,14 @@
 package tsdb.streamdb;
 import java.util.ArrayList;
 
+import tsdb.TsDBFactory;
+
 
 public class RunTest2 {
 
 	public static void main(String[] args) {
 		long time_start = System.currentTimeMillis();
-		StreamDB streamDB = new StreamDB();
+		StreamDB streamDB = new StreamDB(TsDBFactory.STREAMDB_PATH_PREFIX);
 		
 		//String stationName = "HEG01";
 		//String sensorName = "Ta_200";

@@ -23,9 +23,10 @@ public class TsDBFactory {
 	
 	private static final Logger log = LogManager.getLogger();
 
-	static String CONFIG_DIRECTORY = "config/";
-	static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
-	static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
+	public static String CONFIG_DIRECTORY = "config/";
+	public static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
+	public static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
+	public static String STREAMDB_PATH_PREFIX = "c:/timeseriesdatabase_storage/db";
 	
 	public static String SOURCE_BE_TSM_PATH = "c:/timeseriesdatabase_data_source_be_tsm";
 	public static String SOURCE_KI_TSM_PATH = "c:/timeseriesdatabase_data_source_ki_tsm";
@@ -34,7 +35,11 @@ public class TsDBFactory {
 	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
 	public static String SOURCE_KILI_TFI_PATH = "c:/timeseriesdatabase_data_source_structure_kili_tfi";
 	
-	public static TsDB createDefault() {
+	static {
+		initPaths();
+	}
+	
+	public static void initPaths() {
 		try {
 			Wini ini;
 			if(Files.exists(Paths.get("database_paths.ini"))) {
@@ -55,6 +60,9 @@ public class TsDBFactory {
 			if(pathMap.containsKey("CACHE_DIRECTORY")) {
 				CACHE_DIRECTORY = pathMap.get("CACHE_DIRECTORY");
 			}
+			if(pathMap.containsKey("STREAMDB_PATH_PREFIX")) {
+				STREAMDB_PATH_PREFIX = pathMap.get("STREAMDB_PATH_PREFIX");
+			}				
 			if(pathMap.containsKey("SOURCE_BE_TSM_PATH")) {
 				SOURCE_BE_TSM_PATH = pathMap.get("SOURCE_BE_TSM_PATH");
 			}
@@ -72,17 +80,20 @@ public class TsDBFactory {
 			}
 			if(pathMap.containsKey("SOURCE_KILI_TFI_PATH")) {
 				SOURCE_KILI_TFI_PATH = pathMap.get("SOURCE_KILI_TFI_PATH");
-			}
+			}					
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
-		
-		return createDefault(DATABASE_DIRECTORY,CONFIG_DIRECTORY,CACHE_DIRECTORY);
 	}
 	
-	public static TsDB createDefault(String databaseDirectory,String configDirectory, String cacheDirectory) {		
+	public static TsDB createDefault() {
+		//initPaths();		
+		return createDefault(DATABASE_DIRECTORY,CONFIG_DIRECTORY,CACHE_DIRECTORY,STREAMDB_PATH_PREFIX);
+	}
+	
+	public static TsDB createDefault(String databaseDirectory,String configDirectory, String cacheDirectory, String streamdbPathPrefix) {		
 		try {
-			TsDB tsdb = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory);
+			TsDB tsdb = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory, streamdbPathPrefix);
 			ConfigLoader configLoader = new ConfigLoader(tsdb);
 			
 			//*** global config start			

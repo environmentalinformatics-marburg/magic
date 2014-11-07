@@ -137,6 +137,7 @@ public class StreamStorageEventStore implements StreamStorage {
 	 * @param end may be null
 	 * @return iterator of events
 	 */
+	@Deprecated
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
 		if(start!=null) {
 			long startTime = start;
