@@ -1,9 +1,12 @@
-lib <- c("grid", "Rsenal", "latticeExtra", "doParallel")
+lib <- c("grid", "Rsenal", "latticeExtra", "doParallel", "ggplot2")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 source("src/visMannKendall.R")
 
-registerDoParallel(cl <- cluster(2))
+registerDoParallel(cl <- makeCluster(2))
+
+### DEM
+dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
 
 ### Mann-Kendall rasters for NDVI (2003-2013)
 st_year <- "2003"
@@ -27,11 +30,11 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
                       filename = paste0("out/mk/", i, "_mk001_0313"), 
                       format = "GTiff", overwrite = TRUE)
   
-  #   png_out <- paste0("out/mk/", i, "_mk001_0313.png")
-  #   png(png_out, units = "mm", width = 300, 
-  #       res = 300, pointsize = 20)
-  #   plot(p)
-  #   dev.off()
+#   png_out <- paste0("out/mk/", i, "_mk001_0313.png")
+#   png(png_out, units = "mm", width = 300, 
+#       res = 300, pointsize = 20)
+#   plot(p)
+#   dev.off()
   
   return(p)
 }
@@ -62,6 +65,27 @@ p_dens <- ggplot() +
         legend.key = element_rect(colour = "transparent"),
         legend.text = element_text(size = 9),
         legend.position = c(.8, .75), legend.justification = c("center", "center"), 
+        plot.margin = unit(rep(0, 4), units = "mm"), 
+        panel.border = element_rect(colour = "black"))
+
+### Difference Terra-Aqua plot
+ls_val <- lapply(c("mk01", "mk001"), function(h) {
+  fls_mk <- list.files("out/mk/", pattern = paste("^m", h, ".tif$", sep = ".*"), 
+                       full.names = TRUE)
+  rst_mk <- lapply(fls_mk, raster)
+  val_mk <- do.call("cbind", lapply(rst_mk, values))
+  val_diff <- val_mk[, 1] - val_mk[, 2]
+  
+  return(val_diff)
+})
+
+p_diff <- ggplot() + 
+  geom_vline(xintercept = 0, colour = "grey50", linetype = "dashed") + 
+  geom_line(aes(x = ls_val[[2]], y = ..count..), stat = "density", lwd = .8) + 
+  labs(x = expression("Kendall's " * tau [Terra-Aqua]), y = "Count") + 
+  theme_bw() + 
+  theme(text = element_text(size = 15), panel.grid = element_blank(), 
+        legend.key.size = unit(1, "cm"), 
         plot.margin = unit(rep(0, 4), units = "mm"), 
         panel.border = element_rect(colour = "black"))
 

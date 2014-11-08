@@ -47,11 +47,11 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
   fls_ndvi <- fls_ndvi[st:nd]
   rst_ndvi <- stack(fls_ndvi)
   
-  p <- visMannKendall(rst = rst_ndvi, 
-                      dem = dem, 
-                      p_value = .001, 
-                      filename = paste0("out/mk/", i, "_mk001_0313"), 
-                      format = "GTiff", overwrite = TRUE)
+#   p <- visMannKendall(rst = rst_ndvi, 
+#                       dem = dem, 
+#                       p_value = .001, 
+#                       filename = paste0("out/mk/", i, "_mk001_0313"), 
+#                       format = "GTiff", overwrite = TRUE)
 
 #   png_out <- paste0("out/mk/", i, "_mk001_0313.png")
 #   png(png_out, units = "mm", width = 300, 
@@ -59,7 +59,7 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
 #   plot(p)
 #   dev.off()
   
-  return(p)
+  return(rst_ndvi)
 }
 
 ### Amount of significant positive and negative pixels in Terra and Aqua
@@ -88,10 +88,6 @@ ls_val <- lapply(c("mk01", "mk001"), function(h) {
     values(rst_mk)
   })
 })
-
-# scientific_10 <- function(x) {
-#   parse(text=gsub("e", " %*% 10^", scientific_format()(x)))
-# }
 
 png("out/mk/ndvi_mk_terra_vs_aqua.png", width = 26, height = 18, units = "cm", 
     res = 300, pointsize = 12)
@@ -131,16 +127,20 @@ ls_val <- lapply(c("mk01", "mk001"), function(h) {
 png("out/mk/ndvi_mk_diff_terra_vs_aqua.png", width = 26, height = 18, 
     units = "cm", res = 300, pointsize = 12)
 ggplot() + 
-  geom_line(aes(x = ls_val[[1]], y = ..count.., lty = "p < 0.01"), 
-            stat = "density", lwd = 1.1) + 
-  geom_line(aes(x = ls_val[[2]], y = ..count.., lty = "p < 0.001"), 
-            stat = "density", lwd = 1) + 
-  scale_linetype_manual("", breaks = c("p < 0.01", "p < 0.001"), 
-                      values = c("p < 0.01" = 1, "p < 0.001" = 2)) + 
-  labs(x = expression("Kendall's" * tau [Difference]), y = "Frequency") + 
+#   geom_line(aes(x = ls_val[[1]], y = ..count.., lty = "p < 0.01"), 
+#             stat = "density", lwd = 1.1) + 
+#   geom_line(aes(x = ls_val[[2]], y = ..count.., lty = "p < 0.001"), 
+#             stat = "density", lwd = 1) + 
+#   scale_linetype_manual("", breaks = c("p < 0.01", "p < 0.001"), 
+#                       values = c("p < 0.01" = 1, "p < 0.001" = 2)) + 
+  geom_vline(xintercept = 0, colour = "grey50", linetype = "dashed") + 
+  geom_line(aes(x = ls_val[[2]], y = ..count..), stat = "density", lwd = .8) + 
+  labs(x = expression("Kendall's " * tau [Terra-Aqua]), y = "Count") + 
   theme_bw() + 
-  theme(text = element_text(size = 15), 
-        legend.key.size = unit(1, "cm"))
+  theme(text = element_text(size = 15), panel.grid = element_blank(), 
+        legend.key.size = unit(1, "cm"), 
+        plot.margin = unit(rep(0, 4), units = "mm"), 
+        panel.border = element_rect(colour = "black"))
 dev.off()
 
 
