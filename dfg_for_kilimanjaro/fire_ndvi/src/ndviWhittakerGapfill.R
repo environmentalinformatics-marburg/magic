@@ -28,7 +28,7 @@ MODISoptions(localArcPath = paste0(dsn, "data/MODIS_ARC/"),
 
 for (i in c("MOD13Q1", "MYD13Q1"))
   runGdal(i, 
-          tileH = 21, tileV = 9, SDSstring = "000000010000", 
+          tileH = 21, tileV = 9, SDSstring = "000000000010", 
           outProj = "EPSG:21037", job = "ndvi_clrk")
 
 
@@ -56,7 +56,8 @@ dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
 
 stats <- foreach(h = c("MOD13Q1", "MYD13Q1"), .packages = lib) %dopar% {
   
-  pttrn <- paste(h, c("NDVI.tif$", "pixel_reliability.tif$"), sep = ".*")
+#   pttrn <- paste(h, c("NDVI.tif$", "pixel_reliability.tif$"), sep = ".*")
+  pttrn <- paste(h, "composite_day_of_the_year.tif$", sep = ".*")
   
   ndvi.rst <- lapply(pttrn, function(i) {
     # List available files
@@ -170,17 +171,42 @@ yearmon_agg <- as.yearmon(dates_agg)
 indices_agg <- as.numeric(as.factor(yearmon_agg))
 
 outdir <- paste0("data/processed/whittaker_", tolower(h))
-rst_wht_aggmax <- 
-  stackApply(rst.wht, indices = indices_agg, fun = max, bylayer = TRUE,
-             filename = paste0(outdir, "/AGGMAX_WHT"), format = "GTiff",  
-             suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
-             overwrite = TRUE)
+# rst_wht_aggmax <- 
+#   stackApply(rst.wht, indices = indices_agg, fun = max, bylayer = TRUE,
+#              filename = paste0(outdir, "/AGGMAX_WHT"), format = "GTiff",  
+#              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
+#              overwrite = TRUE)
+# 
+# rst_wht_aggmin <- 
+#   stackApply(rst.wht, indices = indices_agg, fun = min, bylayer = TRUE,
+#              filename = paste0(outdir, "/AGGMIN_WHT"), format = "GTiff",  
+#              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
+#              overwrite = TRUE)
 
-rst_wht_aggmin <- 
-  stackApply(rst.wht, indices = indices_agg, fun = min, bylayer = TRUE,
-             filename = paste0(outdir, "/AGGMIN_WHT"), format = "GTiff",  
-             suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
-             overwrite = TRUE)
+rst_agg_mnthly <- lapply(c("mod13q1", "myd13q1"), function(g) {
+  
+  fls_wht <- list.files(paste0("data/processed/whittaker_", g), 
+                        pattern = "^WHT", full.names = TRUE)
+  rst_wht <- stack(fls_wht)
+  
+  fls_doy <- list.files("data/processed", full.names = TRUE,
+                        pattern = paste0("^CRP_", toupper(g), ".*composite"))
+  rst_doy <- stack(fls_doy)
+  
+  dates_doy <- as.numeric(substr(basename(fls_doy), 14, 20))
+  months_doy <- unique(strftime(as.Date(as.character(dates_doy), format = "%Y%j"), "%Y%m"))
+  
+  file_out <- paste0(unique(dirname(fls_wht)), "/AGGMAX_WHT")
+  rst_agg <- aggregateNDVICells(rst = rst_wht, 
+                                rst_doy = rst_doy, 
+                                dates = dates_doy, 
+                                n_cores = 4, 
+                                save_output = TRUE, filename = file_out, 
+                                bylayer = TRUE, suffix = months_doy, 
+                                format = "GTiff", overwrite = TRUE)
+  
+  return(rst_agg)
+})
 
 # Application of scale factor and removal of inconsistent values
 # fls_wht_aggmax <- list.files(outdir, pattern = "^AGGMAX_WHT", full.names = TRUE)
