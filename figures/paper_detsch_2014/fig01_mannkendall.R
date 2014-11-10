@@ -68,26 +68,26 @@ p_dens <- ggplot() +
         plot.margin = unit(rep(0, 4), units = "mm"), 
         panel.border = element_rect(colour = "black"))
 
-### Difference Terra-Aqua plot
-ls_val <- lapply(c("mk01", "mk001"), function(h) {
-  fls_mk <- list.files("out/mk/", pattern = paste("^m", h, ".tif$", sep = ".*"), 
-                       full.names = TRUE)
-  rst_mk <- lapply(fls_mk, raster)
-  val_mk <- do.call("cbind", lapply(rst_mk, values))
-  val_diff <- val_mk[, 1] - val_mk[, 2]
-  
-  return(val_diff)
-})
-
-p_diff <- ggplot() + 
-  geom_vline(xintercept = 0, colour = "grey50", linetype = "dashed") + 
-  geom_line(aes(x = ls_val[[2]], y = ..count..), stat = "density", lwd = .8) + 
-  labs(x = expression("Kendall's " * tau [Terra-Aqua]), y = "Count") + 
-  theme_bw() + 
-  theme(text = element_text(size = 15), panel.grid = element_blank(), 
-        legend.key.size = unit(1, "cm"), 
-        plot.margin = unit(rep(0, 4), units = "mm"), 
-        panel.border = element_rect(colour = "black"))
+# ### Difference Terra-Aqua plot
+# ls_val <- lapply(c("mk01", "mk001"), function(h) {
+#   fls_mk <- list.files("out/mk/", pattern = paste("^m", h, ".tif$", sep = ".*"), 
+#                        full.names = TRUE)
+#   rst_mk <- lapply(fls_mk, raster)
+#   val_mk <- do.call("cbind", lapply(rst_mk, values))
+#   val_diff <- val_mk[, 1] - val_mk[, 2]
+#   
+#   return(val_diff)
+# })
+# 
+# p_diff <- ggplot() + 
+#   geom_vline(xintercept = 0, colour = "grey50", linetype = "dashed") + 
+#   geom_line(aes(x = ls_val[[2]], y = ..count..), stat = "density", lwd = .8) + 
+#   labs(x = expression("Kendall's " * tau [Terra-Aqua]), y = "Count") + 
+#   theme_bw() + 
+#   theme(text = element_text(size = 15), panel.grid = element_blank(), 
+#         legend.key.size = unit(1, "cm"), 
+#         plot.margin = unit(rep(0, 4), units = "mm"), 
+#         panel.border = element_rect(colour = "black"))
 
 ### Combination of MannKendall `spplot` objects
 p_mk_comb <- latticeCombineGrid(p_mk, layout = c(1, 2))

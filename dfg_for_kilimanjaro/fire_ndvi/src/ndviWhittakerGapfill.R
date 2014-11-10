@@ -183,8 +183,6 @@ outdir <- paste0("data/processed/whittaker_", tolower(h))
 #              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
 #              overwrite = TRUE)
 
-rst_agg_mnthly <- lapply(c("mod13q1", "myd13q1"), function(g) {
-  
   fls_wht <- list.files(paste0("data/processed/whittaker_", g), 
                         pattern = "^WHT", full.names = TRUE)
   rst_wht <- stack(fls_wht)
@@ -197,20 +195,18 @@ rst_agg_mnthly <- lapply(c("mod13q1", "myd13q1"), function(g) {
   months_doy <- unique(strftime(as.Date(as.character(dates_doy), format = "%Y%j"), "%Y%m"))
   
   file_out <- paste0(unique(dirname(fls_wht)), "/AGGMAX_WHT")
-  rst_agg <- aggregateNDVICells(rst = rst_wht, 
-                                rst_doy = rst_doy, 
-                                dates = dates_doy, 
-                                n_cores = 4, 
-                                save_output = TRUE, filename = file_out, 
-                                bylayer = TRUE, suffix = months_doy, 
-                                format = "GTiff", overwrite = TRUE)
+  rst_wht_aggmax <- aggregateNDVICells(rst = rst_wht, 
+                                       rst_doy = rst_doy, 
+                                       dates = dates_doy, 
+                                       n_cores = 4, 
+                                       save_output = TRUE, filename = file_out, 
+                                       bylayer = TRUE, suffix = months_doy, 
+                                       format = "GTiff", overwrite = TRUE)
   
-  return(rst_agg)
-})
 
 # Application of scale factor and removal of inconsistent values
-# fls_wht_aggmax <- list.files(outdir, pattern = "^AGGMAX_WHT", full.names = TRUE)
-# rst_wht_aggmax <- stack(fls_wht_aggmax)
+fls_wht_aggmax <- list.files(outdir, pattern = "^AGGMAX_WHT", full.names = TRUE)
+rst_wht_aggmax <- stack(fls_wht_aggmax)
 fls_scl <- paste0(outdir, "/SCL_", names(rst_wht_aggmax))
 
 rst_scl <- foreach(i = unstack(rst_wht_aggmax), j = as.list(fls_scl), 
