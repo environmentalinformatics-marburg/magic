@@ -1,5 +1,5 @@
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr", "scales")
+         "ggplot2", "dplyr", "scales", "Rsenal", "Kendall")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 source("sortByElevation.R")
@@ -78,7 +78,7 @@ mod_stck_pred <- rst_modis_myd13[[pred_ind]]
 mod_stck_eval <- rst_modis_myd13[[-pred_ind]]
 
 ### calculate EOT
-ndvi_modes <- eot(x = gimms_stck_pred, y = mod_stck_pred, n = 10, 
+ndvi_modes <- eot(x = gimms_stck_pred, y = mod_stck_pred, n = 8, 
                   standardised = FALSE, reduce.both = FALSE, 
                   verbose = TRUE, write.out = TRUE, path.out = "data/eot_eval")
 
@@ -96,6 +96,15 @@ mod_predicted <- predict(object = ndvi_modes,
                          newdata = gimms_stck_eval,
                          n = nm)
 
+# ### prediction storage
+projection(mod_predicted) <- projection(rst_gimms)
+
+dir_out <- unique(dirname(fls_gimms))
+file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_0812")
+mod_predicted <- writeRaster(mod_predicted, filename = file_out, 
+                             format = "GTiff", bylayer = FALSE, 
+                             overwrite = TRUE)
+
 mod_observed <- mod_stck_eval
 pred_vals <- getValues(mod_predicted)
 obs_vals <- getValues(mod_observed)
@@ -110,12 +119,107 @@ Rsq <- R * R
 
 ### visualise error scores
 scores <- data.frame(ME, MAE, RMSE, R, Rsq)
+
+round(colMeans(scores), 3)
+write.csv(round(scores, 3), "data/eot_eval/scores.csv", row.names = FALSE)
+
 melt_scores <- melt(scores)
 
 p <- ggplot(melt_scores, aes(factor(variable), value)) 
 p <- p + geom_boxplot() + 
   theme_bw() + xlab("") + ylab("")
 print(p)
+
+### pca
+mat_prd <- as.matrix(mod_predicted)
+mat_obs <- as.matrix(mod_observed)
+
+pca_prd <- prcomp(mat_prd)
+pca_obs <- prcomp(mat_obs)
+
+mat_prd_pc1 <- predict(pca_prd, mat_prd, index = 1)
+mat_obs_pc1 <- predict(pca_obs, mat_obs, index = 1)
+
+template_prd <- mod_predicted[[1]]
+template_prd[] <- mat_prd_pc1[, 2]
+plot(template_prd, zlim = c(-1.5, 1.5))
+
+template_obs <- mod_observed[[1]]
+template_obs[] <- mat_obs_pc1[, 2]
+plot(template_obs, zlim = c(-1.5, 1.5))
+
+# Note: work on non-denoised rasters
+# mod_predicted_dns <- denoise(mod_predicted, 3, weighted = FALSE)
+# mod_observed_dns <- denoise(mod_observed, 3, weighted = FALSE)
+# mod_dns <- stack(mod_observed_dns, mod_predicted_dns)
+
+library(RColorBrewer)
+cols <- colorRampPalette(brewer.pal(11, "RdBu"))
+mod_dns_r <- calc(mod_dns, fun = function(x) {cor(x[1:60], x[61:120])})
+mod_dns_p <- calc(mod_dns, fun = function(x) {summary(lm(x[1:60] ~ x[61:120]))$coefficients[2, 4]})
+
+tmp <- mod_dns_r
+tmp[mod_dns_p[] >= .001] <- NA
+spplot(tmp, at = seq(-1, 1, .25), col.regions = cols(100))
+
+### ioa
+library(Rsenal)
+ioa_val <- sapply(1:nrow(pred_vals), function(i) {
+  ioa(pred_vals[i, ], obs_vals[i, ])
+})
+
+library(Kendall)
+mk_pred_val <- sapply(1:nrow(pred_vals), function(i) {
+  MannKendall(pred_vals[i, ])$tau
+})
+
+mk_obs_val <- sapply(1:nrow(obs_vals), function(i) {
+  MannKendall(obs_vals[i, ])$tau
+})
+
+library(latticeExtra)
+xyplot(mk_pred_val ~ mk_obs_val) + 
+  layer(panel.ablineq(lm(y~x)))
+
+
+bwplot(mk_obs_val, xlim = c(-1, 1))
+bwplot(mk_pred_val, xlim = c(-1, 1))
+
+fls_cf <- list.files("../../ndvi/data/processed/", pattern = "^BF_SD_QA_MYD.*.tif$", 
+                     full.names = TRUE)
+st <- grep("2003", fls_cf)[1]
+nd <- grep("2012", fls_cf)[length(grep("2012", fls_cf))]
+fls_cf <- fls_cf[st:nd]
+rst_cf <- stack(fls_cf)
+library(zoo)
+dates <- gsub("A", "", sapply(strsplit(basename(fls_cf), "\\."), "[[", 2))
+indices <- as.numeric(as.factor(as.yearmon(dates, format = "%Y%j")))
+rst_cf_agg <- stackApply(rst_cf, indices = indices, fun = max, na.rm = TRUE)
+
+plot(obs_vals[which.min(ioa_val), ], type = "l", col = "grey65", ylim = c(0, 1))
+lines(pred_vals[which.min(ioa_val), ])
+lines(as.numeric(rst_cf_agg[which.min(ioa_val)] / 10000), lty = 2)
+points(as.numeric(rst_cf_agg[which.min(ioa_val)] / 10000), pch = 20)
+
+points(xyFromCell(mod_stck_eval[[1]], cell = which.min(ioa_val)), cex = 1)
+
+library(lattice)
+bwplot(ioa_val)
+
+mk_p_pred_val <- sapply(1:nrow(pred_vals), function(i) {
+  MannKendall(pred_vals[i, ])$sl
+})
+
+mk_p_obs_val <- sapply(1:nrow(obs_vals), function(i) {
+  MannKendall(obs_vals[i, ])$sl
+})
+
+# hist(mk_p_obs_val, ylim = c(0, 50000))
+# hist(mk_p_pred_val, ylim = c(0, 50000))
+
+p_value <- cbind(mk_p_pred_val < .001, mk_p_obs_val < .001)
+tmp <- which(rowSums(p_value) == 1)
+xyplot(mk_pred_val[tmp] ~ mk_obs_val[tmp])
 
 
 ### visualise plots

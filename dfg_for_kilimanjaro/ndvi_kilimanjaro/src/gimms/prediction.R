@@ -11,8 +11,10 @@ nd <- "201212"
 ## GIMMS NDVI3G
 fls_gimms <- list.files("data/rst/whittaker", pattern = "_wht_aggmax.tif$", 
                         full.names = TRUE)
-fls_gimms <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
+fls_gimms <- fls_gimms[grep("198201", fls_gimms):length(fls_gimms)]
 rst_gimms <- stack(fls_gimms)
+fls_gimms_0312 <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
+rst_gimms_0312 <- stack(fls_gimms_0312)
 
 
 ### MODIS NDVI
@@ -21,7 +23,7 @@ fls_modis_myd13 <- list.files("data/modis", pattern = "^SCL_AGGMAX.*.tif$",
 rst_modis_myd13 <- stack(fls_modis_myd13)
 
 ### calculate EOT
-ndvi_modes <- eot(x = rst_gimms, y = rst_modis_myd13, n = 10, 
+ndvi_modes <- eot(x = rst_gimms_0312, y = rst_modis_myd13, n = 10, 
                   standardised = FALSE, reduce.both = FALSE, 
                   verbose = TRUE, write.out = TRUE, path.out = "data/eot")
 
@@ -33,27 +35,15 @@ mod_predicted <- predict(object = ndvi_modes,
                          newdata = rst_gimms,
                          n = nm)
 
-mod_observed <- rst_modis_myd13
-pred_vals <- getValues(mod_predicted)
-obs_vals <- getValues(mod_observed)
+projection(mod_predicted) <- projection(rst_gimms)
 
-### error scores
-ME <- colMeans(pred_vals - obs_vals, na.rm = TRUE)
-MAE <- colMeans(abs(pred_vals - obs_vals), na.rm = TRUE)
-RMSE <- sqrt(colMeans((pred_vals - obs_vals)^2, na.rm = TRUE))
-R <- diag(cor(pred_vals, obs_vals, use = "complete.obs"))
-Rsq <- R * R
+dir_out <- unique(dirname(fls_gimms))
+file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_8212")
+mod_predicted <- writeRaster(mod_predicted, filename = file_out, 
+                             format = "GTiff", bylayer = FALSE, 
+                             overwrite = TRUE)
 
-
-### visualise error scores
-scores <- data.frame(ME, MAE, RMSE, R, Rsq)
-melt_scores <- melt(scores)
-
-p <- ggplot(melt_scores, aes(factor(variable), value)) 
-p <- p + geom_boxplot() + 
-  theme_bw() + xlab("") + ylab("")
-print(p)
-
+# mod_predicted <- stack(file_out)
 
 ### visualise plots
 plt <- readOGR(dsn = "data/coords/", 
@@ -76,53 +66,3 @@ official_plots <- c(paste0("cof", 1:5),
 
 plt <- subset(plt, PlotID %in% official_plots)
 
-col_names <- sapply(strsplit(names(mod_observed), "_"), "[[", 4)
-
-plt_obs <- extract(mod_observed, plt, df = TRUE)
-plt_obs$ID <- as.character(plt@data$PlotID)
-names(plt_obs)[2:ncol(plt_obs)] <- col_names
-tmp <- sortByElevation(plot_names = official_plots, 
-                           plot_shape = plt,
-                           val = plt_obs)
-
-plt_obs_mlt <- melt(plt_obs, variable.name = "month", value.name = "ndvi_obs")
-plt_obs_mlt$month <- as.character(plt_obs_mlt$month)
-
-plt_prd <- extract(mod_predicted, plt, df = TRUE)
-plt_prd$ID <- as.character(plt@data$PlotID)
-names(plt_prd)[2:ncol(plt_prd)] <- col_names
-plt_prd_mlt <- melt(plt_prd, variable.name = "month", value.name = "ndvi_prd")
-plt_prd_mlt$month <- as.character(plt_prd_mlt$month)
-
-plt_obs_prd <- merge(plt_obs_mlt, plt_prd_mlt, by = c(1, 2, 3), sort = FALSE)
-plt_obs_prd_mlt <- melt(plt_obs_prd, variable.name = "type")
-
-luc <- unique(plt_obs_prd_mlt$Habitat)
-
-# for (i in luc) {
-#   df <- plt_obs_prd_mlt %>% filter(substr(ID, 1, 3) == i)
-#   p <- ggplot(aes(x = as.Date(paste0(month, "01"), format = "%Y%m%d"), group = type, 
-#                   color = type), data = df) + 
-#     geom_line(aes(y = value)) + 
-#     facet_wrap(~ ID) + 
-#     labs(x = "Time (m)", y = "NDVI") + 
-#     theme_bw()
-#   print(p)
-# }
-
-# png("vis/comparison_obs_prd.png", width = 22, height = 27, units = "cm", 
-#     res = 300, pointsize = 15)
-# ggplot(aes(x = as.Date(paste0(month, "01"), format = "%Y%m%d"), y = value, 
-#            group = type, color = type), 
-#        data = plt_obs_prd_mlt) + 
-#   geom_line() + 
-#   geom_line(aes(group = type, linetype = type), stat = "hline", 
-#             yintercept = "mean", lwd = .05) + 
-#   facet_wrap(~ ID, ncol = 5) + 
-#   labs(x = "Time (months)", y = "NDVI") + 
-# #   scale_linetype_manual("", values = c("ndvi_obs" = 1, "ndvi_prd" = 2), guide = FALSE) + 
-#   scale_colour_manual("", values = c("ndvi_obs" = "grey65", "ndvi_prd" = "grey25"), guide = FALSE) + 
-#   theme_bw() + 
-#   theme(axis.text = element_text(size = 8), panel.grid = element_blank(), 
-#         strip.text = element_text(size = 6, lineheight = .01))
-# dev.off()
