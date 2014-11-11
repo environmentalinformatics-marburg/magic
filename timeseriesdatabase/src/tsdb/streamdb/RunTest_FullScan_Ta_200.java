@@ -1,10 +1,10 @@
 package tsdb.streamdb;
-import java.util.ArrayList;
-
 import tsdb.TsDBFactory;
+import tsdb.raw.TsEntry;
+import tsdb.util.iterator.TsIterator;
 
 
-public class RunTest {
+public class RunTest_FullScan_Ta_200 {
 	
 	public static void main(String[] args) {
 		long time_start = System.currentTimeMillis();
@@ -32,28 +32,34 @@ public class RunTest {
 		
 		long total_value_count = 0;
 		long total_sensor_count = 0;
+		float sum = 0f; 
 		for(String stationName:streamDB.getStationNames()) {
 			long station_value_count = 0;
 			for(String sensorName:streamDB.getSensorNames(stationName)) {
 				if(!sensorName.equals("Ta_200")) {
 					continue;
 				}
-				DataEntry[] data = streamDB.readData(stationName, sensorName);
-				station_value_count += data.length;
+				
+				TsIterator it = streamDB.getTsIterator(stationName, new String[]{"Ta_200"},Integer.MIN_VALUE,Integer.MAX_VALUE);
+				while(it.hasNext()) {
+					TsEntry e = it.next();
+					sum += e.data[0];
+					station_value_count++;
+				}
+
 				total_sensor_count++;
 			}
 			total_value_count += station_value_count;
-			System.out.println(stationName+" station_value_count "+station_value_count);
+			//System.out.println(stationName+" station_value_count "+station_value_count+"    sum "+sum);
 		}
-		System.out.println("total_sensor_count "+total_sensor_count);
+		System.out.println("total_sensor_count "+total_sensor_count+"    sum "+sum);
 		System.out.println("total_value_count "+total_value_count);
-		
 		
 		
 		
 		streamDB.close();
 		long time_end = System.currentTimeMillis();
-		System.out.println(((time_end-time_start)/1000)+" s");
+		System.out.println(((time_end-time_start))+" ms");
 	}
 
 }

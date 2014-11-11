@@ -106,4 +106,14 @@ public class TimeConverter implements Serializable {
 		LocalDateTime datetime = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second);
 		return TimeConverter.DateTimeToOleMinutes(datetime);
 	}
+	
+	public static int roundLowerYear(int timestamp) {
+		LocalDateTime datetime = oleMinutesToLocalDateTime(timestamp);
+		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear(),1,1,0,0));
+	}
+	
+	public static int roundNextYear(int timestamp) {
+		LocalDateTime datetime = oleMinutesToLocalDateTime(timestamp);
+		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear()+1,1,1,0,0));
+	}
 }

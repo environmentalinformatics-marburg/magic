@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/log4j-jcl-2.0.2.jar" sourcepath="lib/source/log4j-jcl-2.0.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/mapdb-1.0.6.jar" sourcepath="lib/source/mapdb-1.0.6-sources.jar"/>
 	<classpathentry kind="lib" path="lib/opencsv-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/snappy-java-1.1.1.6.jar" sourcepath="lib/source/snappy-java-1.1.1.6-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

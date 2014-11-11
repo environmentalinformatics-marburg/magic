@@ -1,6 +1,5 @@
 package tsdb.streamdb;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -12,7 +11,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 	
 	private static final Logger log = LogManager.getLogger();
 
-	private final BTreeMap<Integer, DataEntry[]> sensorChunkMap;
+	private final BTreeMap<Integer, Chunk> sensorChunkMap;
 	public final int minTimestamp;
 	public final int maxTimestamp;
 	
@@ -22,7 +21,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 	private final Iterator<ChunkMeta> chunkMetaIterator;
 	private Iterator<DataEntry> dataEntryIterator;
 
-	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, DataEntry[]> sensorChunkMap, int minTimestamp, int maxTimestamp) {
+	public StreamIterator(SensorMeta sensorMeta, BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> sensorChunkMap, int minTimestamp, int maxTimestamp) {
 		this.sensorChunkMap = sensorChunkMap;
 		this.stationName = sensorMeta.stationName;
 		this.sensorName = sensorMeta.sensorName;
@@ -38,18 +37,18 @@ public class StreamIterator implements Iterator<DataEntry> {
 
 	private void nextChunk() {
 		ChunkMeta chunkMeta = chunkMetaIterator.next();
-		DataEntry[] chunk = sensorChunkMap.get(chunkMeta.firstTimestamp);
+		Chunk chunk = sensorChunkMap.get(chunkMeta.firstTimestamp);
 		if(minTimestamp<=chunkMeta.firstTimestamp) {
 			if(chunkMeta.lastTimestamp<=maxTimestamp) {
-				dataEntryIterator = new SimpleIterator(chunk);
+				dataEntryIterator = new SimpleIterator(chunk.data);
 			} else {
-				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
+				dataEntryIterator = new ClipIterator(chunk.data,minTimestamp,maxTimestamp);
 			}
 		} else {
 			if(chunkMeta.lastTimestamp<=maxTimestamp) {
-				dataEntryIterator = new SimpleIterator(chunk,minTimestamp);
+				dataEntryIterator = new SimpleIterator(chunk.data,minTimestamp);
 			} else {
-				dataEntryIterator = new ClipIterator(chunk,minTimestamp,maxTimestamp);
+				dataEntryIterator = new ClipIterator(chunk.data,minTimestamp,maxTimestamp);
 			}
 		}
 	}

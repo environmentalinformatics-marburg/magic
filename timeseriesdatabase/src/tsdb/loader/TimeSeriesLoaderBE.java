@@ -279,7 +279,7 @@ public class TimeSeriesLoaderBE {
 		}	
 
 		if(eventMap.size()>0) {
-			tsdb.streamStorage.insertData(station.stationID, eventMap);			
+			tsdb.streamStorage.insertData(station.stationID, eventMap, station.loggerType.sensorNames);			
 		} else {
 			log.warn("no data to insert: "+station);
 		}		

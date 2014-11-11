@@ -8,7 +8,7 @@ import org.mapdb.Serializer;
 
 
 public class StationMeta {
-	
+
 	private static final String DB_NAME_SENSOR_MAP_PREFIX = "sensorMap/";
 	
 	public final String stationName;

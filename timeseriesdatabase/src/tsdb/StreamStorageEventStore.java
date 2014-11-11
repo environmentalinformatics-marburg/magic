@@ -65,7 +65,7 @@ public class StreamStorageEventStore implements StreamStorage {
 	 * @param streamName
 	 * @param eventMap
 	 */
-	public void insertData(String streamName, TreeMap<Long,Event> eventMap) {
+	public void insertData(String streamName, TreeMap<Long,Event> eventMap, String[] sensorNames) {
 
 		long startTimestamp = eventMap.firstKey();
 		long endTimestamp = eventMap.lastKey();

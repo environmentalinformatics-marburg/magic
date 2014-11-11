@@ -28,8 +28,9 @@ public interface StreamStorage {
 	 * Saves new data on disk. If some timestamps exist already in database, no data is overwritten.
 	 * @param streamName
 	 * @param eventMap
+	 * @param sensorNames 
 	 */
-	public void insertData(String streamName, TreeMap<Long,Event> eventMap);
+	public void insertData(String streamName, TreeMap<Long,Event> eventMap, String[] sensorNames);
 	
 	/**
 	 * insert ordered list of data with time span first to last

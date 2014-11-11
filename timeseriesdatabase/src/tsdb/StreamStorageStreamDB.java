@@ -39,7 +39,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	@Override
-	public void insertData(String streamName, TreeMap<Long, Event> eventMap) {
+	public void insertData(String streamName, TreeMap<Long, Event> eventMap, String[] sensorNames) {
 		// TODO Auto-generated method stub
 		
 	}

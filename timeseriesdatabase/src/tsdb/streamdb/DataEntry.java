@@ -1,12 +1,4 @@
 package tsdb.streamdb;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-
-import org.mapdb.Serializer;
-
 import tsdb.TimeConverter;
 
 public class DataEntry {
@@ -23,7 +15,7 @@ public class DataEntry {
 		return timestamp+" "+TimeConverter.oleMinutesToText((long) timestamp)+" "+value;
 	}
 
-	private static class ChunkSerializerSimple implements Serializer<DataEntry[]>, Serializable {
+	/*private static class ChunkSerializerSimple implements Serializer<DataEntry[]>, Serializable {
 		private static final long serialVersionUID = -5944450269165056735L;
 		@Override
 		public void serialize(DataOutput out, DataEntry[] value)
@@ -135,5 +127,5 @@ public class DataEntry {
 		}		
 	};
 	
-	public static final Serializer<DataEntry[]> CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE = new ChunkSerializerDeltaTimeDeltaIntValue();
+	public static final Serializer<DataEntry[]> CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE = new ChunkSerializerDeltaTimeDeltaIntValue();*/
 }

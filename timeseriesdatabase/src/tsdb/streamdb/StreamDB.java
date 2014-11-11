@@ -1,8 +1,11 @@
 package tsdb.streamdb;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,13 +15,14 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 import static tsdb.util.AssumptionCheck.*;
+import tsdb.TimeConverter;
 import tsdb.util.iterator.TsIterator;
 
 
 public class StreamDB {
-
-	//private static final int CLUSTER_TIMESTAMP_SIZE = 262144;	
 
 	private static final Logger log = LogManager.getLogger();
 
@@ -29,9 +33,11 @@ public class StreamDB {
 	private BTreeMap<String,StationMeta> stationMetaMap;
 
 	public StreamDB(String streamdbPathPrefix) {
+		throwNull(streamdbPathPrefix);
 		String pathName = streamdbPathPrefix;
 
 		db = DBMaker.newFileDB(new File(pathName))
+				//.checksumEnable()
 				.compressionEnable()
 				//.transactionDisable()
 				//.mmapFileEnable() //slow commit and close!!!
@@ -39,7 +45,6 @@ public class StreamDB {
 				.asyncWriteEnable()
 				.asyncWriteFlushDelay(500)
 				.cacheWeakRefEnable()
-				//.cacheSize(100000)
 				.cacheSize(1000000)
 				.closeOnJvmShutdown()
 				.make();
@@ -79,7 +84,6 @@ public class StreamDB {
 	private StationMeta getStationMeta(String stationName, boolean createIfNotExists) {
 		throwNull(stationName);
 		StationMeta stationMeta = stationMetaMap.get(stationName);		
-		BTreeMap<String, SensorMeta> sensorMap;
 		if(stationMeta==null&&createIfNotExists){
 			stationMeta = new StationMeta(stationName);
 			db.checkNameNotExists(stationMeta.db_name_sensor_map);
@@ -105,8 +109,10 @@ public class StreamDB {
 			db.checkNameNotExists(sensorMeta.db_name_sensor_chunk_map);
 			db.createTreeMap(sensorMeta.db_name_sensor_chunk_map)
 			.keySerializer(BTreeKeySerializer.ZERO_OR_POSITIVE_INT)
-			.valueSerializer(DataEntry.CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE)
-			.valuesOutsideNodesEnable()
+			//.valueSerializer(Chunk.DELTA_TIME_DELTA_DELTA_VALUE_INT_QUANTIZED_SERIALIZER)
+			.valueSerializer(Chunk.SNAPPY_DELTA_TIME_DELTA_DELTA_VALUE_INT_QUANTIZED_SERIALIZER)
+			//.valuesOutsideNodesEnable() // !!! does not work: growing database
+			//.
 			.makeOrGet();
 			db.checkNameNotExists(sensorMeta.db_name_sensor_chunkmeta_map);
 			db.createTreeMap(sensorMeta.db_name_sensor_chunkmeta_map)
@@ -136,7 +142,7 @@ public class StreamDB {
 	}
 
 
-	private BTreeMap<Integer, DataEntry[]> getSensorChunkMap(SensorMeta sensorMeta) {
+	private BTreeMap<Integer, Chunk> getSensorChunkMap(SensorMeta sensorMeta) {
 		throwNull(sensorMeta);
 		return db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
 	}
@@ -147,61 +153,85 @@ public class StreamDB {
 	}
 
 
-	public void insertData(String stationName, String sensorName, DataEntry[] data) {
-		
+	public void insertSensorData(String stationName, String sensorName, DataEntry[] data) {	
+		throwNull(stationName);
+		throwNull(sensorName);
+		throwNull(data);
+		if(data.length==0) {
+			log.warn("no data to insert");
+			return;
+		}
 		SensorMeta sensorMeta = getSensorMeta(stationName,sensorName,true);
-		BTreeMap<Integer, DataEntry[]> chunkMap = getSensorChunkMap(sensorMeta);
 		BTreeMap<Integer, ChunkMeta> chunkMetaMap = getSensorChunkMetaMap(sensorMeta);
-		
-		chunkMap.put(data[0].timestamp, data);
-		chunkMetaMap.put(data[0].timestamp, new ChunkMeta(data[0].timestamp,data[data.length-1].timestamp));
-
-		/*
-		BTreeMap<String, SensorMeta> sensorMap = getSensorMap(stationName);
-
-		SensorMeta sensorMeta = sensorMap.get(sensorName);
-		BTreeMap<Integer, DataEntry[]> sensorChunkMap;
-		if(sensorMeta==null) {
-			sensorMeta = new SensorMeta(stationName, sensorName);
-			sensorMap.put(sensorName, sensorMeta);
-			sensorChunkMap = db.createTreeMap(sensorMeta.db_name_sensor_chunk_map)
-					.keySerializer(BTreeKeySerializer.ZERO_OR_POSITIVE_INT)
-					.valueSerializer(DataEntry.CHUNK_SERIALIZER_DELTA_TIME_DELTA_INT_VALUE)
-					.valuesOutsideNodesEnable()
-					.makeOrGet();			
-		} else {
-			sensorChunkMap = db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
+		BTreeMap<Integer, Chunk> chunkMap = getSensorChunkMap(sensorMeta);
+				
+		int timestamp_next_year = Integer.MIN_VALUE;
+		ArrayList<DataEntry> entryList = new ArrayList<DataEntry>(data.length);
+		for(DataEntry entry:data) {
+			if(entry.timestamp<timestamp_next_year) {
+				entryList.add(entry);				
+			} else {
+				if(!entryList.isEmpty()) {
+					insertIntoOneChunk(chunkMetaMap,chunkMap,entryList);
+				}
+				timestamp_next_year = TimeConverter.roundNextYear(entry.timestamp);
+				entryList.clear();
+				entryList.add(entry);
+			}
 		}
-
-
-
-		sensorChunkMap.put(data[0].timestamp, data);
-		sensorMeta.list.add(new ChunkMetaEntry(data[0].timestamp,data[data.length-1].timestamp));
-		sensorMap.put(sensorName, sensorMeta);*/
+		if(!entryList.isEmpty()) {
+			insertIntoOneChunk(chunkMetaMap,chunkMap,entryList);
+		}
 	}
-
-	@Deprecated
-	public DataEntry[] readData(String stationName, String sensorName) {
-		StationMeta stationMeta = stationMetaMap.get(stationName);		
-		if(stationMeta==null){
-			log.error("no station");
-			return new DataEntry[0];
+	
+	private void insertIntoOneChunk(BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> chunkMap, ArrayList<DataEntry> entryList) {
+		int timestamp_chunk = TimeConverter.roundLowerYear(entryList.get(0).timestamp);
+		int timestamp_next_year = TimeConverter.roundNextYear(entryList.get(0).timestamp);
+		if(timestamp_next_year<=entryList.get(entryList.size()-1).timestamp) {
+			throw new RuntimeException("data of more than one chunk");
 		}
-
-		BTreeMap<String, SensorMeta> sensorMap = db.getTreeMap(stationMeta.db_name_sensor_map);		
-		SensorMeta sensorMeta = sensorMap.get(sensorName);
-		if(sensorMeta==null) {
-			log.error("no sensor");
-			return new DataEntry[0];
+		ChunkMeta chunkMeta = chunkMetaMap.get(timestamp_chunk);
+		if(chunkMeta==null) {
+			insertChunk(chunkMetaMap,chunkMap,new Chunk(entryList.toArray(new DataEntry[0])));
+		} else {
+			Chunk oldChunk = chunkMap.get(chunkMeta.firstTimestamp);
+			Iterator<DataEntry> oldIt = Arrays.stream(oldChunk.data).iterator();
+			Iterator<DataEntry> newIt = entryList.iterator();
+			ArrayList<DataEntry> resultList = new ArrayList<DataEntry>();
+			
+			DataEntry old_curr = oldIt.hasNext()?oldIt.next():null;			
+			DataEntry new_curr = newIt.hasNext()?newIt.next():null;
+			
+			while(old_curr!=null||new_curr!=null) {				
+				if(old_curr!=null) {
+					if(new_curr!=null) {
+						if(old_curr.timestamp<new_curr.timestamp) {
+							resultList.add(old_curr);
+							old_curr = oldIt.hasNext()?oldIt.next():null;
+						} else {
+							resultList.add(new_curr);
+							new_curr = newIt.hasNext()?newIt.next():null;
+						}
+					} else {
+						resultList.add(old_curr);
+						old_curr = oldIt.hasNext()?oldIt.next():null;
+					}
+				} else {
+					resultList.add(new_curr);
+					new_curr = newIt.hasNext()?newIt.next():null;
+				}				
+			}
+			
+			insertChunk(chunkMetaMap,chunkMap,new Chunk(resultList.toArray(new DataEntry[0])));
 		}
-
-		BTreeMap<Integer, DataEntry[]> sensorChunkMap = db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
-
-
-		for(DataEntry[] chunk:sensorChunkMap.values()) {
-			return chunk;
-		}
-		return new DataEntry[0];
+	}
+	
+	private void insertChunk(BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> chunkMap, Chunk chunk) {
+		throwNull(chunkMetaMap);
+		throwNull(chunkMap);
+		throwNull(chunk);
+		chunkMap.put(chunk.data[0].timestamp, chunk);
+		chunkMetaMap.put(chunk.data[0].timestamp, new ChunkMeta(chunk.data[0].timestamp,chunk.data[chunk.data.length-1].timestamp,chunk.data.length));
 	}
 
 	public NavigableSet<String> getStationNames() {
@@ -209,6 +239,7 @@ public class StreamDB {
 	}
 
 	public NavigableSet<String> getSensorNames(String stationName) {
+		throwNull(stationName);
 		StationMeta stationMeta = stationMetaMap.get(stationName);		
 		if(stationMeta==null){
 			log.error("no station");
@@ -219,6 +250,8 @@ public class StreamDB {
 	}
 
 	public StreamIterator getSensorIterator(String stationName, String sensorName, int minTimestamp, int maxTimestamp) {
+		throwNull(stationName);
+		throwNull(sensorName);
 		SensorMeta sensorMeta = getSensorMeta(stationName,sensorName,false);
 		if(sensorMeta==null) {
 			return null;
@@ -228,6 +261,7 @@ public class StreamDB {
 	
 	public StreamIterator getSensorIterator(StationMeta stationMeta, String sensorName, int minTimestamp, int maxTimestamp) {
 		throwNull(stationMeta);
+		throwNull(sensorName);
 		SensorMeta sensorMeta = getSensorMeta(stationMeta,sensorName,false);
 		if(sensorMeta==null) {
 			return null;
@@ -237,13 +271,15 @@ public class StreamDB {
 	
 	public StreamIterator getSensorIterator(SensorMeta sensorMeta, int minTimestamp, int maxTimestamp) {
 		throwNull(sensorMeta);
-		BTreeMap<Integer, DataEntry[]> chunkMap = getSensorChunkMap(sensorMeta);
+		BTreeMap<Integer, Chunk> chunkMap = getSensorChunkMap(sensorMeta);
 		BTreeMap<Integer, ChunkMeta> chunkMetaMap = getSensorChunkMetaMap(sensorMeta);
 		return new StreamIterator(sensorMeta, chunkMetaMap, chunkMap, minTimestamp, maxTimestamp);	
 	}
 			
 	
 	public StreamTsIterator getSensorTsIterator(String stationName, String sensorName, int minTimestamp, int maxTimestamp) {
+		throwNull(stationName);
+		throwNull(sensorName);
 		StreamIterator it = getSensorIterator(stationName, sensorName, minTimestamp, maxTimestamp);
 		if(it==null) {
 			return null;
@@ -252,6 +288,8 @@ public class StreamDB {
 	}
 
 	public TsIterator getTsIterator(String stationName, String[] sensorNames, int minTimestamp, int maxTimestamp) {
+		throwNull(stationName);
+		throwNullArray(sensorNames);
 		if(sensorNames==null||sensorNames.length<1) {
 			log.error("no sensors");
 			return null;
@@ -271,36 +309,6 @@ public class StreamDB {
 			}
 		}
 		return new RelationalIterator(streamIteratorList.toArray(new StreamIterator[0]),sensorNames);
-
-		/*BTreeMap<String, SensorMeta> sensorMap = db.getTreeMap(stationMeta.db_name_sensor_map);
-		ArrayList<StreamIterator> streamIteratorList = new ArrayList<StreamIterator>();
-
-		if(sensorNames.length==1) {
-			SensorMeta sensorMeta = sensorMap.get(sensorNames[0]);
-			if(sensorMeta!=null) {
-				BTreeMap<Integer, DataEntry[]> sensorChunkMap = db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
-				StreamIterator it = new StreamIterator(sensorMeta, sensorChunkMap, minTimestamp, maxTimestamp);
-				if(it.hasNext()) {
-					return new StreamTsIterator(it);
-				} else {
-					return null;
-				}
-			} else {
-				return null;
-			}
-		} else {
-			for(String name:sensorNames) {
-				SensorMeta sensorMeta = sensorMap.get(name);
-				if(sensorMeta!=null) {
-					BTreeMap<Integer, DataEntry[]> sensorChunkMap = db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
-					StreamIterator it = new StreamIterator(sensorMeta, sensorChunkMap, minTimestamp, maxTimestamp);
-					if(it.hasNext()) {
-						streamIteratorList.add(it);
-					}
-				}
-			}
-			return new RelationalIterator(streamIteratorList.toArray(new StreamIterator[0]),sensorNames);
-		}*/
 	}
 	
 	public BTreeMap<String, SensorMeta> getSensorMap(StationMeta stationMeta) {
@@ -326,7 +334,8 @@ public class StreamDB {
 		return new int[]{chunkMetaMap.firstKey(),chunkMetaMap.lastEntry().getValue().lastTimestamp};
 	}
 
-	public int[] getTimeInterval(String stationName) {		
+	public int[] getTimeInterval(String stationName) {
+		throwNull(stationName);
 		BTreeMap<String, SensorMeta> sensorMap = getSensorMap(stationName);
 		if(sensorMap==null||sensorMap.isEmpty()) {
 			return null;
@@ -348,5 +357,30 @@ public class StreamDB {
 			return null;
 		}
 		return new int[]{minTimestamp,maxTimestamp};	
+	}
+	
+	public void printStatistics() {
+		for(StationMeta stationMeta:stationMetaMap.values()) {
+			System.out.println(stationMeta.stationName);
+			for(SensorMeta sensorMeta:getSensorMap(stationMeta).values()) {
+				BTreeMap<Integer, ChunkMeta> sensorChunkMetaMap = getSensorChunkMetaMap(sensorMeta);
+				int entryCount = 0;
+				for(ChunkMeta chunkMeta: sensorChunkMetaMap.values()) {
+					entryCount += chunkMeta.entryCount;
+				}
+				 BTreeMap<Integer, Chunk> sensorChunkMap = getSensorChunkMap(sensorMeta);
+				System.out.print(sensorMeta.sensorName+" "+sensorChunkMetaMap.size()+";"+sensorChunkMap.size()+":"+entryCount+"   ");
+			}
+			System.out.println();
+		}
+		
+		for(String key:db.getAll().keySet()) {
+			System.out.println(key);
+		}
+		
+	}
+	
+	public void compact() {
+		db.compact();
 	}
 }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import org.mapdb.Serializer;
 
 public class SensorMeta {
-	
 	private static final String DB_NAME_SENSOR_CHUNK_MAP_PREFIX = "sensorChunkMap/";
 	private static final String DB_NAME_SENSOR_CHUNKMETA_MAP_PREFIX = "sensorChunkMetaMap/";
 	

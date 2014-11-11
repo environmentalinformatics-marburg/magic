@@ -105,6 +105,17 @@ public final class AssumptionCheck {
 			throwText("null");
 		}
 	}
+	
+	public static <T> void throwNullArray(T[] a) {
+		if(a==null) {
+			throwText("null");
+		}
+		for(T e:a) {
+			if(e==null) {
+				throwText("null");
+			}
+		}
+	}
 
 	/**
 	 * Throws an exception if object is null.
