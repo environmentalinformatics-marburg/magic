@@ -17,13 +17,13 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class EmpiricalFiltered extends Continuous.Abstract {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private final Continuous source; //not null
 	private final Continuous compareSource; //not null	
 	private final String stationName; //not null
-	
+
 
 	public EmpiricalFiltered(TsDB tsdb, Continuous source, Continuous compareSource, String stationName) {
 		super(tsdb);
@@ -41,7 +41,12 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 
 	public static Continuous create(TsDB tsdb, Continuous continuous, String plotID) {		
 		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());
-		return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
+		if(compareSource!=null) {
+			return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
+		} else {
+			log.warn("no compare stream");
+			return continuous;
+		}
 	}
 
 	@Override
@@ -73,7 +78,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 		return empirical_iterator;
 	}
 
-	
+
 
 	@Override
 	public Station getSourceStation() {
@@ -89,7 +94,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 	public TsIterator getExactly(long start, long end) {
 		return get(start,end);
 	}
-	
+
 	@Override
 	public boolean isContinuous() {
 		return source.isContinuous();

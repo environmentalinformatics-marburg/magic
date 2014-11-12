@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.catalog.SourceEntry;
+import tsdb.util.AssumptionCheck;
+import tsdb.util.Pair;
 import de.umr.jepc.store.Event;
 
 
@@ -44,116 +49,66 @@ public class TimeSeriesLoaderBE {
 	}
 
 	/**
-	 * specific to BE:
-	 * read files with root folder
+	 * Loads directory with station directories with dat-files (tsm structure)
 	 * @param rootPath
 	 */
-	public void loadDirectory_with_stations_structure_two(Path rootPath) {
-		log.info("loadDirectory_with_stations_structure_two:\t"+rootPath);
-		try {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath);
-			for(Path stationPath:stream) {
-				System.out.println(stationPath+"\t");
-				String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();				
-				if(!tsdb.stationExists(stationID)) {
-					log.error("station does not exist in database:\t"+stationID);
-				} else {				
-					Station station = tsdb.getStation(stationID);
-					Path newPath = Paths.get(stationPath.toString(),"backup");
-					if(Files.exists(newPath)) {
-						loadDirectoryOfOneStation(station,newPath);
-					}
-				}
-			}
-			stream.close();
-		} catch (IOException e) {
-			log.error(e);
-		}		
-	}
-
 	public void loadDirectory_with_stations_flat(Path rootPath) {
 		try {
-			log.info("loadDirectory_with_stations_flat:\t"+rootPath);
-			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath);
-			for(Path stationPath:stream) {
+			log.info("load directory with stations:        "+rootPath);
+			DirectoryStream<Path> pathStream = Files.newDirectoryStream(rootPath);
+			@SuppressWarnings("unchecked")
+			Pair<Station,Path>[] pairs = StreamSupport.stream(pathStream.spliterator(), false)
+			.sorted()
+			.flatMap(stationPath->{
 				try {
 					String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();
-					Station station = tsdb.getStation(stationID);					
-					if(station!=null) {
-						loadDirectoryOfOneStation(station,stationPath);
-					} else {				
-						log.error("station does not exist in database:\t"+stationID);
-
+					Station station = tsdb.getStation(stationID);
+					if(station!=null) {					
+						return Stream.of(new Pair<Station,Path>(station,stationPath));
+					} else {
+						log.error("load directory with stations unknown station:   "+stationID+"    from   "+stationPath);
+						return Stream.empty();
 					}
 				} catch(Exception e) {
-					log.error("loadDirectory_with_stations_flat in directory stations: "+stationPath+"   "+e);
+					log.error(e);
+					return Stream.empty();
 				}
-			}
-			stream.close();
+			})
+			.toArray(Pair[]::new);
+
+			pathStream.close();
+
+			for(Pair<Station, Path> pair:pairs) {
+				loadDirectoryOfOneStation(pair.a,pair.b);
+			}			
 		} catch (Exception e) {
-			log.error("loadDirectory_with_stations_flat in directory root loop: "+rootPath+"   "+e);
+			log.error("load directory with stations: "+rootPath+"   "+e);
 		}		
 	}
 
 	/**
-	 * loads all files of all exploratories
-	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
-	 * @param exploratoriesPath
+	 * Reads all UDBF-Files of one directory and inserts the data entries into database
+	 * @param stationPath
 	 */
-	public void loadDirectoryOfAllExploratories_structure_one(Path exploratoriesPath) {
-		log.info("loadDirectoryOfAllExploratories_structure_one:\t"+exploratoriesPath);
+	public void loadDirectoryOfOneStation(Station station, Path stationPath) {
 		try {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriesPath);
-			for(Path path:stream) {
-				System.out.println(path);
-				loadDirectoryOfOneExploratory_structure_one(path);
+			AssumptionCheck.throwNull(station);
+			AssumptionCheck.throwNull(stationPath);
+			log.info("load station "+station.stationID+"     from  "+stationPath);
+			TreeMap<String,List<Path>> prefixFilenameMap = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
+			collectFlatDirectoryOfOneStation(stationPath,prefixFilenameMap);
+			if(!prefixFilenameMap.isEmpty()) {
+				loadWithPrefixFilenameMapOfOneStation(station, prefixFilenameMap);
+			} else {
+				log.info("no files in "+stationPath);
 			}
-			stream.close();
-		} catch (IOException e) {
-			log.error(e);
+		} catch(Exception e) {
+			log.error("load directory of station:  "+station+"  "+stationPath+"  "+e);
 		}
 	}
-
-	/**
-	 * loads all files of one exploratory HEG, HEW, ...
-	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
-	 * @param exploratoriyPath
-	 */
-	public void loadDirectoryOfOneExploratory_structure_one(Path exploratoriyPath) {
-		log.info("load exploratory:\t"+exploratoriyPath);
-		try {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriyPath);
-			for(Path stationPath:stream) {
-				String stationID = stationPath.subpath(stationPath.getNameCount()-1, stationPath.getNameCount()).toString();
-
-				//*** workaround for directory names ***
-
-				if(stationID.startsWith("HG")) {
-					stationID = "HEG"+stationID.substring(2);
-				} else if(stationID.startsWith("HW")) {
-					stationID = "HEW"+stationID.substring(2);
-				}
-
-				//**********************************
-
-
-				if(!tsdb.stationExists(stationID)) {
-					log.error("station does not exist in database:\t"+stationID);
-				} else {				
-					Station station = tsdb.getStation(stationID);
-					loadDirectoryOfOneStation(station,stationPath);
-				}
-			}
-			stream.close();
-		} catch (IOException e) {
-			log.error(e);
-		}
-	}
-
 
 	private void collectFlatDirectoryOfOneStation(Path directory, TreeMap<String,List<Path>> mapPrefixFilename) {
 		try {
-			log.trace("collectFlatDirectoryOfOneStation: "+directory);
 			DirectoryStream<Path> stream = Files.newDirectoryStream(directory, x -> x.toString().endsWith(".dat"));
 			for(Path pathfilename:stream) {				
 				try {
@@ -166,23 +121,21 @@ public class TimeSeriesLoaderBE {
 					}
 					list.add(pathfilename);
 				} catch(Exception e) {
-					log.error("collectFlatDirectoryOfOneStation file:  "+pathfilename+"  "+e);
+					log.error("collect flatDirectory of one Station file:  "+pathfilename+"  "+e);
 				}
 			}
 			stream.close();
 		} catch (Exception e) {
-			log.error("collectFlatDirectoryOfOneStation root loop:  "+directory+"  "+e);
+			log.error("collect flatDirectory of one Station root loop:  "+directory+"  "+e);
 		}		
 	}
 
-	public void loadWithMapPrefixFilenameOfOneStation(Station station, TreeMap<String, List<Path>> mapPrefixFilename) {
-		log.trace("loadWithMapPrefixFilenameOfOneStation: "+station.stationID);		
-
+	public void loadWithPrefixFilenameMapOfOneStation(Station station, TreeMap<String, List<Path>> prefixFilenameMap) {
 		TreeMap<Long,Event> eventMap = new TreeMap<Long,Event>();
 
-		for(Entry<String, List<Path>> entry:mapPrefixFilename.entrySet()) {
+		for(Entry<String, List<Path>> prefixEntry:prefixFilenameMap.entrySet()) {
 			//String prefix = entry.getKey();
-			List<Path> pathList = entry.getValue();	
+			List<Path> pathList = prefixEntry.getValue();	
 
 			List<List<Event>> eventsList = new ArrayList<List<Event>>();
 
@@ -286,32 +239,13 @@ public class TimeSeriesLoaderBE {
 	}
 
 	/**
-	 * Reads all UDBF-Files of one directory and inserts the data entries into database
-	 * @param stationPath
-	 */
-	public void loadDirectoryOfOneStation(Station station, Path stationPath) {
-		try {
-			log.info("loadDirectoryOfOneStation:\t"+stationPath+"\tplotID:\t"+station.stationID);
-			TreeMap<String,List<Path>> mapPrefixFilename = new TreeMap<String,List<Path>>(); // TreeMap: prefix needs to be ordered!
-			collectFlatDirectoryOfOneStation(stationPath,mapPrefixFilename);
-			if(!mapPrefixFilename.isEmpty()) {
-				loadWithMapPrefixFilenameOfOneStation(station, mapPrefixFilename);
-			} else {
-				log.info("loadDirectoryOfOneStation: no files found in "+stationPath);
-			}
-		} catch(Exception e) {
-			log.error("loadDirectoryOfOneStation:  "+station+"  "+stationPath+"  "+e);
-		}
-	}
-
-	/**
 	 * Reads an UDBF-File and return structured data as UDBFTimeSeries Object.
 	 * @param filename
 	 * @return
 	 * @throws IOException
 	 */
-	public static UDBFTimestampSeries readUDBFTimeSeries(String stationID, Path filename) throws IOException {
-		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+stationID);
+	public static UDBFTimestampSeries readUDBFTimeSeries(String stationID_info, Path filename) throws IOException {
+		log.trace("load UDBF file:\t"+filename+"\tplotID:\t"+stationID_info);
 		UniversalDataBinFile udbFile = new UniversalDataBinFile(filename);
 		if(!udbFile.isEmpty()){
 			UDBFTimestampSeries udbfTimeSeries = udbFile.getUDBFTimeSeries();
@@ -340,6 +274,9 @@ public class TimeSeriesLoaderBE {
 		String[] sensorNames = station.loggerType.sensorNames;
 
 
+		ArrayList<String> infoListNoMapping = new ArrayList<String>(1);
+		ArrayList<String> infoListNoSchemaMapping = new ArrayList<String>(1);
+
 		//creates mapping eventPos   (  udbf pos -> event pos )
 		for(int sensorIndex=0; sensorIndex<udbfTimeSeries.sensorHeaders.length; sensorIndex++) {
 			eventPos[sensorIndex] = -1;
@@ -358,12 +295,22 @@ public class TimeSeriesLoaderBE {
 				}
 				if(eventPos[sensorIndex] == -1) {
 					if(sensorName==null) {
-						log.info("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
+						infoListNoMapping.add(rawSensorName);
+						//log.info("sensor name not in translation map: "+rawSensorName+" -> "+sensorName+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
 					} else {
-						log.info("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
+						infoListNoSchemaMapping.add(rawSensorName+" -> "+sensorName);
+						//log.info("sensor name not in schema: "+rawSensorName+" -> "+sensorName+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
 					}
 				}
 			}
+		}
+
+		if(!infoListNoMapping.isEmpty()) {
+			log.info("sensor names not in translation map: "+infoListNoMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
+		}
+
+		if(!infoListNoSchemaMapping.isEmpty()) {
+			log.info("sensor names not in schema: "+infoListNoSchemaMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
 		}
 
 		//mapping event index position -> sensor index position 
@@ -417,4 +364,89 @@ public class TimeSeriesLoaderBE {
 		return resultList;
 	}	
 
+	/**
+	 * specific to BE:
+	 * read files with root folder
+	 * @param rootPath
+	 */
+	@Deprecated
+	public void loadDirectory_with_stations_structure_two(Path rootPath) {
+		log.info("loadDirectory_with_stations_structure_two:\t"+rootPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(rootPath);
+			for(Path stationPath:stream) {
+				System.out.println(stationPath+"\t");
+				String stationID = stationPath.getName(stationPath.getNameCount()-1).toString();				
+				if(!tsdb.stationExists(stationID)) {
+					log.error("station does not exist in database:\t"+stationID);
+				} else {				
+					Station station = tsdb.getStation(stationID);
+					Path newPath = Paths.get(stationPath.toString(),"backup");
+					if(Files.exists(newPath)) {
+						loadDirectoryOfOneStation(station,newPath);
+					}
+				}
+			}
+			stream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}		
+	}
+
+	/**
+	 * loads all files of all exploratories
+	 * directory structure example: [exploratoriesPath]/HEG/HG01/20080130_^b0_0000.dat ... 
+	 * @param exploratoriesPath
+	 */
+	@Deprecated
+	public void loadDirectoryOfAllExploratories_structure_one(Path exploratoriesPath) {
+		log.info("loadDirectoryOfAllExploratories_structure_one:\t"+exploratoriesPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriesPath);
+			for(Path path:stream) {
+				System.out.println(path);
+				loadDirectoryOfOneExploratory_structure_one(path);
+			}
+			stream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}
+	}
+
+	/**
+	 * loads all files of one exploratory HEG, HEW, ...
+	 * directory structure example: [exploratoriyPath]/HG01/20080130_^b0_0000.dat ... 
+	 * @param exploratoriyPath
+	 */
+	@Deprecated
+	public void loadDirectoryOfOneExploratory_structure_one(Path exploratoriyPath) {
+		log.info("load exploratory:\t"+exploratoriyPath);
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(exploratoriyPath);
+			for(Path stationPath:stream) {
+				String stationID = stationPath.subpath(stationPath.getNameCount()-1, stationPath.getNameCount()).toString();
+
+				//*** workaround for directory names ***
+
+				if(stationID.startsWith("HG")) {
+					stationID = "HEG"+stationID.substring(2);
+				} else if(stationID.startsWith("HW")) {
+					stationID = "HEW"+stationID.substring(2);
+				}
+
+				//**********************************
+
+
+				if(!tsdb.stationExists(stationID)) {
+					log.error("station does not exist in database:\t"+stationID);
+				} else {				
+					Station station = tsdb.getStation(stationID);
+					loadDirectoryOfOneStation(station,stationPath);
+				}
+			}
+			stream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}
+	}
 }

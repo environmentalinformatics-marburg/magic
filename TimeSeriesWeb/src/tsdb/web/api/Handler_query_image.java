@@ -180,6 +180,7 @@ public class Handler_query_image extends MethodHandler {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}

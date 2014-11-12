@@ -7,6 +7,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +38,7 @@ public class TimeSeriesLoaderKiLi {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 	}
-	
+
 	/**
 	 * load load directory with directories of files: structure of tsm
 	 * @param root
@@ -60,7 +61,7 @@ public class TimeSeriesLoaderKiLi {
 		}
 		loadWithAscCollectorMap(ascCollectorMap);
 	}
-	
+
 	/**
 	 * Collects all kili-Files from one directory and adds them to ascCollectorMap.
 	 * @param kiliPath
@@ -89,36 +90,51 @@ public class TimeSeriesLoaderKiLi {
 			e.printStackTrace();
 		}
 	}
-	
-	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {	
-		for(Path ascPath:ascCollectorMap.values()) {
-			System.out.println("asc file: "+ascPath);
+
+	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
+		String currentInfoPrefix = "";
+		for(Entry<String, Path> ascMapEntry:ascCollectorMap.entrySet()) {			
+			Path ascPath = ascMapEntry.getValue();			
+
+			try {
+				//System.out.println("asc file: "+ascPath);
+				String infoKeyPrefix = ascMapEntry.getKey();
+				if(infoKeyPrefix.length()>18) {
+					infoKeyPrefix = infoKeyPrefix.substring(0, 18);
+				}
+				if(!currentInfoPrefix.equals(infoKeyPrefix)) {
+					log.info("load files of   "+infoKeyPrefix);
+					currentInfoPrefix = infoKeyPrefix;
+				}
+			} catch(Exception e) {
+				log.warn(e);
+			}
 
 			try{
-				ASCTimeSeries csvtimeSeries = new ASCTimeSeries(ascPath);
+				ASCTimeSeries asctimeSeries = new ASCTimeSeries(ascPath);
 
 				TimestampSeries timestampSeries = null;
 
-				if(csvtimeSeries.isASCVariant) {
-					timestampSeries = csvtimeSeries.readEntriesASCVariant();
+				if(asctimeSeries.isASCVariant) {
+					timestampSeries = asctimeSeries.readEntriesASCVariant();
 				} else {
-					timestampSeries = csvtimeSeries.readEntries();
+					timestampSeries = asctimeSeries.readEntries();
 				}				
 
 
-				long intervalStart = csvtimeSeries.timestampStart;
-				long intervalEnd = csvtimeSeries.timestampEnd;
+				long intervalStart = asctimeSeries.timestampStart;
+				long intervalEnd = asctimeSeries.timestampEnd;
 
 				if(timestampSeries!=null) {
 
 					if(!timestampSeries.entryList.isEmpty()) {
 
-						Station station = tsdb.getStation(csvtimeSeries.serialnumber);
+						Station station = tsdb.getStation(asctimeSeries.serialnumber);
 						if(station!=null) {									
 
-							String[] translatedInputSchema = new String[csvtimeSeries.parameterNames.length];
-							for(int i=0;i<csvtimeSeries.parameterNames.length;i++) {
-								translatedInputSchema[i] = station.translateInputSensorName(csvtimeSeries.parameterNames[i], false);
+							String[] translatedInputSchema = new String[asctimeSeries.parameterNames.length];
+							for(int i=0;i<asctimeSeries.parameterNames.length;i++) {
+								translatedInputSchema[i] = station.translateInputSensorName(asctimeSeries.parameterNames[i], false);
 							}
 
 							//Map<String, Integer> schemaMap = Util.stringArrayToMap(translatedInputSchema,true);
@@ -127,27 +143,27 @@ public class TimeSeriesLoaderKiLi {
 
 							if(properties!=null) {
 
-								insertOneFile(csvtimeSeries,station,properties,translatedInputSchema,timestampSeries);
+								insertOneFile(asctimeSeries,station,properties,translatedInputSchema,timestampSeries);
 
 							} else {
-								log.warn("no properties found in "+csvtimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
+								log.warn("no properties found in "+asctimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
 							}									
 						} else {
-							log.error("station not found: "+csvtimeSeries.serialnumber+" in "+ascPath);
+							log.error("station not found: "+asctimeSeries.serialnumber+" in "+ascPath);
 						}
 					} else {
-						log.warn("timestampseries is empty");
+						log.warn("timestampseries is empty: "+asctimeSeries.filename);
 					}
 				} else {
-					log.error("no timestampseries: "+csvtimeSeries.filename);
+					log.error("no timestampseries: "+asctimeSeries.filename);
 				}
-				csvtimeSeries.close();
+				asctimeSeries.close();
 			} catch(Exception e) {
 				log.error(e+" in "+ascPath);
 			}
 		}		
 	}
-	
+
 	/**
 	 * inserts data of one files to database. Schema is translated to database schema
 	 * @param csvtimeSeries
@@ -176,8 +192,8 @@ public class TimeSeriesLoaderKiLi {
 		}		
 	}
 
-	
-	
+
+
 	/**
 	 * specific to KiLi:
 	 * read files contained in subfolders in KiLi folder tree

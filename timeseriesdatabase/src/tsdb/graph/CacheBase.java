@@ -4,6 +4,9 @@ import static tsdb.util.AssumptionCheck.throwNulls;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.iterator.ProjectionIterator;
@@ -16,6 +19,8 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class CacheBase extends Base.Abstract {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private final String streamName; //not null
 	private final String[] schema; //not null
@@ -29,6 +34,10 @@ public class CacheBase extends Base.Abstract {
 
 	public static CacheBase create(TsDB tsdb, String streamName, String[] schema) {
 		TsSchema tsSchema = tsdb.cacheStorage.getSchema(streamName);
+		if(tsSchema==null) {
+			log.warn("no cache stream: "+streamName);
+			return null;
+		}
 		if(schema==null) {
 			schema = tsSchema.names;
 		}		

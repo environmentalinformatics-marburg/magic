@@ -9,7 +9,7 @@ import tsdb.TimeConverter;
  * @author woellauer
  *
  */
-class UDBFTimestampSeries {
+public class UDBFTimestampSeries {
 	
 	public final Path filename;
 	public final SensorHeader[] sensorHeaders;

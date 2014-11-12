@@ -32,7 +32,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public void clear() {
-		//TODO		
+		streamdb.clear();		
 	}
 
 	@Override
