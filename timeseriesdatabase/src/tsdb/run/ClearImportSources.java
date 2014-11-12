@@ -9,8 +9,9 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.loader.TimeSeriesLoaderBE;
-import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.loader.be.TimeSeriesLoaderBE;
+import tsdb.loader.ki.TimeSerieaLoaderKiLi_manual_tfi;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 
 public class ClearImportSources {
 	
@@ -20,19 +21,20 @@ public class ClearImportSources {
 		log.info("begin import");
 		
 		log.info("open database");
-		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
+		TsDB tsdb = TsDBFactory.createDefault();
 		log.info("clear database");
-		timeSeriesDatabase.clear();
-		timeSeriesDatabase.close();
+		tsdb.clear();
+		tsdb.close();
 		
 		log.info("reopen database");
-		timeSeriesDatabase = TsDBFactory.createDefault();
-		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
+		tsdb = TsDBFactory.createDefault();
+		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
-		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase, minTimestamp);
+		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
+		TimeSerieaLoaderKiLi_manual_tfi TimeSerieaLoaderKiLi_manual_tfi = new TimeSerieaLoaderKiLi_manual_tfi(tsdb);
 		
 		log.info("register streams");
-		timeSeriesDatabase.registerStreams();
+		tsdb.registerStreams();
 		
 		System.gc();
 		log.info("import BE from tsm");
@@ -46,10 +48,10 @@ public class ClearImportSources {
 		System.gc();
 		log.info("import KiLi from structure_kili_tfi");
 		log.info("from "+TsDBFactory.SOURCE_KILI_TFI_PATH);
-		timeseriesloaderKiLi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KILI_TFI_PATH));
+		TimeSerieaLoaderKiLi_manual_tfi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KILI_TFI_PATH));
 		System.gc();
 
-		timeSeriesDatabase.close();
+		tsdb.close();
 		log.info("end import");
 		System.exit(0);
 	}

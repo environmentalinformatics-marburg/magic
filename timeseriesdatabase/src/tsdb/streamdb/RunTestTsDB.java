@@ -1,10 +1,9 @@
 package tsdb.streamdb;
-import java.util.ArrayList;
 import java.util.Iterator;
 
-import de.umr.jepc.store.Event;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
+import de.umr.jepc.store.Event;
 
 
 public class RunTestTsDB {

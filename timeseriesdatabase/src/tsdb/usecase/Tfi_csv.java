@@ -15,7 +15,8 @@ import tsdb.graph.CSVSource;
 import tsdb.graph.Continuous;
 import tsdb.graph.Node;
 import tsdb.graph.PeakSmoothed;
-import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.loader.ki.TimeSerieaLoaderKiLi_manual_tfi;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.raw.TsEntry;
 import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.iterator.TsIterator;
@@ -72,9 +73,9 @@ public class Tfi_csv {
 		//continuous.getExactly(queryStart, queryEnd).writeCSV("c:/timeseriesdatabase_output/Manual_B_new.csv");
 		//Aggregated.create(tsdb, continuous, AggregationInterval.YEAR).get(null, null).writeCSV("c:/timeseriesdatabase_output/Manual_B__new_year.csv");
 		
-		TimeSeriesLoaderKiLi timeSeriesLoaderKiLi = new TimeSeriesLoaderKiLi(tsdb);
+		TimeSerieaLoaderKiLi_manual_tfi timeSerieaLoaderKiLi_manual_tfi = new TimeSerieaLoaderKiLi_manual_tfi(tsdb);
 		Path kiliTfiPath = Paths.get("c:/timeseriesdatabase_data_source_structure_kili_tfi");
-		timeSeriesLoaderKiLi.loadOneDirectory_structure_kili_tfi(kiliTfiPath);
+		timeSerieaLoaderKiLi_manual_tfi.loadOneDirectory_structure_kili_tfi(kiliTfiPath);
 		
 
 	}

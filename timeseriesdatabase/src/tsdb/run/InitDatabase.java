@@ -9,8 +9,9 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.loader.TimeSeriesLoaderBE;
-import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.loader.be.TimeSeriesLoaderBE;
+import tsdb.loader.ki.TimeSerieaLoaderKiLi_manual_tfi;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 
 /**
  * UseCaseInitDatabase loads source data into an emptied database.
@@ -25,8 +26,8 @@ public class InitDatabase {
 		System.out.println("begin...");
 		
 		// *** workaround for not created database files ... 
-		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
-		timeSeriesDatabase.clear();
+		TsDB tsdb = TsDBFactory.createDefault();
+		tsdb.clear();
 		/*try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -35,11 +36,11 @@ public class InitDatabase {
 		System.gc();*/
 		// *** ... workaround
 		
-		timeSeriesDatabase = TsDBFactory.createDefault();
-		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(timeSeriesDatabase);
+		tsdb = TsDBFactory.createDefault();
+		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
-		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase, minTimestamp);
-		
+		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
+		TimeSerieaLoaderKiLi_manual_tfi timeSerieaLoaderKiLi_manual_tfi = new TimeSerieaLoaderKiLi_manual_tfi(tsdb);
 		
 		
 		if(args.length!=2) {
@@ -50,7 +51,7 @@ public class InitDatabase {
 		}
 		System.out.println("load: "+TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH+"\t\t"+TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH);
 		
-		timeSeriesDatabase.registerStreams();
+		tsdb.registerStreams();
 		
 		
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
@@ -65,7 +66,7 @@ public class InitDatabase {
 		System.gc();
 		timeseriesloaderKiLi.loadDirectoryOfAllExploratories_structure_kili(Paths.get(TsDBFactory.SOURCE_KILI_PATH));
 		System.gc();
-		timeseriesloaderKiLi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KILI_TFI_PATH));
+		timeSerieaLoaderKiLi_manual_tfi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KILI_TFI_PATH));
 		timeseriesloaderKiLi = null;
 		System.gc();
 		
@@ -73,7 +74,7 @@ public class InitDatabase {
 		
 
 
-		timeSeriesDatabase.close();
+		tsdb.close();
 		System.out.println("...end");
 		System.exit(0);
 	}

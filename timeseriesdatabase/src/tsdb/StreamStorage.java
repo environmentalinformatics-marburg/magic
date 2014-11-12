@@ -38,8 +38,9 @@ public interface StreamStorage {
 	 * @param eventList
 	 * @param first
 	 * @param last
+	 * @param sensorNames 
 	 */
-	public void insertEventList(String streamName, List<Event> eventList, long first, long last);
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last, String[] sensorNames);
 
 	/**
 	 * Basic method for all queries

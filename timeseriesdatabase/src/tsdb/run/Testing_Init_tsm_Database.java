@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.loader.TimeSeriesLoaderBE;
-import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.loader.be.TimeSeriesLoaderBE;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 
 public class Testing_Init_tsm_Database {
 

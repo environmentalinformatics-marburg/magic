@@ -96,7 +96,7 @@ public class StreamStorageEventStore implements StreamStorage {
 	}
 
 	@Override
-	public void insertEventList(String streamName, List<Event> eventList, long first, long last) {
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last, String[] sensorNames) {
 		Iterator<Event> it = queryRawEvents(streamName, first, last);
 		Map<Long,Event> storageMap = null;
 		if(it!=null) {

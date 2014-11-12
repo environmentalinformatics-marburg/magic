@@ -86,7 +86,6 @@ public class ChunkMeta {
 		@Override
 		public ChunkMeta next() {
 			ChunkMeta r = current;
-			System.out.println("next chunk: "+current);
 			if(it.hasNext()) {
 				current = it.next();
 				if(maxTimestamp<current.firstTimestamp) {

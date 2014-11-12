@@ -1,11 +1,12 @@
 package tsdb.streamdb;
+import static tsdb.util.AssumptionCheck.throwNull;
+import static tsdb.util.AssumptionCheck.throwNullArray;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.Spliterator;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,9 +16,6 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import static tsdb.util.AssumptionCheck.*;
 import tsdb.TimeConverter;
 import tsdb.util.iterator.TsIterator;
 

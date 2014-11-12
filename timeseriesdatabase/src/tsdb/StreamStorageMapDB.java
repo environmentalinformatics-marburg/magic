@@ -143,7 +143,7 @@ public class StreamStorageMapDB implements StreamStorage{
 	}
 	
 	@Override
-	public void insertEventList(String streamName, List<Event> eventList, long first, long last) {
+	public void insertEventList(String streamName, List<Event> eventList, long first, long last, String[] sensorNames) {
 		String dbName = DB_NAME_STREAM_PREFIX+streamName;
 		Attribute[] attributes = streamMetadataMap.get(dbName);
 		if(attributes!=null) {

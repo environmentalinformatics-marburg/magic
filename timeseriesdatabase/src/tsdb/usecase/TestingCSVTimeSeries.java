@@ -3,7 +3,7 @@ package tsdb.usecase;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import tsdb.loader.ASCTimeSeries;
+import tsdb.loader.ki.ASCTimeSeries;
 import tsdb.raw.TimestampSeries;
 
 public class TestingCSVTimeSeries {

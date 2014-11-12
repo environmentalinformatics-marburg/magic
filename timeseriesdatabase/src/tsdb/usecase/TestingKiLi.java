@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
 import tsdb.TsDB;
-import tsdb.loader.TimeSeriesLoaderKiLi;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.util.Util;
 
 public class TestingKiLi {

@@ -1,5 +1,6 @@
 package tsdb;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -7,6 +8,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamDB;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -14,23 +16,23 @@ import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
 
 public class StreamStorageStreamDB implements StreamStorage {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private StreamDB streamdb;
-	
+
 	public StreamStorageStreamDB(String streamdbPathPrefix) {
 		this.streamdb = new StreamDB(streamdbPathPrefix);
 	}
 
 	@Override
 	public void registerStream(String streamName, Attribute[] attributes) {
-		// TODO Auto-generated method stub		
+		//no need to register streams	
 	}
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub		
+		//TODO		
 	}
 
 	@Override
@@ -40,18 +42,41 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public void insertData(String streamName, TreeMap<Long, Event> eventMap, String[] sensorNames) {
-		// TODO Auto-generated method stub
-		
+		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventMap.size());
+		for(int i=0;i<sensorNames.length;i++) {
+			sensorData.clear();
+			for(Event event:eventMap.values()) {
+				float value = (float) event.getPayload()[i];
+				if(!Float.isNaN(value)) {
+					sensorData.add(new DataEntry((int) event.getTimestamp(),value));
+				}
+			}
+			if(!sensorData.isEmpty()) {
+				streamdb.insertSensorData(streamName, sensorNames[i], sensorData.toArray(new DataEntry[0]));
+			}
+		}
 	}
 
 	@Override
-	public void insertEventList(String streamName, List<Event> eventList,long first, long last) {
-		// TODO Auto-generated method stub		
+	public void insertEventList(String streamName, List<Event> eventList,long first, long last, String[] sensorNames) {
+		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventList.size());
+		for(int i=0;i<sensorNames.length;i++) {
+			sensorData.clear();
+			for(Event event:eventList) {
+				float value = (float) event.getPayload()[i];
+				if(!Float.isNaN(value)) {
+					sensorData.add(new DataEntry((int) event.getTimestamp(),value));
+				}
+			}
+			if(!sensorData.isEmpty()) {
+				streamdb.insertSensorData(streamName, sensorNames[i], sensorData.toArray(new DataEntry[0]));
+			}
+		}	
 	}
 
 	@Override
 	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
-		// TODO Auto-generated method stub
+		//TODO
 		return null;
 	}
 
@@ -75,7 +100,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public void getInfo() {
-		// TODO Auto-generated method stub		
+		//TODO		
 	}
 
 	@Override

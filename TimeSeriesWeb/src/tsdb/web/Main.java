@@ -48,7 +48,7 @@ public class Main {
 			for(int i=0;i<indexedColors.length;i++) {
 				int c = rainbow.getRGB(i, 0);
 				Color color = new Color(c);
-				System.out.println(c+"  "+color);
+				//System.out.println(c+"  "+color);
 				indexedColors[i] = color;
 			}
 			TimeSeriesPainterGraphics2D.setIndexedColors(indexedColors);

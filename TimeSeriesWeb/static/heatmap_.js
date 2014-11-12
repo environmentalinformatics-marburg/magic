@@ -145,9 +145,10 @@ var addDiagram = function(plotName, sensorName) {
 		testingImage = image;
 		if(need_to_scale) {
 			need_to_scale = false;
-			image.width = image.width*3;
-			//image.height = image.height*3;
-			image.height = 24*3;
+			image.width = image.width*4;			
+			image.height = 24*4;
+			//image.width = image.width*3;			
+			//image.height = 24*3;//image.height = image.height*3;
 		}
 	}
 	image.onerror = function() {	
