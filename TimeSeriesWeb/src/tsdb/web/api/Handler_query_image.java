@@ -124,7 +124,19 @@ public class Handler_query_image extends MethodHandler {
 		}
 
 		try {
-			TimestampSeries ts = tsdb.plot(null, plot, new String[]{sensorName}, agg, dataQuality, isInterpolated, startTime, endTime);
+			String[] sensorNames;
+			if(sensorName.equals("WD")) {
+				sensorNames = new String[]{sensorName,"WV"};
+			} else {
+				sensorNames = new String[]{sensorName};
+			}
+			String[] validSchema =  tsdb.getValidSchema(plot, sensorNames);
+			if(sensorNames.length!=validSchema.length) {
+				log.info("sensorName not in plot: "+plot+"  "+sensorName);
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);				
+				return;
+			}
+			TimestampSeries ts = tsdb.plot(null, plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				

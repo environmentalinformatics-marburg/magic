@@ -7,6 +7,10 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -292,6 +296,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			OutputStream outputstream = response.getOutputStream();
 			Region region = model.region;
 			String[] sensorNames = model.sensors;
+			if(Arrays.stream(sensorNames).anyMatch(name->name.equals("WD")) && Arrays.stream(sensorNames).noneMatch(name->name.equals("WV"))) {
+				sensorNames = Stream.concat(Arrays.stream(sensorNames), Stream.of("WV")).toArray(String[]::new);
+			}
 			String[] plotIDs = model.plots;
 			AggregationInterval aggregationInterval = model.aggregationInterval;
 			DataQuality dataQuality = model.quality;
