@@ -27,8 +27,8 @@ class Loader_wxt extends AbstractLoader {
 	
 	private int pos_T_CNR = -1;	
 
-	public Loader_wxt(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_wxt(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

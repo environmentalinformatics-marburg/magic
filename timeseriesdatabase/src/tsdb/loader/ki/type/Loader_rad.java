@@ -20,8 +20,8 @@ class Loader_rad extends AbstractLoader {
 
 	private ProcessingType[] processingTypes = null;
 
-	public Loader_rad(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_rad(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

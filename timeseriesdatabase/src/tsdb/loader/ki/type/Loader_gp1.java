@@ -22,8 +22,8 @@ class Loader_gp1 extends AbstractLoader {
 	private float calib_coefficient_wd = Float.NaN;
 	private float calib_coefficient_wv = Float.NaN;
 
-	public Loader_gp1(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_gp1(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

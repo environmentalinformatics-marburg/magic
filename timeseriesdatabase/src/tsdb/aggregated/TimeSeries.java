@@ -185,12 +185,12 @@ public class TimeSeries implements TsIterable {
 			}
 		}
 
-		float[][] resultData = new float[timestampSeries.parameterNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
+		float[][] resultData = new float[timestampSeries.sensorNames.length][(int) ((endTimestamp-startTimestamp)/timeStep)+1];
 		int dataIndex=0;
 		for(long timestamp=startTimestamp;timestamp<=endTimestamp;timestamp+=timeStep) {
 			if(nextEntry!=null&&nextEntry.timestamp==timestamp) {
 				// insert row
-				for(int columnIndex=0;columnIndex<timestampSeries.parameterNames.length;columnIndex++) {
+				for(int columnIndex=0;columnIndex<timestampSeries.sensorNames.length;columnIndex++) {
 					resultData[columnIndex][dataIndex] = nextEntry.data[columnIndex];
 					if(it.hasNext()) {
 						nextEntry = it.next();
@@ -205,14 +205,14 @@ public class TimeSeries implements TsIterable {
 				log.error("error: nextEntry.timestamp "+nextEntry.timestamp+"\t timestamp"+timestamp);
 			} else {
 				// insert NaN
-				for(int columnIndex=0;columnIndex<timestampSeries.parameterNames.length;columnIndex++) {
+				for(int columnIndex=0;columnIndex<timestampSeries.sensorNames.length;columnIndex++) {
 					resultData[columnIndex][dataIndex] = Float.NaN;					
 				}
 			}
 			dataIndex++;
 		}
 
-		return new TimeSeries(null,timestampSeries.parameterNames, startTimestamp, timeStep, resultData, null, null);
+		return new TimeSeries(null,timestampSeries.sensorNames, startTimestamp, timeStep, resultData, null, null);
 	}
 
 	/**

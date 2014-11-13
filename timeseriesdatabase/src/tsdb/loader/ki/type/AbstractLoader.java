@@ -19,15 +19,16 @@ public abstract class AbstractLoader {
 
 	protected final String[] inputSchema;
 	protected final StationProperties properties;
-	protected final ASCTimeSeries csvtimeSeries;
+	//protected final ASCTimeSeries csvtimeSeries;
+	protected final String sourceInfo;
 	
 	protected String[] resultSchema = null;
 	protected int[] sourcePos;
 
-	public AbstractLoader(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
+	public AbstractLoader(String[] inputSchema, StationProperties properties, String sourceInfo) {
 		this.inputSchema = inputSchema;
 		this.properties = properties;
-		this.csvtimeSeries = csvtimeSeries;
+		this.sourceInfo = sourceInfo;
 	}
 
 	protected abstract void createProcessingTypes();
@@ -52,7 +53,7 @@ public abstract class AbstractLoader {
 					log.warn("sensor name not in target schema "+sensorName+" "+getClass().toGenericString());
 				}
 			} else {
-				log.warn("no sensor translation: "+inputSchema[sourceIndex]+" in "+csvtimeSeries.filename);
+				log.warn("no sensor translation: "+inputSchema[sourceIndex]+" in "+sourceInfo);
 			}
 
 		}

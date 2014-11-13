@@ -309,9 +309,9 @@ public class ZipExport {
 	private void writeTimeseries(TimestampSeries timeseries, String plotID, PrintStream csvOut) {		
 		System.out.println(timeseries);
 
-		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.parameterNames, false, false);
+		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.sensorNames, false, false);
 		System.out.println("sensorNames "+Arrays.asList(sensorNames));
-		System.out.println("schema "+Arrays.asList(timeseries.parameterNames));							
+		System.out.println("schema "+Arrays.asList(timeseries.sensorNames));							
 		System.out.println(Util.arrayToString(pos));		
 
 

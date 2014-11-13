@@ -20,8 +20,8 @@ class Loader_rug extends AbstractLoader {
 
 	private ProcessingType[] processingTypes = null;
 
-	public Loader_rug(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_rug(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

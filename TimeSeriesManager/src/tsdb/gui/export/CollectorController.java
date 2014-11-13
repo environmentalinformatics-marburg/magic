@@ -200,7 +200,7 @@ public class CollectorController {
 							stringbuilder.append("timestamp");
 							stringbuilder.append(',');
 							stringbuilder.append("datetime");
-							for(String name:timeseries.parameterNames) {
+							for(String name:timeseries.sensorNames) {
 								stringbuilder.append(',');
 								stringbuilder.append(name);
 							}

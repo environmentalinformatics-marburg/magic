@@ -22,8 +22,8 @@ class Loader_pu2 extends AbstractLoader {
 	private float calib_coefficient_pu2_1 = Float.NaN;
 	private float calib_coefficient_pu2_2 = Float.NaN;
 
-	public Loader_pu2(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_pu2(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

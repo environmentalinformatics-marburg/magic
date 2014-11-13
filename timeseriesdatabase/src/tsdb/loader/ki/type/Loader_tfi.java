@@ -26,8 +26,8 @@ class Loader_tfi extends AbstractLoader {
 	private float calib_coefficient_fog = Float.NaN;
 
 
-	public Loader_tfi(String[] inputSchema, StationProperties properties, ASCTimeSeries csvtimeSeries) {
-		super(inputSchema,properties, csvtimeSeries);
+	public Loader_tfi(String[] inputSchema, StationProperties properties, String sourceInfo) {
+		super(inputSchema,properties, sourceInfo);
 	}
 
 	@Override

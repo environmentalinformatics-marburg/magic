@@ -26,15 +26,24 @@ public class TimestampSeries implements TsIterable, Serializable {
 	
 	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TsEntry>(0),null);
 	
-	public String[] parameterNames;	
+	public String[] sensorNames;	
 	public List<TsEntry> entryList;
 	public Integer timeinterval; // null if raw data
+	public String name;
 	
 	
-	public TimestampSeries(String[] parameterNames, List<TsEntry> entryList,Integer timeinterval) {
-		this.parameterNames = parameterNames;
+	public TimestampSeries(String[] sensorNames, List<TsEntry> entryList,Integer timeinterval) {
+		this.sensorNames = sensorNames;
 		this.entryList = entryList;
 		this.timeinterval = timeinterval;
+		this.name = null;
+	}
+	
+	public TimestampSeries(String name, String[] sensorNames, List<TsEntry> entryList) {
+		this.sensorNames = sensorNames;
+		this.entryList = entryList;
+		this.timeinterval = null;
+		this.name = name;
 	}
 	
 	public static TimestampSeries create(TsIterator input_iterator) {
@@ -56,8 +65,8 @@ public class TimestampSeries implements TsIterable, Serializable {
 		int n = entryList.size()>=10?10:entryList.size();
 		String s="";
 		s+="("+entryList.size()+")\t\t";
-		for(int i=0;i<parameterNames.length;i++) {
-			s+=parameterNames[i]+"\t";
+		for(int i=0;i<sensorNames.length;i++) {
+			s+=sensorNames[i]+"\t";
 		}
 		s+='\n';
 		for(int i=0;i<n;i++) {			
@@ -74,19 +83,19 @@ public class TimestampSeries implements TsIterable, Serializable {
 	}
 	
 	public void removeEmptyColumns() {
-		int[] columnEntryCounter = new int[parameterNames.length];
-		for(int i=0;i<parameterNames.length;i++) {
+		int[] columnEntryCounter = new int[sensorNames.length];
+		for(int i=0;i<sensorNames.length;i++) {
 			columnEntryCounter[i] = 0;
 		}
 		for(TsEntry entry:entryList) {
-			for(int i=0;i<parameterNames.length;i++) {
+			for(int i=0;i<sensorNames.length;i++) {
 				if(!Float.isNaN(entry.data[i])) {
 					columnEntryCounter[i]++;
 				}
 			}
 		}
 		List<Integer> removColumnsList = new ArrayList<Integer>();
-		for(int i=0;i<parameterNames.length;i++) {
+		for(int i=0;i<sensorNames.length;i++) {
 			if(columnEntryCounter[i] == 0) {
 				removColumnsList.add(i);
 			}
@@ -94,10 +103,10 @@ public class TimestampSeries implements TsIterable, Serializable {
 		if(removColumnsList.size()==0) {
 			return; //not columns to remove;
 		}
-		int newSize = parameterNames.length-removColumnsList.size();
+		int newSize = sensorNames.length-removColumnsList.size();
 		int[] newPos = new int[newSize];
 		int currPos = 0;
-		for(int i=0;i<parameterNames.length;i++) {			
+		for(int i=0;i<sensorNames.length;i++) {			
 			if(columnEntryCounter[i] != 0) {
 				newPos[currPos] = i;
 				currPos++;
@@ -105,7 +114,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 		}
 		String[] newParameterNames = new String[newSize];
 		for(int i=0;i<newSize;i++) {
-			newParameterNames[i] = parameterNames[newPos[i]];
+			newParameterNames[i] = sensorNames[newPos[i]];
 		}
 		List<TsEntry> newEntryList = new ArrayList<TsEntry>(entryList.size());
 		for(TsEntry entry:entryList) {
@@ -115,7 +124,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 			}
 			newEntryList.add(new TsEntry(entry.timestamp,newData));
 		}
-		parameterNames = newParameterNames;
+		sensorNames = newParameterNames;
 		entryList = newEntryList;
 	}
 	
@@ -195,12 +204,12 @@ public class TimestampSeries implements TsIterable, Serializable {
 				resultList.add(entry);
 			}
 		}
-		return new TimestampSeries(parameterNames,resultList,timeinterval);
+		return new TimestampSeries(sensorNames,resultList,timeinterval);
 	}
 	
 	public List<Long> getNaNList(String parameterName) {
 		
-		int columnID = Util.stringArrayToMap(parameterNames).get(parameterName);
+		int columnID = Util.stringArrayToMap(sensorNames).get(parameterName);
 
 		List<Long> gapList = new ArrayList<Long>();
 		long currentTimeStamp = -1;
@@ -227,7 +236,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 
 	@Override
 	public TsIterator tsIterator() {
-		return new TimeSeriesEntryIterator(entryList.iterator(),parameterNames);
+		return new TimeSeriesEntryIterator(entryList.iterator(),sensorNames);
 	}
 
 }

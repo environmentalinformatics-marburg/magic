@@ -354,10 +354,6 @@ public class TimeSeriesLoaderBE {
 				}
 			}
 
-			//just for testing purpose
-			if(udbfTimeSeries.time[rowIndex]==58508670) {
-				System.out.println("write time 58508670 in "+station.stationID+"\t"+udbfTimeSeries.filename);
-			}
 			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
 		}
 

@@ -10,7 +10,7 @@ import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.TimeSeriesLoaderBE;
-import tsdb.loader.ki.TimeSerieaLoaderKiLi_manual_tfi;
+import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 
 /**
@@ -40,7 +40,7 @@ public class InitDatabase {
 		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
-		TimeSerieaLoaderKiLi_manual_tfi timeSerieaLoaderKiLi_manual_tfi = new TimeSerieaLoaderKiLi_manual_tfi(tsdb);
+		TimeSeriesLoaderKiLi_manual_tfi timeSerieaLoaderKiLi_manual_tfi = new TimeSeriesLoaderKiLi_manual_tfi(tsdb);
 		
 		
 		if(args.length!=2) {

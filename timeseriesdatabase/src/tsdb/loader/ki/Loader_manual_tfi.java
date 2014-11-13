@@ -23,7 +23,7 @@ class Loader_manual_tfi {
 
 	public Loader_manual_tfi(TimestampSeries timestampSeries) {
 		this.timestampSeries = timestampSeries;
-		this.inputSchema = timestampSeries.parameterNames;
+		this.inputSchema = timestampSeries.sensorNames;
 	}
 
 	protected boolean createSourcePos(String[] targetSchema) {
