@@ -26,7 +26,7 @@ for (i in 1:length(filenames)){
 ################################################################################  
   for (k in 1:length(as.character(unique(data$StasName)))){
     tmp=data[data$StasName==as.character(unique(data$StasName))[k],]
-    write.csv(data,paste0("/media/hanna/ubt_kdata_0005/ClimateDataSAWS/perStation/ARS/",as.character(unique(data$StasName))[k],".csv"),row.names=F)
+    write.csv(tmp,paste0("/media/hanna/ubt_kdata_0005/ClimateDataSAWS/perStation/ARS/",gsub("/","",as.character(unique(data$StasName))[k]),".csv"),row.names=F)
   }  
   print (i)
 }
@@ -71,8 +71,8 @@ for (k in 1:length(folders)){
 ################################################################################
       ###write shape layer of locations
 ################################################################################
-      tmpx=stationcoordiantes[as.character(stationcoordiantes$StasName)==as.character(data$title[1]),"Latitude"]
-      tmpy=stationcoordiantes[as.character(stationcoordiantes$StasName)==as.character(data$title[1]),"Long"]
+      tmpy=stationcoordiantes[as.character(stationcoordiantes$StasName)==as.character(data$title[1]),"Latitude"]
+      tmpx=stationcoordiantes[as.character(stationcoordiantes$StasName)==as.character(data$title[1]),"Long"]
       tmpname=as.character(data$title[1])
       shapeTable=rbind(shapeTable,cbind(tmpx,tmpy,tmpname))
     }
@@ -94,7 +94,7 @@ AWS=SpatialPointsDataFrame(data.frame(as.numeric(as.character(shapeTable$tmpx)),
                        data.frame(shapeTable$tmpname),
                        proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 )
-writeOGR(AWS, outpath, "AWS", driver="ESRI Shapefile")
+writeOGR(AWS, outpath, "AWS", driver="ESRI Shapefile",overwrite=T)
 ################################################################################
 #dies&das
 ################################################################################
