@@ -233,6 +233,10 @@ public class TimestampSeries implements TsIterable, Serializable {
 	public long getLastTimestamp() {
 		return this.entryList.get(entryList.size()-1).timestamp;
 	}
+	
+	public int size() {
+		return entryList.size();
+	}
 
 	@Override
 	public TsIterator tsIterator() {

@@ -180,12 +180,12 @@ public class TimeSeriesLoaderKiLi {
 		}
 		tsdb.streamStorage.insertEventList(timestampSeries.name, eventList, timestampSeries.getFirstTimestamp(), timestampSeries.getLastTimestamp(), station.loggerType.sensorNames);
 		String[] resultSchema = loader.getResultSchema();
-		SourceEntry se = new SourceEntry(ascPath,timestampSeries.name,timestampSeries.getFirstTimestamp(), timestampSeries.getLastTimestamp(),timestampSeries.entryList.size(),timestampSeries.sensorNames, resultSchema, -1);
-		tsdb.sourceCatalog.insert(se);
+		
+		tsdb.sourceCatalog.insert(SourceEntry.of(timestampSeries, ascPath, resultSchema));
 	}
 	
 	
-
+	@Deprecated
 	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
 		String currentInfoPrefix = "";
 		for(Entry<String, Path> ascMapEntry:ascCollectorMap.entrySet()) {			
@@ -266,7 +266,8 @@ public class TimeSeriesLoaderKiLi {
 	 * @param properties
 	 * @param translatedInputSchema
 	 * @param timestampSeries
-	 */
+	 */	
+	@Deprecated
 	public void insertOneFile(ASCTimeSeries csvtimeSeries, Station station, StationProperties properties, String[] translatedInputSchema, TimestampSeries timestampSeries) {
 		if(station.loggerType.typeName.equals("tfi")) {
 			return;  // !!! tfi should not be loaded from this format !!!

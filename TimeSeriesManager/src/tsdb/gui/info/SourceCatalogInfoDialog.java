@@ -24,6 +24,11 @@ import tsdb.catalog.SourceEntry;
 import tsdb.gui.info.SourceViewComparator.SortType;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.layout.GridData;
 
 public class SourceCatalogInfoDialog extends Dialog {
 	
@@ -60,7 +65,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
-		container.setLayout(new FillLayout(SWT.HORIZONTAL));
+		container.setLayout(new GridLayout(1, false));
 
 		// define the TableViewer
 		viewer = new TableViewer(container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
@@ -70,6 +75,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 		createColumns(viewer);
 
 		table = viewer.getTable();
+		table.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, true, true, 1, 1));
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 		table.setBounds(74, 10, 300, 171);
@@ -225,5 +231,4 @@ public class SourceCatalogInfoDialog extends Dialog {
 			}			
 		};
 	}
-
 }

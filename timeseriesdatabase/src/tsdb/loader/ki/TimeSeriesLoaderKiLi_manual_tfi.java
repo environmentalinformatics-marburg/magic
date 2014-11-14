@@ -46,7 +46,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 					if(filename.endsWith(".csv")) {
 						if(filename.indexOf("_tfi")==4) {
 							String plotID = filename.substring(0, 4);
-							log.info("load plot  "+plotID);
+							log.info("load plot tfi  "+plotID);
 							VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 							if(virtualPlot!=null) {
 								loadOneFile_structure_kili_tfi(virtualPlot,path);

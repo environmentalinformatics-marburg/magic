@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.nio.file.Path;
 
 import tsdb.TimeConverter;
+import tsdb.raw.TimestampSeries;
+import tsdb.raw.TsEntry;
+import tsdb.util.TsSchema;
 
 public class SourceEntry implements Serializable {
 	private static final long serialVersionUID = 8603819733815550502L;
@@ -29,6 +32,10 @@ public class SourceEntry implements Serializable {
 		this.headerNames = headerNames;
 		this.sensorNames = sensorNames;
 		this.timeStep = timeStep;
+	}
+	
+	public static SourceEntry of(TimestampSeries timestampSeries, Path filename, String[] sensorNames) {
+		return new SourceEntry(filename,timestampSeries.name,timestampSeries.getFirstTimestamp(),timestampSeries.getLastTimestamp(),timestampSeries.size(),timestampSeries.sensorNames,sensorNames, TsSchema.NO_CONSTANT_TIMESTEP);
 	}
 	
 	@Override

@@ -28,7 +28,12 @@ public class Run {
 
 		Runnable runnerWEB = ()->{
 			try {
-				Main.run(remoteTsdb);
+				if(args.length==1) {
+					Main.run(remoteTsdb,args[0]);
+				} else {
+					Main.run(remoteTsdb,null);
+				}
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

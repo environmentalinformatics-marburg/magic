@@ -21,6 +21,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
 import de.umr.jepc.store.Event;
 
+@Deprecated
 public class ASCTimeSeries {
 
 	private static final Logger log = LogManager.getLogger();

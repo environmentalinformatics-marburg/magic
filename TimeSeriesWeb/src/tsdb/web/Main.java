@@ -36,11 +36,19 @@ public class Main {
 
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());
 
-		run(tsdb);
+		if(args.length==1) {
+			run(tsdb,args[0]);
+		} else {
+			run(tsdb,null);
+		}
 
 	}
 
-	public static void run(RemoteTsDB tsdb) throws Exception {
+	public static void run(RemoteTsDB tsdb, String base_url) throws Exception {
+
+		if(base_url==null) {
+			base_url = "/static";
+		}
 
 		try{
 			BufferedImage rainbow = ImageIO.read(new File("static/rainbow.png"));
@@ -60,7 +68,7 @@ public class Main {
 
 		Server server = new Server(8080);
 
-		ContextHandler contextStatic = new ContextHandler("/static");
+		ContextHandler contextStatic = new ContextHandler(base_url);
 		ResourceHandler resource_handler = new ResourceHandler();
 		resource_handler.setDirectoriesListed(true);
 		//resource_handler.setWelcomeFiles(new String[]{ "helllo.html" });
@@ -81,7 +89,6 @@ public class Main {
 		SessionHandler sessions = new SessionHandler(manager);
 		contextExport.setHandler(sessions);
 		sessions.setHandler(exportHandler);
-		new LongAdder();
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
 		contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport});

@@ -308,9 +308,6 @@ class UniversalDataBinFile {
 
 				}
 				time[dataRowIndex] =  timeConverter.getStartTimeOleMinutes()+(tempRows[tempRowsIndex].id*timeConverter.getTimeStepMinutes());
-				if(time[dataRowIndex]==58508670) {
-					System.out.println("time 58508670 in "+filename);
-				}
 				dataRowIndex++;
 			}
 		}
