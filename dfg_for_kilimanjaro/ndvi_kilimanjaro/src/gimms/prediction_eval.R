@@ -1,5 +1,6 @@
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr", "scales", "Rsenal", "Kendall")
+         "ggplot2", "dplyr", "scales", "Rsenal", "Kendall", "RColorBrewer", 
+         "latticeExtra", "zoo")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 source("sortByElevation.R")
@@ -9,6 +10,9 @@ registerDoParallel(cl <- makeCluster(3))
 # Temporal range
 st <- "200301"
 nd <- "201212"
+
+## DEM
+dem <- raster("/media/fdetsch/XChange/kilimanjaro/ndvi/data/DEM_ARC1960_30m_Hemp.tif")
 
 ## GIMMS NDVI3G
 fls_gimms <- list.files("data/rst/whittaker", pattern = "_wht_aggmax.tif$", 
@@ -78,7 +82,7 @@ mod_stck_pred <- rst_modis_myd13[[pred_ind]]
 mod_stck_eval <- rst_modis_myd13[[-pred_ind]]
 
 ### calculate EOT
-ndvi_modes <- eot(x = gimms_stck_pred, y = mod_stck_pred, n = 8, 
+ndvi_modes <- eot(x = gimms_stck_pred, y = mod_stck_pred, n = 10, 
                   standardised = FALSE, reduce.both = FALSE, 
                   verbose = TRUE, write.out = TRUE, path.out = "data/eot_eval")
 
@@ -104,6 +108,14 @@ file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_0812")
 mod_predicted <- writeRaster(mod_predicted, filename = file_out, 
                              format = "GTiff", bylayer = FALSE, 
                              overwrite = TRUE)
+
+
+################################################################################
+### Model validation ###
+################################################################################
+
+mod_predicted <- stack(list.files(dir_out, pattern = "dwnscl_0812", 
+                                  full.names = TRUE))
 
 mod_observed <- mod_stck_eval
 pred_vals <- getValues(mod_predicted)
@@ -152,23 +164,69 @@ plot(template_obs, zlim = c(-1.5, 1.5))
 # mod_predicted_dns <- denoise(mod_predicted, 3, weighted = FALSE)
 # mod_observed_dns <- denoise(mod_observed, 3, weighted = FALSE)
 # mod_dns <- stack(mod_observed_dns, mod_predicted_dns)
+mod <- stack(mod_observed, mod_predicted)
 
-library(RColorBrewer)
 cols <- colorRampPalette(brewer.pal(11, "RdBu"))
-mod_dns_r <- calc(mod_dns, fun = function(x) {cor(x[1:60], x[61:120])})
-mod_dns_p <- calc(mod_dns, fun = function(x) {summary(lm(x[1:60] ~ x[61:120]))$coefficients[2, 4]})
+## r and referring p values
+mod_r <- calc(mod, fun = function(x) {cor(x[1:60], x[61:120])})
+mod_p <- calc(mod, fun = function(x) {summary(lm(x[1:60] ~ x[61:120]))$coefficients[2, 4]})
 
-tmp <- mod_dns_r
-tmp[mod_dns_p[] >= .001] <- NA
-spplot(tmp, at = seq(-1, 1, .25), col.regions = cols(100))
+tmp <- mod_r
+tmp[mod_p[] >= .001] <- NA
+p_r <- spplot(tmp, at = seq(-1, 1, .25), col.regions = cols(100), 
+              scales = list(draw = TRUE), xlab = "x", ylab = "y")
+p_rsq <- spplot(tmp^2, at = seq(0, 1, .125), col.regions = rev(cols(100)), 
+                scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+                sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey75"), 
+                                 list("sp.text", c(285000, 9680000), "Rsq", 
+                                      font = 2, cex = 1.2)))
 
-### ioa
-library(Rsenal)
-ioa_val <- sapply(1:nrow(pred_vals), function(i) {
-  ioa(pred_vals[i, ], obs_vals[i, ])
+
+
+## highly significant mannkendall
+mod_obs_mk <- calc(mod_observed, fun = function(x) {
+  mk <- MannKendall(x)
+  if (mk$sl < .001) return(mk$tau) else return(NA)
 })
 
-library(Kendall)
+mod_prd_mk <- calc(mod_predicted, fun = function(x) {
+  mk <- MannKendall(x)
+  if (mk$sl < .001) return(mk$tau) else return(NA)
+})
+
+p_mk_obs <- spplot(mod_obs_mk, at = seq(-1, 1, .25), col.regions = rev(cols(100)), 
+                scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+                sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey75"), 
+                                 list("sp.text", c(342500, 9680000), "MK-OBS", 
+                                      font = 2, cex = 1.2)))
+p_mk_prd <- spplot(mod_prd_mk, at = seq(-1, 1, .25), col.regions = rev(cols(100)), 
+                   scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+                   sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey75"), 
+                                    list("sp.text", c(342500, 9680000), "MK-PRD", 
+                                         font = 2, cex = 1.2)))
+
+p_mk <- latticeCombineGrid(list(p_mk_obs, p_mk_prd), layout = c(1, 2))
+png("vis/mk_obs_prd.png", width = 20, height = 30, units = "cm", res = 300, pointsize = 15)
+print(p_mk)
+dev.off()
+
+## ioa
+mod_ioa <- calc(mod, fun = function(x) ioa(x[1:60], x[61:120]))
+
+cols_seq <- colorRampPalette(brewer.pal(9, "Reds"))
+p_ioa <- spplot(mod_ioa, at = seq(0, 1, .125), col.regions = rev(cols(100)), 
+                scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+                sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey75"), 
+                                 list("sp.text", c(285000, 9680000), "IOA", 
+                                      font = 2, cex = 1.2)))
+
+
+p_rsq_ioa <- latticeCombineGrid(list(p_rsq, p_ioa), layout = c(1, 2))
+png("vis/rsq_ioa.png", width = 20, height = 30, units = "cm", res = 300, pointsize = 15)
+print(p_rsq_ioa)
+dev.off()
+
+## mannkendall scatter plots incl. regression line
 mk_pred_val <- sapply(1:nrow(pred_vals), function(i) {
   MannKendall(pred_vals[i, ])$tau
 })
@@ -177,13 +235,17 @@ mk_obs_val <- sapply(1:nrow(obs_vals), function(i) {
   MannKendall(obs_vals[i, ])$tau
 })
 
-library(latticeExtra)
 xyplot(mk_pred_val ~ mk_obs_val) + 
   layer(panel.ablineq(lm(y~x)))
 
-
+## mannkendall boxplots
 bwplot(mk_obs_val, xlim = c(-1, 1))
 bwplot(mk_pred_val, xlim = c(-1, 1))
+
+### ioa
+ioa_val <- sapply(1:nrow(pred_vals), function(i) {
+  ioa(pred_vals[i, ], obs_vals[i, ])
+})
 
 fls_cf <- list.files("../../ndvi/data/processed/", pattern = "^BF_SD_QA_MYD.*.tif$", 
                      full.names = TRUE)
@@ -191,7 +253,6 @@ st <- grep("2003", fls_cf)[1]
 nd <- grep("2012", fls_cf)[length(grep("2012", fls_cf))]
 fls_cf <- fls_cf[st:nd]
 rst_cf <- stack(fls_cf)
-library(zoo)
 dates <- gsub("A", "", sapply(strsplit(basename(fls_cf), "\\."), "[[", 2))
 indices <- as.numeric(as.factor(as.yearmon(dates, format = "%Y%j")))
 rst_cf_agg <- stackApply(rst_cf, indices = indices, fun = max, na.rm = TRUE)
@@ -205,21 +266,6 @@ points(xyFromCell(mod_stck_eval[[1]], cell = which.min(ioa_val)), cex = 1)
 
 library(lattice)
 bwplot(ioa_val)
-
-mk_p_pred_val <- sapply(1:nrow(pred_vals), function(i) {
-  MannKendall(pred_vals[i, ])$sl
-})
-
-mk_p_obs_val <- sapply(1:nrow(obs_vals), function(i) {
-  MannKendall(obs_vals[i, ])$sl
-})
-
-# hist(mk_p_obs_val, ylim = c(0, 50000))
-# hist(mk_p_pred_val, ylim = c(0, 50000))
-
-p_value <- cbind(mk_p_pred_val < .001, mk_p_obs_val < .001)
-tmp <- which(rowSums(p_value) == 1)
-xyplot(mk_pred_val[tmp] ~ mk_obs_val[tmp])
 
 
 ### visualise plots
