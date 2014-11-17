@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.layout.GridData;
 
+@Deprecated
 public class SourceCatalogInfoDialog extends Dialog {
 	
 	private static final Logger log = LogManager.getLogger();

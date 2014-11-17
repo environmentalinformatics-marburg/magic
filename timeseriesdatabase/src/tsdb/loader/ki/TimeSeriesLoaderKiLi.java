@@ -156,7 +156,7 @@ public class TimeSeriesLoaderKiLi {
 				StationProperties properties = station.getProperties(timestampseries.getFirstTimestamp(), timestampseries.getLastTimestamp());
 
 				if(properties==null) {
-					log.error("no properties found of "+timestampseries.name+"   "+TimeConverter.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+timestampseries.getLastTimestamp()+"  in  "+ascPath);
+					log.error("no properties found in station "+timestampseries.name+"  of  "+TimeConverter.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+TimeConverter.oleMinutesToText(timestampseries.getLastTimestamp())+"  in  "+ascPath);
 					continue;
 				}
 

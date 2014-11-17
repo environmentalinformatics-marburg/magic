@@ -167,6 +167,10 @@ public class ConfigLoader {
 				String plotID = entryMap.getKey();
 				String generalStationName = plotID.substring(0, 3);
 				GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+				if(generalStation==null&&generalStationName.charAt(2)=='T') {
+					generalStationName = ""+generalStationName.charAt(0)+generalStationName.charAt(1)+'W'; // AET06 and SET39 ==> AEW and SEW
+					generalStation = tsdb.getGeneralStation(generalStationName);					
+				}
 				if(generalStation==null) {
 					log.warn("general station not found: "+generalStation);
 				}
@@ -959,7 +963,7 @@ public class ConfigLoader {
 			String plotID = plotidReader.get(row);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
-				log.warn("plotID not found: "+plotID);
+				log.warn("virtual plotID not found: "+plotID+"  in "+configFile);
 				continue;
 			}
 			float easting = eastingReader.get(row);

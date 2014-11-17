@@ -96,6 +96,7 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 
 
 		CLabel labelInfo = new CLabel(shell, SWT.NONE);
+		labelInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		labelInfo.setText("...");
 
 		TableViewer tableViewer = new TableViewer(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.FILL);
@@ -175,7 +176,7 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 
 		try {
 
-			List<TimestampInterval<StationProperties>> list = tsdb.getVirtualPlotInfo("foc0").intervalList;
+			/*List<TimestampInterval<StationProperties>> list = tsdb.getVirtualPlotInfo("foc0").intervalList;
 
 
 			tableViewBridge.setFilter(se->{
@@ -190,7 +191,7 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 				}
 				labelInfo.setText(info);
 				return valid;
-			});
+			});*/
 			SourceEntry[] sourceCatalogEntries = tsdb.getSourceCatalogEntries();
 			System.out.println("catalog size: "+sourceCatalogEntries.length);
 			tableViewBridge.setInput(sourceCatalogEntries);

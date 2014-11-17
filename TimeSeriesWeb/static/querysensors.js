@@ -22,6 +22,7 @@ $(document).ready(function(){
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
+	quality_select.val(2);
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
@@ -81,6 +82,12 @@ var updateGeneralStations = function() {
 
 var updateSensors = function() {
 	incTask();
+	
+	var prev = "unknown";
+	if(sensor_select.val()!=null) {
+		prev = sensors[sensor_select.val()][0];
+	}
+	
 	var queryText = "";
 	var generalStationName = generalstation_select.val();	
 	if(generalStationName==="[all]") {
@@ -90,10 +97,24 @@ var updateSensors = function() {
 	}
 	sensor_select.empty();	
 	$.get("/tsdb/sensor_list?"+queryText).done(function(data) {
+		var pre = -1;
 		var rows = splitData(data);
 		sensors = rows
 		//$.each(sensors, function(i,row) {document.getElementById("sensor_select").add(new Option(row[0],i));})
-		$.each(rows, function(i,row) {sensor_select.append(new Option(row[0],i));})
+		$.each(rows, function(i,row) {
+			sensor_select.append(new Option(row[0],i));
+			if(row[0]===prev) {
+				pre = i;
+			}
+			if(pre<0&&row[0]==="Ta_200") {
+				pre = i;
+			}
+		})
+		
+		if(pre>0) {
+			sensor_select.val(pre);
+		}
+		
 		updateSensor();
 		decTask();
 	}).fail(function() {plot_select.append(new Option("[error]","[error]"));decTask();});

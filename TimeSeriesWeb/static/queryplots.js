@@ -42,6 +42,7 @@ $(document).ready(function(){
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
+	quality_select.val(2);
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
@@ -70,7 +71,18 @@ var updateGeneralStations = function() {
 	generalstation_select.empty();	
 	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
-		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
+		var pre = -1;
+		$.each(rows, function(i,row) {
+			generalstation_select.append(new Option(row[1],row[0]));
+			if(row[0]==="HEG") {
+				pre = i;
+			}
+		})
+		
+		if(pre>0) {
+			generalstation_select.val(rows[pre][0]);
+		}
+		
 		//generalstation_select.selectmenu( "refresh" );
 		updatePlots();
 		decTask();	

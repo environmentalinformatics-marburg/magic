@@ -205,7 +205,7 @@ public class Station {
 		for(TimestampInterval<StationProperties> interval:propertiesList) {
 			if((interval.start==null || interval.start<=intervalStart) && (interval.end==null || intervalEnd<=interval.end)) {
 				if(properties!=null) {
-					log.warn("multiple properties for one time interval: "+intervalStart+" "+intervalEnd);
+					log.warn("multiple properties for one time interval in station   "+stationID+"  of  "+TimeConverter.oleMinutesToText(intervalStart)+" "+TimeConverter.oleMinutesToText(intervalEnd));
 				}
 				properties = interval.value;
 			}

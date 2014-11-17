@@ -90,8 +90,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		if(session.isNew()) {
 			ExportModel model = new ExportModel();
 			session.setAttribute("ExportModel", model);
-			model.plots = new String[]{"HEG01","HEG02"};
-			model.sensors = new String[]{"Ta_200",};
+			model.plots = new String[]{"HEG01"};
+			model.sensors = new String[]{"Ta_200"};
+			model.aggregationInterval = AggregationInterval.HOUR;
 			try {
 				model.region = tsdb.getRegions()[0];
 			} catch(Exception e) {

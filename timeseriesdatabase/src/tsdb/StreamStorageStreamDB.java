@@ -47,7 +47,10 @@ public class StreamStorageStreamDB implements StreamStorage {
 			sensorData.clear();
 			for(Event event:eventMap.values()) {
 				float value = (float) event.getPayload()[i];
-				if(!Float.isNaN(value)) {
+				if(!Float.isNaN(value)&&!(value==-9999f)&&(-999999f<value)&&(value<999999f)) { // NaN some files (in AET06)
+					if(value<-9999f||value>9999f) {
+						log.trace(value+"                     "+sensorNames[i]+"                "+streamName);
+					}
 					sensorData.add(new DataEntry((int) event.getTimestamp(),value));
 				}
 			}
