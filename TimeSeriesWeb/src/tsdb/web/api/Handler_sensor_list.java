@@ -2,7 +2,9 @@ package tsdb.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -62,17 +64,30 @@ public class Handler_sensor_list extends MethodHandler {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
 			}
-			Map<String, Integer> sensorMap = Util.stringArrayToMap(sensorNames);
+			//Map<String, Integer> sensorMap = Util.stringArrayToMap(sensorNames);
 			Sensor[] sensors = tsdb.getSensors();
 			if(sensors==null) {
 				log.error("sensors null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
 			}
-			String[] webList = Arrays.stream(sensors)
+			Map<String,Sensor> sensorMap = new HashMap<String, Sensor>();
+			for(Sensor sensor:sensors) {
+				sensorMap.put(sensor.name, sensor);
+			}
+			/*String[] webList = Arrays.stream(sensors)
 					.filter(s->sensorMap.containsKey(s.name)&&s.isAggregable())
 					.map(s->s.name+";"+s.description+";"+s.unitDescription)
-					.toArray(String[]::new);
+					.toArray(String[]::new);*/
+			ArrayList<String> webList = new ArrayList<String>();
+			for(String sensorName:sensorNames) {
+				Sensor s = sensorMap.get(sensorName);
+				if(s.isAggregable()) {
+					webList.add(s.name+";"+s.description+";"+s.unitDescription);
+				}
+			}
+			
+			
 			PrintWriter writer = response.getWriter();
 			writeStringArray(writer, webList);
 			response.setStatus(HttpServletResponse.SC_OK);

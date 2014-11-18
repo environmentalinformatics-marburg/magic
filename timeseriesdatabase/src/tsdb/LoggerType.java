@@ -12,7 +12,6 @@ import de.umr.jepc.Attribute;
  *
  */
 public class LoggerType implements Serializable {
-	
 	private static final long serialVersionUID = -8623721500856325122L;
 	public String typeName;
 	public Attribute[] schema;
@@ -30,5 +29,30 @@ public class LoggerType implements Serializable {
 	public String toString() {
 		return "logger: "+typeName;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((typeName == null) ? 0 : typeName.hashCode());
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LoggerType other = (LoggerType) obj;
+		if (typeName == null) {
+			if (other.typeName != null)
+				return false;
+		} else if (!typeName.equals(other.typeName))
+			return false;
+		return true;
+	}
 }

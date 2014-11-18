@@ -137,7 +137,12 @@ public class ServerTsDB implements RemoteTsDB {
 
 	@Override
 	public VirtualPlotInfo getVirtualPlotInfo(String plotID) {
-		return new VirtualPlotInfo(tsdb.getVirtualPlot(plotID));
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return new VirtualPlotInfo(virtualPlot);
+		} else {
+			return null;
+		}
 	}
 
 	@Override

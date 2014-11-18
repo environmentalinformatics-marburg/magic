@@ -1,6 +1,7 @@
 package tsdb.web.api;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
@@ -18,6 +19,10 @@ public abstract class MethodHandler extends AbstractHandler {
 	
 	public String getHandlerMethodName() {
 		return handlerMethodName;
+	}
+	
+	protected static void writeStringArray(PrintWriter writer, ArrayList<String> list) {
+		writeStringArray(writer, list.toArray(new String[0]));
 	}
 	
 	protected static void writeStringArray(PrintWriter writer, String[] array) {

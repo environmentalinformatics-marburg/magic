@@ -1,7 +1,9 @@
 package tsdb.gui.info;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -20,12 +22,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
+import tsdb.Region;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.catalog.SourceEntry;
 import tsdb.gui.bridge.ComboBridge;
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 
@@ -33,6 +37,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.jface.viewers.ComboViewer;
 
 public class NewSourceCatalogInfoDialog extends Dialog {
 
@@ -44,10 +49,22 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 	private TableBridge<SourceEntry> tableViewBridge;
 	private RemoteTsDB tsdb;
 
+	private CLabel labelInfo;
+
+	private SourceEntry[] sourceCatalogEntries;
+	HashMap<String, ArrayList<SourceEntry>> stationCatalogEntryMap;
+
 	public NewSourceCatalogInfoDialog(Shell parent, RemoteTsDB tsdb) {
 		super(parent, SWT.SHELL_TRIM | SWT.BORDER);
 		this.setText("Source Catalog Info");
 		this.tsdb = tsdb;
+
+		try {
+			sourceCatalogEntries = tsdb.getSourceCatalogEntries();
+			System.out.println("catalog size: "+sourceCatalogEntries.length);			
+		} catch(RemoteException e) {
+			log.error(e);
+		}		
 	}
 
 	/**
@@ -80,9 +97,18 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 		shell.setLayout(new GridLayout(1, false));
 
 		Group grpFilterBy = new Group(shell, SWT.NONE);
-		grpFilterBy.setLayout(new FillLayout(SWT.HORIZONTAL));
+		grpFilterBy.setLayout(new GridLayout(2, false));
 		grpFilterBy.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		grpFilterBy.setText("filter by");
+
+		Group grpRegion = new Group(grpFilterBy, SWT.NONE);
+		grpRegion.setText("Region");
+		grpRegion.setLayout(new GridLayout(1, false));
+
+		Combo comboRegion = new Combo(grpRegion, SWT.READ_ONLY);
+		ComboBridge<Region> comboBridgeRegion = new ComboBridge<Region>(comboRegion);
+		comboBridgeRegion.setLabelMapper(r->r.longName);
+
 
 		Group grpPlot = new Group(grpFilterBy, SWT.NONE);
 		grpPlot.setText("Plot");
@@ -95,9 +121,11 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 
 
 
-		CLabel labelInfo = new CLabel(shell, SWT.NONE);
+
+		labelInfo = new CLabel(shell, SWT.NONE);
 		labelInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		labelInfo.setText("...");
+
 
 		TableViewer tableViewer = new TableViewer(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.FILL);
 		Table table = tableViewer.getTable();
@@ -124,7 +152,19 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 			public void mouseDown(MouseEvent e) {
 			}
 		});
-		lblStatus.setText("status");
+		lblStatus.setText("catalog size: "+sourceCatalogEntries.length);
+
+
+		Region[] regions = null;
+		try {
+			regions = tsdb.getRegions();
+		} catch (RemoteException e2) {
+			log.error(e2);
+		}
+		comboBridgeRegion.setInput(regions);
+		if(regions!=null) {
+			comboBridgeRegion.setSelection(regions[0]);
+		}
 
 
 		try {
@@ -134,71 +174,61 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 		}
 
 		comboBridgePlot.setSelection("[all]");
-		comboBridgePlot.addSelectionChangedCallback(s->{
-			if(s.equals("[all]")) {
-				tableViewBridge.setFilter(null);
+		comboBridgePlot.addSelectionChangedCallback(this::onPlotChanged);
+
+
+		tableViewBridge.setInput(sourceCatalogEntries);
+		stationCatalogEntryMap = new HashMap<String, ArrayList<SourceEntry>>();
+		for(SourceEntry sourceEntry:sourceCatalogEntries) {
+			ArrayList<SourceEntry> list = stationCatalogEntryMap.get(sourceEntry.stationName);
+			if(list==null) {
+				list = new ArrayList<SourceEntry>();
+				stationCatalogEntryMap.put(sourceEntry.stationName, list);
+			}
+			list.add(sourceEntry);			
+		}
+
+	}
+
+	public void onPlotChanged(String plotID) {
+		if(plotID.equals("[all]")) {
+			tableViewBridge.setInput(sourceCatalogEntries);
+		} else {
+			if(stationCatalogEntryMap.containsKey(plotID)) {						
+				ArrayList<SourceEntry> resultList = stationCatalogEntryMap.get(plotID);
+				if(resultList==null) {
+					resultList = new ArrayList<SourceEntry>(0);
+				}
+				tableViewBridge.setInput(resultList.toArray(new SourceEntry[0]));
+				labelInfo.setText("station "+plotID);
 			} else {
+				ArrayList<SourceEntry> resultList = new ArrayList<SourceEntry>();
+				String info = "station ";
 				try {
-					if(Arrays.stream(tsdb.getStationNames()).anyMatch(n->n.equals(s))) {
-						labelInfo.setText(s);
-						tableViewBridge.setFilter(se->se.stationName.equals(s));
-					} else {
-
-						List<TimestampInterval<StationProperties>> list = tsdb.getVirtualPlotInfo(s).intervalList;
-						String info = "";
-						for(TimestampInterval<StationProperties> i:list) {
+					VirtualPlotInfo virtualPlot = tsdb.getVirtualPlotInfo(plotID);
+					if(virtualPlot!=null) {
+						List<TimestampInterval<StationProperties>> intervals = virtualPlot.intervalList;
+						for(TimestampInterval<StationProperties> i:intervals) {
 							info += "  "+i.value.get_serial();
-						}
-						labelInfo.setText(info);
-						tableViewBridge.setFilter(se->{
-							boolean valid = false;
-
-							for(TimestampInterval<StationProperties> i:list) {
-
-								if(se.stationName.equals(i.value.get_serial())) {
-									if(i.contains(se.firstTimestamp, se.lastTimestamp)) {
-										valid = true;
-										break;
+							ArrayList<SourceEntry> entryList = stationCatalogEntryMap.get(i.value.get_serial());
+							if(entryList!=null) {
+								for(SourceEntry entry:entryList) {
+									if(i.contains(entry.firstTimestamp, entry.lastTimestamp)) {
+										resultList.add(entry);
 									}
 								}
 							}
-
-							return valid;
-						});
+						}
 					}
 				} catch (RemoteException e1) {
-					e1.printStackTrace();
+					log.error(e1);
+					info = "error";
 				}
+				tableViewBridge.setInput(resultList.toArray(new SourceEntry[0]));
+				labelInfo.setText(info);						
 			}
-		});
 
+		}
 
-
-		try {
-
-			/*List<TimestampInterval<StationProperties>> list = tsdb.getVirtualPlotInfo("foc0").intervalList;
-
-
-			tableViewBridge.setFilter(se->{
-				boolean valid = false;
-				String info = "";
-				for(TimestampInterval<StationProperties> i:list) {
-					info += "  "+i.value.get_serial();
-					if(se.stationName.equals(i.value.get_serial())) {
-						valid = true;
-						break;
-					}
-				}
-				labelInfo.setText(info);
-				return valid;
-			});*/
-			SourceEntry[] sourceCatalogEntries = tsdb.getSourceCatalogEntries();
-			System.out.println("catalog size: "+sourceCatalogEntries.length);
-			tableViewBridge.setInput(sourceCatalogEntries);
-			lblStatus.setText("catalog size: "+sourceCatalogEntries.length);
-
-		} catch(RemoteException e) {
-			log.error(e);
-		}		
 	}
 }

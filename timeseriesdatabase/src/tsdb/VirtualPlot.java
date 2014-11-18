@@ -2,10 +2,15 @@ package tsdb;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,13 +65,33 @@ public class VirtualPlot {
 	}
 
 	/**
-	 * Creates schema of this plot that is union of all attributes of stations that are attached to this plot with some time interval.	 * 
+	 * Creates schema of this plot that is union of all attributes of stations that are attached to this plot with some time interval.
 	 * @return null if there are no intervals
 	 */
 	public String[] getSchema() {
 		if(intervalList.isEmpty()) {
 			return new String[0]; //empty schema
 		}
+		
+		LinkedHashSet<LoggerType> loggerSet = new LinkedHashSet<LoggerType>();
+		for(TimestampInterval<StationProperties> interval:intervalList) {
+			LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
+			if(loggerType==null) {
+				throw new RuntimeException("logger type not found: "+interval.value.get_logger_type_name());
+			}
+			loggerSet.add(loggerType);
+		}
+		//LinkedHashSet<String> sensorNameSet = new LinkedHashSet<String>();
+		TreeSet<String> sensorNameSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		for(LoggerType loggerType:loggerSet) {
+			for(String sensorName:loggerType.sensorNames) {
+				sensorNameSet.add(sensorName);
+			}
+		}
+		
+		return sensorNameSet.toArray(new String[0]);
+		
+		/*
 		return intervalList.stream()
 				.map(interval->{
 					LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
@@ -78,7 +103,7 @@ public class VirtualPlot {
 				.distinct()
 				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
 				.distinct()
-				.toArray(String[]::new);
+				.toArray(String[]::new);*/
 	}
 
 	public String[] getValidSchemaEntries(String[] querySchema) {
@@ -132,8 +157,11 @@ public class VirtualPlot {
 	public List<TimestampInterval<StationProperties>> getStationList(Long queryStart, Long queryEnd, String[] schema) {		
 		if(schema==null) {
 			schema = getSchema();
-		}		
-		intervalList.sort( (a,b) -> {
+		}
+		
+		ArrayList<TimestampInterval<StationProperties>> tempList = new ArrayList<TimestampInterval<StationProperties>>(intervalList); // because ConcurrentModificationException
+		
+		tempList.sort( (a,b) -> {
 			if(a.start==null) {
 				if(b.start==null) {
 					return 0;
@@ -149,7 +177,7 @@ public class VirtualPlot {
 			}
 		});
 
-		Iterator<TimestampInterval<StationProperties>> it = intervalList.iterator();
+		Iterator<TimestampInterval<StationProperties>> it = tempList.iterator();
 
 
 		List<TimestampInterval<StationProperties>> resultIntervalList = new ArrayList<TimestampInterval<StationProperties>>();

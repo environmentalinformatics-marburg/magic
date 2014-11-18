@@ -2,6 +2,7 @@ package tsdb.catalog;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import tsdb.TimeConverter;
 import tsdb.raw.TimestampSeries;
@@ -9,6 +10,7 @@ import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 
 public class SourceEntry implements Serializable {
+
 	private static final long serialVersionUID = 8603819733815550502L;
 	
 	public final String path;

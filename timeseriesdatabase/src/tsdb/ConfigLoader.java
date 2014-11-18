@@ -35,7 +35,7 @@ import de.umr.jepc.Attribute.DataType;
  *
  */
 public class ConfigLoader {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb; //not null
@@ -172,7 +172,7 @@ public class ConfigLoader {
 					generalStation = tsdb.getGeneralStation(generalStationName);					
 				}
 				if(generalStation==null) {
-					log.warn("general station not found: "+generalStation);
+					log.warn("general station not found: "+generalStationName+" of "+plotID);
 				}
 				LoggerType loggerType = tsdb.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
 				if(loggerType!=null) {
@@ -579,10 +579,23 @@ public class ConfigLoader {
 				}
 				if(loggerType!=null) {
 					Station station = new Station(tsdb,null,serialName,loggerType,propertiesList, false);
-					tsdb.insertStation(station);				
+					tsdb.insertStation(station);					
 					for(StationProperties properties:propertiesList) {
 						String virtualPlotID = properties.get_plotid();
 						VirtualPlot virtualPlot = tsdb.getVirtualPlot(virtualPlotID);
+						if(virtualPlot==null) {
+							if(virtualPlotID.length()==4) {
+								String generalStationName = virtualPlotID.substring(0, 3);
+								GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+								if(generalStation!=null) {
+									virtualPlot = new VirtualPlot(tsdb, virtualPlotID, generalStation, Float.NaN, Float.NaN, false);
+									log.info("insert missing virtual plot "+virtualPlotID+" with "+generalStationName);
+									tsdb.insertVirtualPlot(virtualPlot);
+								} else {
+									log.warn("generalstation not found: "+generalStationName+"   from  "+virtualPlotID);
+								}
+							}
+						}
 						if(virtualPlot!=null) {
 							virtualPlot.addStationEntry(station, properties);
 						} else {
@@ -892,7 +905,7 @@ public class ConfigLoader {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void readSensorCategoryConfig(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
