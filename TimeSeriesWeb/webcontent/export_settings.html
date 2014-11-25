@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Export Time Series - settings</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="/static/util.js"></script>
+<script type="text/javascript">
+
+var tasks = 0;
+
+var incTask = function() {
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
+var json_settings;
+
+$(document).ready(function(){
+	incTask();	
+	$("#button_cancel").button();
+	document.getElementById("button_cancel").onclick = function() {
+		window.location = "/static/export.html";
+	}
+	
+	$("#button_apply").button();
+	document.getElementById("button_apply").onclick = function() {
+		incTask();
+		json_settings.interpolate = document.getElementById("interpolate").checked;
+		json_settings.desc_sensor = document.getElementById("desc_sensor").checked;
+		json_settings.desc_plot = document.getElementById("desc_plot").checked;
+		json_settings.desc_settings = document.getElementById("desc_settings").checked;
+		json_settings.allinone = document.getElementById("allinone").checked;
+		json_settings.timestep = document.getElementById("choose_aggregation").value;
+		json_settings.quality = document.getElementById("choose_quality").value;
+		json_settings.col_plotid = document.getElementById("col_plotid").checked;
+		json_settings.col_timestamp = document.getElementById("col_timestamp").checked;
+		json_settings.col_datetime = document.getElementById("col_datetime").checked;
+		json_settings.write_header = document.getElementById("write_header").checked;
+
+		$.postJSON("/export/apply_settings",json_settings)
+		 .done(function() {
+			window.location = "/static/export.html";
+			decTask();
+		 })
+		 .fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);decTask();});	
+	 
+	}
+	
+	incTask();
+	$.getJSON("/export/settings").done(function( data ) {
+		json_settings = data;
+		console.log(json_settings);
+		document.getElementById("interpolate").checked = json_settings.interpolate;
+		document.getElementById("desc_sensor").checked = json_settings.desc_sensor;
+		document.getElementById("desc_plot").checked = json_settings.desc_plot;
+		document.getElementById("desc_settings").checked = json_settings.desc_settings;
+		document.getElementById("allinone").checked = json_settings.allinone;
+		document.getElementById("choose_aggregation").value = json_settings.timestep;
+		document.getElementById("choose_quality").value = json_settings.quality;
+		document.getElementById("col_plotid").checked = json_settings.col_plotid;
+		document.getElementById("col_timestamp").checked = json_settings.col_timestamp;
+		document.getElementById("col_datetime").checked = json_settings.col_datetime;
+		document.getElementById("write_header").checked = json_settings.write_header;
+		decTask();
+	})
+	.fail(function(data) {alert("error getting settings data: "+data);decTask();});
+
+	decTask();
+});
+
+</script>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+</head>
+
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
+<h1 style="text-align:center">Export Time Series - settings</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+<hr/>
+</div>
+<h3>Actions</h3>
+<button id="button_cancel">cancel</button>
+<button id="button_apply">apply settings</button>
+<hr/>
+<h3>Settings</h3>
+
+<p>
+
+<label for="choose_aggregation">time steps</label>
+<select id="choose_aggregation">
+<option>hour</option>
+<option>day</option>
+<option>week</option>
+<option>month</option>
+<option>year</option>
+</select>
+&nbsp&nbsp&nbsp&nbsp&nbsp
+<label for="choose_quality">quality</label>
+<select id="choose_quality">
+<option value="no">0: no quality check</option>
+<option value="physical">1: just physical range check</option>
+<option value="step">2: physical range + step range check</option>
+<option value="empirical">3: physical range + step + empirical check</option>
+</select>
+
+</p>
+
+<h4>options</h4>
+<p><input type="checkbox" id="interpolate"><label for="interpolate">try to interpolate missing data</label></p>
+<p><input type="checkbox" id="allinone"><label for="allinone">write all plots in one CSV-File</label></p>
+<p><input type="checkbox" id="write_header"><label for="write_header">write header in CSV-Files</label></p>
+<h4>columns in CSV-Files</h4>
+<p><input type="checkbox" id="col_plotid"><label for="col_plotid">include column &quot;<i>plotID</i>&quot;</label></p>
+<p><input type="checkbox" id="col_timestamp"><label for="col_timestamp">include column &quot;<i>timestamp</i>&quot;  (time in minutes since 1899-12-30T00:00 - based on OLE Automation Time)</label></p>
+<p><input type="checkbox" id="col_datetime"><label for="col_datetime">include column &quot;<i>datetime</i>&quot; (according to ISO 8601)</label></p>
+<h4>additional files in ZIP-archive</h4>
+<p><input type="checkbox" id="desc_sensor"><label for="desc_sensor">sensor description</label></p>
+<p><input type="checkbox" id="desc_plot"><label for="desc_plot">plot description</label></p>
+<p><input type="checkbox" id="desc_settings"><label for="desc_settings">info about used settings</label></p>
+
+
+<p>
+
+</p>
+
+
+
+</body>
+</html>

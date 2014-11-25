@@ -1,13 +1,19 @@
 package tsdb.web.api;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.ByteArrayOutputStream2;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
@@ -33,45 +40,8 @@ import tsdb.util.ZipExport;
 import tsdb.web.WebUtil;
 
 public class TsDBExportAPIHandler extends AbstractHandler {
-	
+
 	private static final Logger log = LogManager.getLogger();
-
-	private static class ExportModel{
-
-		public String[] plots;
-		public String[] sensors;
-		public boolean interpolate;
-		public boolean desc_sensor;
-		public boolean desc_plot;
-		public boolean desc_settings;
-		public boolean allinone;
-		public AggregationInterval aggregationInterval;
-		public DataQuality quality;
-		public Region region;
-		public boolean col_plotid;
-		public boolean col_timestamp;
-		public boolean col_datetime;
-		public boolean write_header;
-		public int timespan;
-
-		public ExportModel() {
-			this.plots = new String[]{"plot1","plot2","plot3"};
-			this.sensors = new String[]{"sensor1","sensor2","sensor3","sensor4"};
-			this.interpolate = false;
-			this.desc_sensor = true;
-			this.desc_plot = true;
-			this.desc_settings = true;
-			this.allinone = false;
-			this.aggregationInterval = AggregationInterval.DAY;
-			this.quality = DataQuality.STEP;
-			this.region = null;
-			this.col_plotid = true;
-			this.col_timestamp = true;
-			this.col_datetime = true;
-			this.write_header = true;
-			this.timespan = 0; // all
-		}
-	}
 
 	private final RemoteTsDB tsdb;
 
@@ -82,7 +52,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("export", target, baseRequest));		
-		
+
 		baseRequest.setHandled(true);
 		response.setContentType("text/plain;charset=utf-8");
 
@@ -135,6 +105,19 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}
 		case "/result.zip": {
 			ret = handle_download(response,model);
+			break;
+		}
+		case "/create": {
+			ret = handle_create(response,model);
+			break;
+		}
+		case "/create_get_output": {
+			try {
+				long id = Long.parseLong(request.getParameter("id"));			
+				ret = handle_create_get_output(response,model,id);
+			} catch(Exception e) {
+				log.error(e);
+			}
 			break;
 		}
 		case "/settings": {
@@ -290,7 +273,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			return false;
 		}
 	}
-	
+
 	private boolean handle_download(HttpServletResponse response, ExportModel model) {
 		response.setContentType("application/zip");
 		try {
@@ -328,6 +311,80 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			e.printStackTrace();
 			return false;
 		}	
-	}	
+	}
+
+	private long counter = 0;
+	private HashMap<Long,ZipExportProxy> zipExportProxyMap = new HashMap<Long,ZipExportProxy>();
+
+	private long createID() {
+		synchronized (zipExportProxyMap) {
+			return counter++;
+		}
+	}
+
+	private boolean handle_create(HttpServletResponse response, ExportModel model) {
+		try {
+			System.out.println(SecureRandom.getInstanceStrong().nextLong());
+			final long id = createID();
+			
+			
+			ZipExportProxy zipExportProxy = new ZipExportProxy(tsdb,model);
+			zipExportProxyMap.put(id, zipExportProxy);			
+			
+			response.setContentType("application/json");			
+			JSONWriter json = new JSONWriter(response.getWriter());
+			json.object();
+			json.key("id");
+			json.value(id);
+			json.key("plots");
+			json.value(model.plots.length);
+			json.endObject();
+			
+			zipExportProxy.startExport();
+			
+			return true;
+		} catch(Exception e) {
+			log.error(e);
+			return false;
+		}
+	}
+
+	private boolean handle_create_get_output(HttpServletResponse response, ExportModel model, final long id) {
+		try {
+			ZipExportProxy zipExportProxy = zipExportProxyMap.get(id);
+			if(zipExportProxy==null) {
+				return false;
+			}
+			
+			final boolean finished = zipExportProxy.getFinished();
+			
+			String[] output_lines = zipExportProxy.getOutputLines();
+			
+			
+			response.setContentType("application/json");			
+			JSONWriter json = new JSONWriter(response.getWriter());
+			json.object();
+			json.key("id");
+			json.value(id+111);
+
+			json.key("finished");
+			json.value(finished);
+			
+			json.key("processed_plots");
+			json.value(zipExportProxy.getProcessedPlots());
+
+			json.key("output_lines");
+			json.array();
+			for(String line:output_lines) {
+				json.value(line);
+			}
+			json.endArray();			
+			json.endObject();
+			return true;
+		} catch(Exception e) {
+			log.error(e);
+			return false;
+		}		
+	}
 
 }

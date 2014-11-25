@@ -53,6 +53,8 @@ public class ZipExport {
 	private final boolean write_header;
 	private final Long startTimestamp;
 	private final Long endTimestamp;
+	
+	private int processedPlots = 0;
 
 	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header, Long startTimestamp, Long endTimestamp) {
 		throwNull(tsdb);
@@ -75,7 +77,7 @@ public class ZipExport {
 		this.startTimestamp = startTimestamp;
 		this.endTimestamp = endTimestamp;
 	}
-
+	
 	public boolean createZipFile(String filename) {
 		FileOutputStream fileOutputStream;
 		try {
@@ -102,7 +104,7 @@ public class ZipExport {
 		if(Util.empty(plotIDs)) {
 			return false;
 		}
-		System.out.println("plots: "+plotIDs.length);
+		printLine("plots: "+plotIDs.length);
 
 		try {
 			ZipOutputStream zipOutputStream = new ZipOutputStream(outputstream);
@@ -136,8 +138,9 @@ public class ZipExport {
 				if(write_header) {
 					writeCSVHeader(csvOut);
 				}
+				processedPlots = 0;
 				for(String plotID:plotIDs) {
-					printLine("process plotID: "+plotID);
+					printLine("processing plotID: "+plotID);
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
@@ -151,11 +154,13 @@ public class ZipExport {
 					} catch (Exception e) {
 						log.error(e);
 					}
+					processedPlots++;
 				}
 				csvOut.flush();				
-			} else {				
+			} else {
+				processedPlots = 0;
 				for(String plotID:plotIDs) {
-					printLine("process plotID: "+plotID);
+					printLine("processing plotID: "+plotID);
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
@@ -176,6 +181,7 @@ public class ZipExport {
 						e.printStackTrace();
 						log.error(e);
 					}
+					processedPlots++;
 				}				
 			}
 			zipOutputStream.finish();
@@ -307,12 +313,12 @@ public class ZipExport {
 	}
 
 	private void writeTimeseries(TimestampSeries timeseries, String plotID, PrintStream csvOut) {		
-		System.out.println(timeseries);
+		//printLine(timeseries.toString());
 
 		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.sensorNames, false, false);
-		System.out.println("sensorNames "+Arrays.asList(sensorNames));
-		System.out.println("schema "+Arrays.asList(timeseries.sensorNames));							
-		System.out.println(Util.arrayToString(pos));		
+		//printLine("sensorNames "+Arrays.asList(sensorNames));
+		//printLine("schema "+Arrays.asList(timeseries.sensorNames));							
+		//printLine(Util.arrayToString(pos));		
 
 
 
@@ -375,6 +381,10 @@ public class ZipExport {
 			csvOut.println(s);
 			formater.close();															
 		}		
+	}
+	
+	public int getProcessedPlots() {
+		return processedPlots;
 	}
 
 }

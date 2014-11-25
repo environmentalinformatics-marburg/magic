@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Query Time Series</title>
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="/static/d3.min.js"></script>
+<script src="/static/util.js"></script>
+<script src="/static/querytimeseries.js"></script>
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="table.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+</head>
+
+<body>
+<p style="text-align:right"><a href="/static/index.html">back to main menu<a><p>
+<h1 style="text-align: center">Query Time Series</h1>
+<hr/>
+
+<div class="input_elements">
+
+<div style="display:inline-block">
+<label for="region_input">Region</label>
+<select id="region_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="generalstation_input">General Station</label>
+<select id="generalstation_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="plot_input">Plot</label>
+<select id="plot_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="sensor_input">Sensor</label>
+<select id="sensor_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="aggregation_input">Aggregation</label>
+<select id="aggregation_input"></select>
+</div>
+
+<div style="display:inline-block">
+<button id="query_button">query</button>
+<button id="image_button">image</button>
+</div>
+
+</div>
+
+Description: <label id="sensor_description">new2</label>
+Unit: <label id="sensor_unit">new2</label>
+
+<div>
+<label for="radio">view as</label>
+<div id="radio">
+<input type="radio" id="radioTable" name="radio" onchange="updateView()"><label for="radioTable">Table</label>
+<input type="radio" id="radioDiagram" name="radio" checked="checked" onchange="updateView()"><label for="radioDiagram">Diagram</label>
+</div>
+</div>
+
+<div id="result"></div>
+
+</body>
+
+</html>

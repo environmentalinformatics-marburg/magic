@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Export Time Series</title>
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="/static/util.js"></script>
+
+<script>
+
+var id = -1;
+var total_plots = -1;
+
+function ready() {
+
+getID("status").innerHTML = "start creating zip-file";
+
+$.get("/export/create")
+	.done(function(data) {
+		id = data.id;
+		total_plots = data.plots;
+		getID("progress").max = total_plots;
+		getID("status").innerHTML = "with id "+id;
+		window.setTimeout(function() {get_output();}, 100);
+	}).fail(function() {
+		getID("status").innerHTML = "error";
+	});	
+
+
+}
+
+function get_output() {
+$.get("/export/create_get_output?id="+id)
+	.done(function(data) {
+		var processed_plots = data.processed_plots;
+		getID("progress").value = processed_plots;
+		getID("progressLabel").innerHTML = processed_plots + " of " + total_plots + " plots";
+		var output_lines = data.output_lines;
+		if(output_lines.length>0) {
+			var out = "";
+			for(i in output_lines) {
+				out += output_lines[i]+"\n";
+			}
+			append_output(out);
+		}		
+		if(!data.finished) {
+			window.setTimeout(function() {get_output();}, 500);
+		} else {
+			getID("status").innerHTML = "ready";			
+		}
+	}).fail(function() {
+		append_output("\nerror");
+		getID("status").innerHTML = "ready";		
+	});
+}
+
+var append_output = function(text) {
+	$("#output").val($("#output").val()+text);
+	getID("output").scrollTop = getID("output").scrollTopMax;
+}
+
+
+
+
+
+
+
+
+
+$(document).ready(ready);
+</script>
+
+
+</head>
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
+<h1 style="text-align:center">Export Time Series</h1>
+<div style="text-align:right">
+<button id="button_instructions" onclick="show_instructions()">Show Instructions</button>
+</div>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div> 
+<hr/>
+</div>
+<p>
+<progress id="progress" style="width:700px"></progress>&nbsp;&nbsp;&nbsp;<span id="progressLabel"></span>
+</p>
+<p>
+<textarea id="output" cols="100" rows="30" wrap="soft" readonly="readonly">init...</textarea>
+</p>
+
+</body>
+</html>

@@ -18,12 +18,13 @@ import tsdb.loader.ki.TimeSeriesLoaderKiLi;
  * @author woellauer
  *
  */
+@Deprecated
 public class InitDatabase {
 	
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {
-		System.out.println("begin...");
+		/*System.out.println("begin...");
 		
 		// *** workaround for not created database files ... 
 		TsDB tsdb = TsDBFactory.createDefault();
@@ -36,7 +37,7 @@ public class InitDatabase {
 		System.gc();*/
 		// *** ... workaround
 		
-		tsdb = TsDBFactory.createDefault();
+		/*tsdb = TsDBFactory.createDefault();
 		TimeSeriesLoaderKiLi timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
@@ -51,14 +52,14 @@ public class InitDatabase {
 		}
 		System.out.println("load: "+TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH+"\t\t"+TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH);
 		
-		tsdb.registerStreams();
+		tsdb.registerStreams();*/
 		
 		
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/
 		
-		System.gc();
+		/*System.gc();
 		timeseriesloaderBE.loadDirectoryOfAllExploratories_structure_one(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_ONE_PATH));
 		System.gc();
 		timeseriesloaderBE.loadDirectory_with_stations_structure_two(Paths.get(TsDBFactory.SOURCE_BE_STRUCTURE_TWO_PATH));
@@ -76,7 +77,7 @@ public class InitDatabase {
 
 		tsdb.close();
 		System.out.println("...end");
-		System.exit(0);
+		System.exit(0);*/
 	}
 
 }

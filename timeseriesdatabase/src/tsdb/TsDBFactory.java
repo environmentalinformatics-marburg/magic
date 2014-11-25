@@ -30,10 +30,9 @@ public class TsDBFactory {
 	
 	public static String SOURCE_BE_TSM_PATH = "c:/timeseriesdatabase_data_source_be_tsm";
 	public static String SOURCE_KI_TSM_PATH = "c:/timeseriesdatabase_data_source_ki_tsm";
-	public static String SOURCE_BE_STRUCTURE_ONE_PATH = "c:/timeseriesdatabase_data_source_structure_one";
-	public static String SOURCE_BE_STRUCTURE_TWO_PATH = "c:/timeseriesdatabase_data_source_structure_two";
-	public static String SOURCE_KILI_PATH = "c:/timeseriesdatabase_data_source_structure_kili/";
 	public static String SOURCE_KILI_TFI_PATH = "c:/timeseriesdatabase_data_source_structure_kili_tfi";
+	
+	public static String WEBCONTENT_PATH = "webcontent";
 	
 	static {
 		initPaths();
@@ -69,18 +68,12 @@ public class TsDBFactory {
 			if(pathMap.containsKey("SOURCE_KI_TSM_PATH")) {
 				SOURCE_KI_TSM_PATH = pathMap.get("SOURCE_KI_TSM_PATH");
 			}
-			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_ONE_PATH")) {
-				SOURCE_BE_STRUCTURE_ONE_PATH = pathMap.get("SOURCE_BE_STRUCTURE_ONE_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_BE_STRUCTURE_TWO_PATH")) {
-				SOURCE_BE_STRUCTURE_TWO_PATH = pathMap.get("SOURCE_BE_STRUCTURE_TWO_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_KILI_PATH")) {
-				SOURCE_KILI_PATH = pathMap.get("SOURCE_KILI_PATH");
-			}
 			if(pathMap.containsKey("SOURCE_KILI_TFI_PATH")) {
 				SOURCE_KILI_TFI_PATH = pathMap.get("SOURCE_KILI_TFI_PATH");
-			}					
+			}
+			if(pathMap.containsKey("WEBCONTENT_PATH")) {
+				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
+			}			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		

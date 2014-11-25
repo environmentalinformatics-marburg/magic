@@ -22,6 +22,11 @@ public class StreamStorageStreamDB implements StreamStorage {
 	private StreamDB streamdb;
 
 	public StreamStorageStreamDB(String streamdbPathPrefix) {
+		
+		
+		
+		
+		
 		this.streamdb = new StreamDB(streamdbPathPrefix);
 	}
 

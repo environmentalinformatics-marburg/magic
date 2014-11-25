@@ -10,7 +10,7 @@ import tsdb.run.StartServerTsDB;
 
 public class Run {
 	public static void main(String[] args) throws RemoteException, InterruptedException {
-		
+
 		TsDB tsdb = TsDBFactory.createDefault();
 		RemoteTsDB remoteTsdb = new ServerTsDB(tsdb);
 
@@ -28,20 +28,15 @@ public class Run {
 
 		Runnable runnerWEB = ()->{
 			try {
-				if(args.length==1) {
-					Main.run(remoteTsdb,args[0]);
-				} else {
-					Main.run(remoteTsdb,null);
-				}
-
+				Main.run(remoteTsdb);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		};
-		
+
 		Thread threadWEB = new Thread(runnerWEB);
 		threadWEB.start();
-		
+
 		threadRMI.join();
 		threadWEB.join();
 

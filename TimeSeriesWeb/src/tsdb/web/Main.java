@@ -30,28 +30,18 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Exception {
-
 		//System.out.println(System.getenv().get("APP_HOME"));
-
-
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());
-
-		if(args.length==1) {
-			run(tsdb,args[0]);
-		} else {
-			run(tsdb,null);
-		}
-
+		run(tsdb);
 	}
 
-	public static void run(RemoteTsDB tsdb, String base_url) throws Exception {
+	public static void run(RemoteTsDB tsdb) throws Exception {
 
-		if(base_url==null) {
-			base_url = "/static";
-		}
+		final String base_url = "/static";
+
 
 		try{
-			BufferedImage rainbow = ImageIO.read(new File("static/rainbow.png"));
+			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.WEBCONTENT_PATH,"rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
 			for(int i=0;i<indexedColors.length;i++) {
 				int c = rainbow.getRGB(i, 0);
@@ -72,7 +62,7 @@ public class Main {
 		ResourceHandler resource_handler = new ResourceHandler();
 		resource_handler.setDirectoriesListed(true);
 		//resource_handler.setWelcomeFiles(new String[]{ "helllo.html" });
-		resource_handler.setResourceBase("./static");
+		resource_handler.setResourceBase(TsDBFactory.WEBCONTENT_PATH);
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] {resource_handler, new DefaultHandler()});
 		contextStatic.setHandler(handlers);
