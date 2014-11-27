@@ -39,7 +39,7 @@ public class Create_ki_elevation {
 		gdal.AllRegister();
 
 		//read geoTiff
-		String filename = TsDBFactory.get_CSV_output_path()+"DEM_ARC1960_30m_Hemp.tif";
+		String filename = TsDBFactory.get_CSV_output_directory()+"DEM_ARC1960_30m_Hemp.tif";
 		Dataset dataset = gdal.Open(filename);
 		System.out.println("Description: "+dataset.GetDescription());
 		System.out.println("Metadata: "+dataset.GetMetadata_Dict());
@@ -77,7 +77,7 @@ public class Create_ki_elevation {
 		CoordinateTransformation ct = CoordinateTransformation.CreateCoordinateTransformation(src, dst);		
 		
 		//create csv output file
-		PrintStream out = new PrintStream(new FileOutputStream(TsDBFactory.get_CSV_output_path()+"ki_elevation.csv"));
+		PrintStream out = new PrintStream(new FileOutputStream(TsDBFactory.get_CSV_output_directory()+"ki_elevation.csv"));
 		
 		//csv header
 		out.println("PlotID,Elevation");

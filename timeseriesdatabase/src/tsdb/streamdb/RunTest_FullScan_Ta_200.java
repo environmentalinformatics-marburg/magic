@@ -8,7 +8,7 @@ public class RunTest_FullScan_Ta_200 {
 	
 	public static void main(String[] args) {
 		long time_start = System.currentTimeMillis();
-		StreamDB streamDB = new StreamDB(TsDBFactory.STREAMDB_PATH_PREFIX);
+		StreamDB streamDB = new StreamDB(TsDBFactory.STORAGE_PATH+"/"+"streamdb");
 		
 		
 		

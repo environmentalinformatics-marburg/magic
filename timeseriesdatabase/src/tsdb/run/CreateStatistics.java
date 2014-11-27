@@ -20,7 +20,7 @@ public class CreateStatistics {
 		String sensorName = "Ta_200";
 
 
-		MiniCSV minicsv = new MiniCSV(TsDBFactory.get_CSV_output_path()+"statistics_"+sensorName+".csv");
+		MiniCSV minicsv = new MiniCSV(TsDBFactory.get_CSV_output_directory()+"statistics_"+sensorName+".csv");
 		minicsv.writeString("plot");
 		minicsv.writeString("avg");
 		minicsv.writeString("cnt");

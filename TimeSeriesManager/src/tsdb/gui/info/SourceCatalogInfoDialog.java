@@ -42,7 +42,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 
 	}	
 
-	private RemoteTsDB timeSeriesDatabase;
+	private RemoteTsDB tsdb;
 	private Table table;
 	private TableViewer viewer;
 
@@ -56,7 +56,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 		super(parentShell);
 		setShellStyle(SWT.MAX | SWT.RESIZE);
 
-		this.timeSeriesDatabase = timeSeriesDatabase;
+		this.tsdb = timeSeriesDatabase;
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 
 		try {
 
-			SourceEntry[] sourceCatalogEntries = timeSeriesDatabase.getSourceCatalogEntries();
+			SourceEntry[] sourceCatalogEntries = tsdb.getSourceCatalogEntries();
 
 			viewer.setInput(sourceCatalogEntries);
 

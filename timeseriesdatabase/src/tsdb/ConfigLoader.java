@@ -254,7 +254,7 @@ public class ConfigLoader {
 				if(section!=null) {
 					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
 				} else {
-					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
+					log.trace("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
 			}
 
@@ -589,7 +589,7 @@ public class ConfigLoader {
 								GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 								if(generalStation!=null) {
 									virtualPlot = new VirtualPlot(tsdb, virtualPlotID, generalStation, Float.NaN, Float.NaN, false);
-									log.info("insert missing virtual plot "+virtualPlotID+" with "+generalStationName);
+									log.trace("insert missing virtual plot "+virtualPlotID+" with "+generalStationName);
 									tsdb.insertVirtualPlot(virtualPlot);
 								} else {
 									log.warn("generalstation not found: "+generalStationName+"   from  "+virtualPlotID);
@@ -976,7 +976,7 @@ public class ConfigLoader {
 			String plotID = plotidReader.get(row);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
-				log.warn("virtual plotID not found: "+plotID+"  in "+configFile);
+				log.trace("virtual plotID not found: "+plotID+"  in "+configFile);
 				continue;
 			}
 			float easting = eastingReader.get(row);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.RemoteException;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
+import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 /**
@@ -20,79 +22,100 @@ import tsdb.util.Util;
  *
  */
 public class TsDBFactory {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
-	public static String CONFIG_DIRECTORY = "config/";
-	public static String DATABASE_DIRECTORY = "c:/timeseriesdatabase_database/";
-	public static String CACHE_DIRECTORY = "c:/timeseriesdatabase_cache/";
-	public static String STREAMDB_PATH_PREFIX = "c:/timeseriesdatabase_storage/db";
-	
-	public static String SOURCE_BE_TSM_PATH = "c:/timeseriesdatabase_data_source_be_tsm";
-	public static String SOURCE_KI_TSM_PATH = "c:/timeseriesdatabase_data_source_ki_tsm";
-	public static String SOURCE_KILI_TFI_PATH = "c:/timeseriesdatabase_data_source_structure_kili_tfi";
-	
+	private static final String PATH_CONFIG_FILENAME = "tsdb_paths.ini";
+	private static final String TSDB_PATH_SECTION = "tsdb_paths"; 
+
+
+	public static String CONFIG_PATH = "config";
+	public static String STORAGE_PATH = "storage";
+
+	public static String SOURCE_BE_TSM_PATH = "source/be_tsm";
+	public static String SOURCE_KI_TSM_PATH = "source/ki_tsm";
+	public static String SOURCE_KI_TFI_PATH = "source/ki_tfi";
+
 	public static String WEBCONTENT_PATH = "webcontent";
-	
+
+	public static String OUTPUT_PATH = "output";
+
 	static {
 		initPaths();
 	}
-	
-	public static void initPaths() {
+
+	private static void initPaths() {
 		try {
 			Wini ini;
-			if(Files.exists(Paths.get("database_paths.ini"))) {
-				System.out.println("read from root: database_paths.ini");
-				ini = new Wini(new File("database_paths.ini"));
+			if(Files.exists(Paths.get(PATH_CONFIG_FILENAME))) {
+				log.trace("read from root: "+PATH_CONFIG_FILENAME);
+				ini = new Wini(new File(PATH_CONFIG_FILENAME));
+			} else if(Files.exists(Paths.get(CONFIG_PATH,PATH_CONFIG_FILENAME))) {
+				log.trace("read from config: "+PATH_CONFIG_FILENAME);
+				ini = new Wini(new File(CONFIG_PATH,PATH_CONFIG_FILENAME));
 			} else {
-				System.out.println("read from config: database_paths.ini");
-				ini = new Wini(new File(CONFIG_DIRECTORY+"database_paths.ini"));
-			}			
-			Section section = ini.get("database_paths");
+				log.trace("no "+PATH_CONFIG_FILENAME);
+				return;
+			}
+			Section section = ini.get(TSDB_PATH_SECTION);
+			if(section==null) {
+				log.warn("no "+TSDB_PATH_SECTION+" section in "+ini.getFile());
+				return;
+			}
 			Map<String, String> pathMap = Util.readIniSectionMap(section);
-			if(pathMap.containsKey("CONFIG_DIRECTORY")) {
-				CONFIG_DIRECTORY = pathMap.get("CONFIG_DIRECTORY");
+			if(pathMap.containsKey("CONFIG_PATH")) {
+				CONFIG_PATH = pathMap.get("CONFIG_PATH");
 			}
-			if(pathMap.containsKey("DATABASE_DIRECTORY")) {
-				DATABASE_DIRECTORY = pathMap.get("DATABASE_DIRECTORY");
+			if(pathMap.containsKey("STORAGE_PATH")) {
+				STORAGE_PATH = pathMap.get("STORAGE_PATH");
 			}
-			if(pathMap.containsKey("CACHE_DIRECTORY")) {
-				CACHE_DIRECTORY = pathMap.get("CACHE_DIRECTORY");
-			}
-			if(pathMap.containsKey("STREAMDB_PATH_PREFIX")) {
-				STREAMDB_PATH_PREFIX = pathMap.get("STREAMDB_PATH_PREFIX");
-			}				
 			if(pathMap.containsKey("SOURCE_BE_TSM_PATH")) {
 				SOURCE_BE_TSM_PATH = pathMap.get("SOURCE_BE_TSM_PATH");
 			}
 			if(pathMap.containsKey("SOURCE_KI_TSM_PATH")) {
 				SOURCE_KI_TSM_PATH = pathMap.get("SOURCE_KI_TSM_PATH");
 			}
-			if(pathMap.containsKey("SOURCE_KILI_TFI_PATH")) {
-				SOURCE_KILI_TFI_PATH = pathMap.get("SOURCE_KILI_TFI_PATH");
+			if(pathMap.containsKey("SOURCE_KI_TFI_PATH")) {
+				SOURCE_KI_TFI_PATH = pathMap.get("SOURCE_KI_TFI_PATH");
 			}
 			if(pathMap.containsKey("WEBCONTENT_PATH")) {
 				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
-			}			
+			}
+			if(pathMap.containsKey("OUTPUT_PATH")) {
+				OUTPUT_PATH = pathMap.get("OUTPUT_PATH");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
 	}
-	
+
+	public static ServerTsDB createDefaultServer() {
+		TsDB tsdb = createDefault();
+		ServerTsDB serverTsDB;
+		try {
+			serverTsDB = new ServerTsDB(tsdb);
+			return serverTsDB;
+		} catch (RemoteException e) {
+			log.error(e);
+			return null;
+		}
+	}
+
 	public static TsDB createDefault() {
 		//initPaths();		
-		return createDefault(DATABASE_DIRECTORY,CONFIG_DIRECTORY,CACHE_DIRECTORY,STREAMDB_PATH_PREFIX);
+		return createDefault(STORAGE_PATH+"/",CONFIG_PATH,STORAGE_PATH+"/",STORAGE_PATH+"/streamdb");
 	}
-	
-	public static TsDB createDefault(String databaseDirectory,String configDirectory, String cacheDirectory, String streamdbPathPrefix) {		
+
+	public static TsDB createDefault(String databaseDirectory,String configPath, String cacheDirectory, String streamdbPathPrefix) {
+		String configDirectory = configPath+"/";
 		try {
 			TsDB tsdb = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory, streamdbPathPrefix);
 			ConfigLoader configLoader = new ConfigLoader(tsdb);
-			
+
 			//*** global config start			
 			configLoader.readRegionConfig(configDirectory+"region.ini");
 			//*** global config end
-			
+
 			//*** BE start
 			configLoader.readLoggerSchemaConfig(configDirectory+"station_type_schema.ini"); // BE 2. read schema of logger types and create: logger type objects, sensor objects
 			configLoader.readGeneralStationConfig(configDirectory+"general_stations.ini"); // BE 1. read list of general stations and create: general station objects
@@ -100,7 +123,7 @@ public class TsDBFactory {
 			configLoader.readSensorNameTranslationConfig(configDirectory+"be_config_level0050_standards.cnf"); // BE 4. read read input name sensor translation and insert it in existing logger type objects
 			configLoader.readStationGeoPositionConfig(configDirectory+"be_station_master.csv"); // BE read and insert geo position and station serial to station objects, add nearest station list to station object
 			//*** BE end
-			
+
 
 			//*** KiLi start
 			configLoader.readLoggerSchemaConfig(configDirectory+"station_type_schema_kili.ini"); // KiLi 2. read schema of logger types and create: logger type objects, sensor objects
@@ -112,7 +135,7 @@ public class TsDBFactory {
 			configLoader.readUpdatedPlotGeoPosConfig(configDirectory+"kili_plots_correct_xy.csv");
 			configLoader.calcNearestVirtualPlots();
 			//*** KilI end
-			
+
 			//*** sensor config	start		
 			configLoader.readIgnoreSensorNameConfig(configDirectory+"ignore_sensors.ini"); // read and insert sensor names that should be not inserted in database
 			configLoader.readSensorPhysicalRangeConfig(configDirectory+"parameter_physical_range.ini"); // read and insert physical range to sensor objects
@@ -121,20 +144,20 @@ public class TsDBFactory {
 			configLoader.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini"); // read list of sensor names for interpolation and mark sensor objects
 			configLoader.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini"); // (TODO change) read empirical max diff and insert it in sensor objects
 			//*** sensor config end
-			
+
 			//*** global config start
 			configLoader.readSensorDescriptionConfig(configDirectory+"sensor_description.ini");
 			configLoader.readSensorUnitConfig(configDirectory+"sensor_unit.ini");
 			configLoader.readSensorCategoryConfig(configDirectory+"sensor_category.ini");
 			//*** global config end
-			
+
 			tsdb.createPlotMap();
-			
+
 			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
-			
+
 			tsdb.updateGeneralStations(); //TODO later remove!
-			
-			
+
+
 			return tsdb;		
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -142,37 +165,9 @@ public class TsDBFactory {
 			return null;
 		}		
 	}
-	
-	/*private static void read_database_paths(String configFile) {
-		try {
-			Wini ini = new Wini(new File(configFile));
-			Section section = ini.get("database_paths");
-			if(section!=null) {
-				for(String pathName:section.keySet()) {
-					System.out.println("pathName: "+pathName);
-				}
-			}
-		} catch (IOException e) {
-			log.warn(e);
-		}		
-	}*/
-	
-	public static String get_CSV_output_path() {		
-		String CSV_OUTPUT_DIRECTORY = "C:/timeseriesdatabase_output/";		
-		try {
-			Wini ini = new Wini(new File(CONFIG_DIRECTORY+"database_paths.ini"));
-			Section section = ini.get("database_paths");
-			Map<String, String> pathMap = Util.readIniSectionMap(section);
-			if(pathMap.containsKey("CSV_OUTPUT_DIRECTORY")) {
-				CSV_OUTPUT_DIRECTORY = pathMap.get("CSV_OUTPUT_DIRECTORY");
-				System.out.println("set CSV_OUTPUT_DIRECTORY: "+ CSV_OUTPUT_DIRECTORY);
-			} else {
-				System.out.println("not found CSV_OUTPUT_DIRECTORY");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-		return CSV_OUTPUT_DIRECTORY;
+
+	public static String get_CSV_output_directory() {		
+		return OUTPUT_PATH+"/";
 	}
 
 }

@@ -46,7 +46,7 @@ public class ZipExportProxy {
 	public void startExport() {
 		try {
 		
-		File tempFile = File.createTempFile("plots", ".zip", new File(TsDBFactory.get_CSV_output_path()));
+		File tempFile = File.createTempFile("plots", ".zip", new File(TsDBFactory.get_CSV_output_directory()));
 
 		//OutputStream outputstream = new ByteArrayOutputStream();
 		

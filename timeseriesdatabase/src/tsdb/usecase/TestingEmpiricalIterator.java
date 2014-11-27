@@ -22,8 +22,8 @@ public class TestingEmpiricalIterator {
 
 	public static void main(String[] args) {
 		System.out.println("start...");
-		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
-		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
+		TsDB tsdb = TsDBFactory.createDefault();
+		QueryProcessor qp = new QueryProcessor(tsdb);
 		
 		String basePlotID = "HEW08";
 		String sensorName = "Ts_5";
@@ -32,7 +32,7 @@ public class TestingEmpiricalIterator {
 		Long queryEnd = 59809800l;
 		DataQuality dataQuality = DataQuality.PHYSICAL;
 		
-		Station station = timeSeriesDatabase.getStation(basePlotID);
+		Station station = tsdb.getStation(basePlotID);
 		
 		List<Station> nearList = station.getNearestStationsWithSensor("Ta_200");
 		

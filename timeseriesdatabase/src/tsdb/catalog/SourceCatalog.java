@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Fun;
 
 public class SourceCatalog {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private static final String DB_FILENAME_PREFIX = "SourceCatalog";
 	private static final String DB_NAME_SOURCE_CATALOG = "SourceCatalog";
@@ -26,7 +30,7 @@ public class SourceCatalog {
 				         .make();
 
 		if(db.getAll().containsKey(DB_NAME_SOURCE_CATALOG)) {
-			System.out.println("open existing SourceCatalog");
+			log.trace("open existing SourceCatalog");
 			this.catalogMap = db.getTreeMap(DB_NAME_SOURCE_CATALOG);
 		} else {
 			System.out.println("create new SourceCatalog");

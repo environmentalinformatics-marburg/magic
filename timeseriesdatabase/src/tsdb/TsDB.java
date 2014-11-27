@@ -94,7 +94,7 @@ public class TsDB {
 	 * @param streamdbPathPrefix 
 	 */
 	public TsDB(String databasePath, String evenstoreConfigFile, String cachePath, String streamdbPathPrefix) {		
-		log.trace("create TimeSeriesDatabase");		
+		log.info("open tsdb...");		
 
 		this.regionMap = new TreeMap<String,Region>();
 

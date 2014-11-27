@@ -22,7 +22,7 @@ import de.umr.jepc.util.Timer;
  */
 public class UseCaseAverageGeneralStationQuery {
 	
-	private static final String CSV_OUTPUT_PATH = TsDBFactory.get_CSV_output_path();
+	private static final String CSV_OUTPUT_PATH = TsDBFactory.get_CSV_output_directory();
 	
 	private static Function<TsEntry, TsEntry> createDiffFunc(TsIterator compareIt) {
 		return new Function<TsEntry, TsEntry>() {			

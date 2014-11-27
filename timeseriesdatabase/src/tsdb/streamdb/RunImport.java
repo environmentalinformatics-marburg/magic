@@ -21,7 +21,7 @@ public class RunImport {
 		
 		long time_start = System.currentTimeMillis();
 
-		StreamDB streamDB = new StreamDB(TsDBFactory.STREAMDB_PATH_PREFIX);
+		StreamDB streamDB = new StreamDB(TsDBFactory.STORAGE_PATH+"/"+"streamdb");
 
 		//insertTestData(streamDB);
 		insertTsDB(streamDB);

@@ -8,7 +8,7 @@
       		<PatternLayout pattern="[%-5p] (%F:%L) %m%n"/>
     	</Console>    	
     	
-    	<RollingRandomAccessFile name="file_tsdb" fileName="logs/tsdb.log" filePattern="logs/old/tsdb_%i.log">
+    	<RollingRandomAccessFile name="file_tsdb" fileName="log/tsdb.log" filePattern="log/old/tsdb_%i.log">
 			<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout pattern="[%p] %m%n"/>
 			<Policies>
@@ -17,7 +17,7 @@
 			</Policies>
 		</RollingRandomAccessFile>
 		
-		<RollingRandomAccessFile name="file_tsdb_info" fileName="logs/tsdb_info.log" filePattern="logs/old/tsdb_info_%i.log">
+		<RollingRandomAccessFile name="file_tsdb_info" fileName="log/tsdb_info.log" filePattern="log/old/tsdb_info_%i.log">
 			<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout pattern="[%p] %m%n"/>
 			<Policies>
@@ -26,7 +26,7 @@
 			</Policies>
 		</RollingRandomAccessFile>
 		
-		<RollingRandomAccessFile name="file_tsdb_warn" fileName="logs/tsdb_warn.log" filePattern="logs/old/tsdb_warn_%i.log">
+		<RollingRandomAccessFile name="file_tsdb_warn" fileName="log/tsdb_warn.log" filePattern="log/old/tsdb_warn_%i.log">
 			<ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout pattern="[%p] %m%n"/>
 			<Policies>
@@ -35,7 +35,7 @@
 			</Policies>
 		</RollingRandomAccessFile>
 		
-		<RollingRandomAccessFile name="file_tsdb_web_request" fileName="logs/web_request.log" filePattern="logs/old/web_request_%i.log">
+		<RollingRandomAccessFile name="file_tsdb_web_request" fileName="log/web_request.log" filePattern="log/old/web_request_%i.log">
 			<MarkerFilter marker="request"/>
 			<PatternLayout pattern="[%marker] %m%n"/>
 			<Policies>
@@ -44,7 +44,7 @@
 			</Policies>
 		</RollingRandomAccessFile>
 
-    	<RollingRandomAccessFile name="file_jepc" fileName="logs/jepc.log" filePattern="logs/old/jepc_%i.log">
+    	<RollingRandomAccessFile name="file_jepc" fileName="log/jepc.log" filePattern="log/old/jepc_%i.log">
 			<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout pattern="[%p] %m%n"/>
 			<Policies>
@@ -53,7 +53,7 @@
 			</Policies>
 		</RollingRandomAccessFile>
 		
-		<RollingRandomAccessFile name="file_jepc_warn" fileName="logs/jepc_warn.log" filePattern="logs/old/jepc_warn_%i.log">
+		<RollingRandomAccessFile name="file_jepc_warn" fileName="log/jepc_warn.log" filePattern="log/old/jepc_warn_%i.log">
 			<ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout pattern="[%p] %m%n"/>
 			<Policies>

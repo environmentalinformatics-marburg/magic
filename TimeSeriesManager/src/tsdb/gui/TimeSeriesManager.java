@@ -38,9 +38,9 @@ import tsdb.remote.ServerTsDB;
 import tsdb.run.StartServerTsDB;
 
 public class TimeSeriesManager {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
 
 	public RemoteTsDB remoteTsDB;
@@ -81,29 +81,12 @@ public class TimeSeriesManager {
 	private void init() throws RemoteException, NotBoundException {
 		boolean useRemote = false;
 		//boolean useRemote = true;
-		//boolean usedefault = true;
-		boolean usedefault = false;
 
 		System.out.println("start...");
 
 		if(!useRemote) {
-			if(usedefault) {
-				TsDB tsdb = TsDBFactory.createDefault();
-				this.remoteTsDB =  new ServerTsDB(tsdb);
-			} else {
-				if(Files.exists(Paths.get("database_paths.ini"))) {
-					TsDB tsDB = TsDBFactory.createDefault();
-					this.remoteTsDB =  new ServerTsDB(tsDB);
-				} else {
-					String databaseDirectory = "c:/timeseriesdatabase_database/";
-					String configDirectory = "c:/git_magic/timeseriesdatabase/config/";
-					String cacheDirectory = "c:/timeseriesdatabase_cache/";
-					String streamdbPathPrefix = "c:/timeseriesdatabase_storage/db";
-					TsDB tsDB = TsDBFactory.createDefault(databaseDirectory, configDirectory, cacheDirectory, streamdbPathPrefix);
-					this.remoteTsDB =  new ServerTsDB(tsDB);
-				}
-				
-			}
+			TsDB tsdb = TsDBFactory.createDefault();
+			this.remoteTsDB =  new ServerTsDB(tsdb);
 		} else {
 
 			System.out.println("start RemoteTsDB...");
@@ -121,7 +104,7 @@ public class TimeSeriesManager {
 			System.out.println("this host IP is " + hostname);
 
 			//String server_url = "rmi://137.248.191.180:16826/ServerTsDB";
-			
+
 
 			remoteTsDB = (RemoteTsDB) registry.lookup(server_url);
 
