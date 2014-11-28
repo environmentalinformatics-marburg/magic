@@ -25,25 +25,53 @@ import javafx.stage.StageStyle;
 
 public class Explorer extends Application {
 	
+	
+	
+	public static String ESCAPE = ""+(char)27;
+	
 	private static final Logger log = LogManager.getLogger();
 
 	@Override
 	public void start(Stage primaryStage) {
 
-		RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
+		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
+		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180");
+		
+		if(tsdb==null) {
+			log.error("no connection");
+			return;
+		}
 
 		VBox vboxMain = new VBox();
 
-		Button button = new Button("source catalog");
-		vboxMain.getChildren().add(button);
-		button.setOnAction(e->{
-			Scene subScene = new SourceCatalogScene(tsdb).getScene();
+		Button buttonSourceCatalog = new Button("source catalog");
+		vboxMain.getChildren().add(buttonSourceCatalog);
+		buttonSourceCatalog.setOnAction(e->{
+			SourceCatalogScene sourceCatalogScene = new SourceCatalogScene(tsdb);
+			Scene subScene = sourceCatalogScene.getScene();
 			if(subScene!=null) {
 				Stage subStage = new Stage(StageStyle.DECORATED);
 				subStage.initModality(Modality.APPLICATION_MODAL);
 				subStage.setTitle("source catalog");
 				subStage.setScene(subScene);
 				subStage.show();
+				sourceCatalogScene.setOnClose(x->{subStage.close();return true;});
+			}
+		});
+		
+		Button buttonTimeSeriesView = new Button("time series view");
+		vboxMain.getChildren().add(buttonTimeSeriesView);
+		buttonTimeSeriesView.setOnAction(e->{
+			TimeSeriesViewScene timeSeriesViewScene = new TimeSeriesViewScene(tsdb);
+			Scene subScene = timeSeriesViewScene.getScene();
+			if(subScene!=null) {
+				Stage subStage = new Stage(StageStyle.DECORATED);
+				subStage.initModality(Modality.APPLICATION_MODAL);
+				subStage.setTitle("time series view");
+				subStage.setScene(subScene);
+				subStage.show();
+				timeSeriesViewScene.setOnClose(x->{subStage.close();return true;});
 			}
 		});
 
@@ -52,6 +80,12 @@ public class Explorer extends Application {
 		borderPane.setCenter(vboxMain);
 
 		Scene scene = new Scene(borderPane);
+		
+		scene.setOnKeyTyped(value->{			
+			if(value.getCharacter().equals(ESCAPE)) {
+				primaryStage.close();
+			}
+		});
 
 		primaryStage.setTitle("TsDB Explorer");
 		primaryStage.setScene(scene);
@@ -59,6 +93,8 @@ public class Explorer extends Application {
 		primaryStage.setWidth(300);
 
 		primaryStage.show();
+		
+		
 
 	}
 

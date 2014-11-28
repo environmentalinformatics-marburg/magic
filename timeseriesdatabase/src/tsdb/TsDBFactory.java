@@ -2,10 +2,15 @@ package tsdb;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +18,9 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
+import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
+import tsdb.run.StartServerTsDB;
 import tsdb.util.Util;
 
 /**
@@ -168,6 +175,42 @@ public class TsDBFactory {
 
 	public static String get_CSV_output_directory() {		
 		return OUTPUT_PATH+"/";
+	}
+	
+	public static final String RMI_SERVER_NAME = "ServerTsDB";
+	public static final int RMI_REGISTRY_PORT = 16825;
+	public static final int RMI_SERVER_PORT = 16826;
+	public static String RMI_DEFAULT_SERVER_IP = "192.168.191.183";
+	
+	public static String get_rmi_server_url() {
+		return get_rmi_server_url(RMI_DEFAULT_SERVER_IP);
+	}
+	
+	public static String get_rmi_server_url(String server_ip) {
+		return "rmi://"+server_ip+':'+RMI_SERVER_PORT+'/'+RMI_SERVER_NAME;
+	}
+	
+	public static RemoteTsDB createRemoteConnection() {
+		return createRemoteConnection(RMI_DEFAULT_SERVER_IP);
+	}
+	
+	public static RemoteTsDB createRemoteConnection(String server_ip) {
+		try {
+			Registry registry = LocateRegistry.getRegistry(server_ip,RMI_REGISTRY_PORT);			
+			try {
+				log.info("available RMI servers: "+Util.arrayToString(registry.list()));
+				String hostname = InetAddress.getLocalHost().getHostAddress();
+				log.info("IP of this client: " + hostname);
+			} catch (UnknownHostException e) {
+				log.warn(e);
+			}			
+			RemoteTsDB remoteTsDB = (RemoteTsDB) registry.lookup(get_rmi_server_url(server_ip));
+			log.info("connected remoteTsDB: "+remoteTsDB.toString());
+			return remoteTsDB;
+		} catch (Exception e) {
+			log.error(e);
+			return null;
+		}	
 	}
 
 }

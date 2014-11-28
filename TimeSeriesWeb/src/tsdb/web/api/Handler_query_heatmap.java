@@ -31,10 +31,10 @@ import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;
+import tsdb.util.gui.TimeSeriesDiagram;
+import tsdb.util.gui.TimeSeriesHeatMap;
+import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.util.iterator.TsIterator;
-import tsdb.web.TimeSeriesDiagram;
-import tsdb.web.TimeSeriesHeatMap;
-import tsdb.web.TimeSeriesPainterGraphics2D;
 
 public class Handler_query_heatmap extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();

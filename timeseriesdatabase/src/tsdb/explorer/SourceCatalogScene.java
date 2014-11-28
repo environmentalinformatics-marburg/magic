@@ -39,13 +39,19 @@ import tsdb.util.TsSchema;
 import com.sun.javafx.binding.ObjectConstant;
 
 public class SourceCatalogScene {
+	
+	private static String ESCAPE = ""+(char)27;
 
 	private static <S, T> Callback<TableColumn<S,T>, TableCell<S,T>> createCellFactory(Callback<T,String> converter) {
 		return param -> new TableCell<S, T>(){
 			@Override
 			protected void updateItem(T item, boolean empty) {
 				super.updateItem(item, empty);
-				setText(converter.call(item));						
+				if(empty) {
+					setText(null);
+				} else {
+					setText(converter.call(item));
+				}
 			}
 		};
 	}
@@ -60,10 +66,13 @@ public class SourceCatalogScene {
 	ComboBox<String> comboGeneralStation;
 	ComboBox<String> comboPlot;
 
+	private final Region regionAll = new Region("[all]","[all]");
+
 	public SourceCatalogScene(RemoteTsDB tsdb) {
 		this.tsdb = tsdb;
+
 		createData();
-		createScene();		
+		createScene();
 	}
 
 	private static final Logger log = LogManager.getLogger();
@@ -101,18 +110,21 @@ public class SourceCatalogScene {
 				for(TimestampInterval<StationProperties> interval:virtualPlotInfo.intervalList) {
 					ArrayList<SourceEntry> sourceEntryList = stationCatalogEntryMap.get(interval.value.get_serial());
 					if(sourceEntryList!=null) {
-						for(SourceEntry sourceEntry:sourceEntryList) { //TODO
-							SourceItem sourceItem = new SourceItem(sourceEntry);
-							sourceItem.generalStationName = virtualPlotInfo.generalStationInfo.name;
-							sourceItem.regionName = virtualPlotInfo.generalStationInfo.region.name;
-							sourceItem.plotid = virtualPlotInfo.plotID;
-							sourceItemList.add(sourceItem);
+						for(SourceEntry sourceEntry:sourceEntryList) {
+							if(interval.contains(sourceEntry.firstTimestamp, sourceEntry.lastTimestamp)) {
+								SourceItem sourceItem = new SourceItem(sourceEntry);
+								sourceItem.generalStationName = virtualPlotInfo.generalStationInfo.name;
+								sourceItem.regionName = virtualPlotInfo.generalStationInfo.region.name;
+								sourceItem.plotid = virtualPlotInfo.plotID;
+								sourceItemList.add(sourceItem);
+							}
 						}
 					}
 				}
 			}
 			regions = tsdb.getRegions();
 		} catch (RemoteException e) {
+			e.printStackTrace();
 			log.error(e);
 			regions = new Region[0];
 		}		
@@ -127,8 +139,6 @@ public class SourceCatalogScene {
 		sortedList.comparatorProperty().bind(table.comparatorProperty());
 		table.setItems(sortedList);
 
-
-		final ObjectConstant<String> textNoValue = ObjectConstant.valueOf("---");
 
 		TableColumn<SourceItem,String> colPlot = new TableColumn<SourceItem,String>("plot");		
 		colPlot.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().plotid));
@@ -157,12 +167,11 @@ public class SourceCatalogScene {
 
 		TableColumn<SourceItem,Integer> colRows = new TableColumn<SourceItem,Integer>("rows");		
 		colRows.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().sourceEntry.rows));
-		colFirst.setCellFactory(createCellFactory(rows->rows==null?"---":rows.toString()));
 
 
 		TableColumn<SourceItem,Integer> colTimeStep = new TableColumn<SourceItem,Integer>("time-step");		
 		colTimeStep.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().sourceEntry.timeStep));
-		colTimeStep.setCellFactory(createCellFactory(timestep->timestep==null||timestep==TsSchema.NO_CONSTANT_TIMESTEP?"---":timestep.toString()));
+		colTimeStep.setCellFactory(createCellFactory(timestep->timestep==null||timestep==TsSchema.NO_CONSTANT_TIMESTEP?null:timestep.toString()));
 
 		TableColumn<SourceItem,String> colHeader = new TableColumn<SourceItem,String>("header");		
 		colHeader.setCellValueFactory(param->ObjectConstant.valueOf(Arrays.toString(param.getValue().sourceEntry.headerNames)));
@@ -183,9 +192,13 @@ public class SourceCatalogScene {
 
 		BorderPane mainBoderPane = new BorderPane();		
 		mainBoderPane.setCenter(table);
+		
+		Label lblStatus = new Label("ready");
+		mainBoderPane.setBottom(lblStatus);
+		
 
 		ObservableList<Region> regionList = FXCollections.observableArrayList();
-		Region regionAll = new Region("[all]","[all]");
+
 		regionList.add(regionAll);
 		regionList.addAll(regions);
 		comboRegion = new ComboBox<Region>(regionList);
@@ -206,9 +219,9 @@ public class SourceCatalogScene {
 
 		comboGeneralStation = new ComboBox<String>();
 		comboGeneralStation.setOnAction(e->updateComboPlot());
-		
-		comboPlot = new ComboBox<String>();
 
+		comboPlot = new ComboBox<String>();
+		comboPlot.setOnAction(e->updateFilter());
 
 		HBox hBoxControl = new HBox(10d);
 		hBoxControl.getChildren().add(new Label("Region"));
@@ -222,7 +235,7 @@ public class SourceCatalogScene {
 		hBoxControl.getChildren().add(comboPlot);
 		mainBoderPane.setTop(hBoxControl);
 		updateComboGeneral();
-		this.scene = new Scene(mainBoderPane, 200, 200);			
+		this.scene = new Scene(mainBoderPane, 400, 400);		
 	}
 
 	public Scene getScene() {
@@ -231,24 +244,28 @@ public class SourceCatalogScene {
 
 	private void updateFilter() {
 		Region region = comboRegion.getValue();
+		String general = comboGeneralStation.getValue();
+		String plot = comboPlot.getValue();
 
-		if(region.name.equals("[all]")) {
-			filteredList.setPredicate(sourceEntry->true);
-		} else {
-			filteredList.setPredicate(sourceEntry->{
-				if(sourceEntry.regionName==null) {
-					return false;
+		if(plot==null||plot.equals("[all]")) {
+			if(general==null||general.equals("[all]")) {
+				if(region==null||region.name.equals("[all]")) {
+					filteredList.setPredicate(sourceEntry->true);
 				} else {
-					return sourceEntry.regionName.equals(region.name);
+					filteredList.setPredicate(sourceEntry->region.name.equals(sourceEntry.regionName));
 				}
-			});
-		}		
+			} else {
+				filteredList.setPredicate(sourceEntry->general.equals(sourceEntry.generalStationName));
+			}
+		} else {
+			filteredList.setPredicate(sourceEntry->plot.equals(sourceEntry.plotid));
+		}
 	}
 
 	private void updateComboGeneral() {
 		TreeSet<String> generalSet = new TreeSet<String>();
-		Region region = comboRegion.getValue();
-		if(region.name.equals("[all]")) {
+		Region region = comboRegion.getValue();		
+		if(region==null||region.name.equals("[all]")) {
 			for(SourceItem sourceItem:sourceItemList) {
 				generalSet.add(sourceItem.generalStationName);
 			}
@@ -267,18 +284,15 @@ public class SourceCatalogScene {
 		comboGeneralStation.setValue(generalAll);
 
 		updateComboPlot();
-
-
-
 	}
 
 	private void updateComboPlot() {
 		Region region = comboRegion.getValue();
 		TreeSet<String> plotSet = new TreeSet<String>();
 		String general = comboGeneralStation.getValue();
-		if(general.equals("[all]")) {
+		if(general==null||general.equals("[all]")) {
 			for(SourceItem sourceItem:sourceItemList) {
-				if(region.name.equals("[all]")||sourceItem.regionName.equals(region.name)) {
+				if(region==null||region.name.equals("[all]")||sourceItem.regionName.equals(region.name)) {
 					plotSet.add(sourceItem.plotid);
 				}
 			}		
@@ -297,10 +311,15 @@ public class SourceCatalogScene {
 		comboPlot.setItems(plots);
 		comboPlot.setValue(plotAll);
 
-
-
-
 		updateFilter();
+	}
+	
+	public void setOnClose(Callback<Boolean,Boolean> cb) {
+		scene.setOnKeyTyped(value->{			
+			if(value.getCharacter().equals(ESCAPE)) {
+				cb.call(true);
+			}
+		});
 	}
 
 }

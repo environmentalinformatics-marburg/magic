@@ -1,4 +1,4 @@
-package tsdb.web;
+package tsdb.util.gui;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
@@ -7,6 +7,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
+import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 

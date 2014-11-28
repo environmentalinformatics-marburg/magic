@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.umr.jepc.Attribute;
+import de.umr.jepc.Attribute.DataType;
 
 /**
  * This class contains metadata that associated with a logger type (station type).
@@ -14,14 +15,12 @@ import de.umr.jepc.Attribute;
 public class LoggerType implements Serializable {
 	private static final long serialVersionUID = -8623721500856325122L;
 	public String typeName;
-	public Attribute[] schema;
 	public String[] sensorNames;
 	public Map<String,String> sensorNameTranlationMap;
 	
-	public LoggerType(String typeName, String[] sensorNames, Attribute[] schema) {
+	public LoggerType(String typeName, String[] sensorNames) {
 		this.typeName = typeName;
 		this.sensorNames = sensorNames;
-		this.schema = schema;
 		this.sensorNameTranlationMap = new HashMap<String, String>();
 	}
 	
@@ -54,5 +53,13 @@ public class LoggerType implements Serializable {
 		} else if (!typeName.equals(other.typeName))
 			return false;
 		return true;
+	}
+	
+	public Attribute[] getEventStoreSchema() {
+		Attribute[] schema = new Attribute[sensorNames.length];
+		for(int i=0;i<sensorNames.length;i++) {
+			schema[i] =  new Attribute(sensorNames[i],DataType.FLOAT);
+		}
+		return schema;
 	}
 }

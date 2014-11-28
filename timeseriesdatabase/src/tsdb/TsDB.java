@@ -124,7 +124,7 @@ public class TsDB {
 		for(Station station:getStations()) {
 			if(station.loggerType!=null) {
 				//log.info("register stream "+station.stationID+" with schema of "+station.loggerType.typeName);
-				streamStorage.registerStream(station.stationID, station.loggerType.schema);
+				streamStorage.registerStream(station.stationID, station.loggerType.getEventStoreSchema());
 			} else {
 				log.error("stream not registered: "+station.stationID+"   logger type not found");
 			}

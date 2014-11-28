@@ -134,11 +134,11 @@ public class ConfigLoader {
 				}
 				String[] sensorNames = new String[names.size()];
 				//Attribute[] schema = new Attribute[names.size()+1];  // TODO: remove "sampleRate"?   //removed !!!
-				Attribute[] schema = new Attribute[names.size()];
+				//Attribute[] schema = new Attribute[names.size()];
 				for(int i=0;i<names.size();i++) {
 					String sensorName = names.get(i);
 					sensorNames[i] = sensorName;
-					schema[i] =  new Attribute(sensorName,DataType.FLOAT);
+					//schema[i] =  new Attribute(sensorName,DataType.FLOAT);
 					if(tsdb.sensorExists(sensorName)) {
 						// log.info("sensor already exists: "+sensorName+" new in "+typeName);
 					} else {
@@ -146,7 +146,7 @@ public class ConfigLoader {
 					}
 				}
 				//schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?   //removed !!!
-				tsdb.insertLoggerType(new LoggerType(typeName, sensorNames,schema));
+				tsdb.insertLoggerType(new LoggerType(typeName, sensorNames));
 			}
 		} catch (Exception e) {
 			log.error(e);

@@ -41,8 +41,6 @@ public class TimeSeriesManager {
 
 	private static final Logger log = LogManager.getLogger();
 
-	String server_url = "rmi://192.168.191.183:16826/ServerTsDB";
-
 	public RemoteTsDB remoteTsDB;
 
 	public Shell shell;
@@ -91,7 +89,7 @@ public class TimeSeriesManager {
 
 			System.out.println("start RemoteTsDB...");
 			//Registry registry = LocateRegistry.getRegistry("localhost",StartServerTsDB.REGISTRY_PORT);
-			Registry registry = LocateRegistry.getRegistry("192.168.191.183",StartServerTsDB.REGISTRY_PORT);
+			Registry registry = LocateRegistry.getRegistry(TsDBFactory.RMI_DEFAULT_SERVER_IP,TsDBFactory.RMI_REGISTRY_PORT);
 			System.out.println("list: "+Util.arrayToString(registry.list()));
 
 
@@ -103,10 +101,9 @@ public class TimeSeriesManager {
 			}
 			System.out.println("this host IP is " + hostname);
 
-			//String server_url = "rmi://137.248.191.180:16826/ServerTsDB";
 
 
-			remoteTsDB = (RemoteTsDB) registry.lookup(server_url);
+			remoteTsDB = (RemoteTsDB) registry.lookup(TsDBFactory.get_rmi_server_url());
 
 			System.out.println("remoteTsDB: "+remoteTsDB.toString()+"  "+remoteTsDB.getClass());
 
@@ -116,7 +113,7 @@ public class TimeSeriesManager {
 		if(remoteTsDB.getClass().equals(ServerTsDB.class)) {
 			connectionText = "internal local connection";
 		} else {
-			connectionText = "remote connection "+server_url;
+			connectionText = "remote connection "+TsDBFactory.get_rmi_server_url();
 		}
 
 		shell.setText("Time Series Database Manager ["+connectionText+"]");

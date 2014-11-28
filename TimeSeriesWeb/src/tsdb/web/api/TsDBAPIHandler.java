@@ -43,10 +43,10 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
+import tsdb.util.gui.TimeSeriesDiagram;
+import tsdb.util.gui.TimeSeriesHeatMap;
+import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.util.iterator.TsIterator;
-import tsdb.web.TimeSeriesDiagram;
-import tsdb.web.TimeSeriesHeatMap;
-import tsdb.web.TimeSeriesPainterGraphics2D;
 import tsdb.web.WebUtil;
 
 public class TsDBAPIHandler extends AbstractHandler {

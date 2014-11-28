@@ -28,7 +28,7 @@ public class ConsoleStarter {
 			System.out.println("start RemoteTsDB...");
 			Registry registry;
 
-			registry = LocateRegistry.getRegistry("192.168.191.183",StartServerTsDB.REGISTRY_PORT);
+			registry = LocateRegistry.getRegistry("192.168.191.183",TsDBFactory.RMI_REGISTRY_PORT);
 
 			System.out.println("list: "+Util.arrayToString(registry.list()));
 

@@ -1,4 +1,4 @@
-package tsdb.web;
+package tsdb.util.gui;
 
 import tsdb.TimeConverter;
 import tsdb.raw.TimestampSeries;

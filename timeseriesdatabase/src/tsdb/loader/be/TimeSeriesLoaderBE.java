@@ -332,7 +332,7 @@ public class TimeSeriesLoaderBE {
 		}
 
 		//create events
-		Object[] payload = new Object[station.loggerType.schema.length];
+		Object[] payload = new Object[station.loggerType.sensorNames.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
 		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {			
