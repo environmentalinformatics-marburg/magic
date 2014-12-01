@@ -2,45 +2,37 @@ package tsdb.util.gui;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.WritableImage;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
+import javafx.geometry.VPos;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 
-public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
-
-	Graphics2D gc;
-
+public class TimeSeriesPainterFX implements TimeSeriesPainter {
+	
+	private final GraphicsContext gc;
+	
 	float minX;
 	float minY;
 	float maxX;
 	float maxY;
-
-	Color color_black = new Color(0,0,0);
-	Color color_grey = new Color(190,190,190);
-	Color color_light_blue = new Color(220,220,255);
-
-	public TimeSeriesPainterGraphics2D(BufferedImage bufferedImage) {
-		this(bufferedImage.createGraphics(),0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
-	}
-
-	public TimeSeriesPainterGraphics2D(Graphics2D gc,float minX, float minY, float maxX, float maxY) {
-		throwNull(gc);
-		gc.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		//gc.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);		
-		//gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-		this.gc = gc;
-		this.minX = minX;
-		this.minY = minY;
-		this.maxX = maxX;
-		this.maxY = maxY;
+	
+	Color color_black = Color.rgb(0,0,0);
+	Color color_grey = Color.rgb(190,190,190);
+	Color color_light_blue = Color.rgb(220,220,255);
+	
+	public TimeSeriesPainterFX(Canvas canvas) {
+		throwNull(canvas);
+		this.gc = canvas.getGraphicsContext2D();
+		minX = 0;
+		minY = 0;
+		maxX = (float) canvas.getWidth();
+		maxY = (float) canvas.getHeight();
+		gc.setLineWidth(1d);
 	}
 
 	@Override
@@ -65,13 +57,14 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void setColor(int r, int g, int b) {
-		gc.setColor(new Color(r,g,b));
-
+		gc.setFill(Color.rgb(r,g,b));
+		gc.setStroke(Color.rgb(r,g,b));
 	}
 
 	@Override
 	public void drawLine(float x0, float y0, float x1, float y1) {
-		gc.drawLine((int)x0, (int)y0, (int)x1, (int)y1);		
+		gc.strokeLine(x0+0.5, y0+0.5, x1+0.5, y1+0.5);
+		
 	}
 
 	@Override
@@ -81,140 +74,140 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void setColorValueLineTemperature() {
-		gc.setColor(new Color(220, 0, 0));
+		gc.setStroke(Color.rgb(220, 0, 0));
 	}
 
 	@Override
 	public void setColorValueLineTemperatureSecondary() {
-		gc.setColor(new Color(156,232,17));
+		gc.setStroke(Color.rgb(156,232,17));
 	}
 
 	@Override
 	public void setColorConnectLineTemperature() {
-		gc.setColor(new Color(220,180,180));		
+		gc.setStroke(Color.rgb(220,180,180));		
 	}
 
 	@Override
 	public void setColorConnectLineTemperatureSecondary() {
-		gc.setColor(new Color(132,150,99));		
+		gc.setStroke(Color.rgb(132,150,99));		
 	}
 
 	@Override
 	public void setColorValueLineUnknown() {
-		gc.setColor(color_black);
+		gc.setStroke(color_black);
 	}
 
 	@Override
 	public void setColorValueLineUnknownSecondary() {
-		gc.setColor(new Color(156,232,17));
+		gc.setStroke(Color.rgb(156,232,17));
 	}
 
 	@Override
 	public void setColorConnectLineUnknown() {
-		gc.setColor(color_grey);		
+		gc.setStroke(color_grey);		
 	}
 
 	@Override
 	public void setColorConnectLineUnknownSecondary() {
-		gc.setColor(new Color(132,150,99));		
+		gc.setStroke(Color.rgb(132,150,99));		
 	}
 
 	@Override
 	public void setColorRectWater() {
-		gc.setColor(new Color(0, 0, 200));		
+		gc.setFill(Color.rgb(0, 0, 200));		
 	}
 
 	@Override
 	public void setColorRectWaterSecondary() {
-		gc.setColor(new Color(156,232,17));		
+		gc.setFill(Color.rgb(156,232,17));		
 	}
 
 	@Override
 	public void setColorAxisLine() {
-		gc.setColor(color_grey);		
+		gc.setStroke(color_grey);		
 	}
 
 	@Override
 	public void setColorZeroLine() {
-		gc.setColor(color_black);		
+		gc.setStroke(color_black);		
 	}
 
 	@Override
 	public void setColorYScaleLine() {
-		gc.setColor(color_light_blue);		
+		gc.setStroke(color_light_blue);		
 	}
 
 	@Override
 	public void setColorYScaleText() {
-		gc.setColor(color_black);		
+		gc.setFill(color_black);		
 	}
 
 	@Override
 	public void drawText(String text, float x, float y, PosHorizontal posHorizontal, PosVerical posVerical) {
-		Rectangle2D rect = gc.getFontMetrics().getStringBounds(text, gc);		
-		float xPos;
+		
 		switch(posHorizontal) {
 		case LEFT:
-			xPos = (float)(x-rect.getMinX());
+			gc.setTextAlign(TextAlignment.LEFT);
 			break;
 		case CENTER:
-			xPos = (float)(x-rect.getMinX()-(rect.getMaxX()-rect.getMinX())/2);
+			gc.setTextAlign(TextAlignment.CENTER);
 			break;
 		case RIGHT:
-			xPos = (float)(x-rect.getMaxX());
+			gc.setTextAlign(TextAlignment.RIGHT);
 			break;
 		default:
-			throw new RuntimeException();				
+			throw new RuntimeException();			
 		}
-		float yPos;
+		
 		switch(posVerical) {
 		case TOP:
-			yPos = (float)(y-rect.getMinY());
+			gc.setTextBaseline(VPos.TOP);
 			break;
 		case CENTER:
-			yPos = (float)(y-rect.getMinY()-(rect.getMaxY()-rect.getMinY())/2);
+			gc.setTextBaseline(VPos.CENTER);
 			break;
 		case BOTTOM:
-			yPos = (float)(y-rect.getMaxY());
+			gc.setTextBaseline(VPos.BOTTOM);
 			break;
 		default:
 			throw new RuntimeException();		
-		}		
-		gc.drawString(text, xPos, yPos);		
+		}
+		
+		gc.fillText(text, x+0.5, y+0.5);	
 	}
 
 	@Override
 	public void setColorXScaleYearText() {
-		gc.setColor(new Color(0,0,0));		
+		gc.setFill(Color.rgb(0,0,0));		
 	}
 
 	@Override
 	public void setColorXScaleYearLine() {
-		gc.setColor(new Color(220-100,220-100,255-100));	
+		gc.setStroke(Color.rgb(220-100,220-100,255-100));	
 	}
 
 	@Override
 	public void setColorXScaleMonthText() {
-		gc.setColor(new Color(100,100,100));
+		gc.setFill(Color.rgb(100,100,100));
 
 	}
 
 	@Override
 	public void setColorXScaleMonthLine() {
-		gc.setColor(new Color(220,220,255));		
+		gc.setStroke(Color.rgb(220,220,255));		
 	}
 
 	@Override
 	public void setColorXScaleDayLine() {
-		gc.setColor(new Color(240,240,255));		
+		gc.setStroke(Color.rgb(240,240,255));		
 	}
 
 	@Override
 	public void setColorXScaleDayText() {
-		gc.setColor(new Color(150,150,150));		
+		gc.setFill(Color.rgb(150,150,150));		
 	}
 
-	private float minValue = -10f;
+	/*private float minValue = -10f;
 	private float maxValue = 30f;
 	private static Color[] indexedColors;
 	static {
@@ -226,14 +219,15 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 			indexedColors[i] = getSpectraColor(v);
 			
 		}
-	}
+	}*/
 	
 	public static void setIndexedColors(Color[] indexedColors) {
-		TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
+		//TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
 	}
 
 	private static Color getSpectraColor(float value) {
-		
+		return null;
+		/*
 		//float x = 380f+(value*(780f-380f));
 		float x = 380f+(value*(645f-380f));
 		
@@ -270,29 +264,29 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 			g = 0f;
 			b = 0f;
 		}*/
-		return new Color((int)(r*255f),(int)(g*255f),(int)(b*255f));
+		/*return Color.rgb((int)(r*255f),(int)(g*255f),(int)(b*255f));*/
 	}
 
 	@Override
 	public void setIndexedColor(float value) {
-		//getSpectraColor(380);
+		/*//getSpectraColor(380);
 		if(value>minValue) {
 			if(value<maxValue) {
 				float f = (value-minValue)/(maxValue-minValue);
-				gc.setColor(indexedColors[(int) (f*(indexedColors.length-1f))]);
+				gc.setStroke(indexedColors[(int) (f*(indexedColors.length-1f))]);
 				
 			} else {
-				gc.setColor(indexedColors[indexedColors.length-1]);
+				gc.setStroke(indexedColors[indexedColors.length-1]);
 			}
 		} else {
-			gc.setColor(indexedColors[0]);
-		}
+			gc.setStroke(indexedColors[0]);
+		}*/
 	}
 	
 	@Override
 	public void setIndexedColorRange(float min, float max) {
-		minValue = min;
-		maxValue = max;
+		/*minValue = min;
+		maxValue = max;*/
 	}
 
 }

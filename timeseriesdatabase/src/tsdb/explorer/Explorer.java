@@ -34,8 +34,8 @@ public class Explorer extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 
-		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
-		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
+		RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
 		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180");
 		
 		if(tsdb==null) {
@@ -57,6 +57,7 @@ public class Explorer extends Application {
 				subStage.setScene(subScene);
 				subStage.show();
 				sourceCatalogScene.setOnClose(x->{subStage.close();return true;});
+				sourceCatalogScene.createData();
 			}
 		});
 		
@@ -70,7 +71,7 @@ public class Explorer extends Application {
 				subStage.initModality(Modality.APPLICATION_MODAL);
 				subStage.setTitle("time series view");
 				subStage.setScene(subScene);
-				subStage.show();
+				subStage.show();				
 				timeSeriesViewScene.setOnClose(x->{subStage.close();return true;});
 			}
 		});
@@ -87,7 +88,7 @@ public class Explorer extends Application {
 			}
 		});
 
-		primaryStage.setTitle("TsDB Explorer");
+		primaryStage.setTitle("Time Series Explorer");
 		primaryStage.setScene(scene);
 		//primaryStage.setMinWidth(300);
 		primaryStage.setWidth(300);

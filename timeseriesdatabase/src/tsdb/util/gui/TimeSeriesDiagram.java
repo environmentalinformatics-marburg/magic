@@ -108,11 +108,20 @@ public class TimeSeriesDiagram {
 
 		dataMinTimestamp = timestampseries.getFirstTimestamp();
 		dataMaxTimestamp = timestampseries.getLastTimestamp();
-		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;		
+		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;
+		
+		
+		diagramMinTimestamp = dataMinTimestamp;
+		diagramMaxTimestamp = dataMaxTimestamp;
+		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
 	}
 
 	public int calcDiagramX(float timestamp) {
 		return (int) (diagramMinX+((timestamp-diagramMinTimestamp)*diagramTimestampFactor));
+	}
+	
+	public long calcTimestamp(float posX) {
+		return (long) (diagramMinTimestamp+((posX - diagramMinX)/diagramTimestampFactor));
 	}
 
 	public int calcDiagramY(float value) {
@@ -155,9 +164,7 @@ public class TimeSeriesDiagram {
 		diagramWidth = diagramMaxX-diagramMinX;
 		diagramHeigh = diagramMaxY-diagramMinY;
 
-		diagramMinTimestamp = dataMinTimestamp;
-		diagramMaxTimestamp = dataMaxTimestamp;
-		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
+		
 
 		diagramMinValue = dataMinValue;
 		diagramMaxValue = dataMaxValue;
@@ -174,6 +181,29 @@ public class TimeSeriesDiagram {
 		}
 		drawGraph(tsp,timestampseries,true);		
 	}
+	
+	public long getDataMinTimestamp() {
+		return dataMinTimestamp;
+	}
+	
+	public long getDataMaxTimestamp() {
+		return dataMaxTimestamp;
+	}
+	
+	public float getDiagramMinTimestamp() {
+		return diagramMinTimestamp;
+	}
+	
+	public float getDiagramMaxTimestamp() {
+		return diagramMaxTimestamp;
+	}
+	
+	public void setDiagramTimestampRange(float min, float max) {
+		diagramMinTimestamp = min;
+		diagramMaxTimestamp = max;
+		diagramTimestampRange = max-min;
+	}
+	
 
 	private void drawGraph(TimeSeriesPainter tsp, TimestampSeries ts, boolean isPrimary) {
 		boolean hasPrev = false;
