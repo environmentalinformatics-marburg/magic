@@ -60,6 +60,7 @@ public class TimeScale {
 		/*if(yearStep/2>=minGap) {
 			drawHalfYearScale(tsp);
 		}*/
+		drawHourScale(tsp);
 		drawDayScale(tsp);		
 		drawMonthScale(tsp);
 		drawYearScale(tsp);
@@ -176,6 +177,55 @@ public class TimeScale {
 				}				
 			}
 		}
-	}	
+	}
+
+	private void drawHourScale(TimeSeriesPainter tsp) {
+		int year = minYear-1;
+		while(year<=maxYear) {			
+			for(int month=1;month<=12;month++) {
+				int maxDay = new GregorianCalendar(year, month-1, 1).getActualMaximum(Calendar.DAY_OF_MONTH);
+				for(int day=1;day<=maxDay;day++) {
+					for(int hour=1;hour<24;hour++) {
+						//drawDay(tsp,year,month,day,maxDay);
+						drawHour(tsp,year,month,day,hour);
+					}
+				}
+			}
+			year++;
+		}		
+	}
+
+	private void drawHour(TimeSeriesPainter tsp, int year, int month, int day, int hour) {
+		int step;
+		switch(hour) {		
+		case 12:
+			step = yearStep/12/31/2;
+			break;
+		case 6:
+		case 18:
+			step = yearStep/12/31/4;
+			break;
+		case 3:
+		case 9:
+		case 15:
+		case 21:
+			step = yearStep/12/31/8;
+			break;			
+		default:
+			step = yearStep/12/31/24;
+		}
+		
+		if(step>=minGap) {
+			int mark = calcTimeMark(year,month,day,hour);
+			if(isInRange(mark)) {
+				tsp.setColorXScaleHourLine();
+				tsp.drawLine(mark, lineY0, mark, lineY1);
+				if(step>=minGapText) {
+					tsp.setColorXScaleHourText();
+					tsp.drawText(hour+"h", mark, posY, PosHorizontal.CENTER, PosVerical.TOP);
+				}				
+			}
+		}
+	}
 
 }

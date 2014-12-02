@@ -289,4 +289,16 @@ public class TimeSeriesPainterFX implements TimeSeriesPainter {
 		maxValue = max;*/
 	}
 
+	@Override
+	public void setColorXScaleHourLine() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setColorXScaleHourText() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

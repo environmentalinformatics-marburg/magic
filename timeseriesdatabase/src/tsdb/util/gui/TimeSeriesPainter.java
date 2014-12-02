@@ -23,6 +23,8 @@ public interface TimeSeriesPainter {
 	void setColorXScaleMonthLine();
 	void setColorXScaleDayText();
 	void setColorXScaleDayLine();
+	void setColorXScaleHourLine();
+	void setColorXScaleHourText();		
 	void fillRect(float xMin, float yMin, float xMax, float yMax);
 	void setColorValueLineTemperature();
 	void setColorValueLineTemperatureSecondary();
@@ -35,5 +37,5 @@ public interface TimeSeriesPainter {
 	void setColorRectWater();	
 	void setColorRectWaterSecondary();
 	void setIndexedColor(float value);
-	void setIndexedColorRange(float min, float max);	
+	void setIndexedColorRange(float min, float max);
 }

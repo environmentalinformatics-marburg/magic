@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +19,7 @@ import tsdb.TimeConverter;
  * @author woellauer
  *
  */
-class UniversalDataBinFile {
+public class UniversalDataBinFile {
 
 	private static final Logger log = LogManager.getLogger();
 
@@ -33,7 +36,14 @@ class UniversalDataBinFile {
 	private SensorHeader[] sensorHeaders;
 	private boolean empty = false;
 
-	public class DataRow {
+	public static class DataRow {
+
+		public static final Comparator<DataRow> COMPARATOR = new Comparator<DataRow>() {
+			@Override
+			public int compare(DataRow o1, DataRow o2) {
+				return Integer.compare(o1.id, o2.id);
+			}			
+		};
 
 		public final int id;
 		public final float[] data; 
@@ -258,6 +268,96 @@ class UniversalDataBinFile {
 	}
 
 	public UDBFTimestampSeries getUDBFTimeSeries() {
+		DataRow[] dataRows = readDataRows();
+		if(dataRows.length==0) {
+			return null;
+		}
+		//Arrays.sort(dataRows, DataRow.COMPARATOR); // don't sort first!
+
+		ArrayList<DataRow> tempRowList = new ArrayList<DataRow>(dataRows.length);
+
+		if(dataRows.length==0) {
+			//nothing
+		} else if (dataRows.length==1) {
+			tempRowList.add(dataRows[0]);
+		} else {
+			if(dataRows[0].id+1==dataRows[1].id) {
+				tempRowList.add(dataRows[0]);
+			}
+			for(int i=1;i<dataRows.length-1;i++) {
+				if(dataRows[i-1].id+1==dataRows[i].id || dataRows[i].id+1==dataRows[i+1].id) {
+					tempRowList.add(dataRows[i]);
+				} else {
+					//log.warn("no "+dataRows[i].id);
+				}
+			}
+			if(dataRows[dataRows.length-2].id+1==dataRows[dataRows.length-1].id) {
+				tempRowList.add(dataRows[dataRows.length-1]);
+			}
+		}
+		
+		if(tempRowList.isEmpty()) {
+			return null;
+		}
+
+		tempRowList.sort(DataRow.COMPARATOR);
+
+		dataRows = tempRowList.toArray(new DataRow[tempRowList.size()]);
+
+		tempRowList.clear();
+
+		int prevCheckID = -1;
+		for(int i=0;i<dataRows.length;i++) {
+			if(dataRows[i].id<0) {
+				continue;
+			}
+			if(dataRows[i].id==prevCheckID) {
+				if(tempRowList.get(tempRowList.size()-1).id==prevCheckID) {
+					tempRowList.remove(tempRowList.size()-1);
+				}
+			} else {
+				tempRowList.add(dataRows[i]);
+				prevCheckID = dataRows[i].id; 
+			}
+		}
+		
+		if(tempRowList.isEmpty()) {
+			return null;
+		}
+
+		long[] time = new long[tempRowList.size()];
+		float[][] data = new float[tempRowList.size()][];
+		for(int rowIndex=0; rowIndex<tempRowList.size(); rowIndex++) {
+			data[rowIndex] = new float[sensorHeaders.length];
+		}
+
+		final long time_offset = timeConverter.getStartTimeOleMinutes();
+		final long time_step = timeConverter.getTimeStepMinutes();
+
+		Integer prevID = null;
+		int rowIndex = 0;
+		for(DataRow row:tempRowList) {
+			time[rowIndex] = time_offset + (row.id*time_step);
+			for(int sensorIndex=0;sensorIndex<sensorHeaders.length;sensorIndex++) {
+				data[rowIndex][sensorIndex] = row.data[sensorIndex];
+			}
+			if(prevID!=null&&prevID==row.id) {
+				log.error("duplicate timestamps: "+row.id+"      "+time[rowIndex]+"     "+ timeConverter.oleMinutesToText(time[rowIndex]));
+				return null;
+			}
+			if(prevID!=null&&prevID>row.id) {
+				log.error("invalid timestamps: "+row.id+"      "+time[rowIndex]+"     "+ timeConverter.oleMinutesToText(time[rowIndex]));
+				return null;
+			}
+			rowIndex++;
+			prevID = row.id;
+		}
+
+		return new UDBFTimestampSeries(filename, sensorHeaders, timeConverter, time, data);
+	}
+
+	@Deprecated
+	public UDBFTimestampSeries getUDBFTimeSeries_OLD() {
 		DataRow[] dataRows = readDataRows();
 
 		int maxRowID = -1;

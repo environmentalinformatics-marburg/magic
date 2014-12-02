@@ -172,9 +172,9 @@ public class TimeSeriesDiagram {
 		diagramTimestampFactor = diagramWidth/diagramTimestampRange;
 		diagramValueFactor = diagramHeigh/diagramValueRange;
 
+		drawYScale(tsp);
 		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp);
 		timescale.draw(tsp, diagramMinX, diagramMaxX, diagramMaxY+1, diagramTimestampFactor,diagramMinY,diagramMaxY+3);
-		drawYScale(tsp);
 		drawAxis(tsp);
 		if(compareTs!=null) {
 			drawGraph(tsp,compareTs,false);

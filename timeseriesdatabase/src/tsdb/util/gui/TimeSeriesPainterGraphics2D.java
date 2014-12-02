@@ -141,7 +141,8 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void setColorYScaleLine() {
-		gc.setColor(color_light_blue);		
+		//gc.setColor(color_light_blue);
+		gc.setColor(new Color(230,230,255));
 	}
 
 	@Override
@@ -183,36 +184,51 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		gc.drawString(text, xPos, yPos);		
 	}
 
+	//***************** XScale text
+	
 	@Override
 	public void setColorXScaleYearText() {
 		gc.setColor(new Color(0,0,0));		
 	}
-
-	@Override
-	public void setColorXScaleYearLine() {
-		gc.setColor(new Color(220-100,220-100,255-100));	
-	}
-
+	
 	@Override
 	public void setColorXScaleMonthText() {
 		gc.setColor(new Color(100,100,100));
-
 	}
-
-	@Override
-	public void setColorXScaleMonthLine() {
-		gc.setColor(new Color(220,220,255));		
-	}
-
-	@Override
-	public void setColorXScaleDayLine() {
-		gc.setColor(new Color(240,240,255));		
-	}
-
+	
 	@Override
 	public void setColorXScaleDayText() {
 		gc.setColor(new Color(150,150,150));		
 	}
+	
+	@Override
+	public void setColorXScaleHourText() {
+		gc.setColor(new Color(180,180,180));		
+	}
+	
+	//***************** XScale line
+	
+	@Override
+	public void setColorXScaleYearLine() {
+		gc.setColor(new Color(120,120,170));	
+	}	
+
+	@Override
+	public void setColorXScaleMonthLine() {
+		gc.setColor(new Color(190,190,220));		
+	}
+	
+	@Override
+	public void setColorXScaleDayLine() {
+		gc.setColor(new Color(220,220,255));
+	}	
+	
+	@Override
+	public void setColorXScaleHourLine() {
+		gc.setColor(new Color(240,240,255));		
+	}
+
+	
 
 	private float minValue = -10f;
 	private float maxValue = 30f;

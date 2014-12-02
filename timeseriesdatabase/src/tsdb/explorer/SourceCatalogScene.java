@@ -132,7 +132,7 @@ public class SourceCatalogScene {
 		colPlot.setComparator(String.CASE_INSENSITIVE_ORDER);
 
 		table.getColumns().setAll(colGeneralStation,colPlot,colStation,colFirst,colLast,colRows,colTimeStep,colFilename,colPath,colHeader,colSensors);
-
+		
 		BorderPane mainBoderPane = new BorderPane();		
 		mainBoderPane.setCenter(table);
 		
