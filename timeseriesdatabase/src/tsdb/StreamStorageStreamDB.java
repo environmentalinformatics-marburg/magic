@@ -3,6 +3,7 @@ package tsdb;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,12 +22,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	private StreamDB streamdb;
 
-	public StreamStorageStreamDB(String streamdbPathPrefix) {
-		
-		
-		
-		
-		
+	public StreamStorageStreamDB(String streamdbPathPrefix) {		
 		this.streamdb = new StreamDB(streamdbPathPrefix);
 	}
 
@@ -118,6 +114,15 @@ public class StreamStorageStreamDB implements StreamStorage {
 			return null;
 		}
 		return new long[]{interval[0],interval[1]};
+	}
+	
+	@Override
+	public String[] getSensorNames(String stationName) {
+		NavigableSet<String> set = streamdb.getSensorNames(stationName);
+		if(set==null) {
+			return null;
+		}
+		return set.toArray(new String[set.size()]);
 	}
 
 }

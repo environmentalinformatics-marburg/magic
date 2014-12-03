@@ -76,6 +76,7 @@ public class SourceCatalogScene {
 		this.tsdb = tsdb;		
 		createScene();
 		//createData();
+		
 	}
 
 	private static final Logger log = LogManager.getLogger();
@@ -168,7 +169,8 @@ public class SourceCatalogScene {
 		hBoxControl.getChildren().add(new Label("Plot"));
 		hBoxControl.getChildren().add(comboPlot);
 		mainBoderPane.setTop(hBoxControl);
-		this.scene = new Scene(mainBoderPane, 400, 400);		
+		this.scene = new Scene(mainBoderPane, 400, 400);
+		
 	}	
 
 	public void createData() {
@@ -185,7 +187,7 @@ public class SourceCatalogScene {
 				list.add(sourceEntry);			
 			}			
 
-			for(StationInfo stationInfo:tsdb.getStationInfos()) {
+			for(StationInfo stationInfo:tsdb.getStations()) {
 				ArrayList<SourceEntry> sourceEntryList = stationCatalogEntryMap.get(stationInfo.stationID);
 				if(sourceEntryList!=null) {
 					if(stationInfo.generalStationInfo!=null) {

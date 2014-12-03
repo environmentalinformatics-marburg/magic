@@ -203,7 +203,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 
 	private boolean handle_plots(PrintWriter writer) {
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			for(PlotInfo plotInfo:plotInfos) {
 				writer.println(plotInfo.toString());
 			}
@@ -215,7 +215,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 
 	private boolean handle_plot_info(PrintWriter writer) {
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			JSONWriter json_output = new JSONWriter(writer);
 			json_output.array();
 			for(PlotInfo plotInfo:plotInfos) {			
@@ -262,7 +262,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 
 	private boolean handle_region_plot_list(PrintWriter writer, String regionName) {
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			if(plotInfos!=null) {
 				String[] webList = Arrays.stream(plotInfos)
 						.filter(p->p.generalStationInfo.region.name.equals(regionName))
@@ -285,7 +285,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 			for(GeneralStationInfo generalStationInfo:tsdb.getGeneralStations()) {
 				System.out.println(generalStationInfo.name);
 				if(generalStationInfo.region.name.equals(region)) {
-					for(String sensorName:tsdb.getGeneralStationSensorNames(generalStationInfo.name)) {
+					for(String sensorName:tsdb.getSensorNamesOfGeneralStation(generalStationInfo.name)) {
 						sensorNameSet.add(sensorName);
 					}
 				}

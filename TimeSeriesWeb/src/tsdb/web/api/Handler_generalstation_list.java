@@ -33,7 +33,7 @@ public class Handler_generalstation_list extends MethodHandler {
 			return;
 		}
 		try {
-			GeneralStationInfo[] generalStationInfos = tsdb.getGeneralStationInfos(regionName);
+			GeneralStationInfo[] generalStationInfos = tsdb.getGeneralStationsOfRegion(regionName);
 			if(generalStationInfos==null) {
 				log.error("generalStationInfos null: "+regionName);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

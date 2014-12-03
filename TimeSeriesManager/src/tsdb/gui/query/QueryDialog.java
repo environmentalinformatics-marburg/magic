@@ -561,7 +561,7 @@ public class QueryDialog extends Dialog {
 					System.out.println(Util.arrayToString(plotIDs));
 					HashSet<String> set = new HashSet<String>();
 					set.addAll(Arrays.asList(plotIDs));
-					plotInfos = tsdb.getPlotInfos();
+					plotInfos = tsdb.getPlots();
 					System.out.println(set);
 					System.out.println(Util.arrayToString(plotInfos));
 					if(plotInfos!=null) {
@@ -602,7 +602,7 @@ public class QueryDialog extends Dialog {
 				}
 			} else {
 				try {
-					sensorNames = tsdb.getPlotSchema(plotInfo.name);
+					sensorNames = tsdb.getSensorNamesOfPlot(plotInfo.name);
 				} catch (RemoteException e) {
 					log.error(e);
 				}

@@ -295,7 +295,7 @@ public class UniversalDataBinFile {
 				tempRowList.add(dataRows[dataRows.length-1]);
 			}
 		}
-		
+
 		if(tempRowList.isEmpty()) {
 			return null;
 		}
@@ -312,15 +312,21 @@ public class UniversalDataBinFile {
 				continue;
 			}
 			if(dataRows[i].id==prevCheckID) {
-				if(tempRowList.get(tempRowList.size()-1).id==prevCheckID) {
-					tempRowList.remove(tempRowList.size()-1);
+				DataRow prevRow = tempRowList.get(tempRowList.size()-1);
+				if(prevRow.id==prevCheckID) {
+					if(!Arrays.equals(prevRow.data, dataRows[i].data)) {
+						tempRowList.remove(tempRowList.size()-1);
+						//log.info("duplicate id row different "+dataRows[i].id+"  in "+filename+"   prev "+Arrays.toString(prevRow.data)+" curr "+Arrays.toString(dataRows[i].data));
+					} else {
+						//log.info("duplicate id row same "+dataRows[i].id+"  in "+filename);
+					}
 				}
 			} else {
 				tempRowList.add(dataRows[i]);
 				prevCheckID = dataRows[i].id; 
 			}
 		}
-		
+
 		if(tempRowList.isEmpty()) {
 			return null;
 		}

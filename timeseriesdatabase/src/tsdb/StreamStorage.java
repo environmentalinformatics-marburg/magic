@@ -57,4 +57,6 @@ public interface StreamStorage {
 	public void getInfo();
 
 	long[] getTimeInterval(String streamName);
+
+	String[] getSensorNames(String stationName);
 }

@@ -73,7 +73,25 @@ public class VirtualPlot {
 			return new String[0]; //empty schema
 		}
 		
-		LinkedHashSet<LoggerType> loggerSet = new LinkedHashSet<LoggerType>();
+		TreeSet<String> sensorNameSet = new TreeSet<String>();
+		for(TimestampInterval<StationProperties> interval:intervalList) {
+			String stationName = interval.value.get_serial();
+			if(stationName==null) {
+				log.warn("no station in interval: "+interval);
+				continue;
+			}
+			Station station = tsdb.getStation(stationName);
+			if(station==null) {
+				log.warn("station not found "+stationName);
+				continue;
+			}
+			String[] sensorNames = station.getSchema();
+			sensorNameSet.addAll(Arrays.asList(sensorNames));
+		}
+		
+		return sensorNameSet.toArray(new String[sensorNameSet.size()]);  
+		
+		/*LinkedHashSet<LoggerType> loggerSet = new LinkedHashSet<LoggerType>();
 		for(TimestampInterval<StationProperties> interval:intervalList) {
 			LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
 			if(loggerType==null) {
@@ -89,21 +107,7 @@ public class VirtualPlot {
 			}
 		}
 		
-		return sensorNameSet.toArray(new String[0]);
-		
-		/*
-		return intervalList.stream()
-				.map(interval->{
-					LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
-					if(loggerType==null) {
-						throw new RuntimeException("logger type not found: "+interval.value.get_logger_type_name());
-					}
-					return loggerType;
-				})
-				.distinct()
-				.flatMap(loggerType->Arrays.stream(loggerType.sensorNames))
-				.distinct()
-				.toArray(String[]::new);*/
+		return sensorNameSet.toArray(new String[0]);*/
 	}
 
 	public String[] getValidSchemaEntries(String[] querySchema) {

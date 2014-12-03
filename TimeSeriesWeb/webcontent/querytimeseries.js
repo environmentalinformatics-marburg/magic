@@ -155,7 +155,7 @@ var updateSensors = function() {
 	var plotName = plot_input.val();
 	
 	var prev = "unknown";
-	if(sensor_input.val()!=null) {
+	if(sensor_input.val()!=null&&sensors.length>0) {
 		prev = sensors[sensor_input.val()][0];
 	}
 	
@@ -174,7 +174,13 @@ var updateSensors = function() {
 		});
 		if(pre>0) {
 			sensor_input.val(pre);
+		} else if(sensors.length>0) {
+			sensor_input.val(0);
+		} else {
+			document.getElementById("sensor_input").add(new Option("---",0));
+			sensor_input.val(0);
 		}
+		
 		sensor_input.selectmenu( "refresh" );
 		updateSensor();
 		decTask();	
@@ -182,14 +188,23 @@ var updateSensors = function() {
 }
 
 var updateSensor = function() {
-	var row = sensors[sensor_input.val()];
-	getID("sensor_description").innerHTML = row[1];
-	getID("sensor_unit").innerHTML = row[2];
+	sensorIndex = sensor_input.val();
+	if(sensorIndex!=null&&sensors.length>0) {
+	var row = sensors[sensorIndex];
+		getID("sensor_description").innerHTML = row[1];
+		getID("sensor_unit").innerHTML = row[2];
+	} else {
+		getID("sensor_description").innerHTML = "---";
+		getID("sensor_unit").innerHTML = "---";	
+	}
 }
 
 var getQueryParameters = function() {
 	var plotName = plot_input.val();
-	var sensorName = sensors[sensor_input.val()][0];
+	var sensorName = "no_sensor";
+	if(sensors.length>0) {
+		sensorName = sensors[sensor_input.val()][0];
+	}
 	var aggregationName = aggregations[aggregation_input.val()];
 	var qualityName = qualities[quality_input.val()];
 	var interpolatedName = ""+getID("interpolated").checked;

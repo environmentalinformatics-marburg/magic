@@ -17,67 +17,53 @@ import tsdb.util.iterator.TsIterator;
 
 public interface RemoteTsDB extends Remote {
 	
-	//ok
-	TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) throws RemoteException;
-
-	//ok
-	TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) throws RemoteException;
-
-	//ok
-	Region[] getRegions() throws RemoteException;
-
-	GeneralStationInfo[] getGeneralStationInfos(String regionName) throws RemoteException;
-
-	LoggerType getLoggerType(String loggerTypeName) throws RemoteException;
-
-	String[] getBaseSchema(String[] rawSchema) throws RemoteException;
-
-	String[] getRegionLongNames() throws RemoteException;
-
-	Region getRegionByLongName(String longName) throws RemoteException;
-
-	String[] getGeneralStationLongNames(String regionName) throws RemoteException;
-
-	String[] cacheStorageGetStreamNames() throws RemoteException;
-
-	String[] getPlotIDsByGeneralStationByLongName(String longName) throws RemoteException;
-
-	VirtualPlotInfo getVirtualPlotInfo(String plotID) throws RemoteException;
-
-	String[] getCacheSchemaNames(String streamName) throws RemoteException;
-
-	Sensor getSensor(String sensorName) throws RemoteException;
-
+	//sensor
+	String[] getSensorNamesOfPlot(String plotID) throws RemoteException;
+	String[] getSensorNamesOfGeneralStation(String generalStationName) throws RemoteException;	
 	Sensor[] getSensors() throws RemoteException;
-	
-	StationInfo[] getStationInfos() throws RemoteException;
-
-	VirtualPlotInfo[] getVirtualPlots() throws RemoteException;
-
-	GeneralStationInfo[] getGeneralStations() throws RemoteException;
-
-	LoggerType[] getLoggerTypes() throws RemoteException;
-
-	SourceEntry[] getSourceCatalogEntries() throws RemoteException;
-
-	String[] getStationNames() throws RemoteException;
-
-	TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;
-
-	String[] getPlotSchema(String stationName) throws RemoteException;
-
-	//ok
-	String[] getGeneralStationSensorNames(String generalStationName) throws RemoteException;
-
-	PlotInfo[] getPlotInfos() throws RemoteException;
-
+	Sensor getSensor(String sensorName) throws RemoteException;
+	String[] getBaseSchema(String[] rawSchema) throws RemoteException;
+	String[] getCacheSchemaNames(String streamName) throws RemoteException;
 	String[] getValidSchema(String plotID, String[] sensorNames) throws RemoteException;
 	
-	long execute_console_command(String input_line) throws RemoteException;
+	//region
+	Region[] getRegions() throws RemoteException;
+	@Deprecated
+	String[] getRegionLongNames() throws RemoteException;
+	@Deprecated
+	Region getRegionByLongName(String longName) throws RemoteException;
 	
+	//general station
+	GeneralStationInfo[] getGeneralStations() throws RemoteException;
+	GeneralStationInfo[] getGeneralStationsOfRegion(String regionName) throws RemoteException;
+	@Deprecated
+	String[] getGeneralStationLongNames(String regionName) throws RemoteException;
+	
+	//plot station virtualPlot
+	PlotInfo[] getPlots() throws RemoteException;
+	StationInfo[] getStations() throws RemoteException;
+	VirtualPlotInfo[] getVirtualPlots() throws RemoteException;
+	VirtualPlotInfo getVirtualPlot(String plotID) throws RemoteException;
+	String[] getStationNames() throws RemoteException;
+	String[] cacheStorageGetStreamNames() throws RemoteException;
+	String[] getPlotIDsByGeneralStationByLongName(String longName) throws RemoteException;
+	ArrayList<TimestampInterval<String>> getPlotTimeSpans() throws RemoteException;
+	ArrayList<TimestampInterval<String>> getPlotTimeSpansOfRegion(String regionName) throws RemoteException;	
+	ArrayList<TimestampInterval<String>> getPlotTimeSpansOfGeneralStation(String generalStationName) throws RemoteException;
+	
+	//logger
+	LoggerType[] getLoggerTypes() throws RemoteException;
+	LoggerType getLoggerType(String loggerTypeName) throws RemoteException;
+	
+	//source catalog
+	SourceEntry[] getSourceCatalogEntries() throws RemoteException;
+	
+	//console
+	long execute_console_command(String input_line) throws RemoteException;	
 	Pair<Boolean,String[]> console_comand_get_output(long commandThreadId) throws RemoteException;
 
-	ArrayList<TimestampInterval<String>> getTimeSpanList() throws RemoteException;
-	ArrayList<TimestampInterval<String>> getTimeSpanListByGeneralStation(String generalStationName) throws RemoteException;
-	ArrayList<TimestampInterval<String>> getTimeSpanListByRegion(String regionName) throws RemoteException;
+	//query
+	TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) throws RemoteException;
+	TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) throws RemoteException;
+	TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;	
 }

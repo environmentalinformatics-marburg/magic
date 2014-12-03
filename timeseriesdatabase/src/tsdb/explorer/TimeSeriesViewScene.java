@@ -195,6 +195,8 @@ public class TimeSeriesViewScene {
 			}
 		});
 	}
+	
+
 
 	public Scene getScene() {
 		return scene;
@@ -271,7 +273,7 @@ public class TimeSeriesViewScene {
 	void onGeneralStationChanged(ObservableValue<? extends GeneralStationInfo> observable, GeneralStationInfo oldValue, GeneralStationInfo general) {
 		ObservableList<PlotInfo> plotList = FXCollections.observableArrayList();
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			if(general==null||general.name.equals("[all]")) {
 				Region region = comboRegion.getValue();
 				if(region==null||region.name.equals("[all]")) {
@@ -319,7 +321,9 @@ public class TimeSeriesViewScene {
 
 		try {			
 			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, AggregationInterval.HOUR, DataQuality.STEP, false, null, null);
-			tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE); 
+			if(ts!=null) {
+				tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE);
+			}
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -336,7 +340,7 @@ public class TimeSeriesViewScene {
 			for(Sensor sensor:sensors) {
 				sensorMap.put(sensor.name, sensor);
 			}
-			String[] sensorNames = tsdb.getPlotSchema(plot.name);
+			String[] sensorNames = tsdb.getSensorNamesOfPlot(plot.name);
 			for(String sensorName:sensorNames) {
 				Sensor sensor = sensorMap.get(sensorName);
 				if(sensor.isAggregable()) {
@@ -431,12 +435,17 @@ public class TimeSeriesViewScene {
 
 		long zoomedTimestampRange = (long) ((max-min)/zoomFactor);
 		float zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
-		float zoomedMax = zoomedMin+zoomedTimestampRange; 
-
-		System.out.println("data "+min+"  "+max+"    pos "+posTimestamp+"    start "+(long)zoomedMin+"   rangeFactor  "+rangeFactor);
+		float zoomedMax = zoomedMin+zoomedTimestampRange;
+		
+		if(zoomedMin<min) {
+			zoomedMin = min;
+		}
+		if(zoomedMax>max) {
+			zoomedMax = max;
+		}
 
 		tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
-		System.out.println(zoomedMin+"   "+zoomedMax);
+
 		repaint();
 	}
 }

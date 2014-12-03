@@ -24,16 +24,16 @@ import de.umr.jepc.store.Event;
  *
  */
 public class Station {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final TsDB tsdb; //not null
-	
+
 	/**
 	 * Stream name of this station
 	 */
 	public final String stationID;
-	
+
 	public final LoggerType loggerType;	
 
 	/**
@@ -47,7 +47,7 @@ public class Station {
 	 * This map contains only entries that are specific for this Station (or plotID)
 	 */
 	public Map<String,String> sensorNameTranlationMap;
-	
+
 	//*** start of fields that are used if this station is identical to one plot ***
 	public final boolean isPlot;
 	public double geoPoslongitude;
@@ -62,14 +62,14 @@ public class Station {
 	 * list of stations of same general station id ordered by position difference to this station
 	 */
 	public List<Station> nearestStations;
-	
+
 	/**
 	 * serial number of station: A19557, A2277, ...
 	 * not used currently - station is identified with plotID
 	 */
 	public String alternativeID = null;
 	//*** end of fields that are used if this station is identical to one plot ***
-	
+
 	public Station(TsDB tsdb, GeneralStation generalStation, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
@@ -166,15 +166,15 @@ public class Station {
 		}
 		return resultList.toArray(new String[0]);
 	}*/
-	
+
 	public String[] getValidSchemaEntries(String[] querySchema) {		
 		return Util.getValidEntries(querySchema, loggerType.sensorNames);
 	}
-	
+
 	public boolean isValidSchema(String[] querySchema) {
 		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
 	}
-	
+
 	public boolean isValidBaseSchema(String[] querySchema) {
 		if(!isValidSchema(querySchema)) {
 			return false;
@@ -199,7 +199,7 @@ public class Station {
 		}
 		return result;
 	}
-	
+
 	public StationProperties getProperties(long intervalStart, long intervalEnd) {
 		StationProperties properties = null;
 		for(TimestampInterval<StationProperties> interval:propertiesList) {
@@ -212,11 +212,16 @@ public class Station {
 		}
 		return properties;
 	}
-	
+
 	public String[] getSchema() {
-		return loggerType.sensorNames;
+		String[] sensorSet = tsdb.streamStorage.getSensorNames(stationID);
+		if(sensorSet!=null) {
+			return sensorSet;
+		} else {
+			return loggerType.sensorNames;
+		}
 	}
-	
+
 	public boolean isVIP() {
 		if(!isPlot) {
 			return false;

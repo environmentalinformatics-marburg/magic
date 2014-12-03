@@ -37,7 +37,7 @@ public class Handler_plot_list extends MethodHandler {
 			return;
 		}
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			if(plotInfos==null) {
 				log.error("plotInfos null: ");
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				

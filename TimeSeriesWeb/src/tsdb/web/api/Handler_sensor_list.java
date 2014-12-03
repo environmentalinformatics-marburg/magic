@@ -45,14 +45,14 @@ public class Handler_sensor_list extends MethodHandler {
 		try {
 			String[] sensorNames = null;
 			if(plot!=null) {			
-				sensorNames = tsdb.getPlotSchema(plot);			
+				sensorNames = tsdb.getSensorNamesOfPlot(plot);			
 			} else if(general_station!=null) {
-				sensorNames = tsdb.getGeneralStationSensorNames(general_station);	
+				sensorNames = tsdb.getSensorNamesOfGeneralStation(general_station);	
 			} else if(region!=null){
 				Set<String> sensorNameSet = new TreeSet<String>();
 				for(GeneralStationInfo generalStationInfo:tsdb.getGeneralStations()) {
 					if(generalStationInfo.region.name.equals(region)) {
-						for(String sensorName:tsdb.getGeneralStationSensorNames(generalStationInfo.name)) {
+						for(String sensorName:tsdb.getSensorNamesOfGeneralStation(generalStationInfo.name)) {
 							sensorNameSet.add(sensorName);
 						}
 					}

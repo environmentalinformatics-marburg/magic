@@ -168,7 +168,7 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 
 
 		try {
-			comboBridgePlot.setInput(Stream.concat(Stream.of("[all]"),Arrays.stream(tsdb.getPlotInfos()).map(p->p.name)).toArray(String[]::new));
+			comboBridgePlot.setInput(Stream.concat(Stream.of("[all]"),Arrays.stream(tsdb.getPlots()).map(p->p.name)).toArray(String[]::new));
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}
@@ -205,7 +205,7 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 				ArrayList<SourceEntry> resultList = new ArrayList<SourceEntry>();
 				String info = "station ";
 				try {
-					VirtualPlotInfo virtualPlot = tsdb.getVirtualPlotInfo(plotID);
+					VirtualPlotInfo virtualPlot = tsdb.getVirtualPlot(plotID);
 					if(virtualPlot!=null) {
 						List<TimestampInterval<StationProperties>> intervals = virtualPlot.intervalList;
 						for(TimestampInterval<StationProperties> i:intervals) {

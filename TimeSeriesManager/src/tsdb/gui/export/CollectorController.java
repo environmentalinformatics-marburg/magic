@@ -75,7 +75,7 @@ public class CollectorController {
 			for(GeneralStationInfo generalStationInfo:tsdb.getGeneralStations()) {
 				System.out.println(generalStationInfo.name);
 				if(generalStationInfo.region.longName.equals(regionLongName)) {
-					for(String sensorName:tsdb.getGeneralStationSensorNames(generalStationInfo.name)) {
+					for(String sensorName:tsdb.getSensorNamesOfGeneralStation(generalStationInfo.name)) {
 						sensorNameSet.add(sensorName);
 					}
 				}
@@ -89,7 +89,7 @@ public class CollectorController {
 
 		PlotInfo[] plotInfos=null;
 		try {
-			plotInfos = Arrays.stream(tsdb.getPlotInfos()).filter(p->p.generalStationInfo.region.longName.equals(regionLongName)).toArray(PlotInfo[]::new);
+			plotInfos = Arrays.stream(tsdb.getPlots()).filter(p->p.generalStationInfo.region.longName.equals(regionLongName)).toArray(PlotInfo[]::new);
 		} catch (RemoteException e) {
 			log.error(e);
 		}

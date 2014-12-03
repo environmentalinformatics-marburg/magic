@@ -14,7 +14,9 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -34,8 +36,8 @@ public class Explorer extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 
-		RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
+		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
+		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
 		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180");
 		
 		if(tsdb==null) {
@@ -43,10 +45,10 @@ public class Explorer extends Application {
 			return;
 		}
 
-		VBox vboxMain = new VBox();
+		FlowPane hboxMain = new FlowPane();
 
 		Button buttonSourceCatalog = new Button("source catalog");
-		vboxMain.getChildren().add(buttonSourceCatalog);
+		hboxMain.getChildren().add(buttonSourceCatalog);
 		buttonSourceCatalog.setOnAction(e->{
 			SourceCatalogScene sourceCatalogScene = new SourceCatalogScene(tsdb);
 			Scene subScene = sourceCatalogScene.getScene();
@@ -58,11 +60,14 @@ public class Explorer extends Application {
 				subStage.show();
 				sourceCatalogScene.setOnClose(x->{subStage.close();return true;});
 				sourceCatalogScene.createData();
+				subStage.setFullScreenExitKeyCombination(KeyCodeCombination.valueOf("F11"));
+				subStage.setFullScreenExitHint("");
+				//subStage.setFullScreen(true);
 			}
 		});
 		
 		Button buttonTimeSeriesView = new Button("time series view");
-		vboxMain.getChildren().add(buttonTimeSeriesView);
+		hboxMain.getChildren().add(buttonTimeSeriesView);
 		buttonTimeSeriesView.setOnAction(e->{
 			TimeSeriesViewScene timeSeriesViewScene = new TimeSeriesViewScene(tsdb);
 			Scene subScene = timeSeriesViewScene.getScene();
@@ -73,12 +78,16 @@ public class Explorer extends Application {
 				subStage.setScene(subScene);
 				subStage.show();				
 				timeSeriesViewScene.setOnClose(x->{subStage.close();return true;});
+				subStage.setFullScreenExitKeyCombination(KeyCodeCombination.valueOf("F11"));
+				subStage.setFullScreenExitHint("");
+				subStage.setFullScreen(true);
+				
 			}
 		});
 
 
 		BorderPane borderPane = new BorderPane();
-		borderPane.setCenter(vboxMain);
+		borderPane.setCenter(hboxMain);
 
 		Scene scene = new Scene(borderPane);
 		

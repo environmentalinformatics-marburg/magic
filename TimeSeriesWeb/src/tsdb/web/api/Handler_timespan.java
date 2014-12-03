@@ -43,11 +43,11 @@ public class Handler_timespan extends MethodHandler {
 		try {
 			ArrayList<TimestampInterval<String>> tsl = null;
 			if(generalstationName==null&&regionName==null) {
-				tsl = tsdb.getTimeSpanList();
+				tsl = tsdb.getPlotTimeSpans();
 			} else if(generalstationName!=null&&regionName==null){
-				tsl = tsdb.getTimeSpanListByGeneralStation(generalstationName);
+				tsl = tsdb.getPlotTimeSpansOfGeneralStation(generalstationName);
 			} else if(generalstationName==null&&regionName!=null){
-				tsl = tsdb.getTimeSpanListByRegion(regionName);				
+				tsl = tsdb.getPlotTimeSpansOfRegion(regionName);				
 			}
 			if(tsl==null) {
 				log.error("tsl null");

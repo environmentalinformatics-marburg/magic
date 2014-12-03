@@ -108,7 +108,7 @@ public class CreateStationGroupAverageCache {
 		}
 		
 		long endRunTime = System.currentTimeMillis();
-		cbPrint.println("run time: "+(endRunTime-startRunTime)+" s");
+		cbPrint.println("CreateStationGroupAverageCache run time: "+(endRunTime-startRunTime)/1000+" s");
 		
 	}
 }

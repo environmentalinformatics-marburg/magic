@@ -185,4 +185,10 @@ public class StreamStorageEventStore implements StreamStorage {
 		}
 		return new long[]{it.next().getTimestamp(),store.getLastTimestamp(streamName)};
 	}
+
+	@Override
+	public String[] getSensorNames(String stationName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

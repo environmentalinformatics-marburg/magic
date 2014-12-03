@@ -290,7 +290,7 @@ public class ZipExport {
 		printStream.println();
 
 		try {
-			PlotInfo[] plotInfos = tsdb.getPlotInfos();
+			PlotInfo[] plotInfos = tsdb.getPlots();
 			Map<String,PlotInfo> map = new HashMap<String,PlotInfo>();
 			for(PlotInfo plotInfo:plotInfos) {
 				map.put(plotInfo.name, plotInfo);

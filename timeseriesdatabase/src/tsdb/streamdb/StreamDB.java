@@ -164,7 +164,7 @@ public class StreamDB {
 		return db.getTreeMap(sensorMeta.db_name_sensor_chunk_map);
 	}
 
-	private BTreeMap<Integer, ChunkMeta> getSensorChunkMetaMap(SensorMeta sensorMeta) {
+	public BTreeMap<Integer, ChunkMeta> getSensorChunkMetaMap(SensorMeta sensorMeta) {
 		throwNull(sensorMeta);
 		return db.getTreeMap(sensorMeta.db_name_sensor_chunkmeta_map);
 	}
@@ -259,7 +259,7 @@ public class StreamDB {
 		throwNull(stationName);
 		StationMeta stationMeta = stationMetaMap.get(stationName);		
 		if(stationMeta==null){
-			log.error("no station");
+			log.warn("no station: "+stationName);
 			return new TreeSet<String>();
 		}
 		BTreeMap<String, SensorMeta> sensorMap = db.getTreeMap(stationMeta.db_name_sensor_map);

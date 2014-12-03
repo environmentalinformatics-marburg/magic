@@ -210,4 +210,10 @@ public class StreamStorageMapDB implements StreamStorage{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String[] getSensorNames(String stationName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -39,7 +39,7 @@ public class TimeSeriesHandler extends AbstractHandler {
 		
 		writer.print("<html><body>");
 		
-		PlotInfo[] plotInfos = tsdb.getPlotInfos();
+		PlotInfo[] plotInfos = tsdb.getPlots();
 		for(PlotInfo plotInfo:plotInfos) {
 			writer.println(plotInfo.toString()+"<br>");
 		}

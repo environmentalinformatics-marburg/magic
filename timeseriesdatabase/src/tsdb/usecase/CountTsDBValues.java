@@ -1,0 +1,52 @@
+package tsdb.usecase;
+
+import org.mapdb.BTreeMap;
+
+import tsdb.TsDBFactory;
+import tsdb.streamdb.ChunkMeta;
+import tsdb.streamdb.SensorMeta;
+import tsdb.streamdb.StreamDB;
+
+public class CountTsDBValues {
+
+	public static void main(String[] args) {
+		
+		System.out.println("open streamDB...");
+		
+		StreamDB streamdb = new StreamDB(TsDBFactory.STORAGE_PATH+"/streamdb");
+		
+		System.out.println("collect data...");
+		
+		long dbValues = 0;
+		long dbChunkCount = 0;
+		long dbSensorCount = 0;
+		long dbStationCount = 0;
+		for(String stationName:streamdb.getStationNames()) {
+			long stationValues = 0;
+			long stationChunkCount = 0;
+			long stationSensorCount = 0;
+			for(SensorMeta sensorMeta:streamdb.getSensorMap(stationName).values()) {
+				long sensorValues = 0;
+				long sensorChunkCount = 0;
+				for(ChunkMeta chunkMeta:streamdb.getSensorChunkMetaMap(sensorMeta).values()) {
+					sensorValues += chunkMeta.entryCount;
+					sensorChunkCount++;
+				}
+				//System.out.println(stationName+"  "+sensorMeta.sensorName + "  "+sensorValues+ " values in "+sensorChunkCount+" chunks");
+				stationValues += sensorValues;
+				stationChunkCount += sensorChunkCount;
+				stationSensorCount++;
+			}
+			//System.out.println(stationName+"  "+stationValues+ " values in "+stationSensorCount+" sensors and "+stationChunkCount+" chunks");
+			dbValues += stationValues;
+			dbChunkCount += stationChunkCount;
+			dbSensorCount += stationSensorCount;
+			dbStationCount++;
+		}
+		System.out.println("db  "+dbValues+ " values in "+dbStationCount+" stations and "+dbSensorCount+" sensors and "+dbChunkCount+" chunks");
+		
+		streamdb.close();
+
+	}
+
+}

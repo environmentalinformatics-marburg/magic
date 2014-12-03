@@ -2,14 +2,11 @@ package tsdb.usecase;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
-import sun.text.normalizer.UBiDiProps;
 import tsdb.TimeConverter;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.UDBFTimestampSeries;
 import tsdb.loader.be.UniversalDataBinFile;
-import tsdb.loader.be.UniversalDataBinFile.DataRow;
 
 public class DatFileReading {
 

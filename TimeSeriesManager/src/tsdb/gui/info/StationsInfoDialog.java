@@ -67,7 +67,7 @@ public class StationsInfoDialog extends Dialog {
 				column.setText (titles [i]);
 			}	
 
-			for(StationInfo station:timeSeriesDatabase.getStationInfos()) {
+			for(StationInfo station:timeSeriesDatabase.getStations()) {
 				TableItem item = new TableItem (table, SWT.NONE);
 				item.setText (0, station.stationID);
 				item.setText (1, tsdb.util.Util.ifnull(station.loggerType, x->x.typeName,()->"---"));

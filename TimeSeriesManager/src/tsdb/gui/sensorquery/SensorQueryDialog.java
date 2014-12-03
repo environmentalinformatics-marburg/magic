@@ -432,7 +432,7 @@ public class SensorQueryDialog extends Dialog {
 			if(region!=null) {
 				System.out.println("region select change: "+region.name);
 				comboViewerRegion.setSelection(new StructuredSelection(region));
-				GeneralStationInfo[] generalStationInfos = tsdb.getGeneralStationInfos(region.name);
+				GeneralStationInfo[] generalStationInfos = tsdb.getGeneralStationsOfRegion(region.name);
 				System.out.println(generalStationInfos.length);
 				model.setGeneralStationInfos(generalStationInfos);
 			} else {
@@ -483,7 +483,7 @@ public class SensorQueryDialog extends Dialog {
 					}})
 					.forEach(s->{for(String n:s){sensorNames.add(n);}});			
 				model.setSensorNames(sensorNames.toArray(new String[0]));*/
-				String[] sensorNames = tsdb.getGeneralStationSensorNames(generalStationInfo.name);
+				String[] sensorNames = tsdb.getSensorNamesOfGeneralStation(generalStationInfo.name);
 				model.setSensorNames(sensorNames);
 			} else {
 				comboViewerGeneralStation.setSelection(null);
