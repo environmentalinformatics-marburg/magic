@@ -335,7 +335,7 @@ public class ServerTsDB implements RemoteTsDB {
 		if(it==null||!it.hasNext()) {
 			return null;
 		}
-		System.out.println(it.getProcessingChain().getText());
+		//System.out.println(it.getProcessingChain().getText());
 		return it.toTimestampSeries();
 	}
 

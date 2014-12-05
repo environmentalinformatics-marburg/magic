@@ -1,96 +1,103 @@
 package tsdb.explorer;
 
+import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
-import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.FontSmoothingType;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 public class Explorer extends Application {
-	
-	
-	
+
+
+
 	public static String ESCAPE = ""+(char)27;
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	@Override
 	public void start(Stage primaryStage) {
-
-		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer();
-		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection();
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180");
 		
+		StringProperty connectionTextProperty = new SimpleStringProperty();
+
+		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
+		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote connection to db");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("remote connection to db");
+
 		if(tsdb==null) {
 			log.error("no connection");
-			return;
+			connectionTextProperty.set("error no connection to db");
+			//connectionText = "Error: no connection to db";
+			//primaryStage.show();
+			//primaryStage.close();
+			//return;
 		}
 
-		FlowPane hboxMain = new FlowPane();
+		//final String cText = connectionText;
+		new TsdbScene(primaryStage,"Time Series Explorer") {			
+			@Override
+			protected Parent createContent() {
+				stage.setMaximized(false);
+				FlowPane hboxMain = new FlowPane(10,10);
+				hboxMain.setAlignment(Pos.CENTER);
+
+				if(tsdb!=null) {
+					Button buttonSourceCatalog = new Button("source catalog");
+					hboxMain.getChildren().add(buttonSourceCatalog);
+					buttonSourceCatalog.setOnAction(e->new SourceCatalogSceneNew(tsdb).show());
+
+					Button buttonTimeSeriesView = new Button("time series view");
+					hboxMain.getChildren().add(buttonTimeSeriesView);
+					buttonTimeSeriesView.setOnAction(e->new TimeSeriesViewSceneNew(tsdb).show());
+					
+					Button buttonTimeSeriesMultiView = new Button("time series multi view");
+					hboxMain.getChildren().add(buttonTimeSeriesMultiView);
+					buttonTimeSeriesMultiView.setOnAction(e->new TimeSeriesMultiViewScene(tsdb).show());
+				}
+
+				BorderPane borderPane = new BorderPane();
+				VBox vbox = new VBox(hboxMain);
+				borderPane.setCenter(hboxMain);
+				
+				Label labelConnection = new Label();
+				labelConnection.textProperty().bind(connectionTextProperty);
+				labelConnection.setStyle("-fx-border-color: gray;");
+				
+				borderPane.setTop(labelConnection);
+				return borderPane;
+			}
+		}.show();
+
+
+
+
+
+		/*FlowPane hboxMain = new FlowPane();
 
 		Button buttonSourceCatalog = new Button("source catalog");
 		hboxMain.getChildren().add(buttonSourceCatalog);
-		buttonSourceCatalog.setOnAction(e->{
-			SourceCatalogScene sourceCatalogScene = new SourceCatalogScene(tsdb);
-			Scene subScene = sourceCatalogScene.getScene();
-			if(subScene!=null) {
-				Stage subStage = new Stage(StageStyle.DECORATED);
-				subStage.initModality(Modality.APPLICATION_MODAL);
-				subStage.setTitle("source catalog");
-				subStage.setScene(subScene);
-				subStage.show();
-				sourceCatalogScene.setOnClose(x->{subStage.close();return true;});
-				sourceCatalogScene.createData();
-				subStage.setFullScreenExitKeyCombination(KeyCodeCombination.valueOf("F11"));
-				subStage.setFullScreenExitHint("");
-				//subStage.setFullScreen(true);
-			}
-		});
-		
+		buttonSourceCatalog.setOnAction(e->new SourceCatalogSceneNew(tsdb).show());
+
 		Button buttonTimeSeriesView = new Button("time series view");
 		hboxMain.getChildren().add(buttonTimeSeriesView);
-		buttonTimeSeriesView.setOnAction(e->{
-			TimeSeriesViewScene timeSeriesViewScene = new TimeSeriesViewScene(tsdb);
-			Scene subScene = timeSeriesViewScene.getScene();
-			if(subScene!=null) {
-				Stage subStage = new Stage(StageStyle.DECORATED);
-				subStage.initModality(Modality.APPLICATION_MODAL);
-				subStage.setTitle("time series view");
-				subStage.setScene(subScene);
-				subStage.show();				
-				timeSeriesViewScene.setOnClose(x->{subStage.close();return true;});
-				subStage.setFullScreenExitKeyCombination(KeyCodeCombination.valueOf("F11"));
-				subStage.setFullScreenExitHint("");
-				subStage.setFullScreen(true);
-				
-			}
-		});
-
+		buttonTimeSeriesView.setOnAction(e->new TimeSeriesViewSceneNew(tsdb).show());
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setCenter(hboxMain);
 
 		Scene scene = new Scene(borderPane);
-		
+
 		scene.setOnKeyTyped(value->{			
 			if(value.getCharacter().equals(ESCAPE)) {
 				primaryStage.close();
@@ -102,10 +109,7 @@ public class Explorer extends Application {
 		//primaryStage.setMinWidth(300);
 		primaryStage.setWidth(300);
 
-		primaryStage.show();
-		
-		
-
+		primaryStage.show();*/
 	}
 
 	/**

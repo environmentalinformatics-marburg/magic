@@ -6,29 +6,6 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,19 +21,39 @@ import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import static tsdb.util.AssumptionCheck.*;
 
-public class TimeSeriesViewScene {
-
-	private static String ESCAPE = ""+(char)27;
-
-	private static final Logger log = LogManager.getLogger();
-
+public class TimeSeriesViewSceneNew extends TsdbScene {
+	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;
-
-	private Scene scene;
-
-	ImageView imageView;
-	AnchorPane anchorPane;
+	
+	private ImageView imageView;
+	private AnchorPane anchorPane;
 
 	private ObjectProperty<TimeSeriesDiagram> tsdProperty;
 
@@ -64,18 +61,23 @@ public class TimeSeriesViewScene {
 	private static final GeneralStationInfo GeneralStationAll = new GeneralStationInfo("[all]", "[?]");
 	private static final String plotAll = "[all]";
 
-	float zoomFactor = 1;
+	private float zoomFactor = 1;
 
-	ComboBox<Region> comboRegion;
-	ComboBox<GeneralStationInfo> comboGeneralStation;
-	ComboBox<PlotInfo> comboPlot;
-	ComboBox<Sensor> comboSensor;
+	private ComboBox<Region> comboRegion;
+	private ComboBox<GeneralStationInfo> comboGeneralStation;
+	private ComboBox<PlotInfo> comboPlot;
+	private ComboBox<Sensor> comboSensor;
 
 	private Double mouseStartMovePos = null;
 
-	public TimeSeriesViewScene(RemoteTsDB tsdb) {
+	public TimeSeriesViewSceneNew(RemoteTsDB tsdb) {
+		super("time series view");
+		throwNull(tsdb);
 		this.tsdb = tsdb;
+	}
 
+	@Override
+	protected Parent createContent() {
 		imageView = new ImageView();		
 		imageView.setOnScroll(this::onScroll);
 		imageView.setOnMouseDragged(this::onMouseDragged);
@@ -164,10 +166,10 @@ public class TimeSeriesViewScene {
 		FlowPane top = new FlowPane();
 		top.setHgap(30d);
 		top.setVgap(3d);
-		top.getChildren().add(new HBox(10d,labelRegion,comboRegion));
-		top.getChildren().add(new HBox(10d,labelGeneralStation,comboGeneralStation));
-		top.getChildren().add(new HBox(10d,labelPlot,comboPlot));
-		top.getChildren().add(new HBox(10d,labelSensor,comboSensor));
+		top.getChildren().add(new HBox(10d,labelRegion,comboRegion,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelGeneralStation,comboGeneralStation,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelPlot,comboPlot,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));
 		Node center = anchorPane;
 		Node bottom = new Label("ready");
 		Node left = null;
@@ -177,32 +179,16 @@ public class TimeSeriesViewScene {
 		sc.setFitToWidth(true);
 		sc.prefHeightProperty().bind(top.heightProperty().add(10));
 
-		this.scene = new Scene(new BorderPane(center, sc, right, bottom, left), 1200,400);
-
 		tsdProperty = new SimpleObjectProperty<TimeSeriesDiagram >();
 		tsdProperty.addListener(o->{
 			zoomFactor=1;
 			repaint();
 		});
-
-		setRegions();
-	}
-
-	public void setOnClose(Callback<Boolean,Boolean> cb) {
-		scene.setOnKeyTyped(value->{			
-			if(value.getCharacter().equals(ESCAPE)) {
-				cb.call(true);
-			}
-		});
+		
+		return new BorderPane(center, sc, right, bottom, left);
 	}
 	
-
-
-	public Scene getScene() {
-		return scene;
-	}
-
-	public void repaint() {
+	private void repaint() {
 		imageView.setImage(null);
 		double width = anchorPane.getWidth();
 		double height = anchorPane.getHeight();
@@ -231,7 +217,7 @@ public class TimeSeriesViewScene {
 		}		
 	}
 
-	void setRegions() {
+	private void setRegions() {
 		ObservableList<Region> regionList = FXCollections.observableArrayList();
 		try {
 			Region[] regions = tsdb.getRegions();
@@ -245,7 +231,7 @@ public class TimeSeriesViewScene {
 		comboRegion.setValue(regionAll);		
 	}
 
-	void onRegionChanged(ObservableValue<? extends Region> observable, Region oldValue, Region region) {
+	private void onRegionChanged(ObservableValue<? extends Region> observable, Region oldValue, Region region) {
 		ObservableList<GeneralStationInfo> generalStationList = FXCollections.observableArrayList();
 
 		try {
@@ -270,7 +256,7 @@ public class TimeSeriesViewScene {
 		comboGeneralStation.setValue(GeneralStationAll);
 	}
 
-	void onGeneralStationChanged(ObservableValue<? extends GeneralStationInfo> observable, GeneralStationInfo oldValue, GeneralStationInfo general) {
+	private void onGeneralStationChanged(ObservableValue<? extends GeneralStationInfo> observable, GeneralStationInfo oldValue, GeneralStationInfo general) {
 		ObservableList<PlotInfo> plotList = FXCollections.observableArrayList();
 		try {
 			PlotInfo[] plotInfos = tsdb.getPlots();
@@ -303,7 +289,7 @@ public class TimeSeriesViewScene {
 		}
 	}
 
-	void onUpdateTimestampSeries() {
+	private void onUpdateTimestampSeries() {
 		TimeSeriesDiagram  tsd = null;
 
 		PlotInfo plot = comboPlot.getValue();
@@ -331,7 +317,7 @@ public class TimeSeriesViewScene {
 		tsdProperty.setValue(tsd);
 	}
 
-	void onPlotChanged(ObservableValue<? extends PlotInfo> observable, PlotInfo oldValue, PlotInfo plot) {
+	private void onPlotChanged(ObservableValue<? extends PlotInfo> observable, PlotInfo oldValue, PlotInfo plot) {
 		ObservableList<Sensor> sensorList = FXCollections.observableArrayList();
 
 		try {
@@ -361,15 +347,15 @@ public class TimeSeriesViewScene {
 		onUpdateTimestampSeries();
 	}
 
-	void onSensorChanged(ObservableValue<? extends Sensor> observable, Sensor oldValue, Sensor sensor) {
+	private void onSensorChanged(ObservableValue<? extends Sensor> observable, Sensor oldValue, Sensor sensor) {
 		onUpdateTimestampSeries();
 	}
 
-	void onMousePressed(MouseEvent event) {
+	private void onMousePressed(MouseEvent event) {
 		mouseStartMovePos  = event.getX();
 	}
 
-	void onMouseDragged(MouseEvent event) {
+	private void onMouseDragged(MouseEvent event) {
 		double currentMovePos = event.getX();
 
 		TimeSeriesDiagram tsd = tsdProperty.getValue();
@@ -402,8 +388,7 @@ public class TimeSeriesViewScene {
 		repaint();		
 	}
 
-
-	void onScroll(ScrollEvent event) {
+	private void onScroll(ScrollEvent event) {
 		TimeSeriesDiagram tsd = tsdProperty.getValue();
 
 		double zoom = event.getDeltaY();
@@ -428,10 +413,7 @@ public class TimeSeriesViewScene {
 			posTimestamp = max;
 		}
 
-
-
 		float rangeFactor = ((float)(posTimestamp-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
-
 
 		long zoomedTimestampRange = (long) ((max-min)/zoomFactor);
 		float zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
@@ -447,5 +429,10 @@ public class TimeSeriesViewScene {
 		tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
 
 		repaint();
+	}
+
+	@Override
+	protected void onShown() {
+		setRegions();
 	}
 }

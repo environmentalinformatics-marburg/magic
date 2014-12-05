@@ -4,15 +4,14 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -27,23 +26,41 @@ import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.sun.javafx.binding.ObjectConstant;
+
 import tsdb.Region;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.catalog.SourceEntry;
-import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
 import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
 
-import com.sun.javafx.binding.ObjectConstant;
-
-public class SourceCatalogScene {
+public class SourceCatalogSceneNew extends TsdbScene {
 	
-	private static String ESCAPE = ""+(char)27;
+	private static final Logger log = LogManager.getLogger();
+	
+	private final RemoteTsDB tsdb;
+	
+	private ArrayList<SourceItem> sourceItemList;
+	private FilteredList<SourceItem> filteredList;
+	private Region[] regions;
 
+	private ComboBox<Region> comboRegion;
+	private ComboBox<String> comboGeneralStation;
+	private ComboBox<String> comboPlot;
+	
+	private TableView<SourceItem> table;
+
+	private final Region regionAll = new Region("[all]","[all]");
+	
+	public SourceCatalogSceneNew(RemoteTsDB tsdb) {
+		super("source catalog");
+		this.tsdb = tsdb;
+	}
+	
 	private static <S, T> Callback<TableColumn<S,T>, TableCell<S,T>> createCellFactory(Callback<T,String> converter) {
 		return param -> new TableCell<S, T>(){
 			@Override
@@ -58,30 +75,9 @@ public class SourceCatalogScene {
 		};
 	}
 
-	private final RemoteTsDB tsdb;
-	private Scene scene;
-	private ArrayList<SourceItem> sourceItemList;
-	private FilteredList<SourceItem> filteredList;
-	private Region[] regions;
-
-	ComboBox<Region> comboRegion;
-	ComboBox<String> comboGeneralStation;
-	ComboBox<String> comboPlot;
-	
-	TableView<SourceItem> table;
-
-	private final Region regionAll = new Region("[all]","[all]");
-
-	public SourceCatalogScene(RemoteTsDB tsdb) {
-		this.tsdb = tsdb;		
-		createScene();
-		//createData();
+	@Override
+	protected Parent createContent() {
 		
-	}
-
-	private static final Logger log = LogManager.getLogger();
-	
-	public void createScene() {
 		table = new TableView<SourceItem>();
 
 		TableColumn<SourceItem,String> colPlot = new TableColumn<SourceItem,String>("plot");		
@@ -169,11 +165,11 @@ public class SourceCatalogScene {
 		hBoxControl.getChildren().add(new Label("Plot"));
 		hBoxControl.getChildren().add(comboPlot);
 		mainBoderPane.setTop(hBoxControl);
-		this.scene = new Scene(mainBoderPane, 400, 400);
-		
-	}	
-
-	public void createData() {
+		return mainBoderPane;
+	}
+	
+	@Override
+	protected void onShown() {
 		sourceItemList = new ArrayList<SourceItem>();
 
 		try {			
@@ -232,17 +228,10 @@ public class SourceCatalogScene {
 			e.printStackTrace();
 			log.error(e);
 			regions = new Region[0];
-		}		
-
-	}
-
-
-
-	public Scene getScene() {
-		return scene;
+		}
 	}
 	
-	void setRegions(Region[] regions) {
+	private void setRegions(Region[] regions) {
 		ObservableList<Region> regionList = FXCollections.observableArrayList();
 		regionList.add(regionAll);
 		regionList.addAll(regions);
@@ -250,7 +239,7 @@ public class SourceCatalogScene {
 		comboRegion.setValue(regionAll);		
 	}
 	
-	void onRegionChanged(ObservableValue<? extends Region> observable, Region oldValue, Region newValue) {
+	private void onRegionChanged(ObservableValue<? extends Region> observable, Region oldValue, Region newValue) {
 		TreeSet<String> generalSet = new TreeSet<String>();
 		Region region = newValue;		
 		if(region==null||region.name.equals("[all]")) {
@@ -274,7 +263,7 @@ public class SourceCatalogScene {
 		//updateComboPlot();		
 	}
 	
-	void onGeneralStationChanged(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+	private void onGeneralStationChanged(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 		System.out.println(oldValue+"     "+newValue);
 		Region region = comboRegion.getValue();
 		TreeSet<String> plotSet = new TreeSet<String>();
@@ -301,7 +290,7 @@ public class SourceCatalogScene {
 		comboPlot.setValue(plotAll);
 	}
 	
-	void onPlotChanged(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+	private void onPlotChanged(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 		System.out.println(oldValue+"     "+newValue);
 		Region region = comboRegion.getValue();
 		String general = comboGeneralStation.getValue();
@@ -321,13 +310,4 @@ public class SourceCatalogScene {
 			filteredList.setPredicate(sourceEntry->plot.equals(sourceEntry.plotid));
 		}
 	}
-	
-	public void setOnClose(Callback<Boolean,Boolean> cb) {
-		scene.setOnKeyTyped(value->{			
-			if(value.getCharacter().equals(ESCAPE)) {
-				cb.call(true);
-			}
-		});
-	}
-
 }
