@@ -38,7 +38,7 @@ import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
 
-public class SourceCatalogSceneNew extends TsdbScene {
+public class SourceCatalogScene extends TsdbScene {
 	
 	private static final Logger log = LogManager.getLogger();
 	
@@ -56,7 +56,7 @@ public class SourceCatalogSceneNew extends TsdbScene {
 
 	private final Region regionAll = new Region("[all]","[all]");
 	
-	public SourceCatalogSceneNew(RemoteTsDB tsdb) {
+	public SourceCatalogScene(RemoteTsDB tsdb) {
 		super("source catalog");
 		this.tsdb = tsdb;
 	}

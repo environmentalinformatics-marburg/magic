@@ -11,25 +11,25 @@ import java.rmi.server.UnicastRemoteObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TsDBFactory;
 import tsdb.TsDB;
+import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 
 public class StartServerTsDB {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) throws RemoteException {
-		
+
 		log.info("open database...");
 		TsDB tsdb = TsDBFactory.createDefault();
 		ServerTsDB servertsdb = new ServerTsDB(tsdb);
 		RemoteTsDB remoteTsDB = servertsdb;
-		
+
 		run(remoteTsDB);		
 	}
-	
+
 	public static void run(RemoteTsDB remoteTsDB) throws RemoteException {
 		/*System.out.println("start...");
 		TsDB tsdb = FactoryTsDB.createDefault();
@@ -59,9 +59,16 @@ public class StartServerTsDB {
 			e.printStackTrace();
 		}
 		log.info("server IP is " + hostname);
-		
-		if(hostname.equals("127.0.1.1")) {
+
+		//if(hostname.equals("127.0.1.1")) {
+		final String localhost_prefix = "127";
+		if(hostname.startsWith(localhost_prefix)) {
+			String ip = TsDBFactory.getLocalIP();
 			hostname = TsDBFactory.RMI_DEFAULT_SERVER_IP;
+			if(ip!=null) {
+				hostname = ip;
+			}
+			log.info("set server IP to " + hostname);
 			System.setProperty("java.rmi.server.hostname", hostname);
 		}		
 
@@ -70,13 +77,17 @@ public class StartServerTsDB {
 
 		RemoteServer.setLog(System.out);
 		Thread.setDefaultUncaughtExceptionHandler((t,e) -> System.out.println(e));
-		
-		
+
+
 		log.info("create registry...");
 		Registry registry = LocateRegistry.createRegistry(TsDBFactory.RMI_REGISTRY_PORT);
 		log.info("bind remote...");
 		RemoteTsDB stub = (RemoteTsDB) UnicastRemoteObject.exportObject( remoteTsDB, 0 ); 
-		registry.rebind(server_url, stub);
+		//registry.rebind(server_url, stub);
+		registry.rebind(TsDBFactory.RMI_SERVER_NAME, stub);
 		log.info("ready...");
+
+
+
 	}
 }

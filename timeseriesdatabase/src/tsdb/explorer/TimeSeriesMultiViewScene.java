@@ -4,7 +4,6 @@ import static tsdb.util.AssumptionCheck.throwNull;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,22 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -38,16 +30,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -56,13 +45,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.sun.javafx.scene.control.behavior.ScrollBarBehavior;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 
 import tsdb.DataQuality;
 import tsdb.Region;
@@ -228,8 +215,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		return borderPaneMain;
 	}
 
-	private static final double imageHeight = 200;
-	private static final int imageviewCount = 4;
+	private static final double imageHeight = 100;
+	private static final int imageviewCount = 11;
 
 	private void onResize(Observable observable) {
 		double width = vboxQueryImages.getWidth();
@@ -243,7 +230,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		screenImageList.clear();
 
 		int imageCount = imageviewCount;//(int) Math.ceil(height/imageHeight);
-		for(int i=0;i<=imageCount;i++) {
+		for(int i=0;i<imageCount;i++) {
 
 			ScreenImageEntry sie = new ScreenImageEntry(new ImageView());
 			screenImageList.add(sie);
@@ -316,6 +303,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, rejectedExecutionHandler);
 
 	}
+	
+	
 
 
 	private void onSetCurrent(ActionEvent event) {
@@ -337,7 +326,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		}
 		//executorQueryTimeSeries = Executors.newWorkStealingPool();
 		//executorQueryTimeSeries = createPriorityExecutor(Thread.MIN_PRIORITY);
-		executorQueryTimeSeries = createPriorityExecutor(1,Thread.MIN_PRIORITY);
+		executorQueryTimeSeries = createPriorityExecutor(2,Thread.MIN_PRIORITY);
 
 
 
@@ -346,7 +335,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			executorDrawImages.shutdownNow();		
 		}
 		//executorDrawImages = Executors.newWorkStealingPool();
-		executorDrawImages = createPriorityExecutor(1,Thread.MIN_PRIORITY+1);
+		executorDrawImages = createPriorityExecutor(2,Thread.MIN_PRIORITY+1);
 
 
 		for(QueryEntry queryEntry:queryList) {
@@ -358,18 +347,20 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						System.out.println("************************** create image "+queryEntry.plotID+"  "+queryEntry.sensorName);
 
 
-						BufferedImage bufferedImage = new BufferedImage((int)borderPaneDiagrams.getWidth()-30,(int)24,java.awt.image.BufferedImage.TYPE_INT_RGB);
-						/*Graphics2D gc = bufferedImage.createGraphics();
+						BufferedImage bufferedImage = new BufferedImage((int)borderPaneDiagrams.getWidth()-30,(int)imageHeight,java.awt.image.BufferedImage.TYPE_INT_RGB);
+						Graphics2D gc = bufferedImage.createGraphics();
 						gc.setBackground(new java.awt.Color(255, 255, 255));
 						gc.setColor(new java.awt.Color(0, 0, 0));
 						gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+						gc.setColor(java.awt.Color.LIGHT_GRAY);
+						gc.drawString(queryEntry.plotID+"/"+queryEntry.sensorName, 0, 20);
 						gc.dispose();
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
 						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE);
-						tsd.draw(tsp);*/
-						TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
+						tsd.draw(tsp);
+						/*TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-						tshm.draw(tsp, queryEntry.sensorName);
+						tshm.draw(tsp, queryEntry.sensorName);*/
 						WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
 
 						Platform.runLater(()->queryEntry.imageProperty.set(image));						

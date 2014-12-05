@@ -48,7 +48,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import static tsdb.util.AssumptionCheck.*;
 
-public class TimeSeriesViewSceneNew extends TsdbScene {
+public class TimeSeriesViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;
 	
@@ -70,7 +70,7 @@ public class TimeSeriesViewSceneNew extends TsdbScene {
 
 	private Double mouseStartMovePos = null;
 
-	public TimeSeriesViewSceneNew(RemoteTsDB tsdb) {
+	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");
 		throwNull(tsdb);
 		this.tsdb = tsdb;

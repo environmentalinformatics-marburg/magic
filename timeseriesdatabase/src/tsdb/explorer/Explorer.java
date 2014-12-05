@@ -32,8 +32,9 @@ public class Explorer extends Application {
 		StringProperty connectionTextProperty = new SimpleStringProperty();
 
 		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
-		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote connection to db");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("remote connection to db");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local remote connection to db");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote connection to db (183er)");
+		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote connection to db (lab)");
 
 		if(tsdb==null) {
 			log.error("no connection");
@@ -55,11 +56,11 @@ public class Explorer extends Application {
 				if(tsdb!=null) {
 					Button buttonSourceCatalog = new Button("source catalog");
 					hboxMain.getChildren().add(buttonSourceCatalog);
-					buttonSourceCatalog.setOnAction(e->new SourceCatalogSceneNew(tsdb).show());
+					buttonSourceCatalog.setOnAction(e->new SourceCatalogScene(tsdb).show());
 
 					Button buttonTimeSeriesView = new Button("time series view");
 					hboxMain.getChildren().add(buttonTimeSeriesView);
-					buttonTimeSeriesView.setOnAction(e->new TimeSeriesViewSceneNew(tsdb).show());
+					buttonTimeSeriesView.setOnAction(e->new TimeSeriesViewScene(tsdb).show());
 					
 					Button buttonTimeSeriesMultiView = new Button("time series multi view");
 					hboxMain.getChildren().add(buttonTimeSeriesMultiView);
