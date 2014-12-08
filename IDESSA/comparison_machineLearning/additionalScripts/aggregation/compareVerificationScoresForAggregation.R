@@ -52,8 +52,53 @@ bp.RAINOUT <- ggplot(aggregatedData, aes(x = MODEL, y = VALUE))+
         strip.text.y = element_text(size = 16),
         strip.text.x = element_text(size = 16),
         axis.text=element_text(size=14),
-        panel.margin = unit(0.5, "lines"))
+        panel.margin = unit(0.5, "lines"),
+        panel.background = element_rect(fill = NA, colour = NA),
+        plot.background = element_rect(fill = NA, colour = NA))#+)
 
-png(paste0(datapath,"/bp.Aggregation.png"),res=300,width=14,height=14,units = "in")
+pdf(paste0(datapath,"/bp.Aggregation.pdf"),width=14,height=14)
+#print(bp.RAINOUT)
+#dev.off()
+
+#with line for ME
 print(bp.RAINOUT)
+y_at <- 1 - ggplot_build(bp.RAINOUT)$panel$ranges[[5]]$y.range[2] / 
+  (ggplot_build(bp.RAINOUT)$panel$ranges[[5]]$y.range[2] - 
+     ggplot_build(bp.RAINOUT)$panel$ranges[[5]]$y.range[1])
+#current.vpTree()
+seekViewport(name = "panel.6-10-6-10")
+#grid.rect(gp=gpar(fill="black"))
+
+
+grid.lines(y = y_at, gp = gpar(lty = 1, lwd = 3,col="grey"))
+
+upViewport(0)
+
+seekViewport(name = "panel.6-4-6-4")
+#grid.rect(gp=gpar(fill="black"))
+
+grid.lines(y = y_at, gp = gpar(lty = 1, lwd = 3,col="grey"))
+
+upViewport(0)
+
+seekViewport(name = "panel.6-6-6-6")
+
+
+grid.lines(y = y_at, gp = gpar(lty = 1, lwd = 3,col="grey"))
+
+upViewport(0)
+
+
+seekViewport(name = "panel.6-8-6-8")
+
+
+grid.lines(y = y_at, gp = gpar(lty = 1, lwd = 3,col="grey"))
+
+upViewport(0)
+
+print(bp.RAINOUT, newpage = FALSE)
+
 dev.off()
+
+
+
