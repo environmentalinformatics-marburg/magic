@@ -30,6 +30,7 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.RawSource;
 import tsdb.raw.TimestampSeries;
 import tsdb.run.ConsoleStarter;
 import tsdb.run.ConsoleRunner;
@@ -47,9 +48,9 @@ public class ServerTsDB implements RemoteTsDB {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 	}
-	
+
 	//----------------------- sensor
-	
+
 	@Override
 	public String[] getSensorNamesOfPlot(String plotID) {
 		if(plotID==null) {
@@ -63,12 +64,12 @@ public class ServerTsDB implements RemoteTsDB {
 		Station station = tsdb.getStation(plotID);
 		if(station!=null) {
 			return station.getSchema();
-			
+
 		}
 		log.warn("plotID not found "+plotID);
 		return null;
 	}
-	
+
 	@Override
 	public String[] getSensorNamesOfGeneralStation(String generalStationName) {
 		if(generalStationName==null) {
@@ -80,52 +81,52 @@ public class ServerTsDB implements RemoteTsDB {
 			log.warn("generalStation not found");
 			return null;
 		}
-		
+
 		TreeSet<String> sensorNameSet = new TreeSet<String>();
-		
+
 		for(Station station:generalStation.stationList) {
 			sensorNameSet.addAll(Arrays.asList(station.getSchema()));
 		}
-		
+
 		for(VirtualPlot virtualPlot:generalStation.virtualPlots) {
 			sensorNameSet.addAll(Arrays.asList(virtualPlot.getSchema()));
 		}		
-		
+
 		return sensorNameSet.toArray(new String[sensorNameSet.size()]); 
 	}
-	
+
 	@Override
 	public Sensor[] getSensors() {
 		return tsdb.getSensors().toArray(new Sensor[0]);
 	}
-	
+
 	@Override
 	public Sensor getSensor(String sensorName) {
 		return tsdb.getSensor(sensorName);
 	}
-	
+
 	@Override
 	public String[] getBaseSchema(String[] rawSchema) {
 		return tsdb.getBaseSchema(rawSchema);
 	}
-	
+
 	@Override
 	public String[] getCacheSchemaNames(String streamName) {
 		return tsdb.cacheStorage.getSchema(streamName).names;
 	}
-	
+
 	@Override
 	public String[] getValidSchema(String plotID, String[] sensorNames) {
 		return tsdb.getValidSchema(plotID, sensorNames);
 	}
-	
+
 	// ----------------------------------- region
 	@Override
 	public Region[] getRegions() {
 		Collection<Region> regions = tsdb.getRegions();
 		return regions.toArray(new Region[regions.size()]);
 	}
-	
+
 	@Override
 	public String[] getRegionLongNames() {
 		return tsdb.getRegionLongNames().toArray(String[]::new);
@@ -135,23 +136,23 @@ public class ServerTsDB implements RemoteTsDB {
 	public Region getRegionByLongName(String longName) {
 		return tsdb.getRegionByLongName(longName);
 	}
-	
+
 	// ---------------------------- general station
 	@Override
 	public GeneralStationInfo[] getGeneralStations() {
 		return tsdb.getGeneralStations().stream().map(g->new GeneralStationInfo(g)).toArray(GeneralStationInfo[]::new);
 	}
-	
+
 	@Override
 	public GeneralStationInfo[] getGeneralStationsOfRegion(String regionName) {
 		return tsdb.getGeneralStations(regionName).map(g->new GeneralStationInfo(g)).toArray(GeneralStationInfo[]::new);
 	}
-	
+
 	@Override
 	public String[] getGeneralStationLongNames(String regionName) {
 		return tsdb.getGeneralStationLongNames(regionName);
 	}
-	
+
 	// ----------------------------------- plot station virtualPlot
 	@Override
 	public PlotInfo[] getPlots() {
@@ -160,17 +161,17 @@ public class ServerTsDB implements RemoteTsDB {
 				tsdb.getVirtualPlots().stream().map(v->new PlotInfo(v))
 				).toArray(PlotInfo[]::new);
 	}
-	
+
 	@Override
 	public StationInfo[] getStations() {
 		return tsdb.getStations().stream().map(s->new StationInfo(s)).toArray(StationInfo[]::new);
 	}
-	
+
 	@Override
 	public VirtualPlotInfo[] getVirtualPlots() {
 		return tsdb.getVirtualPlots().stream().map(v->new VirtualPlotInfo(v)).toArray(VirtualPlotInfo[]::new);
 	}
-	
+
 	@Override
 	public VirtualPlotInfo getVirtualPlot(String plotID) {
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
@@ -185,12 +186,12 @@ public class ServerTsDB implements RemoteTsDB {
 	public String[] getStationNames() {
 		return tsdb.getStationNames().toArray(new String[0]);
 	}
-	
+
 	@Override
 	public String[] cacheStorageGetStreamNames() {
 		return tsdb.cacheStorage.getStreamNames().toArray(String[]::new);
 	}
-	
+
 	@Override
 	public String[] getPlotIDsByGeneralStationByLongName(String longName) {		
 		GeneralStation generalStation = tsdb.getGeneralStationByLongName(longName);
@@ -205,7 +206,7 @@ public class ServerTsDB implements RemoteTsDB {
 		}
 		return plotIDList.toArray(new String[0]);
 	}
-	
+
 	@Override 
 	public ArrayList<TimestampInterval<String>> getPlotTimeSpans() {
 		ArrayList<TimestampInterval<String>> result = new ArrayList<TimestampInterval<String>>();
@@ -252,28 +253,28 @@ public class ServerTsDB implements RemoteTsDB {
 		});
 		return result;
 	}
-	
+
 	// ------------------------------- logger
-	
+
 	@Override
 	public LoggerType[] getLoggerTypes() {
 		return tsdb.getLoggerTypes().toArray(new LoggerType[0]);
 	}
-	
+
 	@Override
 	public LoggerType getLoggerType(String loggerTypeName) {
 		return tsdb.getLoggerType(loggerTypeName);
 	}
-	
+
 	// ------------------------------------ source catalog
-	
+
 	@Override
 	public SourceEntry[] getSourceCatalogEntries() {
 		return tsdb.sourceCatalog.getEntries().toArray(new SourceEntry[0]);
 	}
-	
+
 	// ------------------------------------ console
-	
+
 	Long command_counter=0l;
 
 	Map<Long,Pair<Thread,ConsoleRunner>> commandThreadMap = new ConcurrentHashMap<Long,Pair<Thread,ConsoleRunner>>();
@@ -315,11 +316,31 @@ public class ServerTsDB implements RemoteTsDB {
 		return new Pair<Boolean,String[]>(running,output_lines);
 	}
 
-	
+
 	//-------------------------------------- query
 
 	@Override
 	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
+		if(AggregationInterval.RAW==aggregationInterval) {
+			try {
+				Node rawSource = RawSource.create(tsdb, plotID, columnNames);
+				if(rawSource!=null) {
+					TsIterator it = rawSource.get(start, end);
+					if(it==null||!it.hasNext()) {
+						return null;
+					}
+					return it.toTimestampSeries();
+				}
+			} catch (Exception e) {
+				log.error(e);
+				return null;
+			}
+
+		}
+
+
+
+
 		Node node = null;
 		if(queryType==null||queryType.equals("standard")) {		
 			node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);

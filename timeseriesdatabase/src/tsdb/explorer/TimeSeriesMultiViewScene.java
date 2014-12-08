@@ -35,7 +35,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
@@ -55,6 +57,7 @@ import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.SensorCategory;
+import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
@@ -72,6 +75,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 	private static final GeneralStationInfo GeneralStationAll = new GeneralStationInfo("[all]", "[?]");
 	private static final PlotInfo plotAll = new PlotInfo("[all]", "[?]", "[?]");
 	private static final Sensor sensorAll = new Sensor("[all]");
+	private static final String timeAll = "[all]";
 
 	private ComboBox<Region> comboRegion;
 	private ComboBox<GeneralStationInfo> comboGeneralStation;
@@ -90,6 +94,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 	private ExecutorService executorQueryTimeSeries;
 	private ExecutorService executorDrawImages;
+	private ComboBox<String> comboTime;
+	private HashMap<String, Sensor> sensorMap;
 
 	protected TimeSeriesMultiViewScene(RemoteTsDB tsdb) {
 		super("time series multi view");
@@ -171,14 +177,28 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			}
 		};
 		comboSensor.setConverter(sensorConverter);
-		comboSensor.valueProperty().addListener(this::onSensorChanged);		
+		comboSensor.valueProperty().addListener(this::onSensorChanged);
+		
+		
+		Label labelTime = new Label("Time");
+		labelTime.setAlignment(Pos.CENTER);
+		labelTime.setMaxHeight(100d);
+		comboTime = new ComboBox<String>();
+		comboTime.valueProperty().addListener(this::onTimeChanged);
+		
+		
+		
+		
+		
+		
 
 		FlowPane controlPane = new FlowPane(10d,10d);
 
 		controlPane.getChildren().add(new HBox(10d,labelRegion,comboRegion,new Separator(Orientation.VERTICAL)));
 		controlPane.getChildren().add(new HBox(10d,labelGeneralStation,comboGeneralStation,new Separator(Orientation.VERTICAL)));
 		controlPane.getChildren().add(new HBox(10d,labelPlot,comboPlot,new Separator(Orientation.VERTICAL)));
-		controlPane.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));		
+		controlPane.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));
+		controlPane.getChildren().add(new HBox(10d,labelTime,comboTime,new Separator(Orientation.VERTICAL)));
 
 		Label labelSelectedCount = new Label();
 		selectedCountProperty = new SimpleStringProperty();
@@ -211,6 +231,9 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 		borderPaneDiagrams.setCenter(vboxQueryImages);
 		borderPaneMain.setCenter(borderPaneDiagrams);
+		
+		
+		
 
 		return borderPaneMain;
 	}
@@ -342,9 +365,9 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 			queryEntry.timestampSeriesProperty.addListener((s,o,ts)->{
 				if(ts!=null) {
-					System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensorName);
+					System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 					executorDrawImages.submit(()->{
-						System.out.println("************************** create image "+queryEntry.plotID+"  "+queryEntry.sensorName);
+						System.out.println("************************** create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 
 						BufferedImage bufferedImage = new BufferedImage((int)borderPaneDiagrams.getWidth()-30,(int)imageHeight,java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -352,12 +375,18 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						gc.setBackground(new java.awt.Color(255, 255, 255));
 						gc.setColor(new java.awt.Color(0, 0, 0));
 						gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
-						gc.setColor(java.awt.Color.LIGHT_GRAY);
-						gc.drawString(queryEntry.plotID+"/"+queryEntry.sensorName, 0, 20);
 						gc.dispose();
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE);
+						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category);						
 						tsd.draw(tsp);
+						
+						gc = bufferedImage.createGraphics();					
+						gc.setColor(java.awt.Color.LIGHT_GRAY);
+						gc.drawString(queryEntry.plotID+" : "+queryEntry.sensor.name, 42, 20);
+						gc.dispose();
+						
+						
+						
 						/*TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
 						tshm.draw(tsp, queryEntry.sensorName);*/
@@ -372,11 +401,11 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 
 
-			System.out.println("************************** add task query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensorName);
+			System.out.println("************************** add task query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 			executorQueryTimeSeries.submit(()->{
-				System.out.println("************************** query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensorName);
+				System.out.println("************************** query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 				try {
-					TimestampSeries ts = tsdb.plot(null, queryEntry.plotID, new String[]{queryEntry.sensorName}, AggregationInterval.HOUR, DataQuality.STEP, false, null, null);
+					TimestampSeries ts = tsdb.plot(null, queryEntry.plotID, new String[]{queryEntry.sensor.name}, AggregationInterval.HOUR, DataQuality.STEP, false, queryEntry.startTimestamp, queryEntry.endTimestamp);
 					if(ts!=null) {
 						Platform.runLater(()->queryEntry.timestampSeriesProperty.set(ts));
 					}
@@ -443,6 +472,28 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 	@Override
 	protected void onShown() {
+		ObservableList<String> timeList = FXCollections.observableArrayList();		
+		timeList.add(timeAll);
+		timeList.add("2008");
+		timeList.add("2009");
+		timeList.add("2010");
+		timeList.add("2011");
+		timeList.add("2012");
+		timeList.add("2013");
+		timeList.add("2014");		
+		comboTime.setItems(timeList);
+		comboTime.setValue(timeAll);
+		
+		try {
+			Sensor[] sensors = tsdb.getSensors();
+			sensorMap = new HashMap<String,Sensor>();
+			for(Sensor sensor:sensors) {
+				sensorMap.put(sensor.name,sensor);
+			}			
+		} catch (RemoteException e) {
+			log.error(e);
+		}
+		
 		setRegions();
 	}
 
@@ -580,14 +631,18 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 	private static class QueryEntry {
 		public final String plotID;
-		public final String sensorName;
+		public final Sensor sensor;
+		public final Long startTimestamp;
+		public final Long endTimestamp;
 		public final ObjectProperty<TimestampSeries> timestampSeriesProperty;		
 		public final ObjectProperty<Image>  imageProperty;
-		public QueryEntry(String plotID,String sensorName) {
+		public QueryEntry(String plotID,Sensor sensor,Long startTimestamp,Long endTimestamp) {
 			this.plotID = plotID;
-			this.sensorName = sensorName;
+			this.sensor = sensor;
 			this.timestampSeriesProperty = new SimpleObjectProperty<TimestampSeries>();
 			this.imageProperty = new SimpleObjectProperty<Image>();
+			this.startTimestamp = startTimestamp;
+			this.endTimestamp = endTimestamp;
 		}
 	}
 
@@ -617,7 +672,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 					imageView.setImage(check);
 				} else {
 					imageChangeListener = (s,o,image)->{
-						System.out.println("************************** set image "+queryEntry.plotID+"  "+queryEntry.sensorName);
+						System.out.println("************************** set image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 						imageView.setImage(image);
 					};			
 					queryEntryNew.imageProperty.addListener(imageChangeListener);
@@ -631,14 +686,39 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 	}
 
 	private void onSensorChanged(ObservableValue<? extends Sensor> observable, Sensor oldValue, Sensor sensor) {
+		updateSelectionQueryList();
+	}
+	
+	private void onTimeChanged(ObservableValue<? extends String> observable, String oldValue, String sensor) {
+		updateSelectionQueryList();
+	}
+
+	@Override
+	protected void onClose() {
+		if(executorQueryTimeSeries!=null) {			
+			executorQueryTimeSeries.shutdownNow();			
+		}
+		if(executorDrawImages!=null) {		
+			executorDrawImages.shutdownNow();		
+		}
+	}
+	
+	void updateSelectionQueryList() {
 		selectionQueryList.clear();
+		
+		PlotInfo selectionPlot = comboPlot.getValue();
+		Sensor sensor = comboSensor.getValue();
+		String timeText = comboTime.getValue();
+		if(selectionPlot==null||sensor==null||timeText==null) {
+			selectedCountProperty.set("?");	
+			return;
+		}
+		
+		
 		try {
 			ArrayList<PlotInfo> selectedPlotList = new ArrayList<PlotInfo>();
 
-			PlotInfo selectionPlot = comboPlot.getValue();
-			if(selectionPlot==null) {
-
-			} else if(selectionPlot.name.equals(plotAll.name)) {
+			if(selectionPlot.name.equals(plotAll.name)) {
 				for(PlotInfo item:comboPlot.getItems()) {
 					if(!item.name.equals(plotAll.name)) {
 						selectedPlotList.add(item);
@@ -649,9 +729,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			}
 
 			HashMap<String,Sensor> selectedSensorMap = new HashMap<String,Sensor>();
-			if(sensor==null) {
-
-			} else if(sensor.name.equals(sensorAll.name)) {
+			
+			if(sensor.name.equals(sensorAll.name)) {
 				for(Sensor item:comboSensor.getItems()) {
 					if(!item.name.equals(sensorAll.name)) {
 						selectedSensorMap.put(item.name, item);
@@ -659,6 +738,16 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 				}
 			} else {
 				selectedSensorMap.put(sensor.name, sensor);
+			}
+			
+			Long startTimestamp = null;
+			Long endTimestamp = null;
+			
+			
+			if(!timeText.equals(timeAll)) {
+				int year = Integer.parseInt(timeText);
+				startTimestamp = TimeConverter.getYearStartTimestamp(year);
+				endTimestamp = TimeConverter.getYearEndTimestamp(year);
 			}
 
 
@@ -670,7 +759,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 				if(plotSensorNames!=null) {
 					for(String sensorName:plotSensorNames) {
 						if(selectedSensorMap.containsKey(sensorName)) {
-							selectionQueryList.add(new QueryEntry(plot.name, sensorName));
+							sensor = sensorMap.get(sensorName);
+							selectionQueryList.add(new QueryEntry(plot.name, sensor,startTimestamp,endTimestamp));
 						}
 					}
 				}		
@@ -680,18 +770,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			log.error(e);
 		}
 
-		System.out.println("querylist "+selectionQueryList.size());
-		selectedCountProperty.set(""+selectionQueryList.size());
-	}
-
-	@Override
-	protected void onClose() {
-		if(executorQueryTimeSeries!=null) {			
-			executorQueryTimeSeries.shutdownNow();			
-		}
-		if(executorDrawImages!=null) {		
-			executorDrawImages.shutdownNow();		
-		}
+		selectedCountProperty.set(""+selectionQueryList.size());		
 	}
 	
 	

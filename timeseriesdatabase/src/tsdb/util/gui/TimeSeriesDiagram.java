@@ -18,7 +18,7 @@ import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesDiagram {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private final TimestampSeries timestampseries;
@@ -66,6 +66,9 @@ public class TimeSeriesDiagram {
 
 		aggregationTimeInterval = 60;
 		switch(aggregationInterval) {
+		case RAW:
+			aggregationTimeInterval=365*24*60; //pre
+			break;
 		case HOUR:
 			aggregationTimeInterval=60;
 			break;
@@ -90,6 +93,7 @@ public class TimeSeriesDiagram {
 		dataCount = 0f;
 		dataSum = 0f;
 
+		long prev = 0;
 		for(TsEntry entry:timestampseries) {
 			float value = entry.data[0];
 			if(!Float.isNaN(value)) {
@@ -99,18 +103,27 @@ public class TimeSeriesDiagram {
 				if(value>dataMaxValue) {
 					dataMaxValue = value;						
 				}
+				long diff = entry.timestamp-prev;
+				if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
+					aggregationTimeInterval = diff;
+				}
+				prev = entry.timestamp;
 				dataCount++;
 				dataSum += value;
 			}
 		}
 
 		dataValueRange = dataMaxValue-dataMinValue;
+		
+		diagramMinValue = dataMinValue;
+		diagramMaxValue = dataMaxValue;
+		diagramValueRange = diagramMaxValue-diagramMinValue;
 
 		dataMinTimestamp = timestampseries.getFirstTimestamp();
 		dataMaxTimestamp = timestampseries.getLastTimestamp();
 		dataTimestampRange = dataMaxTimestamp-dataMinTimestamp;
-		
-		
+
+
 		diagramMinTimestamp = dataMinTimestamp;
 		diagramMaxTimestamp = dataMaxTimestamp;
 		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
@@ -119,7 +132,7 @@ public class TimeSeriesDiagram {
 	public int calcDiagramX(float timestamp) {
 		return (int) (diagramMinX+((timestamp-diagramMinTimestamp)*diagramTimestampFactor));
 	}
-	
+
 	public long calcTimestamp(float posX) {
 		return (long) (diagramMinTimestamp+((posX - diagramMinX)/diagramTimestampFactor));
 	}
@@ -127,8 +140,12 @@ public class TimeSeriesDiagram {
 	public int calcDiagramY(float value) {
 		return (int) (diagramMaxY-((value-diagramMinValue)*diagramValueFactor));
 	}
+	
+	public float calcValue(float posY) {
+		return ((diagramMaxY-posY)/diagramValueFactor)+diagramMinValue;
+	}
 
-	private class ValueLine {
+	private static class ValueLine {
 		public final float x0;
 		public final float x1;
 		public final float y;
@@ -139,13 +156,35 @@ public class TimeSeriesDiagram {
 		}
 	}
 
-	private class ConnectLine {
+	private static class ConnectLine {
 		public final float x;
 		public final float y0;
 		public final float y1;
 		public ConnectLine(float x, float y0, float y1) {
 			this.x = x;
 			this.y0 = y0;
+			this.y1 = y1;
+		}
+	}
+	
+	private static class RawPoint {
+		public final float x;
+		public final float y;
+		public RawPoint(float x, float y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
+	
+	private static class RawConnect {
+		public final float x0;
+		public final float y0;
+		public final float x1;
+		public final float y1;
+		public RawConnect(float x0, float y0, float x1, float y1) {
+			this.x0 = x0;
+			this.y0 = y0;
+			this.x1 = x1;
 			this.y1 = y1;
 		}
 	}
@@ -164,11 +203,8 @@ public class TimeSeriesDiagram {
 		diagramWidth = diagramMaxX-diagramMinX;
 		diagramHeigh = diagramMaxY-diagramMinY;
 
-		
 
-		diagramMinValue = dataMinValue;
-		diagramMaxValue = dataMaxValue;
-		diagramValueRange = dataMaxValue-dataMinValue;
+
 		diagramTimestampFactor = diagramWidth/diagramTimestampRange;
 		diagramValueFactor = diagramHeigh/diagramValueRange;
 
@@ -181,67 +217,147 @@ public class TimeSeriesDiagram {
 		}
 		drawGraph(tsp,timestampseries,true);		
 	}
-	
+
 	public long getDataMinTimestamp() {
 		return dataMinTimestamp;
 	}
-	
+
 	public long getDataMaxTimestamp() {
 		return dataMaxTimestamp;
 	}
-	
+
 	public float getDiagramMinTimestamp() {
 		return diagramMinTimestamp;
 	}
-	
+
 	public float getDiagramMaxTimestamp() {
 		return diagramMaxTimestamp;
 	}
-	
+
 	public void setDiagramTimestampRange(float min, float max) {
 		diagramMinTimestamp = min;
 		diagramMaxTimestamp = max;
 		diagramTimestampRange = max-min;
 	}
 	
+	
+	
+	
+	
+	public float getDataMinValue() {
+		return dataMinValue;
+	}
+
+	public float getDataMaxValue() {
+		return dataMaxValue;
+	}
+
+	public float getDiagramMinValue() {
+		return diagramMinValue;
+	}
+
+	public float getDiagramMaxValue() {
+		return diagramMaxValue;
+	}
+
+	public void setDiagramValueRange(float min, float max) {
+		diagramMinValue = min;
+		diagramMaxValue = max;
+		diagramValueRange = max-min;
+	}
+
 
 	private void drawGraph(TimeSeriesPainter tsp, TimestampSeries ts, boolean isPrimary) {
-		boolean hasPrev = false;
-		float prevY = 0;
-		List<ValueLine> valueLineList = new ArrayList<ValueLine>(ts.entryList.size());
-		List<ConnectLine> connectLineList = new ArrayList<ConnectLine>(ts.entryList.size());
 
-		for(TsEntry entry:ts) {
-			float timestamp = entry.timestamp;
-			float value = entry.data[0];
-			if(Float.isNaN(value)) {
-				hasPrev = false;
-			} else {
-				int x0 = calcDiagramX(timestamp);
-				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
-				int y = calcDiagramY(value);
-				valueLineList.add(new ValueLine(x0, x1, y));
-				if(hasPrev) {
-					connectLineList.add(new ConnectLine(x0, prevY, y));
+		if(aggregationInterval!=AggregationInterval.RAW) {
+
+
+
+			boolean hasPrev = false;
+			float prevY = 0;
+			List<ValueLine> valueLineList = new ArrayList<ValueLine>(ts.entryList.size());
+			List<ConnectLine> connectLineList = new ArrayList<ConnectLine>(ts.entryList.size());
+
+			for(TsEntry entry:ts) {
+				if(entry.timestamp<diagramMinTimestamp) {
+					continue;
 				}
-				prevY = y;
-				hasPrev = true;
+				
+				float timestamp = entry.timestamp;
+				float value = entry.data[0];
+				if(Float.isNaN(value)) {
+					hasPrev = false;
+				} else {
+					int x0 = calcDiagramX(timestamp);
+					int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+					int y = calcDiagramY(value);
+					valueLineList.add(new ValueLine(x0, x1, y));
+					if(hasPrev) {
+						connectLineList.add(new ConnectLine(x0, prevY, y));
+					}
+					prevY = y;
+					hasPrev = true;
+				}
+				
+				if(entry.timestamp>diagramMaxTimestamp) {
+					break;
+				}
+
 			}
 
-		}
+			switch(diagramType) {
+			case TEMPERATURE:
+				drawDiagramTemperature(tsp, valueLineList, connectLineList, isPrimary);
+				break;
+			case WATER:
+				drawDiagramWater(tsp, valueLineList, connectLineList, isPrimary);
+				break;
+			case OTHER:
+				//if(aggregationInterval==AggregationInterval.RAW) {
 
-		switch(diagramType) {
-		case TEMPERATURE:
-			drawDiagramTemperature(tsp, valueLineList, connectLineList, isPrimary);
-			break;
-		case WATER:
-			drawDiagramWater(tsp, valueLineList, connectLineList, isPrimary);
-			break;
-		case OTHER:
-			drawDiagramUnknown(tsp, valueLineList, connectLineList, isPrimary);
-			break;
-		default:
-			log.error("unknown diagram type: "+diagramType);
+				//} else {
+				drawDiagramUnknown(tsp, valueLineList, connectLineList, isPrimary);
+				//}
+				break;
+			default:
+				log.error("unknown diagram type: "+diagramType);
+			}
+		} else {
+			
+			ArrayList<RawPoint> pointList = new ArrayList<RawPoint>();
+			ArrayList<RawConnect> connectList = new ArrayList<RawConnect>();
+			
+			boolean hasPrev = false;
+			float prevX = 0;
+			float prevY = 0;
+			for(TsEntry entry:ts) {
+				
+				if(entry.timestamp<diagramMinTimestamp) {
+					continue;
+				}
+				
+				float timestamp = entry.timestamp;
+				float value = entry.data[0];
+				
+				if(Float.isNaN(value)) {
+					hasPrev = false;
+				} else {
+					int x = calcDiagramX(timestamp);
+					int y = calcDiagramY(value);
+					pointList.add(new RawPoint(x, y));
+					if(hasPrev) {
+						connectList.add(new RawConnect(prevX, prevY, x, y));
+					}
+					prevX = x;
+					prevY = y;
+					hasPrev = true;
+				}
+				
+				if(entry.timestamp>diagramMaxTimestamp) {
+					break;
+				}
+			}			
+			drawDiagramRaw(tsp, pointList, connectList, isPrimary);
 		}
 	}
 
@@ -293,6 +409,26 @@ public class TimeSeriesDiagram {
 		}
 		for(ValueLine valueLine:valueLineList) {
 			tsp.drawLine(valueLine.x0,valueLine.y,valueLine.x1,valueLine.y);
+		}
+	}
+
+	private void drawDiagramRaw(TimeSeriesPainter tsp, ArrayList<RawPoint> pointList, ArrayList<RawConnect> connectList, boolean isPrimary) {
+		if(isPrimary) {
+			tsp.setColorConnectLineUnknown();
+		} else {
+			tsp.setColorConnectLineUnknownSecondary();	
+		}
+		for(RawConnect r:connectList) {
+			tsp.drawLine(r.x0, r.y0, r.x1, r.y1);
+		}
+
+		if(isPrimary) {
+			tsp.setColorValueLineUnknown();
+		} else {
+			tsp.setColorValueLineUnknownSecondary();	
+		}
+		for(RawPoint p:pointList) {
+			tsp.drawLine(p.x,p.y,p.x,p.y);
 		}
 	}
 

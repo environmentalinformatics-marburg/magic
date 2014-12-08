@@ -116,4 +116,13 @@ public class TimeConverter implements Serializable {
 		LocalDateTime datetime = oleMinutesToLocalDateTime(timestamp);
 		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear()+1,1,1,0,0));
 	}
+	
+	public static long getYearStartTimestamp(int year) { // at hour
+		return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+	}
+	
+	public static long getYearEndTimestamp(int year) { // at hour
+		return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+	}
+	
 }

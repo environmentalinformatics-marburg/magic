@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.Locale.Category;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +20,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import javafx.beans.property.ObjectProperty;
@@ -32,12 +34,16 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
@@ -51,24 +57,31 @@ import static tsdb.util.AssumptionCheck.*;
 public class TimeSeriesViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;
-	
+
 	private ImageView imageView;
+	private ContextMenu imageViewContextMenu;
+	
 	private AnchorPane anchorPane;
 
 	private ObjectProperty<TimeSeriesDiagram> tsdProperty;
 
 	private static final Region regionAll = new Region("[all]","[all]");
 	private static final GeneralStationInfo GeneralStationAll = new GeneralStationInfo("[all]", "[?]");
-	private static final String plotAll = "[all]";
+	private static final String timeAll = "[all]";
 
-	private float zoomFactor = 1;
+	private float zoomFactorTime = 1;
+	private float zoomFactorValue = 1;
 
 	private ComboBox<Region> comboRegion;
 	private ComboBox<GeneralStationInfo> comboGeneralStation;
 	private ComboBox<PlotInfo> comboPlot;
 	private ComboBox<Sensor> comboSensor;
 
-	private Double mouseStartMovePos = null;
+	private Double mouseStartMovePosX = null;
+	private Double mouseStartMovePosY = null;
+	private ComboBox<String> comboTime;
+	private ComboBox<AggregationInterval> comboAggregation;
+	private ComboBox<DataQuality> comboQuality;
 
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");
@@ -82,7 +95,24 @@ public class TimeSeriesViewScene extends TsdbScene {
 		imageView.setOnScroll(this::onScroll);
 		imageView.setOnMouseDragged(this::onMouseDragged);
 		imageView.setOnMousePressed(this::onMousePressed);
-
+		imageView.setOnMouseClicked(this::onMouseClicked);
+		
+		
+		MenuItem menuItem1 = new MenuItem("reset view");
+		menuItem1.setOnAction(e->{
+			zoomFactorTime = 1;
+			zoomFactorValue = 1;
+			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			if(tsd!=null) {
+				tsd.setDiagramTimestampRange(tsd.getDataMinTimestamp(), tsd.getDataMaxTimestamp());
+				tsd.setDiagramValueRange(tsd.getDataMinValue(), tsd.getDataMaxValue());
+				repaint();
+			}
+		});
+		MenuItem menuItem2 = new CheckMenuItem("[todo] (auto) fit values");
+		imageViewContextMenu = new ContextMenu(menuItem1,menuItem2);
+		imageViewContextMenu.setAutoHide(true);
+		
 
 		anchorPane = new AnchorPane();
 		AnchorPane.setTopAnchor(imageView, 0.0);
@@ -94,6 +124,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		anchorPane.heightProperty().addListener(x->repaint());
 		anchorPane.setOnMouseClicked(x->repaint());
 		anchorPane.setMinSize(10, 10);
+		
 
 		Label labelRegion = new Label("Region");
 		labelRegion.setAlignment(Pos.CENTER);
@@ -163,6 +194,27 @@ public class TimeSeriesViewScene extends TsdbScene {
 		comboSensor.setConverter(sensorConverter);
 		comboSensor.valueProperty().addListener(this::onSensorChanged);
 
+		Label labelTime = new Label("Time");
+		labelTime.setAlignment(Pos.CENTER);
+		labelTime.setMaxHeight(100d);
+		comboTime = new ComboBox<String>();
+		comboTime.valueProperty().addListener(this::onTimeChanged);
+
+
+		Label labelAggregation = new Label("Aggregation");
+		labelAggregation.setAlignment(Pos.CENTER);
+		labelAggregation.setMaxHeight(100d);
+		comboAggregation = new ComboBox<AggregationInterval>();
+		comboAggregation.valueProperty().addListener(this::onAggregationChanged);
+		
+		Label labelQuality = new Label("Quality");
+		labelQuality.setAlignment(Pos.CENTER);
+		labelQuality.setMaxHeight(100d);
+		comboQuality = new ComboBox<DataQuality>();
+		comboQuality.valueProperty().addListener(this::onQualityChanged);
+
+
+
 		FlowPane top = new FlowPane();
 		top.setHgap(30d);
 		top.setVgap(3d);
@@ -170,6 +222,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 		top.getChildren().add(new HBox(10d,labelGeneralStation,comboGeneralStation,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelPlot,comboPlot,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelTime,comboTime,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelAggregation,comboAggregation,new Separator(Orientation.VERTICAL)));
+		top.getChildren().add(new HBox(10d,labelQuality,comboQuality,new Separator(Orientation.VERTICAL)));
 		Node center = anchorPane;
 		Node bottom = new Label("ready");
 		Node left = null;
@@ -181,13 +236,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		tsdProperty = new SimpleObjectProperty<TimeSeriesDiagram >();
 		tsdProperty.addListener(o->{
-			zoomFactor=1;
+			zoomFactorTime=1;
 			repaint();
 		});
-		
+
 		return new BorderPane(center, sc, right, bottom, left);
 	}
-	
+
 	private void repaint() {
 		imageView.setImage(null);
 		double width = anchorPane.getWidth();
@@ -305,10 +360,30 @@ public class TimeSeriesViewScene extends TsdbScene {
 			return;
 		}
 
+		Long startTimestamp = null;
+		Long endTimestamp = null;		
+
+		String timeText = comboTime.getValue();
+		if(timeText!=null && !timeText.equals(timeAll)) {
+			int year = Integer.parseInt(timeText);
+			startTimestamp = TimeConverter.getYearStartTimestamp(year);
+			endTimestamp = TimeConverter.getYearEndTimestamp(year);
+		}
+
+		AggregationInterval agg = comboAggregation.getValue();
+		if(agg==null) {
+			agg = AggregationInterval.HOUR;
+		}
+
+
 		try {			
-			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, AggregationInterval.HOUR, DataQuality.STEP, false, null, null);
+			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, agg, DataQuality.STEP, false, startTimestamp, endTimestamp);
 			if(ts!=null) {
-				tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE);
+				SensorCategory category = sensor.category;
+				/*if(agg==AggregationInterval.RAW) {
+					category = SensorCategory.OTHER;
+				}*/
+				tsd = new TimeSeriesDiagram(ts,agg,category);
 			}
 		} catch (Exception e) {
 			log.error(e);
@@ -318,21 +393,35 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onPlotChanged(ObservableValue<? extends PlotInfo> observable, PlotInfo oldValue, PlotInfo plot) {
+		onUpdateSensor();
+
+		onUpdateTimestampSeries();
+	}
+
+	private void onUpdateSensor() {
 		ObservableList<Sensor> sensorList = FXCollections.observableArrayList();
 
+
+
 		try {
-			Sensor[] sensors = tsdb.getSensors();
-			Map<String,Sensor> sensorMap = new HashMap<String,Sensor>();
-			for(Sensor sensor:sensors) {
-				sensorMap.put(sensor.name, sensor);
-			}
-			String[] sensorNames = tsdb.getSensorNamesOfPlot(plot.name);
-			for(String sensorName:sensorNames) {
-				Sensor sensor = sensorMap.get(sensorName);
-				if(sensor.isAggregable()) {
-					sensorList.addAll(sensor);
+			PlotInfo plot = comboPlot.getValue();
+			AggregationInterval agg = comboAggregation.getValue();
+			if(plot!=null && agg!=null) {
+
+				Sensor[] sensors = tsdb.getSensors();
+				Map<String,Sensor> sensorMap = new HashMap<String,Sensor>();
+				for(Sensor sensor:sensors) {
+					sensorMap.put(sensor.name, sensor);
 				}
-			}			
+
+				String[] sensorNames = tsdb.getSensorNamesOfPlot(plot.name);
+				for(String sensorName:sensorNames) {
+					Sensor sensor = sensorMap.get(sensorName);
+					if(sensor.isAggregable() || agg==AggregationInterval.RAW) {
+						sensorList.addAll(sensor);
+					}
+				}
+			}
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -343,96 +432,215 @@ public class TimeSeriesViewScene extends TsdbScene {
 		} else {
 			comboSensor.setValue(sensorList.get(0));
 		}
-
-		onUpdateTimestampSeries();
 	}
 
 	private void onSensorChanged(ObservableValue<? extends Sensor> observable, Sensor oldValue, Sensor sensor) {
 		onUpdateTimestampSeries();
 	}
 
+	private void onTimeChanged(ObservableValue<? extends String> observable, String oldValue, String sensor) {
+		onUpdateTimestampSeries();
+	}
+
+	private void onAggregationChanged(ObservableValue<? extends AggregationInterval> observable, AggregationInterval oldValue, AggregationInterval sensor) {
+		onUpdateSensor();
+		onUpdateTimestampSeries();
+	}
+	
+	private void onQualityChanged(ObservableValue<? extends DataQuality> observable, DataQuality oldValue, DataQuality quality) {
+		
+	}
+
 	private void onMousePressed(MouseEvent event) {
-		mouseStartMovePos  = event.getX();
+		mouseStartMovePosX  = event.getX();
+		mouseStartMovePosY  = event.getY();
 	}
 
 	private void onMouseDragged(MouseEvent event) {
-		double currentMovePos = event.getX();
 
-		TimeSeriesDiagram tsd = tsdProperty.getValue();
-		long timestampOffset = tsd.calcTimestamp((float) (currentMovePos-mouseStartMovePos))-tsd.calcTimestamp(0f);;
-		System.out.println("MouseDragged "+(currentMovePos-mouseStartMovePos)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
-		mouseStartMovePos = currentMovePos;
-		float prevDiagramMin = tsd.getDiagramMinTimestamp();
-		float prevDiagramMax = tsd.getDiagramMaxTimestamp();
-		long diagramMin = (long) (prevDiagramMin - timestampOffset);
-		long diagramMax = (long) (prevDiagramMax - timestampOffset);
-		long min = tsd.getDataMinTimestamp();
-		long max = tsd.getDataMaxTimestamp();
-		if(diagramMin<min) {
-			long corr = min-diagramMin;
-			diagramMin += corr;
-			diagramMax += corr;
-			if(diagramMax>max) {
-				diagramMax = max;
-			}
-		} else if(diagramMax>max) {
-			long corr = diagramMax-max;
-			diagramMin -= corr;
-			diagramMax -= corr;
+		if(true) {
+
+			double currentMovePosX = event.getX();
+
+			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			long timestampOffset = tsd.calcTimestamp((float) (currentMovePosX-mouseStartMovePosX))-tsd.calcTimestamp(0f);;
+			System.out.println("MouseDragged "+(currentMovePosX-mouseStartMovePosX)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
+			mouseStartMovePosX = currentMovePosX;
+			float prevDiagramMin = tsd.getDiagramMinTimestamp();
+			float prevDiagramMax = tsd.getDiagramMaxTimestamp();
+			long diagramMin = (long) (prevDiagramMin - timestampOffset);
+			long diagramMax = (long) (prevDiagramMax - timestampOffset);
+			long min = tsd.getDataMinTimestamp();
+			long max = tsd.getDataMaxTimestamp();
 			if(diagramMin<min) {
-				diagramMin = min;
+				long corr = min-diagramMin;
+				diagramMin += corr;
+				diagramMax += corr;
+				if(diagramMax>max) {
+					diagramMax = max;
+				}
+			} else if(diagramMax>max) {
+				long corr = diagramMax-max;
+				diagramMin -= corr;
+				diagramMax -= corr;
+				if(diagramMin<min) {
+					diagramMin = min;
+				}
 			}
+
+			tsd.setDiagramTimestampRange(diagramMin, diagramMax);
+
 		}
 
-		tsd.setDiagramTimestampRange(diagramMin, diagramMax);
+		if(event.isShiftDown()) {
+
+			double currentMovePosY = event.getY();
+			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			float valueOffset = tsd.calcValue((float) (currentMovePosY-mouseStartMovePosY))-tsd.calcValue(0f);
+			mouseStartMovePosY = currentMovePosY;
+			float prevDiagramMin = tsd.getDiagramMinValue();
+			float prevDiagramMax = tsd.getDiagramMaxValue();
+			float diagramMin = prevDiagramMin - valueOffset;
+			float diagramMax = prevDiagramMax - valueOffset;
+			float min = tsd.getDataMinValue();
+			float max = tsd.getDataMaxValue();
+			if(diagramMin<min) {
+				float corr = min-diagramMin;
+				diagramMin += corr;
+				diagramMax += corr;
+				if(diagramMax>max) {
+					diagramMax = max;
+				}
+			} else if(diagramMax>max) {
+				float corr = diagramMax-max;
+				diagramMin -= corr;
+				diagramMax -= corr;
+				if(diagramMin<min) {
+					diagramMin = min;
+				}
+			}
+			tsd.setDiagramValueRange(diagramMin, diagramMax);
+		}
+
 		repaint();		
+	}
+	
+	private void onMouseClicked(MouseEvent event) {
+		
+		if(event.getButton()==MouseButton.SECONDARY) {
+			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
+		}
+		
 	}
 
 	private void onScroll(ScrollEvent event) {
-		TimeSeriesDiagram tsd = tsdProperty.getValue();
+		if(!event.isShiftDown()) {
+			TimeSeriesDiagram tsd = tsdProperty.getValue();
 
-		double zoom = event.getDeltaY();
-		if(zoom<0) {
-			zoomFactor*=1.25;	
-		} else {				
-			zoomFactor/=1.25;
-			if(zoomFactor<1) {
-				zoomFactor = 1;
+			double zoom = event.getDeltaY();
+			if(zoom<0) {
+				zoomFactorTime*=1.25;	
+			} else {				
+				zoomFactorTime/=1.25;
+				if(zoomFactorTime<1) {
+					zoomFactorTime = 1;
+				}
 			}
-		}
 
-		long min = tsd.getDataMinTimestamp();
-		long max = tsd.getDataMaxTimestamp();
-		float prevDiagramMin = tsd.getDiagramMinTimestamp();
-		float prevDiagramMax = tsd.getDiagramMaxTimestamp();
-		long posTimestamp = tsd.calcTimestamp((float) event.getSceneX());
-		if(posTimestamp<min) {
-			posTimestamp = min;
-		}
-		if(posTimestamp>max) {
-			posTimestamp = max;
-		}
+			long min = tsd.getDataMinTimestamp();
+			long max = tsd.getDataMaxTimestamp();
+			float prevDiagramMin = tsd.getDiagramMinTimestamp();
+			float prevDiagramMax = tsd.getDiagramMaxTimestamp();
+			long posTimestamp = tsd.calcTimestamp((float) event.getSceneX());
+			if(posTimestamp<min) {
+				posTimestamp = min;
+			}
+			if(posTimestamp>max) {
+				posTimestamp = max;
+			}
 
-		float rangeFactor = ((float)(posTimestamp-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
+			float rangeFactor = ((float)(posTimestamp-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
 
-		long zoomedTimestampRange = (long) ((max-min)/zoomFactor);
-		float zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
-		float zoomedMax = zoomedMin+zoomedTimestampRange;
-		
-		if(zoomedMin<min) {
-			zoomedMin = min;
+			long zoomedTimestampRange = (long) ((max-min)/zoomFactorTime);
+			float zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
+			float zoomedMax = zoomedMin+zoomedTimestampRange;
+
+			if(zoomedMin<min) {
+				zoomedMin = min;
+			}
+			if(zoomedMax>max) {
+				zoomedMax = max;
+			}
+
+			tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
+			repaint();
+		} else {
+			TimeSeriesDiagram tsd = tsdProperty.getValue();
+
+			double zoom = event.getDeltaY();
+			if(zoom<0) {
+				zoomFactorValue*=1.25;	
+			} else {				
+				zoomFactorValue/=1.25;
+				if(zoomFactorValue<1) {
+					zoomFactorValue = 1;
+				}
+			}
+
+			float min = tsd.getDataMinValue();
+			float max = tsd.getDataMaxValue();
+			float prevDiagramMin = tsd.getDiagramMinValue();
+			float prevDiagramMax = tsd.getDiagramMaxValue();
+			float posValue = tsd.calcValue((float)event.getY());
+			if(posValue<min) {
+				posValue = min;
+			}
+			if(posValue>max) {
+				posValue = max;
+			}
+
+			float rangeFactor = ((float)(posValue-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
+			float zoomedValueRange = (max-min)/zoomFactorValue;
+			float zoomedMin = posValue - zoomedValueRange*(rangeFactor);
+			float zoomedMax = zoomedMin+zoomedValueRange;
+
+			if(zoomedMin<min) {
+				zoomedMin = min;
+			}
+			if(zoomedMax>max) {
+				zoomedMax = max;
+			}
+
+			tsd.setDiagramValueRange(zoomedMin, zoomedMax);
+			repaint();
 		}
-		if(zoomedMax>max) {
-			zoomedMax = max;
-		}
-
-		tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
-
-		repaint();
 	}
 
 	@Override
 	protected void onShown() {
+
+		ObservableList<String> timeList = FXCollections.observableArrayList();		
+		timeList.add(timeAll);
+		timeList.add("2008");
+		timeList.add("2009");
+		timeList.add("2010");
+		timeList.add("2011");
+		timeList.add("2012");
+		timeList.add("2013");
+		timeList.add("2014");		
+		comboTime.setItems(timeList);
+		comboTime.setValue(timeAll);
+
+		ObservableList<AggregationInterval> aggregationList = FXCollections.observableArrayList();
+		aggregationList.add(AggregationInterval.RAW);
+		aggregationList.add(AggregationInterval.HOUR);
+		aggregationList.add(AggregationInterval.DAY);
+		aggregationList.add(AggregationInterval.WEEK);
+		aggregationList.add(AggregationInterval.MONTH);
+		aggregationList.add(AggregationInterval.YEAR);
+		comboAggregation.setItems(aggregationList);
+		comboAggregation.setValue(AggregationInterval.HOUR);
+
 		setRegions();
 	}
 }

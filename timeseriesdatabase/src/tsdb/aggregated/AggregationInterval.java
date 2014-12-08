@@ -7,6 +7,7 @@ import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 
 public enum AggregationInterval {
+	RAW,
 	HOUR, 
 	DAY, 
 	WEEK, 
