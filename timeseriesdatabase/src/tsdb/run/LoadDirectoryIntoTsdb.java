@@ -22,7 +22,8 @@ public class LoadDirectoryIntoTsdb {
 		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();		
 
 
-		Path path = Paths.get("c:/temp/ki_201411150000_missingFiles_asc");
+		//Path path = Paths.get("c:/temp/ki_201411150000_missingFiles_asc");
+		Path path = Paths.get("C:/timeseriesdatabase_source/ki_tsm/20141205");
 		timeseriesloaderKiLi.loadOneDirectory_structure_kili(path , ascCollectorMap);
 
 		timeseriesloaderKiLi.loadWithAscCollectorMapNewParser(ascCollectorMap);

@@ -162,6 +162,7 @@ public class TimeSeriesLoaderKiLi {
 
 				insertTimestampseries(station, properties, timestampseries, translatedInputSchema, ascPath);
 			} catch (Exception e) {
+				e.printStackTrace();
 				log.error(e+"  in  "+infoFilename);
 			}
 		}

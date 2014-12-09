@@ -31,9 +31,12 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -41,6 +44,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
@@ -50,6 +54,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.LineBuilder;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import static tsdb.util.AssumptionCheck.*;
@@ -59,11 +67,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private final RemoteTsDB tsdb;
 
 	private ImageView imageView;
+	//private Canvas canvas;
 	private ContextMenu imageViewContextMenu;
-	
-	private AnchorPane anchorPane;
 
-	private ObjectProperty<TimeSeriesDiagram> tsdProperty;
+	private StackPane stackPane;
+
+	private ObjectProperty<TimeSeriesDiagram> timeSeriesDiagramProperty;
+	private ObjectProperty<Image> imageProperty;
 
 	private static final Region regionAll = new Region("[all]","[all]");
 	private static final GeneralStationInfo GeneralStationAll = new GeneralStationInfo("[all]", "[?]");
@@ -82,6 +92,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private ComboBox<String> comboTime;
 	private ComboBox<AggregationInterval> comboAggregation;
 	private ComboBox<DataQuality> comboQuality;
+	private Line line;
 
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");
@@ -91,40 +102,56 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 	@Override
 	protected Parent createContent() {
-		imageView = new ImageView();		
-		imageView.setOnScroll(this::onScroll);
-		imageView.setOnMouseDragged(this::onMouseDragged);
-		imageView.setOnMousePressed(this::onMousePressed);
-		imageView.setOnMouseClicked(this::onMouseClicked);
-		
-		
+
 		MenuItem menuItem1 = new MenuItem("reset view");
 		menuItem1.setOnAction(e->{
 			zoomFactorTime = 1;
 			zoomFactorValue = 1;
-			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 			if(tsd!=null) {
 				tsd.setDiagramTimestampRange(tsd.getDataMinTimestamp(), tsd.getDataMaxTimestamp());
 				tsd.setDiagramValueRange(tsd.getDataMinValue(), tsd.getDataMaxValue());
-				repaint();
+				createImage();
 			}
 		});
 		MenuItem menuItem2 = new CheckMenuItem("[todo] (auto) fit values");
 		imageViewContextMenu = new ContextMenu(menuItem1,menuItem2);
 		imageViewContextMenu.setAutoHide(true);
 		
-
-		anchorPane = new AnchorPane();
-		AnchorPane.setTopAnchor(imageView, 0.0);
-		AnchorPane.setBottomAnchor(imageView, 0.0);
-		AnchorPane.setLeftAnchor(imageView, 0.0);
-		AnchorPane.setRightAnchor(imageView, 0.0);
-		anchorPane.getChildren().add(imageView);
-		anchorPane.widthProperty().addListener(x->repaint());
-		anchorPane.heightProperty().addListener(x->repaint());
-		anchorPane.setOnMouseClicked(x->repaint());
-		anchorPane.setMinSize(10, 10);
 		
+		stackPane = new StackPane();
+		stackPane.setAlignment(Pos.TOP_LEFT);
+		imageView = new ImageView();
+		stackPane.getChildren().add(imageView);
+		line = new Line(100,100,200,200);
+		line.setStroke(Color.AQUA);
+		
+		
+		Group group = new Group();
+		stackPane.getChildren().add(group);
+		
+		
+		Line line2 = new Line(0,0,0,0);
+		line2.setStroke(Color.ALICEBLUE);
+		group.getChildren().add(line2);
+		
+		
+		group.getChildren().add(line);
+		//stackPane.getChildren().add(line);
+		
+		
+		
+
+		stackPane.widthProperty().addListener(x->createImage());
+		stackPane.heightProperty().addListener(x->createImage());
+		stackPane.setMinSize(0, 0); //!! for auto resize
+		stackPane.setOnScroll(this::onScroll);
+		stackPane.setOnMouseDragged(this::onMouseDragged);
+		stackPane.setOnMousePressed(this::onMousePressed);
+		stackPane.setOnMouseClicked(this::onMouseClicked);
+		
+		
+
 
 		Label labelRegion = new Label("Region");
 		labelRegion.setAlignment(Pos.CENTER);
@@ -206,7 +233,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		labelAggregation.setMaxHeight(100d);
 		comboAggregation = new ComboBox<AggregationInterval>();
 		comboAggregation.valueProperty().addListener(this::onAggregationChanged);
-		
+
 		Label labelQuality = new Label("Quality");
 		labelQuality.setAlignment(Pos.CENTER);
 		labelQuality.setMaxHeight(100d);
@@ -225,7 +252,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		top.getChildren().add(new HBox(10d,labelTime,comboTime,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelAggregation,comboAggregation,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelQuality,comboQuality,new Separator(Orientation.VERTICAL)));
-		Node center = anchorPane;
+		Node center = stackPane;
 		Node bottom = new Label("ready");
 		Node left = null;
 		Node right = null;
@@ -234,26 +261,32 @@ public class TimeSeriesViewScene extends TsdbScene {
 		sc.setFitToWidth(true);
 		sc.prefHeightProperty().bind(top.heightProperty().add(10));
 
-		tsdProperty = new SimpleObjectProperty<TimeSeriesDiagram >();
-		tsdProperty.addListener(o->{
+		timeSeriesDiagramProperty = new SimpleObjectProperty<TimeSeriesDiagram>();
+		timeSeriesDiagramProperty.addListener(o->{
 			zoomFactorTime=1;
+			createImage();
+		});
+		
+		imageProperty = new SimpleObjectProperty<Image>();
+		imageProperty.addListener(o->{
 			repaint();
 		});
 
 		return new BorderPane(center, sc, right, bottom, left);
 	}
 
-	private void repaint() {
-		imageView.setImage(null);
-		double width = anchorPane.getWidth();
-		double height = anchorPane.getHeight();
-		System.out.println(width+"   "+height);
+	private void createImage() {
+		//imageView.setImage(null);
+		double width = stackPane.getWidth();
+		double height = stackPane.getHeight();
+		//System.out.println(width+"   "+height);
 		if(width<10d||height<10d) {
-			imageView.setImage(null);
+			imageProperty.set(null);
 			return;
 
 		}
-		if(tsdProperty.get()==null) {
+		if(timeSeriesDiagramProperty.get()==null) {
+			imageProperty.set(null);
 			return;
 		}
 		try {
@@ -264,12 +297,32 @@ public class TimeSeriesViewScene extends TsdbScene {
 			gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 			gc.dispose();
 			TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-			tsdProperty.get().draw(tsp);
+			timeSeriesDiagramProperty.get().draw(tsp);
 			WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
-			imageView.setImage(image);
+			imageProperty.set(image);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
+			imageProperty.set(null);
 		}		
+	}
+
+	private void repaint() {
+		/*canvas.setWidth(anchorPane.getWidth());
+		canvas.setHeight(anchorPane.getHeight());
+		
+		System.out.println("repaint "+canvas.getWidth()+"  "+ canvas.getHeight());
+		//imageView.setImage(imageProperty.get());
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		Image image = imageProperty.get();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		gc.setFill(Color.AQUA);
+		gc.fillRect(0, 0, 100, 100);
+		if(image!=null) {
+			gc.drawImage(image, 0, 0);
+		}*/
+		
+		imageView.setImage(imageProperty.get());
+		
 	}
 
 	private void setRegions() {
@@ -350,13 +403,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 		PlotInfo plot = comboPlot.getValue();
 
 		if(plot==null) {
-			tsdProperty.setValue(null);
+			timeSeriesDiagramProperty.setValue(null);
 			return;
 		}
 
 		Sensor sensor = comboSensor.getValue();
 		if(sensor==null) {
-			tsdProperty.setValue(null);
+			timeSeriesDiagramProperty.setValue(null);
 			return;
 		}
 
@@ -364,7 +417,11 @@ public class TimeSeriesViewScene extends TsdbScene {
 		Long endTimestamp = null;		
 
 		String timeText = comboTime.getValue();
-		if(timeText!=null && !timeText.equals(timeAll)) {
+		if(timeText==null) {
+			timeSeriesDiagramProperty.setValue(null);
+			return;
+		}
+		if(!timeText.equals(timeAll)) {
 			int year = Integer.parseInt(timeText);
 			startTimestamp = TimeConverter.getYearStartTimestamp(year);
 			endTimestamp = TimeConverter.getYearEndTimestamp(year);
@@ -372,24 +429,27 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		AggregationInterval agg = comboAggregation.getValue();
 		if(agg==null) {
-			agg = AggregationInterval.HOUR;
+			timeSeriesDiagramProperty.setValue(null);
+			return;
+		}
+
+		DataQuality quality = comboQuality.getValue();
+		if(quality==null) {
+			timeSeriesDiagramProperty.setValue(null);
+			return;
 		}
 
 
 		try {			
-			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, agg, DataQuality.STEP, false, startTimestamp, endTimestamp);
+			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, agg, quality, false, startTimestamp, endTimestamp);
 			if(ts!=null) {
-				SensorCategory category = sensor.category;
-				/*if(agg==AggregationInterval.RAW) {
-					category = SensorCategory.OTHER;
-				}*/
-				tsd = new TimeSeriesDiagram(ts,agg,category);
+				tsd = new TimeSeriesDiagram(ts,agg,sensor.category);
 			}
 		} catch (Exception e) {
 			log.error(e);
 		}
 
-		tsdProperty.setValue(tsd);
+		timeSeriesDiagramProperty.setValue(tsd);
 	}
 
 	private void onPlotChanged(ObservableValue<? extends PlotInfo> observable, PlotInfo oldValue, PlotInfo plot) {
@@ -446,23 +506,36 @@ public class TimeSeriesViewScene extends TsdbScene {
 		onUpdateSensor();
 		onUpdateTimestampSeries();
 	}
-	
+
 	private void onQualityChanged(ObservableValue<? extends DataQuality> observable, DataQuality oldValue, DataQuality quality) {
-		
+		onUpdateTimestampSeries();
 	}
 
 	private void onMousePressed(MouseEvent event) {
 		mouseStartMovePosX  = event.getX();
-		mouseStartMovePosY  = event.getY();
+		mouseStartMovePosY  = event.getY();		
+		
+		/*Line line = new Line();
+		Canvas canvas = new Canvas();
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.drawImage(img, x, y);*/
+		
 	}
 
 	private void onMouseDragged(MouseEvent event) {
+		
+		line.setStartX(event.getX());
+		line.setStartY(event.getY());
+		line.setEndX(event.getX()+100);
+		line.setEndY(event.getY()+100);
+		
+		System.out.println("mouse "+event.getX()+"  "+event.getY());
 
 		if(true) {
 
 			double currentMovePosX = event.getX();
 
-			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 			long timestampOffset = tsd.calcTimestamp((float) (currentMovePosX-mouseStartMovePosX))-tsd.calcTimestamp(0f);;
 			System.out.println("MouseDragged "+(currentMovePosX-mouseStartMovePosX)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
 			mouseStartMovePosX = currentMovePosX;
@@ -495,7 +568,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		if(event.isShiftDown()) {
 
 			double currentMovePosY = event.getY();
-			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 			float valueOffset = tsd.calcValue((float) (currentMovePosY-mouseStartMovePosY))-tsd.calcValue(0f);
 			mouseStartMovePosY = currentMovePosY;
 			float prevDiagramMin = tsd.getDiagramMinValue();
@@ -522,20 +595,20 @@ public class TimeSeriesViewScene extends TsdbScene {
 			tsd.setDiagramValueRange(diagramMin, diagramMax);
 		}
 
-		repaint();		
+		createImage();		
 	}
-	
+
 	private void onMouseClicked(MouseEvent event) {
-		
+
 		if(event.getButton()==MouseButton.SECONDARY) {
 			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
 		}
-		
+
 	}
 
 	private void onScroll(ScrollEvent event) {
 		if(!event.isShiftDown()) {
-			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 
 			double zoom = event.getDeltaY();
 			if(zoom<0) {
@@ -573,9 +646,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 			}
 
 			tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
-			repaint();
+			createImage();
 		} else {
-			TimeSeriesDiagram tsd = tsdProperty.getValue();
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 
 			double zoom = event.getDeltaY();
 			if(zoom<0) {
@@ -612,7 +685,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			}
 
 			tsd.setDiagramValueRange(zoomedMin, zoomedMax);
-			repaint();
+			createImage();
 		}
 	}
 
@@ -640,6 +713,14 @@ public class TimeSeriesViewScene extends TsdbScene {
 		aggregationList.add(AggregationInterval.YEAR);
 		comboAggregation.setItems(aggregationList);
 		comboAggregation.setValue(AggregationInterval.HOUR);
+
+		ObservableList<DataQuality> qualityList = FXCollections.observableArrayList();
+		qualityList.add(DataQuality.NO);
+		qualityList.add(DataQuality.PHYSICAL);
+		qualityList.add(DataQuality.STEP);
+		qualityList.add(DataQuality.EMPIRICAL);
+		comboQuality.setItems(qualityList);
+		comboQuality.setValue(DataQuality.STEP);
 
 		setRegions();
 	}

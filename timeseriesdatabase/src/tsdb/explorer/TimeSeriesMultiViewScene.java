@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -178,19 +179,19 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		};
 		comboSensor.setConverter(sensorConverter);
 		comboSensor.valueProperty().addListener(this::onSensorChanged);
-		
-		
+
+
 		Label labelTime = new Label("Time");
 		labelTime.setAlignment(Pos.CENTER);
 		labelTime.setMaxHeight(100d);
 		comboTime = new ComboBox<String>();
 		comboTime.valueProperty().addListener(this::onTimeChanged);
-		
-		
-		
-		
-		
-		
+
+
+
+
+
+
 
 		FlowPane controlPane = new FlowPane(10d,10d);
 
@@ -231,9 +232,9 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 		borderPaneDiagrams.setCenter(vboxQueryImages);
 		borderPaneMain.setCenter(borderPaneDiagrams);
-		
-		
-		
+
+
+
 
 		return borderPaneMain;
 	}
@@ -326,8 +327,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, rejectedExecutionHandler);
 
 	}
-	
-	
+
+
 
 
 	private void onSetCurrent(ActionEvent event) {
@@ -349,7 +350,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		}
 		//executorQueryTimeSeries = Executors.newWorkStealingPool();
 		//executorQueryTimeSeries = createPriorityExecutor(Thread.MIN_PRIORITY);
-		executorQueryTimeSeries = createPriorityExecutor(2,Thread.MIN_PRIORITY);
+		executorQueryTimeSeries = createPriorityExecutor(1,Thread.MIN_PRIORITY);
 
 
 
@@ -358,7 +359,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			executorDrawImages.shutdownNow();		
 		}
 		//executorDrawImages = Executors.newWorkStealingPool();
-		executorDrawImages = createPriorityExecutor(2,Thread.MIN_PRIORITY+1);
+		executorDrawImages = createPriorityExecutor(1,Thread.MIN_PRIORITY+1);
 
 
 		for(QueryEntry queryEntry:queryList) {
@@ -366,11 +367,15 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			queryEntry.timestampSeriesProperty.addListener((s,o,ts)->{
 				if(ts!=null) {
 					System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
-					executorDrawImages.submit(()->{
+
+					final int width = (int)borderPaneDiagrams.getWidth()-30;
+					final int height = (int)imageHeight;
+
+					Runnable drawImageTask = ()->{
 						System.out.println("************************** create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 
-						BufferedImage bufferedImage = new BufferedImage((int)borderPaneDiagrams.getWidth()-30,(int)imageHeight,java.awt.image.BufferedImage.TYPE_INT_RGB);
+						BufferedImage bufferedImage = new BufferedImage( width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
 						Graphics2D gc = bufferedImage.createGraphics();
 						gc.setBackground(new java.awt.Color(255, 255, 255));
 						gc.setColor(new java.awt.Color(0, 0, 0));
@@ -379,30 +384,39 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
 						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category);						
 						tsd.draw(tsp);
-						
+
 						gc = bufferedImage.createGraphics();					
 						gc.setColor(java.awt.Color.LIGHT_GRAY);
 						gc.drawString(queryEntry.plotID+" : "+queryEntry.sensor.name, 42, 20);
 						gc.dispose();
-						
-						
-						
+
+
+
 						/*TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
 						tshm.draw(tsp, queryEntry.sensorName);*/
 						WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
 
-						Platform.runLater(()->queryEntry.imageProperty.set(image));						
+						try {
+							Platform.runLater(()->queryEntry.imageProperty.set(image));
+						} catch(Exception e) {
+							log.error(e);
+						}
+					};
 
-
-					});
+					try {
+						executorDrawImages.submit(drawImageTask);
+					} catch(Exception e) {
+						log.error(e);
+					}
 				}
 			});
 
 
 
 			System.out.println("************************** add task query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
-			executorQueryTimeSeries.submit(()->{
+
+			Runnable queryTimeSeriesTask = ()->{
 				System.out.println("************************** query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 				try {
 					TimestampSeries ts = tsdb.plot(null, queryEntry.plotID, new String[]{queryEntry.sensor.name}, AggregationInterval.HOUR, DataQuality.STEP, false, queryEntry.startTimestamp, queryEntry.endTimestamp);
@@ -412,7 +426,13 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 				} catch (Exception e) {
 					log.error(e);
 				}
-			});
+			};
+
+			try {
+				executorQueryTimeSeries.submit(queryTimeSeriesTask);
+			} catch(Exception e) {
+				log.error(e);
+			}
 		}
 
 
@@ -483,7 +503,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		timeList.add("2014");		
 		comboTime.setItems(timeList);
 		comboTime.setValue(timeAll);
-		
+
 		try {
 			Sensor[] sensors = tsdb.getSensors();
 			sensorMap = new HashMap<String,Sensor>();
@@ -493,7 +513,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		} catch (RemoteException e) {
 			log.error(e);
 		}
-		
+
 		setRegions();
 	}
 
@@ -688,7 +708,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 	private void onSensorChanged(ObservableValue<? extends Sensor> observable, Sensor oldValue, Sensor sensor) {
 		updateSelectionQueryList();
 	}
-	
+
 	private void onTimeChanged(ObservableValue<? extends String> observable, String oldValue, String sensor) {
 		updateSelectionQueryList();
 	}
@@ -702,10 +722,10 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			executorDrawImages.shutdownNow();		
 		}
 	}
-	
+
 	void updateSelectionQueryList() {
 		selectionQueryList.clear();
-		
+
 		PlotInfo selectionPlot = comboPlot.getValue();
 		Sensor sensor = comboSensor.getValue();
 		String timeText = comboTime.getValue();
@@ -713,8 +733,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			selectedCountProperty.set("?");	
 			return;
 		}
-		
-		
+
+
 		try {
 			ArrayList<PlotInfo> selectedPlotList = new ArrayList<PlotInfo>();
 
@@ -729,7 +749,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			}
 
 			HashMap<String,Sensor> selectedSensorMap = new HashMap<String,Sensor>();
-			
+
 			if(sensor.name.equals(sensorAll.name)) {
 				for(Sensor item:comboSensor.getItems()) {
 					if(!item.name.equals(sensorAll.name)) {
@@ -739,11 +759,11 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			} else {
 				selectedSensorMap.put(sensor.name, sensor);
 			}
-			
+
 			Long startTimestamp = null;
 			Long endTimestamp = null;
-			
-			
+
+
 			if(!timeText.equals(timeAll)) {
 				int year = Integer.parseInt(timeText);
 				startTimestamp = TimeConverter.getYearStartTimestamp(year);
@@ -772,7 +792,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 		selectedCountProperty.set(""+selectionQueryList.size());		
 	}
-	
-	
+
+
 
 }
