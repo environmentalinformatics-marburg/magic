@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.raw.iterator.EventConverterIterator;
+import tsdb.streamdb.StreamIterator;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -188,6 +189,13 @@ public class StreamStorageEventStore implements StreamStorage {
 
 	@Override
 	public String[] getSensorNames(String stationName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public StreamIterator getRawSensorIterator(String stationName,
+			String sensorName, Long start, Long end) {
 		// TODO Auto-generated method stub
 		return null;
 	}

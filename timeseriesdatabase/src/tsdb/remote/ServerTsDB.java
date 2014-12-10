@@ -30,7 +30,8 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.graph.RawSource;
+import tsdb.graph.RawSourceTemp;
+import tsdb.graph.StationRawSource;
 import tsdb.raw.TimestampSeries;
 import tsdb.run.ConsoleStarter;
 import tsdb.run.ConsoleRunner;
@@ -323,7 +324,7 @@ public class ServerTsDB implements RemoteTsDB {
 	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
 		if(AggregationInterval.RAW==aggregationInterval) {
 			try {
-				Node rawSource = RawSource.create(tsdb, plotID, columnNames);
+				RawSourceTemp rawSource = RawSourceTemp.of(tsdb, plotID, columnNames);
 				if(rawSource!=null) {
 					TsIterator it = rawSource.get(start, end);
 					if(it==null||!it.hasNext()) {

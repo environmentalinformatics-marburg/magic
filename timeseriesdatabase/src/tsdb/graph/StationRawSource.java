@@ -15,11 +15,11 @@ import de.umr.jepc.store.Event;
  * @author woellauer
  *
  */
-public class RawSource extends Node.Abstract {
+public class StationRawSource extends RawSourceTemp.Abstract {
 	public final Station station; // not null
 	public final String[] schema; //not null, schema valid
 
-	protected RawSource(TsDB tsdb, Station station, String[] schema) {
+	protected StationRawSource(TsDB tsdb, Station station, String[] schema) {
 		super(tsdb);
 		throwNulls(station,schema);
 		this.station = station;
@@ -32,7 +32,7 @@ public class RawSource extends Node.Abstract {
 		}
 	}
 
-	public static RawSource create(TsDB tsdb, String stationName, String[] querySchema) {
+	public static StationRawSource create(TsDB tsdb, String stationName, String[] querySchema) {
 		Station station = tsdb.getStation(stationName);
 		if(station==null) {
 			throw new RuntimeException("station not found: "+stationName);
@@ -40,11 +40,11 @@ public class RawSource extends Node.Abstract {
 		return create(tsdb, station, querySchema);
 	}
 	
-	public static RawSource create(TsDB tsdb, Station station, String[] querySchema) {
+	public static StationRawSource create(TsDB tsdb, Station station, String[] querySchema) {
 		if(querySchema==null) {
 			querySchema = station.loggerType.sensorNames;
 		}
-		return new RawSource(tsdb, station, querySchema);
+		return new StationRawSource(tsdb, station, querySchema);
 	}
 	
 

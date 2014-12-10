@@ -18,7 +18,7 @@ import tsdb.graph.NodeGen;
 import tsdb.graph.PeakSmoothed;
 import tsdb.graph.QueryPlan;
 import tsdb.graph.RangeStepFiltered;
-import tsdb.graph.RawSource;
+import tsdb.graph.StationRawSource;
 import tsdb.graph.VirtualBase;
 import tsdb.util.iterator.TsIterator;
 
@@ -66,7 +66,7 @@ public class Manual_B {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
-			Node rawSource = RawSource.create(tsdb, stationID, schema);
+			Node rawSource = StationRawSource.create(tsdb, stationID, schema);
 			if(DataQuality.Na==dataQuality) {
 				return rawSource;
 			} else {

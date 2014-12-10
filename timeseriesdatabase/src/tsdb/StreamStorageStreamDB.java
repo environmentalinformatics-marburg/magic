@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamDB;
+import tsdb.streamdb.StreamIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
@@ -100,6 +101,23 @@ public class StreamStorageStreamDB implements StreamStorage {
 			maxTimestamp = (int)(long)end;
 		}		
 		return streamdb.getTsIterator(stationName, sensorNames, minTimestamp, maxTimestamp);
+	}
+	
+	@Override
+	public StreamIterator getRawSensorIterator(String stationName, String sensorName, Long start, Long end) {
+		int minTimestamp;
+		int maxTimestamp;
+		if(start==null) {
+			minTimestamp = Integer.MIN_VALUE;
+		} else {
+			minTimestamp = start.intValue();
+		}
+		if(end==null) {
+			maxTimestamp = Integer.MAX_VALUE;
+		} else {
+			maxTimestamp = end.intValue();
+		}
+		return streamdb.getSensorIterator(stationName, sensorName, minTimestamp, maxTimestamp);
 	}
 
 	@Override

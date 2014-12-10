@@ -1,15 +1,21 @@
 package tsdb.streamdb;
 
+import java.util.Iterator;
+
 import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
 public class StreamTsIterator extends TsIterator {
 	
-	private final StreamIterator input_iterator;
+	private final Iterator<DataEntry> input_iterator;
 	
 	public StreamTsIterator(StreamIterator input_iterator) {
-		super(new TsSchema(new String[]{input_iterator.sensorName}));
+		this(input_iterator,input_iterator.sensorName);
+	}
+	
+	public StreamTsIterator(Iterator<DataEntry> input_iterator, String sensorName) {
+		super(new TsSchema(new String[]{sensorName}));
 		this.input_iterator = input_iterator;
 	}
 

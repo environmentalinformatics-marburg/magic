@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import tsdb.streamdb.StreamIterator;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
 import de.umr.jepc.store.Event;
@@ -59,4 +60,6 @@ public interface StreamStorage {
 	long[] getTimeInterval(String streamName);
 
 	String[] getSensorNames(String stationName);
+
+	StreamIterator getRawSensorIterator(String stationName, String sensorName, Long start, Long end);
 }

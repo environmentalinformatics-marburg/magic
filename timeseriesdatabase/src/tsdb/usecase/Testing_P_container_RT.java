@@ -3,7 +3,7 @@ package tsdb.usecase;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.Node;
-import tsdb.graph.RawSource;
+import tsdb.graph.StationRawSource;
 import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputIterator;
@@ -17,7 +17,7 @@ public class Testing_P_container_RT {
 		
 		String stationID = "HEG19";
 		String[] schema = new String[]{"P_container_RT","P_RT_NRT"};
-		Node rawSource = RawSource.create(tsdb, stationID, schema);
+		Node rawSource = StationRawSource.create(tsdb, stationID, schema);
 		TsIterator it = rawSource.get(null, null);		
 		
 		InputIterator calcIt = new InputIterator(it, new TsSchema(new String[]{"P_container_RT","delta_plus","delta_sum","delta_minus","P_RT_NRT"})) {

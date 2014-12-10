@@ -78,7 +78,7 @@ public class QueryPlan {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
-			Node rawSource = RawSource.create(tsdb, stationID, schema);
+			Node rawSource = StationRawSource.create(tsdb, stationID, schema);
 			if(station.loggerType.typeName.equals("tfi")) {
 				rawSource = PeakSmoothed.create(rawSource);
 			}			

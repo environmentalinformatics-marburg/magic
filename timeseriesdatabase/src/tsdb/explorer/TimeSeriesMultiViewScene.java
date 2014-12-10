@@ -44,6 +44,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -258,7 +259,19 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 			ScreenImageEntry sie = new ScreenImageEntry(new ImageView());
 			screenImageList.add(sie);
-			vboxQueryImages.getChildren().add(sie.imageView);			
+			vboxQueryImages.getChildren().add(sie.imageView);
+			sie.imageView.setOnMouseClicked(e->{
+				if(e.getButton()==MouseButton.PRIMARY) {
+					if(e.getClickCount()==2) {
+						QueryEntry queryEntry = sie.queryEntry;
+						if(queryEntry!=null) {
+							TimeSeriesViewScene tsvs = new TimeSeriesViewScene(tsdb);
+							tsvs.show();
+							tsvs.setSelection(sie.queryEntry.plotID, sie.queryEntry.sensor.name);
+						}
+					}
+				}
+			});
 		}
 
 	}

@@ -23,7 +23,9 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -37,9 +39,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -92,19 +97,24 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private ComboBox<String> comboTime;
 	private ComboBox<AggregationInterval> comboAggregation;
 	private ComboBox<DataQuality> comboQuality;
-	private Line line;
+	//private Line line;
+
+	private SimpleBooleanProperty autoFitProperty;
 
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
-		super("time series view");
+		super("time series view");		
 		throwNull(tsdb);
 		this.tsdb = tsdb;
+		System.out.println("create autoFitProperty: "+autoFitProperty+" : "+new SimpleBooleanProperty());
 	}
 
 	@Override
 	protected Parent createContent() {
+		autoFitProperty = new SimpleBooleanProperty();
 
-		MenuItem menuItem1 = new MenuItem("reset view");
-		menuItem1.setOnAction(e->{
+
+		MenuItem menuItemResetView = new MenuItem("reset view");
+		menuItemResetView.setOnAction(e->{
 			zoomFactorTime = 1;
 			zoomFactorValue = 1;
 			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
@@ -114,33 +124,52 @@ public class TimeSeriesViewScene extends TsdbScene {
 				createImage();
 			}
 		});
-		MenuItem menuItem2 = new CheckMenuItem("[todo] (auto) fit values");
-		imageViewContextMenu = new ContextMenu(menuItem1,menuItem2);
+		MenuItem menuItemFitValues = new MenuItem("fit values");
+		menuItemFitValues.setOnAction(e->{
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
+			tsd.fitDiagramValueRangeToDiagramTimestampRange();
+			createImage();
+		});
+		CheckMenuItem menuItemAutoFitValue = new CheckMenuItem("auto fit values");
+		System.out.println("cc autoFitProperty: "+autoFitProperty);
+		autoFitProperty.bind(menuItemAutoFitValue.selectedProperty());	
+
+		menuItemFitValues.disableProperty().bind(autoFitProperty);
+		autoFitProperty.addListener((s,o,autoFit)->{
+			if(autoFit) {
+				TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
+				if(tsd!=null) {
+					tsd.fitDiagramValueRangeToDiagramTimestampRange();
+				}
+				createImage();
+			}
+		});
+
+		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue);
 		imageViewContextMenu.setAutoHide(true);
-		
-		
+
 		stackPane = new StackPane();
 		stackPane.setAlignment(Pos.TOP_LEFT);
 		imageView = new ImageView();
 		stackPane.getChildren().add(imageView);
-		line = new Line(100,100,200,200);
-		line.setStroke(Color.AQUA);
-		
-		
-		Group group = new Group();
+		//line = new Line(100,100,200,200);
+		//line.setStroke(Color.AQUA);
+
+
+		/*Group group = new Group();
 		stackPane.getChildren().add(group);
-		
-		
+
+
 		Line line2 = new Line(0,0,0,0);
 		line2.setStroke(Color.ALICEBLUE);
 		group.getChildren().add(line2);
-		
-		
+
+
 		group.getChildren().add(line);
-		//stackPane.getChildren().add(line);
-		
-		
-		
+		//stackPane.getChildren().add(line);*/
+
+
+
 
 		stackPane.widthProperty().addListener(x->createImage());
 		stackPane.heightProperty().addListener(x->createImage());
@@ -149,8 +178,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 		stackPane.setOnMouseDragged(this::onMouseDragged);
 		stackPane.setOnMousePressed(this::onMousePressed);
 		stackPane.setOnMouseClicked(this::onMouseClicked);
-		
-		
+
+
 
 
 		Label labelRegion = new Label("Region");
@@ -234,12 +263,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 		comboAggregation = new ComboBox<AggregationInterval>();
 		comboAggregation.valueProperty().addListener(this::onAggregationChanged);
 
+
 		Label labelQuality = new Label("Quality");
 		labelQuality.setAlignment(Pos.CENTER);
 		labelQuality.setMaxHeight(100d);
 		comboQuality = new ComboBox<DataQuality>();
 		comboQuality.valueProperty().addListener(this::onQualityChanged);
-
+		//comboQuality.disableProperty().bind(comboAggregation.valueProperty().isEqualTo(AggregationInterval.RAW));
 
 
 		FlowPane top = new FlowPane();
@@ -251,7 +281,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 		top.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelTime,comboTime,new Separator(Orientation.VERTICAL)));
 		top.getChildren().add(new HBox(10d,labelAggregation,comboAggregation,new Separator(Orientation.VERTICAL)));
-		top.getChildren().add(new HBox(10d,labelQuality,comboQuality,new Separator(Orientation.VERTICAL)));
+		HBox boxQuality = new HBox(10d,labelQuality,comboQuality,new Separator(Orientation.VERTICAL));
+		boxQuality .disableProperty().bind(comboAggregation.valueProperty().isEqualTo(AggregationInterval.RAW));
+		top.getChildren().add(boxQuality);
 		Node center = stackPane;
 		Node bottom = new Label("ready");
 		Node left = null;
@@ -266,7 +298,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			zoomFactorTime=1;
 			createImage();
 		});
-		
+
 		imageProperty = new SimpleObjectProperty<Image>();
 		imageProperty.addListener(o->{
 			repaint();
@@ -309,7 +341,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private void repaint() {
 		/*canvas.setWidth(anchorPane.getWidth());
 		canvas.setHeight(anchorPane.getHeight());
-		
+
 		System.out.println("repaint "+canvas.getWidth()+"  "+ canvas.getHeight());
 		//imageView.setImage(imageProperty.get());
 		GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -320,9 +352,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 		if(image!=null) {
 			gc.drawImage(image, 0, 0);
 		}*/
-		
+
 		imageView.setImage(imageProperty.get());
-		
+
 	}
 
 	private void setRegions() {
@@ -514,24 +546,24 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private void onMousePressed(MouseEvent event) {
 		mouseStartMovePosX  = event.getX();
 		mouseStartMovePosY  = event.getY();		
-		
+
 		/*Line line = new Line();
 		Canvas canvas = new Canvas();
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.drawImage(img, x, y);*/
-		
+
 	}
 
 	private void onMouseDragged(MouseEvent event) {
-		
-		line.setStartX(event.getX());
+
+		/*line.setStartX(event.getX());
 		line.setStartY(event.getY());
 		line.setEndX(event.getX()+100);
 		line.setEndY(event.getY()+100);
-		
-		System.out.println("mouse "+event.getX()+"  "+event.getY());
 
-		if(true) {
+		System.out.println("mouse "+event.getX()+"  "+event.getY());*/
+
+		if(true) { // time line direction
 
 			double currentMovePosX = event.getX();
 
@@ -565,7 +597,15 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		}
 
-		if(event.isShiftDown()) {
+
+		if(autoFitProperty.get()) { // autofit
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
+			if(tsd!=null) {
+				tsd.fitDiagramValueRangeToDiagramTimestampRange();
+			}
+		}
+
+		if(!autoFitProperty.get()/*true*//*event.isShiftDown()*/) { // value line direction
 
 			double currentMovePosY = event.getY();
 			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
@@ -602,14 +642,19 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		if(event.getButton()==MouseButton.SECONDARY) {
 			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
+		} else {
+			imageViewContextMenu.hide();
 		}
 
 	}
 
 	private void onScroll(ScrollEvent event) {
-		if(!event.isShiftDown()) {
-			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
+		TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
+		if(tsd==null) {
+			return;
+		}
 
+		if(!event.isShiftDown()) { // zoom time line
 			double zoom = event.getDeltaY();
 			if(zoom<0) {
 				zoomFactorTime*=1.25;	
@@ -646,10 +691,10 @@ public class TimeSeriesViewScene extends TsdbScene {
 			}
 
 			tsd.setDiagramTimestampRange(zoomedMin, zoomedMax);
-			createImage();
-		} else {
-			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
-
+			if(autoFitProperty.get()) {
+				tsd.fitDiagramValueRangeToDiagramTimestampRange();
+			}
+		} else if(!autoFitProperty.get()){ //zoom value line
 			double zoom = event.getDeltaY();
 			if(zoom<0) {
 				zoomFactorValue*=1.25;	
@@ -685,8 +730,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 			}
 
 			tsd.setDiagramValueRange(zoomedMin, zoomedMax);
-			createImage();
 		}
+		createImage();
 	}
 
 	@Override
@@ -724,4 +769,48 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		setRegions();
 	}
+
+	public boolean setSelection(String plotID, String sensorName) {
+		if(plotID==null) {
+			return false;
+		}
+		if(sensorName==null) {
+			return false;
+		}
+		ObservableList<PlotInfo> plotItems = comboPlot.getItems();
+		if(plotItems==null) {
+			return false;
+		}		
+		PlotInfo plotInfo = null;
+		for(PlotInfo item:plotItems) {
+			if(item.name.equals(plotID)) {
+				plotInfo = item;
+				break;
+			}
+		}
+		if(plotInfo==null) {
+			return false;
+		}
+		comboPlot.setValue(plotInfo);
+		
+		ObservableList<Sensor> sensorItems = comboSensor.getItems();
+		if(sensorItems==null) {
+			return false;
+		}
+		Sensor sensor = null;
+		for(Sensor item:sensorItems) {
+			if(item.name.equals(sensorName)) {
+				sensor = item;
+				break;
+			}
+		}
+		if(sensor==null) {
+			return false;
+		}
+		comboSensor.setValue(sensor);
+		
+		return true;
+	}
+
 }
+

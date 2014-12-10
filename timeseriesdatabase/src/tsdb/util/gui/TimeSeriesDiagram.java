@@ -265,6 +265,32 @@ public class TimeSeriesDiagram {
 		diagramMaxValue = max;
 		diagramValueRange = max-min;
 	}
+	
+	public void fitDiagramValueRangeToDiagramTimestampRange() {
+		
+		float min = Float.MAX_VALUE;
+		float max = Float.MIN_VALUE;		
+		
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+			float value = entry.data[0];
+			if(!Float.isNaN(value)) {
+				if(value<min) {
+					min = value;						
+				}
+				if(value>max) {
+					max = value;						
+				}
+			}
+		}
+		
+		setDiagramValueRange(min,max);
+	}
 
 
 	private void drawGraph(TimeSeriesPainter tsp, TimestampSeries ts, boolean isPrimary) {
