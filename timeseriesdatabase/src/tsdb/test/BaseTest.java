@@ -14,8 +14,8 @@ public class BaseTest {
 		TsDB tsdb = TsDBFactory.createDefault();
 		
 		NodeGen stationGen = QueryPlan.getStationGen(tsdb, DataQuality.EMPIRICAL);
-		Base.create(tsdb, "HEG01", null, stationGen).writeConsole(null, null);
-		Base.create(tsdb, "cof1", null, stationGen).writeConsole(null, null);
+		Base.of(tsdb, "HEG01", null, stationGen).writeConsole(null, null);
+		Base.of(tsdb, "cof1", null, stationGen).writeConsole(null, null);
 		
 		System.out.println(".end");
 	}

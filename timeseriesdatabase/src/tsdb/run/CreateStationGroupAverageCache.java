@@ -97,9 +97,9 @@ public class CreateStationGroupAverageCache {
 				Averaged averaged;
 				
 				if(additions.isEmpty()) {
-					averaged = Averaged.create(tsdb, sources, 3);					
+					averaged = Averaged.of(tsdb, sources, 3);					
 				} else {
-					averaged = Averaged.create(tsdb, additions, 3);
+					averaged = Averaged.of(tsdb, additions, 3);
 				}
 				
 				tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));

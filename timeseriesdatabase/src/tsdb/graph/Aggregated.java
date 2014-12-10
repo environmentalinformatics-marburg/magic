@@ -37,7 +37,7 @@ public class Aggregated extends Continuous.Abstract {
 		}
 	}
 
-	public static Aggregated create(TsDB tsdb, Continuous source, AggregationInterval aggregationInterval) {
+	public static Aggregated of(TsDB tsdb, Continuous source, AggregationInterval aggregationInterval) {
 		return new Aggregated(tsdb, source, aggregationInterval);
 	}
 

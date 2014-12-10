@@ -45,13 +45,13 @@ public class Difference extends Continuous.Abstract {
 		this.absoluteDifference = absoluteDifference;
 	}
 	
-	public static Continuous create(TsDB tsdb, Continuous source, Continuous compareSource, String stationName, boolean absoluteDifference) {
+	public static Continuous of(TsDB tsdb, Continuous source, Continuous compareSource, String stationName, boolean absoluteDifference) {
 		return new Difference(tsdb, source, compareSource, stationName, absoluteDifference);		
 	}
 	
 	public static Continuous createFromGroupAverage(TsDB tsdb, Continuous continuous, String plotID, boolean absoluteDifference) {
 		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());		
-		return create(tsdb,continuous,compareSource, plotID, absoluteDifference);
+		return of(tsdb,continuous,compareSource, plotID, absoluteDifference);
 	}
 
 	@Override

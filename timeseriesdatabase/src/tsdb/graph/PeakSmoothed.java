@@ -19,7 +19,7 @@ public class PeakSmoothed implements Base {
 		this.source = source;
 	}
 	
-	public static PeakSmoothed create(Node source) {
+	public static PeakSmoothed of(Node source) {
 		return new PeakSmoothed(source);
 	}	
 

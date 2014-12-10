@@ -21,7 +21,7 @@ public class StationBase extends Base.Abstract {
 		this.source = source;
 	}
 
-	public static StationBase create(TsDB tsdb,Station station, String[] querySchema, NodeGen stationGen) {
+	public static StationBase of(TsDB tsdb,Station station, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
 			querySchema = tsdb.getBaseSchema(station.loggerType.sensorNames);
 		}

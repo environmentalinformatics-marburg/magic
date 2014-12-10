@@ -53,9 +53,9 @@ public class Tfi_csv {
 		
 		//CSVIterator it = CSVIterator.create(filename);
 		
-		Node source= CSVSource.create(filename);
-		Base base = PeakSmoothed.create(source);
-		Continuous continuous = Continuous.create(base);
+		Node source= CSVSource.of(filename);
+		Base base = PeakSmoothed.of(source);
+		Continuous continuous = Continuous.of(base);
 		
 		/*//TimeSeriesIterator it = base.get(null, null);
 		TimeSeriesIterator it = continuous.get(null, null);

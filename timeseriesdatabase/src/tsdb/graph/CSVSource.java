@@ -28,7 +28,7 @@ public class CSVSource implements Node {
 		throwNull((Object)rows);
 	}
 	
-	public static CSVSource create(String filename) {		
+	public static CSVSource of(String filename) {		
 		Table table = Table.readCSV(filename, ',');
 		System.out.println("header: "+Util.arrayToString(table.names));
 		String[] sensorNames = Arrays.copyOfRange(table.names, 2, table.names.length);

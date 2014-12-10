@@ -19,7 +19,7 @@ public class Addition implements Continuous {
 		this.value = value;
 	}
 	
-	public static Addition create(Continuous source, float value) {
+	public static Addition of(Continuous source, float value) {
 		return new Addition(source, value);
 	}
 	

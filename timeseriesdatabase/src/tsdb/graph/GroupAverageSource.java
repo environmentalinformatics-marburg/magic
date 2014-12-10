@@ -33,11 +33,11 @@ public class GroupAverageSource implements Continuous {
 	}
 	
 	public static GroupAverageSource createFromGroup(TsDB tsdb, String group, String[] schema) {
-		CacheBase cacheBase = CacheBase.create(tsdb, group, schema);
+		CacheBase cacheBase = CacheBase.of(tsdb, group, schema);
 		if(cacheBase==null) {
 			return null;
 		}
-		Continuous source = Continuous.create(cacheBase);		
+		Continuous source = Continuous.of(cacheBase);		
 		return new GroupAverageSource(source);
 	}
 

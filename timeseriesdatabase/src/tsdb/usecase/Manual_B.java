@@ -66,17 +66,17 @@ public class Manual_B {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
-			Node rawSource = StationRawSource.create(tsdb, stationID, schema);
+			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
 			if(DataQuality.Na==dataQuality) {
 				return rawSource;
 			} else {
-				return RangeStepFiltered.create(tsdb, rawSource, dataQuality);
+				return RangeStepFiltered.of(tsdb, rawSource, dataQuality);
 			}
 		};
 		
 		
 		
-		Continuous.create(Base.create(tsdb, plotID, querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
+		Continuous.of(Base.of(tsdb, plotID, querySchema, stationGen)).get(queryStart, queryEnd).writeCSV(CSV_OUTPUT_PATH+"Manual_B_raw.csv");
 		
 		
 		//result_iterator.writeCSV(CSV_OUTPUT_PATH+"Manual_B.csv");

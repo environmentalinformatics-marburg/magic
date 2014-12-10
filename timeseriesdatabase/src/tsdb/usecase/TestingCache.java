@@ -38,7 +38,7 @@ public class TestingCache {
 		tsdb.cacheStorage.printInfo();
 		
 		//Node node = QueryPlan.cache(tsdb, "AEG", null, AggregationInterval.HOUR);
-		Node node = CacheBase.create(tsdb, "AEG", null);
+		Node node = CacheBase.of(tsdb, "AEG", null);
 		TsIterator it = node.get(null, null);
 		//TsIterator it = tsdb.cacheStorage.query("AEG", null, null);
 		it.writeConsole();

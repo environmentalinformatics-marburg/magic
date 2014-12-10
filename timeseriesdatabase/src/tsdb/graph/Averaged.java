@@ -53,7 +53,7 @@ public class Averaged extends Continuous.Abstract {
 		this.schema = schema;
 	}
 
-	public static Averaged create(TsDB tsdb, List<Continuous> sources, int minCount) {		
+	public static Averaged of(TsDB tsdb, List<Continuous> sources, int minCount) {		
 		Set<String> schemaSet = new LinkedHashSet<String>();		
 		for(Continuous continuous:sources) {
 			schemaSet.addAll(Arrays.asList(continuous.getSchema()));

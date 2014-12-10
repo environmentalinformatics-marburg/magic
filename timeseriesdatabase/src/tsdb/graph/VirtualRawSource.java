@@ -16,7 +16,7 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
-public class VirtualRawSource extends RawSourceTemp.Abstract {
+public class VirtualRawSource extends RawSource.Abstract {
 
 	private final VirtualPlot virtualPlot;
 	private final String[] schema;
@@ -35,12 +35,10 @@ public class VirtualRawSource extends RawSourceTemp.Abstract {
 		}
 		if(!virtualPlot.isValidSchema(schema)) {
 			throw new RuntimeException("not valid schema: "+Util.arrayToString(schema)+" in "+Util.arrayToString(virtualPlot.getSchema())); 
-		}		
-
+		}
 	}
 
-
-	public static VirtualRawSource create(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema) {
+	public static VirtualRawSource of(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema) {
 		if(querySchema==null) {
 			querySchema = virtualPlot.getSchema();
 		}

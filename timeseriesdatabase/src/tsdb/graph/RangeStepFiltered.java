@@ -25,7 +25,7 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 		this.dataQuality = dataQuality;
 	}
 	
-	public static RangeStepFiltered create(TsDB tsdb, Node source, DataQuality dataQuality) {
+	public static RangeStepFiltered of(TsDB tsdb, Node source, DataQuality dataQuality) {
 		if(DataQuality.Na==dataQuality) {
 			throw new RuntimeException();
 		}

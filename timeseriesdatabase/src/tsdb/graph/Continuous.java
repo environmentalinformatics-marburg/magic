@@ -26,7 +26,7 @@ public interface Continuous extends Node {
 	
 	public TsIterator getExactly(long start, long end);
 	
-	public static Continuous create(Base base) {
+	public static Continuous of(Base base) {
 		return new Concrete(base);
 	}
 	

@@ -27,11 +27,11 @@ public class QueryPlan {
 		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
 		Continuous continuous;
 		if(interpolated) {
-			continuous = Interpolated.create(tsdb, plotID, schema, continuousGen); 
+			continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
 		} else {
 			continuous = continuousGen.get(plotID, schema);
 		}
-		return Aggregated.create(tsdb, continuous, aggregationInterval);
+		return Aggregated.of(tsdb, continuous, aggregationInterval);
 		
 	}
 	
@@ -40,12 +40,12 @@ public class QueryPlan {
 		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
 		Continuous continuous;
 		if(interpolated) {
-			continuous = Interpolated.create(tsdb, plotID, schema, continuousGen); 
+			continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
 		} else {
 			continuous = continuousGen.get(plotID, schema);
 		}
 		continuous = Difference.createFromGroupAverage(tsdb, continuous, plotID, false);
-		return Aggregated.create(tsdb, continuous, aggregationInterval);		
+		return Aggregated.of(tsdb, continuous, aggregationInterval);		
 	}
 
 	/**
@@ -57,10 +57,10 @@ public class QueryPlan {
 	public static ContinuousGen getContinuousGen(TsDB tsdb, DataQuality dataQuality) {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(tsdb, dataQuality);		
-			Base base = Base.create(tsdb, plotID, schema, stationGen);
-			Continuous continuous = Continuous.create(base);
+			Base base = Base.of(tsdb, plotID, schema, stationGen);
+			Continuous continuous = Continuous.of(base);
 			if(DataQuality.EMPIRICAL==dataQuality) {
-				continuous = EmpiricalFiltered.create(tsdb, continuous, plotID);
+				continuous = EmpiricalFiltered.of(tsdb, continuous, plotID);
 			}
 			return continuous;
 		};
@@ -78,14 +78,14 @@ public class QueryPlan {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
-			Node rawSource = StationRawSource.create(tsdb, stationID, schema);
+			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
 			if(station.loggerType.typeName.equals("tfi")) {
-				rawSource = PeakSmoothed.create(rawSource);
+				rawSource = PeakSmoothed.of(rawSource);
 			}			
 			if(DataQuality.Na==dataQuality) {
 				return rawSource;
 			} else {
-				return RangeStepFiltered.create(tsdb, rawSource, dataQuality);
+				return RangeStepFiltered.of(tsdb, rawSource, dataQuality);
 			}
 		};
 	}
@@ -99,9 +99,9 @@ public class QueryPlan {
 	 * @return
 	 */
 	public static Node cache(TsDB tsdb, String streamName, String[] columnNames, AggregationInterval aggregationInterval) {		
-		CacheBase base = CacheBase.create(tsdb, streamName, columnNames);
-		Continuous continuous = Continuous.create(base);
-		return Aggregated.create(tsdb, continuous, aggregationInterval);		
+		CacheBase base = CacheBase.of(tsdb, streamName, columnNames);
+		Continuous continuous = Continuous.of(base);
+		return Aggregated.of(tsdb, continuous, aggregationInterval);		
 	}	
 
 }

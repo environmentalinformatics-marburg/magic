@@ -32,7 +32,7 @@ public class CacheBase extends Base.Abstract {
 		this.schema = schema;
 	}
 
-	public static CacheBase create(TsDB tsdb, String streamName, String[] schema) {
+	public static CacheBase of(TsDB tsdb, String streamName, String[] schema) {
 		TsSchema tsSchema = tsdb.cacheStorage.getSchema(streamName);
 		if(tsSchema==null) {
 			log.warn("no cache stream: "+streamName);

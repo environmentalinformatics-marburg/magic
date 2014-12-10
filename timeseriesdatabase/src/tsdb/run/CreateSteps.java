@@ -56,7 +56,7 @@ public class CreateSteps {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				TsIterator it = Differential.create(tsdb, source).get(null, null);
+				TsIterator it = Differential.of(tsdb, source).get(null, null);
 				if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);

@@ -39,7 +39,7 @@ public class VirtualBase extends Base.Abstract  {
 		this.stationGen = stationGen;
 	}
 	
-	public static VirtualBase create(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema, NodeGen stationGen) {
+	public static VirtualBase of(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
 			String[] schema = virtualPlot.getSchema();
 			if(schema==null) {
@@ -62,7 +62,7 @@ public class VirtualBase extends Base.Abstract  {
 			if(stationSchema.length>0) {
 				//Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
 				Station station = tsdb.getStation(interval.value.get_serial());
-				Node node = StationBase.create(tsdb, station, stationSchema, stationGen);
+				Node node = StationBase.of(tsdb, station, stationSchema, stationGen);
 				TsIterator it = node.get(interval.start, interval.end);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);

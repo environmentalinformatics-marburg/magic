@@ -21,7 +21,7 @@ public class Differential extends Continuous.Abstract {
 		this.source = source;
 	}
 	
-	public static Differential create(TsDB tsdb, Continuous source) {
+	public static Differential of(TsDB tsdb, Continuous source) {
 		return new Differential(tsdb, source);
 	}
 

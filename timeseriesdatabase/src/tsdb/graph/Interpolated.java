@@ -50,7 +50,7 @@ public class Interpolated extends Continuous.Abstract {
 		this.interpolationSchema = interpolationSchema;
 	}
 	
-	public static Continuous create(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen sourceGen) {
+	public static Continuous of(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen sourceGen) {
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return createFromVirtual(tsdb, virtualPlot, querySchema, sourceGen);

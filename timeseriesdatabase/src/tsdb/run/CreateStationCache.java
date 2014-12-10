@@ -22,7 +22,7 @@ public class CreateStationCache {
 			//TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
 			if(station.isPlot) {
 				NodeGen stationGen = QueryPlan.getStationGen(timeSeriesDatabase, DataQuality.STEP);
-				input_iterator = Base.create(timeSeriesDatabase, station.stationID, null, stationGen).get(null, null);
+				input_iterator = Base.of(timeSeriesDatabase, station.stationID, null, stationGen).get(null, null);
 			}
 			if(input_iterator!=null&&input_iterator.hasNext()) {
 				System.out.println(station.stationID);
