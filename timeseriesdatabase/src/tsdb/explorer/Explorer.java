@@ -69,6 +69,10 @@ public class Explorer extends Application {
 					Button buttonTimeSeriesMultiView = new Button("time series multi view");
 					hboxMain.getChildren().add(buttonTimeSeriesMultiView);
 					buttonTimeSeriesMultiView.setOnAction(e->new TimeSeriesMultiViewScene(tsdb).show());
+					
+					Button buttonMetadataView = new Button("metadata view");
+					hboxMain.getChildren().add(buttonMetadataView);
+					buttonMetadataView.setOnAction(e->new MetadataScene(tsdb).show());
 				}
 
 				BorderPane borderPane = new BorderPane();

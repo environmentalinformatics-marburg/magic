@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.SensorCategory;
+import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
@@ -49,14 +50,14 @@ public class TimeSeriesDiagram {
 	private float diagramWidth;
 	private float diagramHeigh;
 
-	private float diagramMinTimestamp;
-	private float diagramMaxTimestamp;
-	private float diagramTimestampRange;
-	private float diagramMinValue;
-	private float diagramMaxValue;
-	private float diagramValueRange;
-	private float diagramTimestampFactor;
-	private float diagramValueFactor;
+	private double diagramMinTimestamp;
+	private double diagramMaxTimestamp;
+	private double diagramTimestampRange;
+	private double diagramMinValue;
+	private double diagramMaxValue;
+	private double diagramValueRange;
+	private double diagramTimestampFactor;
+	private double diagramValueFactor;
 
 	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType) {
 		throwNulls(timestampseries,aggregationInterval);
@@ -129,19 +130,19 @@ public class TimeSeriesDiagram {
 		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
 	}
 
-	public int calcDiagramX(float timestamp) {
+	public int calcDiagramX(double timestamp) {
 		return (int) (diagramMinX+((timestamp-diagramMinTimestamp)*diagramTimestampFactor));
 	}
 
-	public long calcTimestamp(float posX) {
+	public long calcTimestamp(double posX) {
 		return (long) (diagramMinTimestamp+((posX - diagramMinX)/diagramTimestampFactor));
 	}
 
-	public int calcDiagramY(float value) {
+	public int calcDiagramY(double value) {
 		return (int) (diagramMaxY-((value-diagramMinValue)*diagramValueFactor));
 	}
 	
-	public float calcValue(float posY) {
+	public double calcValue(double posY) {
 		return ((diagramMaxY-posY)/diagramValueFactor)+diagramMinValue;
 	}
 
@@ -205,8 +206,8 @@ public class TimeSeriesDiagram {
 
 
 
-		diagramTimestampFactor = diagramWidth/diagramTimestampRange;
-		diagramValueFactor = diagramHeigh/diagramValueRange;
+		diagramTimestampFactor = ((double)diagramWidth)/((double)diagramTimestampRange);
+		diagramValueFactor = ((double)diagramHeigh)/((double)diagramValueRange);
 
 		drawYScale(tsp);
 		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp);
@@ -226,15 +227,15 @@ public class TimeSeriesDiagram {
 		return dataMaxTimestamp;
 	}
 
-	public float getDiagramMinTimestamp() {
+	public double getDiagramMinTimestamp() {
 		return diagramMinTimestamp;
 	}
 
-	public float getDiagramMaxTimestamp() {
+	public double getDiagramMaxTimestamp() {
 		return diagramMaxTimestamp;
 	}
 
-	public void setDiagramTimestampRange(float min, float max) {
+	public void setDiagramTimestampRange(double min, double max) {
 		diagramMinTimestamp = min;
 		diagramMaxTimestamp = max;
 		diagramTimestampRange = max-min;
@@ -252,15 +253,15 @@ public class TimeSeriesDiagram {
 		return dataMaxValue;
 	}
 
-	public float getDiagramMinValue() {
+	public double getDiagramMinValue() {
 		return diagramMinValue;
 	}
 
-	public float getDiagramMaxValue() {
+	public double getDiagramMaxValue() {
 		return diagramMaxValue;
 	}
 
-	public void setDiagramValueRange(float min, float max) {
+	public void setDiagramValueRange(double min, double max) {
 		diagramMinValue = min;
 		diagramMaxValue = max;
 		diagramValueRange = max-min;
@@ -295,7 +296,7 @@ public class TimeSeriesDiagram {
 
 	private void drawGraph(TimeSeriesPainter tsp, TimestampSeries ts, boolean isPrimary) {
 
-		if(aggregationInterval!=AggregationInterval.RAW) {
+		if(aggregationInterval!=AggregationInterval.RAW) { // aggregated
 
 
 
@@ -309,7 +310,7 @@ public class TimeSeriesDiagram {
 					continue;
 				}
 				
-				float timestamp = entry.timestamp;
+				long timestamp = entry.timestamp;
 				float value = entry.data[0];
 				if(Float.isNaN(value)) {
 					hasPrev = false;
@@ -348,7 +349,7 @@ public class TimeSeriesDiagram {
 			default:
 				log.error("unknown diagram type: "+diagramType);
 			}
-		} else {
+		} else { // raw
 			
 			ArrayList<RawPoint> pointList = new ArrayList<RawPoint>();
 			ArrayList<RawConnect> connectList = new ArrayList<RawConnect>();
@@ -362,12 +363,18 @@ public class TimeSeriesDiagram {
 					continue;
 				}
 				
-				float timestamp = entry.timestamp;
+				long timestamp = entry.timestamp;
 				float value = entry.data[0];
 				
 				if(Float.isNaN(value)) {
 					hasPrev = false;
 				} else {
+					
+					long check = TimeConverter.DateTimeToOleMinutes(TimeConverter.oleMinutesToLocalDateTime(timestamp));
+					if(check!=timestamp) {
+						throw new RuntimeException();
+					}
+					
 					int x = calcDiagramX(timestamp);
 					int y = calcDiagramY(value);
 					pointList.add(new RawPoint(x, y));

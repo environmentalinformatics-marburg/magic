@@ -105,7 +105,6 @@ public class TimeSeriesViewScene extends TsdbScene {
 		super("time series view");		
 		throwNull(tsdb);
 		this.tsdb = tsdb;
-		System.out.println("create autoFitProperty: "+autoFitProperty+" : "+new SimpleBooleanProperty());
 	}
 
 	@Override
@@ -444,6 +443,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 			timeSeriesDiagramProperty.setValue(null);
 			return;
 		}
+		
+		String[] sensorNames;
+		if(sensor.name.equals("WD")) {
+			sensorNames = new String[]{sensor.name,"WV"};
+		} else {
+			sensorNames = new String[]{sensor.name};
+		}
 
 		Long startTimestamp = null;
 		Long endTimestamp = null;		
@@ -473,7 +479,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 
 		try {			
-			TimestampSeries ts = tsdb.plot(null, plot.name, new String[]{sensor.name}, agg, quality, false, startTimestamp, endTimestamp);
+			TimestampSeries ts = tsdb.plot(null, plot.name, sensorNames, agg, quality, false, startTimestamp, endTimestamp);
 			if(ts!=null) {
 				tsd = new TimeSeriesDiagram(ts,agg,sensor.category);
 			}
@@ -571,8 +577,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 			long timestampOffset = tsd.calcTimestamp((float) (currentMovePosX-mouseStartMovePosX))-tsd.calcTimestamp(0f);;
 			System.out.println("MouseDragged "+(currentMovePosX-mouseStartMovePosX)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
 			mouseStartMovePosX = currentMovePosX;
-			float prevDiagramMin = tsd.getDiagramMinTimestamp();
-			float prevDiagramMax = tsd.getDiagramMaxTimestamp();
+			double prevDiagramMin = tsd.getDiagramMinTimestamp();
+			double prevDiagramMax = tsd.getDiagramMaxTimestamp();
 			long diagramMin = (long) (prevDiagramMin - timestampOffset);
 			long diagramMax = (long) (prevDiagramMax - timestampOffset);
 			long min = tsd.getDataMinTimestamp();
@@ -609,23 +615,23 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 			double currentMovePosY = event.getY();
 			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
-			float valueOffset = tsd.calcValue((float) (currentMovePosY-mouseStartMovePosY))-tsd.calcValue(0f);
+			double valueOffset = tsd.calcValue((double) (currentMovePosY-mouseStartMovePosY))-tsd.calcValue(0d);
 			mouseStartMovePosY = currentMovePosY;
-			float prevDiagramMin = tsd.getDiagramMinValue();
-			float prevDiagramMax = tsd.getDiagramMaxValue();
-			float diagramMin = prevDiagramMin - valueOffset;
-			float diagramMax = prevDiagramMax - valueOffset;
+			double prevDiagramMin = tsd.getDiagramMinValue();
+			double prevDiagramMax = tsd.getDiagramMaxValue();
+			double diagramMin = prevDiagramMin - valueOffset;
+			double diagramMax = prevDiagramMax - valueOffset;
 			float min = tsd.getDataMinValue();
 			float max = tsd.getDataMaxValue();
 			if(diagramMin<min) {
-				float corr = min-diagramMin;
+				double corr = min-diagramMin;
 				diagramMin += corr;
 				diagramMax += corr;
 				if(diagramMax>max) {
 					diagramMax = max;
 				}
 			} else if(diagramMax>max) {
-				float corr = diagramMax-max;
+				double corr = diagramMax-max;
 				diagramMin -= corr;
 				diagramMax -= corr;
 				if(diagramMin<min) {
@@ -667,8 +673,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 			long min = tsd.getDataMinTimestamp();
 			long max = tsd.getDataMaxTimestamp();
-			float prevDiagramMin = tsd.getDiagramMinTimestamp();
-			float prevDiagramMax = tsd.getDiagramMaxTimestamp();
+			double prevDiagramMin = tsd.getDiagramMinTimestamp();
+			double prevDiagramMax = tsd.getDiagramMaxTimestamp();
 			long posTimestamp = tsd.calcTimestamp((float) event.getSceneX());
 			if(posTimestamp<min) {
 				posTimestamp = min;
@@ -680,8 +686,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 			float rangeFactor = ((float)(posTimestamp-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
 
 			long zoomedTimestampRange = (long) ((max-min)/zoomFactorTime);
-			float zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
-			float zoomedMax = zoomedMin+zoomedTimestampRange;
+			double zoomedMin = posTimestamp - zoomedTimestampRange*(rangeFactor);
+			double zoomedMax = zoomedMin+zoomedTimestampRange;
 
 			if(zoomedMin<min) {
 				zoomedMin = min;
@@ -707,9 +713,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 			float min = tsd.getDataMinValue();
 			float max = tsd.getDataMaxValue();
-			float prevDiagramMin = tsd.getDiagramMinValue();
-			float prevDiagramMax = tsd.getDiagramMaxValue();
-			float posValue = tsd.calcValue((float)event.getY());
+			double prevDiagramMin = tsd.getDiagramMinValue();
+			double prevDiagramMax = tsd.getDiagramMaxValue();
+			double posValue = tsd.calcValue(event.getY());
 			if(posValue<min) {
 				posValue = min;
 			}
@@ -719,8 +725,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 			float rangeFactor = ((float)(posValue-prevDiagramMin))/((float)(prevDiagramMax-prevDiagramMin));
 			float zoomedValueRange = (max-min)/zoomFactorValue;
-			float zoomedMin = posValue - zoomedValueRange*(rangeFactor);
-			float zoomedMax = zoomedMin+zoomedValueRange;
+			double zoomedMin = posValue - zoomedValueRange*(rangeFactor);
+			double zoomedMax = zoomedMin+zoomedValueRange;
 
 			if(zoomedMin<min) {
 				zoomedMin = min;

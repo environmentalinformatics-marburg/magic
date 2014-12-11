@@ -44,8 +44,8 @@ public class TimeScale {
 		return (int) (diagramMinX+((timestamp-minTimestamp)*diagramTimestampFactor));
 	}
 
-	public int calcTimeMark(int year,int month,int day,int hour) {
-		long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
+	public int calcTimeMark(int year,int month,int day,int hour, int minute) {
+		long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, minute));
 		return calcDiagramX(timestamp);
 	}	
 
@@ -69,7 +69,7 @@ public class TimeScale {
 	public void drawYearScale(TimeSeriesPainter tsp) {
 		int year = minYear-1;
 		while(year<=maxYear) {
-			int mark = calcTimeMark(year,1,1,0);
+			int mark = calcTimeMark(year,1,1,0,0);
 			if(isInRange(mark)) {
 				tsp.setColorXScaleYearLine();
 				tsp.drawLine(mark, lineY0, mark, lineY1);
@@ -108,7 +108,7 @@ public class TimeScale {
 			step = yearStep/12;
 		}
 		if(step>=minGap) {
-			int mark = calcTimeMark(year,month,1,0);
+			int mark = calcTimeMark(year,month,1,0,0);
 			if(isInRange(mark)) {
 				switch(month) {
 				default:
@@ -167,7 +167,7 @@ public class TimeScale {
 			step = yearStep/12/31;
 		}		
 		if(step>=minGap) {
-			int mark = calcTimeMark(year,month,day,0);
+			int mark = calcTimeMark(year,month,day,0,0);
 			if(isInRange(mark)) {
 				tsp.setColorXScaleDayLine();
 				tsp.drawLine(mark, lineY0, mark, lineY1);
@@ -187,7 +187,7 @@ public class TimeScale {
 				for(int day=1;day<=maxDay;day++) {
 					for(int hour=1;hour<24;hour++) {
 						//drawDay(tsp,year,month,day,maxDay);
-						drawHour(tsp,year,month,day,hour);
+						drawHour(tsp,year,month,day,hour);						
 					}
 				}
 			}
@@ -216,8 +216,12 @@ public class TimeScale {
 		}
 		
 		if(step>=minGap) {
-			int mark = calcTimeMark(year,month,day,hour);
-			if(isInRange(mark)) {
+			int mark = calcTimeMark(year,month,day,hour,0);
+			if(isInRange(mark)) {				
+				/*for(int minute=5;minute<60;minute+=5) {
+					int mark2 = calcTimeMark(year,month,day,hour,minute);
+					tsp.drawLine(mark2, lineY0, mark2, lineY1);
+				}*/				
 				tsp.setColorXScaleHourLine();
 				tsp.drawLine(mark, lineY0, mark, lineY1);
 				if(step>=minGapText) {
