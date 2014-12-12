@@ -12,6 +12,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
+@Deprecated
 public class TimeSeriesPainterFX implements TimeSeriesPainter {
 	
 	private final GraphicsContext gc;

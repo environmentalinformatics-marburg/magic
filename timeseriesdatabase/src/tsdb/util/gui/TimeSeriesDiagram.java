@@ -129,6 +129,10 @@ public class TimeSeriesDiagram {
 		diagramMaxTimestamp = dataMaxTimestamp;
 		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
 	}
+	
+	public TimestampSeries getTimeStampSeries() {
+		return timestampseries;
+	}
 
 	public int calcDiagramX(double timestamp) {
 		return (int) (diagramMinX+((timestamp-diagramMinTimestamp)*diagramTimestampFactor));

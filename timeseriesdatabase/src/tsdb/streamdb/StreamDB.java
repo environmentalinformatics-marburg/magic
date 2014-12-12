@@ -53,6 +53,9 @@ public class StreamDB {
 				.makeOrGet();		
 	}
 
+	/**
+	 * write all data to disk
+	 */
 	public void commit() {
 		synchronized (db) {
 			if(!db.isClosed()) {
@@ -61,6 +64,9 @@ public class StreamDB {
 		}
 	}
 
+	/**
+	 * write all data to disk and close db
+	 */
 	public void close() {
 		synchronized (db) {
 			if(!db.isClosed()) {
@@ -73,6 +79,9 @@ public class StreamDB {
 		}		
 	}
 
+	/**
+	 * delete all content in db
+	 */
 	public void clear() {
 		for(StationMeta stationMeta:stationMetaMap.values()) {
 			BTreeMap<String, SensorMeta> sensorMap = getSensorMap(stationMeta);

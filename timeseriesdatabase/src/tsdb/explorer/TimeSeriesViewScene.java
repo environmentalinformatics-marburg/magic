@@ -1,29 +1,14 @@
 package tsdb.explorer;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.Locale.Category;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.SensorCategory;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
-import tsdb.remote.GeneralStationInfo;
-import tsdb.remote.PlotInfo;
-import tsdb.remote.RemoteTsDB;
-import tsdb.util.TsSchema.Aggregation;
-import tsdb.util.gui.TimeSeriesDiagram;
-import tsdb.util.gui.TimeSeriesPainterGraphics2D;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -33,18 +18,11 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -55,17 +33,27 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.LineBuilder;
-import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
-import static tsdb.util.AssumptionCheck.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import tsdb.DataQuality;
+import tsdb.Region;
+import tsdb.Sensor;
+import tsdb.TimeConverter;
+import tsdb.aggregated.AggregationInterval;
+import tsdb.raw.TimestampSeries;
+import tsdb.remote.GeneralStationInfo;
+import tsdb.remote.PlotInfo;
+import tsdb.remote.RemoteTsDB;
+import tsdb.util.gui.TimeSeriesDiagram;
+import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 
 public class TimeSeriesViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	
@@ -143,8 +131,27 @@ public class TimeSeriesViewScene extends TsdbScene {
 				createImage();
 			}
 		});
+		
+		MenuItem menuItemSave = new MenuItem("save time series to file");
+		menuItemSave.setOnAction(e->{
+			FileChooser fileChooser = new FileChooser();
+			 fileChooser.setTitle("save time series to file");
+			 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv file", "*.csv"));
+			 File selectedFile = fileChooser.showSaveDialog(stage);
+			 if (selectedFile != null) {
+				 try {
+					 TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+					 if(tsd!=null) {
+						 tsd.getTimeStampSeries().tsIterator().writeCSV(selectedFile.getPath());
+					 }
+				 } catch(Exception exception) {
+					 log.error(exception);
+				 }
+			    //mainStage.display(selectedFile);
+			 }
+		});
 
-		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue);
+		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue,menuItemSave);
 		imageViewContextMenu.setAutoHide(true);
 
 		stackPane = new StackPane();
