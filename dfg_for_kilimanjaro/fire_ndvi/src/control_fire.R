@@ -28,7 +28,7 @@ rst_mcd14a1 <- lapply(c("low", "nominal", "high"), function(i) {
 for (i in c("low", "nominal", "high"))
   aggregateMCD14A1(st_year = "2001", 
                    nd_year = "2013", 
-                   n = 8, 
+                   n = "month", 
                    indir = paste0("data/md14a1/", i), 
                    outdir = paste0("data/md14a1/", i, "/aggregated/"), 
                    pattern = "^RCL.*.tif$")
