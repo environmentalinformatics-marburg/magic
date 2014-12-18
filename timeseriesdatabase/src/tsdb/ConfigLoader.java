@@ -110,6 +110,7 @@ public class ConfigLoader {
 			}
 
 			for(GeneralStationBuilder e:creationMap.values()) {
+				System.out.println("insert: "+e.name);
 				tsdb.insertGeneralStation(e.create());
 			}
 
@@ -443,6 +444,18 @@ public class ConfigLoader {
 					if(generalStationName.equals("sun")) {//correct sun -> cof
 						generalStationName = "cof";
 					}
+					
+					if(generalStationName.equals("mcg")) {
+						generalStationName = "flm";
+					}
+					
+					if(generalStationName.equals("mch")) {
+						generalStationName = "fpo";
+					}
+					
+					if(generalStationName.equals("mwh")) {
+						generalStationName = "fpd";
+					}
 
 					GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);					
 					if(generalStation==null) {
@@ -586,6 +599,23 @@ public class ConfigLoader {
 						if(virtualPlot==null) {
 							if(virtualPlotID.length()==4) {
 								String generalStationName = virtualPlotID.substring(0, 3);
+								
+								if(generalStationName.equals("sun")) {//correct sun -> cof
+									generalStationName = "cof";
+								}
+								
+								if(generalStationName.equals("mcg")) {
+									generalStationName = "flm";
+								}
+								
+								if(generalStationName.equals("mch")) {
+									generalStationName = "fpo";
+								}
+								
+								if(generalStationName.equals("mwh")) {
+									generalStationName = "fpd";
+								}
+								
 								GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 								if(generalStation!=null) {
 									virtualPlot = new VirtualPlot(tsdb, virtualPlotID, generalStation, Float.NaN, Float.NaN, false);

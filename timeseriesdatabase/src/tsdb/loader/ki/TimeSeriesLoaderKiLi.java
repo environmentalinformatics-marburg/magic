@@ -83,7 +83,7 @@ public class TimeSeriesLoaderKiLi {
 				log.info("load directory of files:    "+kiliPath);
 				for(Path path:stream) {
 					String filename = path.getName(path.getNameCount()-1).toString();
-					int ascIndex = filename.indexOf(".asc");
+					int ascIndex = filename.toLowerCase().indexOf(".asc");
 					if(ascIndex!=-1) {
 						boolean excluded = excludes.contains(filename);
 						if(!excluded) {

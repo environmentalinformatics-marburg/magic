@@ -14,5 +14,9 @@
 	<classpathentry kind="lib" path="/timeseriesdatabase/lib/log4j-core-2.0.2.jar" sourcepath="/timeseriesdatabase/lib/source/log4j-core-2.0.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.7.jar" sourcepath="lib/source/slf4j-api-1.7.7-sources.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.0.2.jar" sourcepath="lib/source/log4j-slf4j-impl-2.0.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.server_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.server.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.servlet_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.servlet.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.api_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.api.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.common_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.common.source_9.2.3.v20140905.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

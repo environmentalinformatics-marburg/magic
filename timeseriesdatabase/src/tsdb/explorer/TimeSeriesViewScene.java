@@ -451,12 +451,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			return;
 		}
 		
-		String[] sensorNames;
-		if(sensor.name.equals("WD")) {
-			sensorNames = new String[]{sensor.name,"WV"};
-		} else {
-			sensorNames = new String[]{sensor.name};
-		}
+		
 
 		Long startTimestamp = null;
 		Long endTimestamp = null;		
@@ -476,6 +471,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 		if(agg==null) {
 			timeSeriesDiagramProperty.setValue(null);
 			return;
+		}
+		
+		String[] sensorNames;
+		if(sensor.name.equals("WD")&&agg!=AggregationInterval.RAW) {
+			sensorNames = new String[]{sensor.name,"WV"};
+		} else {
+			sensorNames = new String[]{sensor.name};
 		}
 
 		DataQuality quality = comboQuality.getValue();

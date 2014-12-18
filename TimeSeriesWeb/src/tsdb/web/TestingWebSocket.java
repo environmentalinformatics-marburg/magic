@@ -3,7 +3,6 @@ package tsdb.web;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.concurrent.atomic.LongAdder;
 
 import javax.imageio.ImageIO;
 
@@ -18,6 +17,8 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.websocket.server.WebSocketHandler;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
@@ -26,8 +27,8 @@ import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
 
-public class Main {
-	
+public class TestingWebSocket {
+
 	private static final int WEB_SERVER_PORT = 8080;
 	private static final String WEB_SERVER_BASE_URL = "/static";
 	
@@ -74,18 +75,29 @@ public class Main {
 		ContextHandler contextExport = new ContextHandler("/export");
 		TsDBExportAPIHandler exportHandler = new TsDBExportAPIHandler(tsdb);
 		HashSessionManager manager = new HashSessionManager();
-
 		manager.setMaxInactiveInterval(60*60);
 		SessionHandler sessions = new SessionHandler(manager);
 		contextExport.setHandler(sessions);
 		sessions.setHandler(exportHandler);
+		
+		ContextHandler contextEcho = new ContextHandler(); //"/echo"
+		//contextEcho.setContextPath("/echo");
+		WebSocketHandler wsHandler = new WebSocketHandler()	    {
+	        @Override
+	        public void configure(WebSocketServletFactory factory)
+	        {
+	            System.out.println("configure WebSocketServletFactory");
+	        	factory.register(MyEchoSocket.class);
+	        }
+	    };
+	    contextEcho.setHandler(wsHandler);
+
+		
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-		contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport});
+		contexts.setHandlers(new Handler[] {contextEcho, contextStatic, contextTsdb, contextExport});
 
 		server.setHandler(contexts);
-
-
 
 
 		server.start();
@@ -99,7 +111,5 @@ public class Main {
 		server.join();
 		System.out.println("...Web Sever stopped");		
 	}
-
-
 
 }
