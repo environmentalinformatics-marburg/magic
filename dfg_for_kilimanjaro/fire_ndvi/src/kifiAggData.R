@@ -8,8 +8,7 @@ kifiAggData <- function(data,
                         ...) {
   
   # Required packages
-  lib <- c("foreach", "raster")
-  sapply(lib, function(x) library(x, character.only = TRUE))
+  library(raster)
   
   # Loop through single years
   tmp.ts.agg <- lapply(years, function(h) {
@@ -42,7 +41,7 @@ kifiAggData <- function(data,
     return(tmp.ts.agg)
   })
   
-  # Deregister parallel backend and return output
+  # Return output
   return(tmp.ts.agg)
 }
 

@@ -1,4 +1,4 @@
-setwd("/media/fdetsch/XChange/kilimanjaro/ndvi/")
+setwd("/media/envin/XChange/kilimanjaro/ndvi/")
 
 source("src/processMCD45A1.R")
 source("src/processMCD14A1.R")
@@ -11,19 +11,24 @@ template.ext.ll <- extent(37, 37.72, -3.4, -2.84)
 template.rst.ll <- raster(ext = template.ext.ll)
 template.rst.utm <- projectExtent(template.rst.ll, crs = "+init=epsg:21037")
 
-rst_mcd45a1 <- processMCD45A1(indir = "data/MODIS_ARC/PROCESSED/fire_500m_clrk/", 
-                              template = template.rst.utm, 
-                              outdir = "data/mcd45a1/", 
-                              ranks = 1:4)
+# rst_mcd45a1 <- processMCD45A1(indir = "data/MODIS_ARC/PROCESSED/fire_500m_clrk/", 
+#                               template = template.rst.utm, 
+#                               outdir = "data/mcd45a1/", 
+#                               ranks = 1:4)
 
-rst_mcd14a1 <- processMCD14A1(indir = "data/MODIS_ARC/PROCESSED/fire_clrk/", 
-                              template = template.rst.utm, 
-                              outdir = "data/md14a1/", 
-                              hdfdir = "data/MODIS_ARC/")
+rst_mcd14a1 <- lapply(c("low", "nominal", "high"), function(i) {
+  processMCD14A1(indir = "data/MODIS_ARC/PROCESSED/fire_clrk/", 
+                 exe_crop = ifelse(i == "low", FALSE, TRUE), exe_merge = TRUE,
+                 template = template.rst.utm, 
+                 outdir = paste0("data/md14a1/", i), 
+                 hdfdir = "data/MODIS_ARC/", 
+                 confidence = i)
+})
 
-rst_mcd14a1_agg8day <- aggregateMCD14A1(st_year = "2001", 
-                                        nd_year = "2013", 
-                                        n = 8, 
-                                        indir = "data/md14a1/", 
-                                        outdir = "data/md14a1/aggregated/", 
-                                        pattern = "^RCL.*.tif$")
+for (i in c("low", "nominal", "high"))
+  aggregateMCD14A1(st_year = "2001", 
+                   nd_year = "2013", 
+                   n = 8, 
+                   indir = paste0("data/md14a1/", i), 
+                   outdir = paste0("data/md14a1/", i, "/aggregated/"), 
+                   pattern = "^RCL.*.tif$")

@@ -5,7 +5,7 @@ rm(list = ls(all = TRUE))
 
 # Working directory
 switch(Sys.info()[["sysname"]], 
-       "Linux" = {path.wd <- "/media/fdetsch/XChange/kilimanjaro/ndvi/"}, 
+       "Linux" = {path.wd <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
        "Windows" = {path.wd <- "F:/kilimanjaro/ndvi/"})
 setwd(path.wd)
 
@@ -28,6 +28,16 @@ registerDoParallel(cl <- makeCluster(3))
 ### Data import
 
 ## MODIS fire
+
+# Confidence == "nominal"
+fls_nom <- list.files("data/md14a1/aggregated", pattern = "aggsum_md14a1", 
+                      full.names = TRUE)
+rst_nom <- stack(fls_8day)
+
+# Confidence == "low"
+fls_low <- list.files("data/md14a1/low/aggregated", pattern = "aggsum_md14a1", 
+                      full.names = TRUE)
+rst_low <- stack(fls_low)
 
 # Monthly rasters
 fire.rst <- stack("out/fire_agg/fire_agg_mnth_01_13.tif")
