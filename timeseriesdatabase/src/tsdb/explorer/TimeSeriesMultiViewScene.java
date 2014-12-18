@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -36,9 +35,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
@@ -49,7 +46,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 
 import org.apache.logging.log4j.LogManager;
@@ -58,7 +54,6 @@ import org.apache.logging.log4j.Logger;
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
-import tsdb.SensorCategory;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
@@ -98,6 +93,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 	private ExecutorService executorDrawImages;
 	private ComboBox<String> comboTime;
 	private HashMap<String, Sensor> sensorMap;
+	private ComboBox<DiagramType> comboView;
 
 	protected TimeSeriesMultiViewScene(RemoteTsDB tsdb) {
 		super("time series multi view");
@@ -189,7 +185,11 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		comboTime.valueProperty().addListener(this::onTimeChanged);
 
 
-
+		Label labelView = new Label("View");
+		labelView.setAlignment(Pos.CENTER);
+		labelView.setMaxHeight(100d);
+		comboView = new ComboBox<DiagramType>();
+		comboView.valueProperty().addListener(this::onDiagramTypeChanged);
 
 
 
@@ -201,6 +201,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		controlPane.getChildren().add(new HBox(10d,labelPlot,comboPlot,new Separator(Orientation.VERTICAL)));
 		controlPane.getChildren().add(new HBox(10d,labelSensor,comboSensor,new Separator(Orientation.VERTICAL)));
 		controlPane.getChildren().add(new HBox(10d,labelTime,comboTime,new Separator(Orientation.VERTICAL)));
+		controlPane.getChildren().add(new HBox(10d,labelView,comboView,new Separator(Orientation.VERTICAL)));
 
 		Label labelSelectedCount = new Label();
 		selectedCountProperty = new SimpleStringProperty();
@@ -395,19 +396,22 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
 						gc.dispose();
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category);						
-						tsd.draw(tsp);
+
+						if(queryEntry.diagramType==DiagramType.STANDARD) {						
+							TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category);						
+							tsd.draw(tsp);
+						}
+
+						if(queryEntry.diagramType==DiagramType.HEATMAP) {
+							TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
+							tshm.draw(tsp, queryEntry.sensor.name);
+						}
 
 						gc = bufferedImage.createGraphics();					
 						gc.setColor(java.awt.Color.LIGHT_GRAY);
 						gc.drawString(queryEntry.plotID+" : "+queryEntry.sensor.name, 42, 20);
 						gc.dispose();
 
-
-
-						/*TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
-						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-						tshm.draw(tsp, queryEntry.sensorName);*/
 						WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
 
 						try {
@@ -516,6 +520,12 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		timeList.add("2014");		
 		comboTime.setItems(timeList);
 		comboTime.setValue(timeAll);
+
+		ObservableList<DiagramType> viewList = FXCollections.observableArrayList();
+		viewList.add(DiagramType.STANDARD);
+		viewList.add(DiagramType.HEATMAP);
+		comboView.setItems(viewList);
+		comboView.setValue(DiagramType.STANDARD);
 
 		try {
 			Sensor[] sensors = tsdb.getSensors();
@@ -662,20 +672,27 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		comboSensor.setValue(sensorAll);		
 	}
 
+	private enum DiagramType {
+		STANDARD,
+		HEATMAP
+	}
+
 	private static class QueryEntry {
 		public final String plotID;
 		public final Sensor sensor;
 		public final Long startTimestamp;
 		public final Long endTimestamp;
+		private final DiagramType diagramType;
 		public final ObjectProperty<TimestampSeries> timestampSeriesProperty;		
 		public final ObjectProperty<Image>  imageProperty;
-		public QueryEntry(String plotID,Sensor sensor,Long startTimestamp,Long endTimestamp) {
+		public QueryEntry(String plotID,Sensor sensor,Long startTimestamp,Long endTimestamp, DiagramType diagramType) {
 			this.plotID = plotID;
 			this.sensor = sensor;
 			this.timestampSeriesProperty = new SimpleObjectProperty<TimestampSeries>();
 			this.imageProperty = new SimpleObjectProperty<Image>();
 			this.startTimestamp = startTimestamp;
 			this.endTimestamp = endTimestamp;
+			this.diagramType = diagramType;
 		}
 	}
 
@@ -726,6 +743,10 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		updateSelectionQueryList();
 	}
 
+	private void onDiagramTypeChanged(ObservableValue<? extends DiagramType> observable, DiagramType oldValue, DiagramType sensor) {
+		updateSelectionQueryList();
+	}
+
 	@Override
 	protected void onClose() {
 		if(executorQueryTimeSeries!=null) {			
@@ -746,6 +767,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			selectedCountProperty.set("?");	
 			return;
 		}
+		DiagramType diagramType = comboView.getValue();
 
 
 		try {
@@ -793,7 +815,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 					for(String sensorName:plotSensorNames) {
 						if(selectedSensorMap.containsKey(sensorName)) {
 							sensor = sensorMap.get(sensorName);
-							selectionQueryList.add(new QueryEntry(plot.name, sensor,startTimestamp,endTimestamp));
+							selectionQueryList.add(new QueryEntry(plot.name, sensor,startTimestamp,endTimestamp,diagramType));
 						}
 					}
 				}		

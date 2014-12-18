@@ -1,7 +1,5 @@
 package tsdb.usecase;
 
-import org.mapdb.BTreeMap;
-
 import tsdb.TsDBFactory;
 import tsdb.streamdb.ChunkMeta;
 import tsdb.streamdb.SensorMeta;

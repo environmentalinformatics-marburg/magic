@@ -302,4 +302,10 @@ public class TimeSeriesPainterFX implements TimeSeriesPainter {
 		
 	}
 
+	@Override
+	public float[] getIndexColorRange() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

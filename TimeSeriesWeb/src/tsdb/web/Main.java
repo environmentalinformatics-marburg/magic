@@ -91,6 +91,8 @@ public class Main {
 
 		server.start();
 		//server.dumpStdErr();
+		System.out.println();
+		System.out.println("Web Sever started at [hostname]:8080/static");
 		System.out.println("waiting for requests...");
 		server.join();
 		System.out.println("...end");		

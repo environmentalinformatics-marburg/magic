@@ -1,8 +1,11 @@
 package tsdb.util.gui;
 
-import tsdb.TimeConverter;
+import java.util.ArrayList;
+
 import tsdb.raw.TimestampSeries;
 import tsdb.raw.TsEntry;
+import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
+import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesHeatMap {
 
@@ -27,6 +30,55 @@ public class TimeSeriesHeatMap {
 				float y = (((entry.timestamp-start)/60)%24)*1;
 				tsp.drawLine(x, y, x, y);
 				//tsp.fillRect(x, y, x+4, y+4);
+			}
+		}
+	}
+	
+	public static void drawScale(TimeSeriesPainter tsp, String sensorName) {
+		setRange(tsp,sensorName);
+		tsp.setColor(255, 255, 255);
+		tsp.fillRect(tsp.getMinX(), tsp.getMinY(), tsp.getMaxX(), tsp.getMaxY());
+		
+		float[] r = tsp.getIndexColorRange();
+		double min = r[0];
+		double max = r[1];
+		double range = max-min;
+		
+		double imageMin = tsp.getMinX();
+		double imageMax = tsp.getMaxX();
+		
+		double scaleMin = imageMin+20;
+		double scaleMax = imageMax-20;
+		double scaleRange = scaleMax-scaleMin;
+		
+		ArrayList<double[]> scaleList = new ArrayList<double[]>(5);
+		
+		scaleList.add(new double[]{min,scaleMin});
+		scaleList.add(new double[]{(min+max)/4,(scaleMin+scaleMax)/4});
+		scaleList.add(new double[]{(min+max)/2,(scaleMin+scaleMax)/2});
+		scaleList.add(new double[]{(min+max)*3/4,(scaleMin+scaleMax)*3/4});
+		scaleList.add(new double[]{max, scaleMax});
+		
+		
+		
+		System.out.println(min+"  "+max+"  "+(min+max)+"   "+(min+max)/2);
+		
+		tsp.setColor(0, 0, 0);
+		
+		for(double[] value:scaleList) {
+			tsp.drawLine((float)value[1], 0, (float)value[1], 12);
+		}
+		
+		for(double[] value:scaleList) {
+			tsp.drawText(""+value[0],(float) value[1], 10, PosHorizontal.CENTER, PosVerical.TOP);
+		}
+
+		
+		for(int i=(int) scaleMin;i<=scaleMax;i++) {			
+			double value = min + ((i-imageMin)*range)/scaleRange;
+			tsp.setIndexedColor((float) value);
+			for(int y=2;y<10;y++) {
+				tsp.drawLine(i, y, i, y);
 			}
 		}
 	}

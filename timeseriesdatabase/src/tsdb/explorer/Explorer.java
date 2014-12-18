@@ -36,17 +36,13 @@ public class Explorer extends Application {
 		StringProperty connectionTextProperty = new SimpleStringProperty();
 
 		RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local remote connection to db");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote connection to db (183er)");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote connection to db (lab)");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local rmi connection to db");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote rmi connection to db (183er)");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote rmi connection to db (lab)");
 
 		if(tsdb==null) {
 			log.error("no connection");
 			connectionTextProperty.set("error no connection to db");
-			//connectionText = "Error: no connection to db";
-			//primaryStage.show();
-			//primaryStage.close();
-			//return;
 		}
 
 		//final String cText = connectionText;
@@ -87,38 +83,6 @@ public class Explorer extends Application {
 				return borderPane;
 			}
 		}.show();
-
-
-
-
-
-		/*FlowPane hboxMain = new FlowPane();
-
-		Button buttonSourceCatalog = new Button("source catalog");
-		hboxMain.getChildren().add(buttonSourceCatalog);
-		buttonSourceCatalog.setOnAction(e->new SourceCatalogSceneNew(tsdb).show());
-
-		Button buttonTimeSeriesView = new Button("time series view");
-		hboxMain.getChildren().add(buttonTimeSeriesView);
-		buttonTimeSeriesView.setOnAction(e->new TimeSeriesViewSceneNew(tsdb).show());
-
-		BorderPane borderPane = new BorderPane();
-		borderPane.setCenter(hboxMain);
-
-		Scene scene = new Scene(borderPane);
-
-		scene.setOnKeyTyped(value->{			
-			if(value.getCharacter().equals(ESCAPE)) {
-				primaryStage.close();
-			}
-		});
-
-		primaryStage.setTitle("Time Series Explorer");
-		primaryStage.setScene(scene);
-		//primaryStage.setMinWidth(300);
-		primaryStage.setWidth(300);
-
-		primaryStage.show();*/
 	}
 
 	/**

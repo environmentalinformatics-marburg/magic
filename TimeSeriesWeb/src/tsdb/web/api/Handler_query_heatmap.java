@@ -136,7 +136,7 @@ public class Handler_query_heatmap extends MethodHandler {
 			TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);		
 
 			new TimeSeriesHeatMap(ts).draw(tsp,sensorName);
-
+			
 			try {
 				ImageIO.write(bufferedImage, "png", response.getOutputStream());
 				response.setStatus(HttpServletResponse.SC_OK);

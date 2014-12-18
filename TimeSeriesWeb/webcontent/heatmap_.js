@@ -140,9 +140,30 @@ var runQuerySensor = function() {
 	$.get("/tsdb/plot_list?"+queryText).done(function(data) {
 		getID("result").innerHTML = "";	
 		var rows = splitData(data);
+		addValueScale(sensorName);
 		$.each(rows, function(i,row) {addDiagram(row[0],sensorName);})
 		decTask();		
 	}).fail(function() {getID("result").innerHTML = "error";decTask();})
+}
+
+var addValueScale = function(sensorName) {
+	incTask();
+	var plotResult = getID("result").appendChild(document.createElement("div"));
+	var plotResultTitle = plotResult.appendChild(document.createElement("div"));
+	plotResultTitle.innerHTML += "query scale...";
+
+	var image = new Image();
+
+	plotResult.appendChild(image);
+	image.onload = function() {
+		plotResultTitle.innerHTML = "";
+		decTask();
+	}
+	image.onerror = function() {	
+		plotResult.innerHTML = "error in scale";
+		decTask();
+	}
+	image.src = "/tsdb/heatmap_scale?sensor="+sensorName;	
 }
 
 var addDiagram = function(plotName, sensorName) {

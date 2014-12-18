@@ -310,5 +310,10 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		minValue = min;
 		maxValue = max;
 	}
+	
+	@Override
+	public float[] getIndexColorRange() {
+		return new float[]{minValue,maxValue};
+	}
 
 }
