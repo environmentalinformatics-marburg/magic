@@ -1,6 +1,8 @@
 library(raster)
+library(zoo)
+library(ggplot2)
 library(doParallel)
-registerDoParallel(cl <- makeCluster(2))
+registerDoParallel(cl <- makeCluster(3))
 
 setwd("/media/envin/XChange/kilimanjaro/ndvi/")
 
@@ -52,3 +54,41 @@ tbl_cfd <- foreach(i = 1:nlayers(rst_mrg), .packages = c("raster", "rgdal"),
   hi <- sum(val %in% c(9, 19, 29, 39, 49, 59, 69, 79, 89, 90:99))
   data.frame(lo = lo, no = no, hi = hi)
 }
+
+## Statistics
+
+# Number of days with active fires
+tbl_cfd$total <- rowSums(tbl_cfd)
+id <- !sapply(1:nrow(tbl_cfd), function(i) all(tbl_cfd[i, 1:3] == 0))
+sum(id)
+
+# Total amount of identified fire pixels
+sum(tbl_cfd$total)
+
+# Total and percentage amount of low, nominal and high confidence fire pixels
+colSums(tbl_cfd)
+colSums(tbl_cfd) / sum(colSums(tbl_cfd))
+
+
+## Visualization
+
+# Time series plot of monthly amount of active fire pixels
+fls_agg1m <- list.files("data/md14a1/low/aggregated", pattern = "^aggsum_md14a1", 
+                        full.names = TRUE)
+rst_agg1m <- stack(fls_agg1m)
+
+dates_mrg <- sapply(strsplit(basename(fls_mrg), "\\."), "[[", 2)
+dates_mrg <- substr(dates_mrg, 2, nchar(dates_mrg))
+dates_mrg <- as.Date(dates_mrg, format = "%Y%j")
+tbl_cfd$date <- dates_mrg
+
+tbl_cfd_agg <- aggregate(tbl_cfd[, 1:4], by = list(as.yearmon(tbl_cfd$date)), 
+                         FUN = sum)
+tbl_cfd_agg[, 1] <- as.Date(tbl_cfd_agg[, 1])
+names(tbl_cfd_agg)[1] <- "date"
+
+ggplot(aes(x = date, y = total), data = tbl_cfd_agg) + 
+  geom_histogram(stat = "identity", fill = "grey50") + 
+  stat_smooth(method = "lm", lwd = 2, lty = 2, color = "black") + 
+  labs(x = "\nTime (months)", y = "No. of active fire pixels\n") + 
+  theme_bw()
