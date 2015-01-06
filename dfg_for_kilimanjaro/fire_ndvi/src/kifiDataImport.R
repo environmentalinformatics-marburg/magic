@@ -5,7 +5,7 @@ rm(list = ls(all = TRUE))
 
 # Working directory
 switch(Sys.info()[["sysname"]], 
-       "Linux" = {dsn <- "/media/fdetsch/XChange/kilimanjaro/ndvi/"}, 
+       "Linux" = {dsn <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
        "Windows" = {dsn <- "D:/kilimanjaro/ndvi"})
 setwd(dsn)
 
@@ -29,7 +29,7 @@ MODISoptions(localArcPath = paste0(dsn, "data/MODIS_ARC/"),
              outDirPath = paste0(dsn, "data/MODIS_ARC/PROCESSED/"))
 
 for (i in c("MOD14A1", "MYD14A1"))
-  runGdal(i, 
+  runGdal(i, begin = "2014-09-30",
           tileH = 21, tileV = 9, SDSstring = "1100", 
           outProj = "EPSG:21037", job = "fire_clrk")
 
@@ -82,8 +82,8 @@ modis.fire.avl <- read.csv("data/md14a1/md14_doy_availability.csv")
 
 ### Merge MODIS Terra and Aqua
 
-overlay.exe <- TRUE
-overlay.write <- TRUE
+overlay.exe <- FALSE
+overlay.write <- FALSE
 
 if (overlay.exe) {
   modis.fire.overlay <- foreach(i = seq(nrow(modis.fire.avl)), .packages = lib) %dopar% {
@@ -132,11 +132,11 @@ rcl.mat <- matrix(c(0, 7, 0,   # --> 0
 # Reclassify
 reclass.write <- TRUE
 
-foreach(i = modis.fire.overlay, .packages = lib) %dopar% {
+modis_fire_reclass <- foreach(i = modis.fire.overlay, .packages = lib) %dopar% {
   reclassify(i, rcl.mat, right = NA, overwrite = TRUE,
              filename = if (reclass.write) {
                tmp <- basename(substr(i@file@name, 1, nchar(i@file@name) - 4))
-               paste0("data/reclass/md14a1/", tmp) } else "", 
+               paste0("data/md14a1/reclassified/", tmp) } else "", 
              format = "GTiff")
 }
 

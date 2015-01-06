@@ -8,12 +8,17 @@ multiVectorHarmonics <- function(rst,
   
   stopifnot(require(Rsenal))
   
+  if (length(width) > 1 & length(width) != length(intervals))
+    stop("Arguments 'intervals' and 'width' must be of equal length!")
+  
   # Loop through start years (e.g. 2001, 2004, ...)
-  ls_harm_sum <- lapply(intervals, function(h) {
+  ls_harm_sum <- lapply(seq(intervals), function(h) {
     
     # Identify current start and stop year
-    year_st <- h
-    year_nd <- year_st + width - 1
+    year_st <- intervals[h]
+    
+    if (length(width) == 1) window <- width else window <- width[h]
+    year_nd <- year_st + window - 1
     
     # Get RasterLayer indices from supplied time information (format: "%Y%m")
     id_st <- grep(year_st, time_info)[1]

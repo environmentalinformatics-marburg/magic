@@ -62,13 +62,13 @@ fire.df <- data.frame(x = coordinates(fire.shp.all)[, 1],
 ## Bing
 
 # (Retrieve, save and) Import BING aerial image
-# kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
-#                              lowerRight = c(-3.425, 37.72), type = "bing", 
-#                              minNumTiles = 40L), projection = "+init=epsg:21037")
+kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
+                             lowerRight = c(-3.425, 37.72), type = "bing", 
+                             minNumTiles = 40L), projection = "+init=epsg:21037")
 # kili.map <- writeRaster(raster(kili.map), filename = "data/kili_bing_aerial", 
 #                         bylayer = FALSE, format = "GTiff", overwrite = TRUE)
-
-kili.map <- stack("data/kili_bing_aerial.tif")
+# 
+# kili.map <- stack("data/kili_bing_aerial.tif")
 
 
 ## Plotting
@@ -102,8 +102,20 @@ fire.ts.rst.cc.ssn <-
              filename = "out/fire_agg/fire_agg_ssn_01_13", format = "GTiff", 
              overwrite = TRUE)
 
+
+
 # Number of burns per pixel
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
+
+np_old <- readOGR(dsn = "data/protected_areas/", 
+                  layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
+                  p4s = "+init=epsg:4326")
+np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
+
+np_new <- readOGR(dsn = "data/protected_areas/", 
+                  layer = "fdetsch-kilimanjaro-1420532792846", 
+                  p4s = "+init=epsg:4326")
+np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
 
 rst_agg_sum <- overlay(rst_agg, fun = function(...) {
   val <- sum(..., na.rm = TRUE)
@@ -124,7 +136,9 @@ img_agg_sum <-
             FUN.margin = sum, at = seq(1, 17, 2), scales = list(draw = TRUE), 
             xlab = list(label = "x", cex = 1.4), ylab = list(label = "y", cex = 1.4), 
             par.settings = list(layout.heights = list(bottom.padding = 8))) + 
-  as.layer(contourplot(dem, labels = FALSE, cuts = 10))
+  as.layer(contourplot(dem, labels = FALSE, cuts = 10)) + 
+  layer(sp.polygons(np_old_utm, lwd = 1.6, lty = 2)) + 
+  layer(sp.polygons(np_new_utm, lwd = 1.6))
 
 png("out/proposal/fire_agg_sum_01_13.png", width = 26, height = 24, units = "cm", 
     res = 300, pointsize = 15)
