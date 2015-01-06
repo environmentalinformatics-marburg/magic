@@ -1,10 +1,11 @@
-library(raster)
-library(zoo)
-library(ggplot2)
-library(doParallel)
+lib <- c("raster", "zoo", "ggplot2", "doParallel", "RColorBrewer")
+sapply(lib, function(x) library(x, character.only = TRUE))
+
 registerDoParallel(cl <- makeCluster(3))
 
 setwd("/media/envin/XChange/kilimanjaro/ndvi/")
+
+source("src/multiVectorHarmonics.R")
 
 # Terra
 fls_mod <- list.files("data/md14a1/low/", pattern = "^CRP_MOD", full.names = TRUE)
@@ -66,8 +67,8 @@ sum(id)
 sum(tbl_cfd$total)
 
 # Total and percentage amount of low, nominal and high confidence fire pixels
-colSums(tbl_cfd)
-colSums(tbl_cfd) / sum(colSums(tbl_cfd))
+colSums(tbl_cfd[, 1:3])
+colSums(tbl_cfd[, 1:3]) / sum(colSums(tbl_cfd[, 1:3]))
 
 
 ## Visualization
@@ -91,4 +92,47 @@ ggplot(aes(x = date, y = total), data = tbl_cfd_agg) +
   geom_histogram(stat = "identity", fill = "grey50") + 
   stat_smooth(method = "lm", lwd = 2, lty = 2, color = "black") + 
   labs(x = "\nTime (months)", y = "No. of active fire pixels\n") + 
+  theme_bw()
+
+# Overall observed active fire pixels per month between 2001 and 2013
+val_sum <- sapply(1:nlayers(rst_agg1m), function(i) {
+  sum(rst_agg1m[[i]][], na.rm = TRUE)
+})
+
+months <- sapply(strsplit(basename(fls_agg1m), "_"), "[[", 3)
+months <- substr(months, 5, 6)
+
+val_sum_agg <- aggregate(val_sum, by = list(months), FUN = sum)
+names(val_sum_agg) <- c("month", "value")
+
+ggplot(aes(x = month, y = value), data = val_sum_agg) + 
+  geom_histogram(stat = "identity") + 
+  labs(x = "\nMonth", y = "No. of active fires\n") + 
+  theme_bw()
+
+# Observed active fire pixels per month 2001-05 vs. 2009-13
+yrmn <- sapply(strsplit(basename(fls_agg1m), "_"), "[[", 3)
+yrmn <- substr(yrmn, 1, 6)
+
+harm_0105_0913 <- multiVectorHarmonics(rst_agg1m, time_info = yrmn, 
+                                       intervals = c(2001, 2009), width = 5)
+ggplot(aes(x = month, y = value, group = interval, colour = interval, 
+           fill = interval), data = harm_0105_0913) + 
+#   geom_line() + 
+  geom_histogram(stat = "identity", position = "dodge") + 
+  labs(x = "\nMonth", y = "No. of active fires\n") +
+  scale_colour_manual("", values = c("black", "grey65")) + 
+  scale_fill_manual("", values = c("black", "grey65")) + 
+  theme_bw()
+
+# Same issue, but for 2001-04 vs. 2004-07 vs. 2007-10 vs. 2010-13
+harm_0104_0407_0710_1013 <- multiVectorHarmonics(rst_agg1m, time_info = yrmn, 
+                                                 intervals = seq(2001, 2010, 3), 
+                                                 width = 4)
+
+ggplot(aes(x = month, y = value, group = interval, colour = interval), 
+       data = harm_0104_0407_0710_1013) + 
+  geom_line(lwd = 2) + 
+  labs(x = "\nMonth", y = "No. of active fires\n") +
+  scale_colour_manual("", values = brewer.pal(4, "Reds")) + 
   theme_bw()
