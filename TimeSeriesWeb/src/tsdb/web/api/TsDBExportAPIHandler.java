@@ -1,7 +1,6 @@
 package tsdb.web.api;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -11,11 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
@@ -27,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.util.ByteArrayOutputStream2;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
@@ -36,8 +29,10 @@ import tsdb.Region;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.Pair;
 import tsdb.util.ZipExport;
 import tsdb.web.WebUtil;
+import tsdb.web.api.ExportModel.TimespanType;
 
 public class TsDBExportAPIHandler extends AbstractHandler {
 
@@ -63,6 +58,11 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			model.plots = new String[]{"HEG01"};
 			model.sensors = new String[]{"Ta_200"};
 			model.aggregationInterval = AggregationInterval.HOUR;
+			model.timespanYear = 2014;
+			model.timespanYearsFrom = 2008;
+			model.timespanYearsTo = 2014;
+			model.timespanDatesFrom = "2014-04";
+			model.timespanDatesTo = "2014-09";
 			try {
 				model.region = tsdb.getRegions()[0];
 			} catch(Exception e) {
@@ -217,8 +217,27 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		json.value(model.col_datetime);		
 		json.key("write_header");
 		json.value(model.write_header);
-		json.key("timespan");
-		json.value(model.timespan);	
+
+		json.key("timespan_type");
+		json.value(model.timespanType.toText());	
+
+
+		json.key("timespan_year");
+		json.value(model.timespanYear);
+
+		json.key("timespan_years_from");
+		json.value(model.timespanYearsFrom);
+
+		json.key("timespan_years_to");
+		json.value(model.timespanYearsTo);
+
+		json.key("timespan_dates_from");
+		json.value(model.timespanDatesFrom);
+
+		json.key("timespan_dates_to");
+		json.value(model.timespanDatesTo);
+
+
 		json.endObject();
 
 
@@ -240,7 +259,41 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			model.col_timestamp = json.getBoolean("col_timestamp");
 			model.col_datetime = json.getBoolean("col_datetime");
 			model.write_header = json.getBoolean("write_header");
-			model.timespan = json.getInt("timespan");
+
+			
+			TimespanType timespanType = TimespanType.parseText(json.getString("timespan_type"));
+			switch(timespanType) {
+			case ALL:
+				model.timespanType = timespanType; 
+				break;
+			case YEAR:
+				model.timespanYear = json.getInt("timespan_year");
+				model.timespanType = timespanType;
+				break;
+			case YEARS:
+				model.timespanYearsFrom = json.getInt("timespan_years_from");
+				model.timespanYearsTo = json.getInt("timespan_years_to");
+				if(model.timespanYearsFrom>model.timespanYearsTo) {
+					int temp = model.timespanYearsFrom;
+					model.timespanYearsFrom = model.timespanYearsTo;
+					model.timespanYearsTo = temp;
+				}
+				model.timespanType = timespanType;
+				break;
+			case DATES:
+				String textFrom = json.getString("timespan_dates_from");
+				String textTo = json.getString("timespan_dates_to");
+				ExportModel.parseDateFrom(textFrom);
+				ExportModel.parseDateTo(textTo);
+				model.timespanDatesFrom = textFrom;
+				model.timespanDatesTo =  textTo;
+				model.timespanType = timespanType;
+				break;
+			default:
+				log.error("unknown timespantype: "+model.timespanType);
+			}
+
+
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -295,16 +348,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			boolean col_timestamp = model.col_timestamp;
 			boolean col_datetime = model.col_datetime;
 			boolean write_header = model.write_header;
-			Long startTimestamp;
-			Long endTimestamp;
-			if(model.timespan==0) {
-				startTimestamp = null;
-				endTimestamp = null;
-			} else {
-				startTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 1, 1, 0, 0));
-				endTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 12, 31, 23, 0));
-			}			
-			ZipExport zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,startTimestamp,endTimestamp);
+			Pair<Long, Long> timespan = model.getTimespan();
+
+			ZipExport zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,timespan.a,timespan.b);
 			boolean ret = zipexport.writeToStream(outputstream);
 			return ret;
 		} catch (IOException e) {
@@ -326,11 +372,11 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		try {
 			System.out.println(SecureRandom.getInstanceStrong().nextLong());
 			final long id = createID();
-			
-			
+
+
 			ZipExportProxy zipExportProxy = new ZipExportProxy(tsdb,model);
 			zipExportProxyMap.put(id, zipExportProxy);			
-			
+
 			response.setContentType("application/json");			
 			JSONWriter json = new JSONWriter(response.getWriter());
 			json.object();
@@ -339,9 +385,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			json.key("plots");
 			json.value(model.plots.length);
 			json.endObject();
-			
+
 			zipExportProxy.startExport();
-			
+
 			return true;
 		} catch(Exception e) {
 			log.error(e);
@@ -355,12 +401,12 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			if(zipExportProxy==null) {
 				return false;
 			}
-			
+
 			final boolean finished = zipExportProxy.getFinished();
-			
+
 			String[] output_lines = zipExportProxy.getOutputLines();
-			
-			
+
+
 			response.setContentType("application/json");			
 			JSONWriter json = new JSONWriter(response.getWriter());
 			json.object();
@@ -369,7 +415,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 
 			json.key("finished");
 			json.value(finished);
-			
+
 			json.key("processed_plots");
 			json.value(zipExportProxy.getProcessedPlots());
 

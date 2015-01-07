@@ -4,25 +4,45 @@
 <title>Testing WebSocket</title>
 <meta charset="utf-8">
 
+<script src="/static/jquery-2.1.1.min.js"></script>
+
 <script type="text/javascript">
-   var ws = new WebSocket("ws://127.0.0.1:8080/echo");
+
+$(document).ready(function(){
+
+
+
+$.get("/export/region").done(function(data) {
+ws = new WebSocket("ws://127.0.0.1:8080/echo");
 
 ws.onopen = function() {
-    alert("Opened!");
-    ws.send("Hello Server");
+    document.getElementById("result").innerHTML += "onopen <br>";
+	ws.send("start process");
+	
 };
 
 ws.onmessage = function (evt) {
-    alert("Message: " + evt.data);
+    document.getElementById("result").innerHTML += "onmessage <br>";
 };
 
 ws.onclose = function() {
-    alert("Closed!");
+    document.getElementById("result").innerHTML += "onclose <br>";
 };
 
 ws.onerror = function(err) {
-    alert("Error: " + err);
+    document.getElementById("result").innerHTML += "onerror <br>";
 };
+
+});		
+
+});
+
+
+
+
+
+
+
 </script>
 
 
@@ -40,6 +60,9 @@ ws.onerror = function(err) {
 <body>
 
 <h1>Testing WebSocket</h1>
+
+<div id="result"></div>
+</div>
 
 
 </body>

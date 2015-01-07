@@ -18,6 +18,8 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.CheckMenuItem;
@@ -30,6 +32,8 @@ import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -37,6 +41,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
@@ -88,6 +94,10 @@ public class TimeSeriesViewScene extends TsdbScene {
 	//private Line line;
 
 	private SimpleBooleanProperty autoFitProperty;
+	private Line lineMove;
+	
+	private enum InteractionStateType {NO,FIRST,SECOND};
+	private InteractionStateType interactionState = InteractionStateType.NO;
 
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");		
@@ -157,12 +167,23 @@ public class TimeSeriesViewScene extends TsdbScene {
 		stackPane = new StackPane();
 		stackPane.setAlignment(Pos.TOP_LEFT);
 		imageView = new ImageView();
+		imageView.setCursor(Cursor.HAND);
 		stackPane.getChildren().add(imageView);
-		//line = new Line(100,100,200,200);
-		//line.setStroke(Color.AQUA);
+		Line line0 = new Line(0,0,100,100);
+		line0.setStroke(Color.BEIGE);
+		Line line1 = new Line(100,100,200,200);
+		line1.setStroke(Color.AQUA);
+		
+		lineMove = new Line(0,0,0,0);
+		lineMove.setStroke(Color.BURLYWOOD);
+
+		//stackPane.getChildren().add(line);
 
 
-		/*Group group = new Group();
+		Group group = new Group();
+		//group.setLayoutX(0);
+		//group.setLayoutY(0);
+		group.getChildren().addAll(line0,line1,lineMove);
 		stackPane.getChildren().add(group);
 
 
@@ -171,10 +192,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 		group.getChildren().add(line2);
 
 
-		group.getChildren().add(line);
+		//group.getChildren().add(line);
 		//stackPane.getChildren().add(line);*/
-
-
 
 
 		stackPane.widthProperty().addListener(x->createImage());
@@ -184,6 +203,11 @@ public class TimeSeriesViewScene extends TsdbScene {
 		stackPane.setOnMouseDragged(this::onMouseDragged);
 		stackPane.setOnMousePressed(this::onMousePressed);
 		stackPane.setOnMouseClicked(this::onMouseClicked);
+		stackPane.setOnKeyPressed((KeyEvent e)->{
+			if(e.getCode()==KeyCode.SPACE) {
+				
+			}
+		});
 
 
 
@@ -570,6 +594,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onMouseDragged(MouseEvent event) {
+		
+		lineMove.setEndX(event.getX());
+		lineMove.setEndY(event.getY());
 
 		/*line.setStartX(event.getX());
 		line.setStartY(event.getY());
@@ -654,13 +681,12 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onMouseClicked(MouseEvent event) {
-
+		
 		if(event.getButton()==MouseButton.SECONDARY) {
 			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
 		} else {
 			imageViewContextMenu.hide();
 		}
-
 	}
 
 	private void onScroll(ScrollEvent event) {

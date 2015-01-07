@@ -110,7 +110,6 @@ public class ConfigLoader {
 			}
 
 			for(GeneralStationBuilder e:creationMap.values()) {
-				System.out.println("insert: "+e.name);
 				tsdb.insertGeneralStation(e.create());
 			}
 

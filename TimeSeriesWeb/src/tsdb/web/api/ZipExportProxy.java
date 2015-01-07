@@ -20,6 +20,7 @@ import tsdb.TimeConverter;
 import tsdb.TsDBFactory;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.Pair;
 import tsdb.util.ZipExport;
 
 public class ZipExportProxy {
@@ -69,16 +70,11 @@ public class ZipExportProxy {
 		boolean col_timestamp = model.col_timestamp;
 		boolean col_datetime = model.col_datetime;
 		boolean write_header = model.write_header;
-		Long startTimestamp;
-		Long endTimestamp;
-		if(model.timespan==0) {
-			startTimestamp = null;
-			endTimestamp = null;
-		} else {
-			startTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 1, 1, 0, 0));
-			endTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(model.timespan, 12, 31, 23, 0));
-		}			
-		zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,startTimestamp,endTimestamp);
+		
+		Pair<Long, Long> timespan = model.getTimespan();
+		
+		
+		zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,timespan.a,timespan.b);
 		zipexport.setPrintCallback(this::println);
 		workerThread = new Thread(new Runnable() {					
 			@Override
