@@ -9,6 +9,7 @@ setwd(datapath)
 
 model=c("rf","nnet","avNNet","svm")
 time=c("day","inb","night")
+timeDecription=c("day","twilight","night")
 
 ###### READ RAINRATE DATA
 
@@ -20,11 +21,12 @@ for (i in 1:length(time)){
                data.frame("VALUE"=unlist(RAIN),
                               "SCORE"=rep(c("RMSE","ME","MAE","Rsq"),c(rep(nrow(RAIN),length(names(RAIN))))),
                               "MODEL"=rep(toupper(model[k]),length(unlist(RAIN))),
-                              "TIME"=rep(toupper(time[i]),length(unlist(RAIN)))
+                              "TIME"=rep(toupper(timeDecription[i]),length(unlist(RAIN)))
               )
     )
   }
 }
+
 ###### READ RAIN AREA DATA
 RINFOOUT=data.frame()
 for (i in 1:length(time)){
@@ -37,7 +39,7 @@ for (i in 1:length(time)){
                   data.frame("VALUE"=unlist(RINFO),
                              "SCORE"=rep(names(RINFO),c(rep(nrow(RINFO),length(names(RINFO))))),
                              "MODEL"=rep(toupper(model[k]),length(unlist(RINFO))),
-                             "TIME"=rep(toupper(time[i]),length(unlist(RINFO)))
+                             "TIME"=rep(toupper(timeDecription[i]),length(unlist(RINFO)))
                   )
     )
   }
