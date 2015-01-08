@@ -1,9 +1,13 @@
 package tsdb.graph;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
+import tsdb.util.Util;
 
 /**
  * With QueryPlan query graphs for specific queries a are build
@@ -11,6 +15,7 @@ import tsdb.aggregated.AggregationInterval;
  *
  */
 public class QueryPlan {
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 	 * Creates a general purpose graph for queries over one plot
@@ -78,7 +83,18 @@ public class QueryPlan {
 			if(station==null) {
 				throw new RuntimeException("station not found");
 			}
+			boolean virtual_P_RT_NRT = false;
+			if(station.generalStation!=null && station.generalStation.region.name.equals("BE") && Util.containsString(schema, "P_RT_NRT")) {
+				virtual_P_RT_NRT = true;				
+				if(!Util.containsString(schema, "P_container_RT")) {
+					schema = Util.concat(schema,"P_container_RT");
+				}
+			}
 			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
+			if(virtual_P_RT_NRT) {
+				log.info("add virtual_P_RT_NRT in "+stationID);
+				rawSource = Virtual_P_RT_NRT.of(tsdb, rawSource);
+			}
 			if(station.loggerType.typeName.equals("tfi")) {
 				rawSource = PeakSmoothed.of(rawSource);
 			}			

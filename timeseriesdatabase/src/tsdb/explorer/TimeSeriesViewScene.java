@@ -43,6 +43,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
@@ -94,10 +95,13 @@ public class TimeSeriesViewScene extends TsdbScene {
 	//private Line line;
 
 	private SimpleBooleanProperty autoFitProperty;
-	private Line lineMove;
 	
-	private enum InteractionStateType {NO,FIRST,SECOND};
-	private InteractionStateType interactionState = InteractionStateType.NO;
+
+	private enum SelectionState {NO,SELECT_START,SELECT_END};
+	private ObjectProperty<SelectionState> selectionStateProperty;
+	private Line selectionLineStart;
+	private Rectangle selectionRect;
+	private long selectionStartTimestamp;
 
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");		
@@ -109,6 +113,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 	protected Parent createContent() {
 		autoFitProperty = new SimpleBooleanProperty();
 
+		selectionStateProperty = new SimpleObjectProperty<SelectionState>(SelectionState.NO); 
 
 		MenuItem menuItemResetView = new MenuItem("reset view");
 		menuItemResetView.setOnAction(e->{
@@ -141,24 +146,24 @@ public class TimeSeriesViewScene extends TsdbScene {
 				createImage();
 			}
 		});
-		
+
 		MenuItem menuItemSave = new MenuItem("save time series to file");
 		menuItemSave.setOnAction(e->{
 			FileChooser fileChooser = new FileChooser();
-			 fileChooser.setTitle("save time series to file");
-			 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv file", "*.csv"));
-			 File selectedFile = fileChooser.showSaveDialog(stage);
-			 if (selectedFile != null) {
-				 try {
-					 TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
-					 if(tsd!=null) {
-						 tsd.getTimeStampSeries().tsIterator().writeCSV(selectedFile.getPath());
-					 }
-				 } catch(Exception exception) {
-					 log.error(exception);
-				 }
-			    //mainStage.display(selectedFile);
-			 }
+			fileChooser.setTitle("save time series to file");
+			fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv file", "*.csv"));
+			File selectedFile = fileChooser.showSaveDialog(stage);
+			if (selectedFile != null) {
+				try {
+					TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+					if(tsd!=null) {
+						tsd.getTimeStampSeries().tsIterator().writeCSV(selectedFile.getPath());
+					}
+				} catch(Exception exception) {
+					log.error(exception);
+				}
+				//mainStage.display(selectedFile);
+			}
 		});
 
 		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue,menuItemSave);
@@ -173,9 +178,15 @@ public class TimeSeriesViewScene extends TsdbScene {
 		line0.setStroke(Color.BEIGE);
 		Line line1 = new Line(100,100,200,200);
 		line1.setStroke(Color.AQUA);
+
+		selectionLineStart = new Line(0,0,0,0);
+		Color b = Color.BURLYWOOD;
+		Color selectionColor = new Color(b.getRed(), b.getGreen(), b.getBlue(), 0.5d);
+		selectionLineStart.setStroke(selectionColor);
+		selectionLineStart.setStrokeWidth(10);
 		
-		lineMove = new Line(0,0,0,0);
-		lineMove.setStroke(Color.BURLYWOOD);
+		selectionRect = new Rectangle();
+		selectionRect.setFill(selectionColor);
 
 		//stackPane.getChildren().add(line);
 
@@ -183,13 +194,14 @@ public class TimeSeriesViewScene extends TsdbScene {
 		Group group = new Group();
 		//group.setLayoutX(0);
 		//group.setLayoutY(0);
-		group.getChildren().addAll(line0,line1,lineMove);
+		///group.getChildren().addAll(line0,line1,selectionLineStart,selectionRect);
+		group.getChildren().addAll(new Line(0,0,0,0),selectionLineStart,selectionRect);
 		stackPane.getChildren().add(group);
 
 
-		Line line2 = new Line(0,0,0,0);
+		/*Line line2 = new Line(0,0,0,0);
 		line2.setStroke(Color.ALICEBLUE);
-		group.getChildren().add(line2);
+		group.getChildren().add(line2);*/
 
 
 		//group.getChildren().add(line);
@@ -200,14 +212,11 @@ public class TimeSeriesViewScene extends TsdbScene {
 		stackPane.heightProperty().addListener(x->createImage());
 		stackPane.setMinSize(0, 0); //!! for auto resize
 		stackPane.setOnScroll(this::onScroll);
+		stackPane.setOnMouseMoved(this::onMouseMoved);
 		stackPane.setOnMouseDragged(this::onMouseDragged);
 		stackPane.setOnMousePressed(this::onMousePressed);
 		stackPane.setOnMouseClicked(this::onMouseClicked);
-		stackPane.setOnKeyPressed((KeyEvent e)->{
-			if(e.getCode()==KeyCode.SPACE) {
-				
-			}
-		});
+
 
 
 
@@ -473,9 +482,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		if(sensor==null) {
 			timeSeriesDiagramProperty.setValue(null);
 			return;
-		}
-		
-		
+		}		
 
 		Long startTimestamp = null;
 		Long endTimestamp = null;		
@@ -496,7 +503,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			timeSeriesDiagramProperty.setValue(null);
 			return;
 		}
-		
+
 		String[] sensorNames;
 		if(sensor.name.equals("WD")&&agg!=AggregationInterval.RAW) {
 			sensorNames = new String[]{sensor.name,"WV"};
@@ -531,8 +538,6 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 	private void onUpdateSensor() {
 		ObservableList<Sensor> sensorList = FXCollections.observableArrayList();
-
-
 
 		try {
 			PlotInfo plot = comboPlot.getValue();
@@ -593,10 +598,39 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 	}
 
+	private void onAlwaysMouseMoved(MouseEvent event) {
+		if(selectionStateProperty.get()== SelectionState.NO) {
+			selectionLineStart.setVisible(false);
+			selectionRect.setVisible(false);
+		} else if(selectionStateProperty.get()== SelectionState.SELECT_START) {
+			selectionLineStart.setVisible(true);
+			selectionLineStart.setStartX(event.getX());
+			selectionLineStart.setStartY(0);
+			selectionLineStart.setEndX(event.getX());
+			selectionLineStart.setEndY(stackPane.getHeight());
+			selectionRect.setVisible(false);
+		} else if(selectionStateProperty.get()== SelectionState.SELECT_END) {
+			selectionLineStart.setVisible(false);
+			selectionRect.setVisible(true);
+			double startX = 0;
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+			if(tsd!=null) {
+				startX = tsd.calcDiagramX(selectionStartTimestamp);
+			}
+			selectionRect.setX(startX);
+			selectionRect.setWidth(event.getX()-startX);
+			selectionRect.setY(0);
+			selectionRect.setHeight(stackPane.getHeight());
+		}		
+	}
+
+	private void onMouseMoved(MouseEvent event) {
+		onAlwaysMouseMoved(event);
+	}
+
 	private void onMouseDragged(MouseEvent event) {
-		
-		lineMove.setEndX(event.getX());
-		lineMove.setEndY(event.getY());
+		onAlwaysMouseMoved(event);
+
 
 		/*line.setStartX(event.getX());
 		line.setStartY(event.getY());
@@ -681,12 +715,33 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onMouseClicked(MouseEvent event) {
-		
+
 		if(event.getButton()==MouseButton.SECONDARY) {
 			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
 		} else {
-			imageViewContextMenu.hide();
+			imageViewContextMenu.hide();			
 		}
+
+
+		if(event.getButton()==MouseButton.MIDDLE) {
+			System.out.println("*********************");
+			if(selectionStateProperty.get()==SelectionState.NO) {
+				selectionStateProperty.set(SelectionState.SELECT_START);
+				onAlwaysMouseMoved(event);
+			} else if(selectionStateProperty.get()==SelectionState.SELECT_START) {
+				TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+				if(tsd!=null) {
+					selectionStartTimestamp = tsd.calcTimestamp(event.getX());
+				}
+				selectionStateProperty.set(SelectionState.SELECT_END);
+				onAlwaysMouseMoved(event);
+			}  else if(selectionStateProperty.get()==SelectionState.SELECT_END) {
+				selectionStateProperty.set(SelectionState.NO);
+				onAlwaysMouseMoved(event);
+			}
+			System.out.println(selectionStateProperty.get());
+		}
+
 	}
 
 	private void onScroll(ScrollEvent event) {
@@ -833,7 +888,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			return false;
 		}
 		comboPlot.setValue(plotInfo);
-		
+
 		ObservableList<Sensor> sensorItems = comboSensor.getItems();
 		if(sensorItems==null) {
 			return false;
@@ -849,9 +904,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 			return false;
 		}
 		comboSensor.setValue(sensor);
-		
+
 		return true;
 	}
-
 }
 

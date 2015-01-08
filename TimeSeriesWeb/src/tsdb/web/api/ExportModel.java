@@ -114,9 +114,11 @@ public class ExportModel{
 		case YEARS:
 			startTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(timespanYearsFrom, 1, 1, 0, 0));
 			endTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(timespanYearsTo, 12, 31, 23, 0));
+			break;
 		case DATES:
 			startTimestamp = parseDateFrom(timespanDatesFrom);
-			endTimestamp = parseDateTo(timespanDatesTo);			
+			endTimestamp = parseDateTo(timespanDatesTo);
+			break;
 		default:
 			log.error("unknown timespan");
 		}
