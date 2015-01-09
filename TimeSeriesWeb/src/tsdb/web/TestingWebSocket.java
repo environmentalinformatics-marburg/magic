@@ -3,12 +3,18 @@ package tsdb.web;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -18,6 +24,9 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import tsdb.TsDBFactory;
@@ -82,20 +91,41 @@ public class TestingWebSocket {
 		
 		ContextHandler contextEcho = new ContextHandler(); //"/echo"
 		//contextEcho.setContextPath("/echo");
-		WebSocketHandler wsHandler = new WebSocketHandler()	    {
+		/*WebSocketHandler wsHandler = new WebSocketHandler()	    {
 	        @Override
+			public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+				HttpSession session = request.getSession();
+				System.out.println(session);
+				super.handle(target, baseRequest, request, response);
+			}
+
+			@Override
 	        public void configure(WebSocketServletFactory factory)
 	        {
-	            System.out.println("configure WebSocketServletFactory");
-	        	factory.register(MyEchoSocket.class);
+	            WebSocketCreator creator = new WebSocketCreator() {
+					@Override
+					public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
+						System.out.println("new create "+req.getSession());
+						return new MyEchoSocket();
+					}					
+				};
+				//WebSocketCreator creator;
+				//System.out.println(factory.getClass());
+	        	//System.out.println("configure WebSocketServletFactory");
+	        	//factory.register(MyEchoSocket.class);
+	        	factory.setCreator(creator );
 	        }
 	    };
 	    contextEcho.setHandler(wsHandler);
+	    */
+		contextEcho.setHandler(new WebSocketHandler.Simple(MyEchoSocket.class));
+	    
+	    
 
 		
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-		contexts.setHandlers(new Handler[] {contextEcho, contextStatic, contextTsdb, contextExport});
+		contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport, contextEcho});
 
 		server.setHandler(contexts);
 

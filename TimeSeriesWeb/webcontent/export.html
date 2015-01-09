@@ -90,13 +90,29 @@ $.getJSON("/export/settings").done(function( data ) {
 		var settings_array = [];
 		//{"col_plotid":true,"col_timestamp":false,"col_datetime":false}
 		
-		var value = +json_settings.timespan;
+		var timespan_type = json_settings.timespan_type;
+		
+		var timespanText;
+		if(timespan_type=="all") {
+			timespanText = "[all available data]";
+		} else if(timespan_type=="year"){
+			timespanText = "year "+json_settings.timespan_year;
+		} else if(timespan_type=="years"){
+			timespanText = "years "+json_settings.timespan_years_from+" to "+json_settings.timespan_years_to;
+		} else if(timespan_type=="dates"){
+			timespanText = "dates from "+json_settings.timespan_dates_from+" to "+json_settings.timespan_dates_to;			
+			
+		} else {
+			timespanText = "[not valid timespan]";
+		}		
+		
+		/*var value = +json_settings.timespan;
 		var timespanText = "[not valid timespan]";
 		if(value===0) {
 			timespanText = "[all]";
 		} else {
 			timespanText = "year "+value;
-		}		
+		}*/		
 		timespan_output.innerHTML = timespanText;
 		aggregation_output.innerHTML = json_settings.timestep;		
 		settings_array.push("quality check: "+json_settings.quality);		

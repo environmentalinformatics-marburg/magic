@@ -467,7 +467,7 @@ public class Util {
 		if(Float.isNaN(value)) {
 			return text;
 		} else {
-			return ""+value;
+			return Float.toString(value);
 		}
 	}
 
@@ -475,7 +475,7 @@ public class Util {
 		if(Double.isNaN(value)) {
 			return text;
 		} else {
-			return ""+value;
+			return Double.toString(value);
 		}
 	}
 
@@ -486,6 +486,13 @@ public class Util {
 			}
 		}
 		return false;
+	}
+	
+	public static String[] concat(String[] array, String lastEntry) {
+		throwNulls(array,lastEntry);
+		String[] result = Arrays.copyOf(array, array.length+1);
+		result[array.length] = lastEntry;
+		return result;
 	}
 
 	public static String[] getValidEntries(String[] names, String[] source) {
