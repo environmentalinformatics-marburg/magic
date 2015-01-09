@@ -1,5 +1,7 @@
 library(MODIS)
 
+# setwd("/media/permanent/xchange/gimms")
+
 MODISoptions(localArcPath = paste0(getwd(), "/data/MODIS_ARC/"), 
              outDirPath = paste0(getwd(), "/data/MODIS_ARC/PROCESSED/"))
 
@@ -39,3 +41,10 @@ mat_rcl <- matrix(c(0, 0, 0,
                   byrow = TRUE, ncol = 3)
 
 rst_lcp_crp_rcl <- reclassify(rst_lcp_crp, mat_rcl, right = FALSE)
+
+library(RColorBrewer)
+cols <- colorRampPalette(brewer.pal(11, "Paired"))
+spplot(rst_lcp_crp_rcl[[1]], col.regions = cols(16), at = c(0.5, 5.5, 7.5, 8.5, seq(10.5, 16.5, 1)))
+
+rst_lcp_crp_rcl_agg <- aggregate(rst_lcp_crp_rcl, fun = modal)
+spplot(rst_lcp_crp_rcl_agg[[1]], col.regions = cols(16), at = c(0.5, 5.5, 7.5, 8.5, seq(10.5, 16.5, 1)))
