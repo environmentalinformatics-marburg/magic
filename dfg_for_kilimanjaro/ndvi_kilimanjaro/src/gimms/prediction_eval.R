@@ -12,7 +12,7 @@ st <- "200301"
 nd <- "201212"
 
 ## DEM
-dem <- raster("/media/fdetsch/XChange/kilimanjaro/ndvi/data/DEM_ARC1960_30m_Hemp.tif")
+dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
 
 ## GIMMS NDVI3G
 fls_gimms <- list.files("data/rst/whittaker", pattern = "_wht_aggmax.tif$", 
