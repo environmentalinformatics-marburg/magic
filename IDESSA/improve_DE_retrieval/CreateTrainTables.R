@@ -16,7 +16,7 @@ rm(list=ls())
 
 msgpath="/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
 radarpath="/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
-functionpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/functions/"
+functionpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/code/functions/"
 
 referenceimage<- "glcm_filter$size_5$WV6.2[[1]]"#"IR3.9" #This image will be used together with the radar data to define "no data"
 
@@ -147,7 +147,7 @@ for (i in months){
                              "IR9.7","IR10.8","IR12.0","IR13.4")
 
 ### only process data if the MSG raster include valid data #####################
-#      if (sum(values(scenerasters),na.rm=TRUE)==0) next
+       if(min(values(is.na(scenerasters)))==1) next
 
 ################################################################################
 ###                 caluclate derivated variables 
@@ -207,7 +207,7 @@ for (i in months){
                                          cbind(values(scenerasters))[noDataIdentifier,],
                                          cbind(values(MeanPerPatch))[noDataIdentifier,],
                                          cbind(values(SdPerPatch))[noDataIdentifier,],
-                                         cbind(values(cloud_geometry))[noDataIdentifier,],
+                                         cbind(values(cloud_geometry))[noDataIdentifier,-1],
                                          glcm_3[noDataIdentifier,],glcm_5[noDataIdentifier,],
                                          values(radardata)[noDataIdentifier]))
  
