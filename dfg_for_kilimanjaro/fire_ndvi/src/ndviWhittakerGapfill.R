@@ -5,7 +5,7 @@ rm(list = ls(all = TRUE))
 
 # Working directory
 switch(Sys.info()[["sysname"]], 
-       "Linux" = {dsn <- "/media/fdetsch/XChange/kilimanjaro/ndvi/"}, 
+       "Linux" = {dsn <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
        "Windows" = {dsn <- "D:/kilimanjaro/ndvi/"})
 setwd(dsn)
 
@@ -15,8 +15,10 @@ lib <- c("raster", "rgdal", "MODIS", "doParallel", "Kendall", "RColorBrewer",
          "reshape2", "ggplot2", "zoo", "GSODTools")
 sapply(lib, function(...) require(..., character.only = TRUE))
 
+source("src/aggregateNDVICells.R")
+
 # Parallelization
-registerDoParallel(cl <- makeCluster(3))
+registerDoParallel(cl <- makeCluster(4))
 
 
 ### Data import
@@ -34,10 +36,15 @@ for (i in c("MOD13Q1", "MYD13Q1"))
 
 ## Geographic extent
 
-kili <- data.frame(x = c(37, 37.72), y = c(-3.4, -2.84), id = c("ll", "ur"))
-coordinates(kili) <- c("x", "y")
-projection(kili) <- CRS("+init=epsg:4326")
-kili <- spTransform(kili, CRS("+init=epsg:21037"))
+fls_gimms <- list.files("../gimms3g/gimms3g/data/rst/", pattern = "_crp_utm.tif$", 
+                        full.names = TRUE)
+rst_gimms <- raster(fls_gimms[[1]])
+kili <- rasterToPolygons(rst_gimms)
+
+# kili <- data.frame(x = c(37, 37.72), y = c(-3.4, -2.84), id = c("ll", "ur"))
+# coordinates(kili) <- c("x", "y")
+# projection(kili) <- CRS("+init=epsg:4326")
+# kili <- spTransform(kili, CRS("+init=epsg:21037"))
 
 
 ## Plot coordinates
@@ -56,10 +63,10 @@ dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
 
 stats <- foreach(h = c("MOD13Q1", "MYD13Q1"), .packages = lib) %dopar% {
   
-#   pttrn <- paste(h, c("NDVI.tif$", "pixel_reliability.tif$"), sep = ".*")
-  pttrn <- paste(h, "composite_day_of_the_year.tif$", sep = ".*")
+  pttrn <- paste(h, c("NDVI.tif$", "pixel_reliability.tif$", 
+                      "composite_day_of_the_year.tif$"), sep = ".*")
   
-  ndvi.rst <- lapply(pttrn, function(i) {
+  ndvi.rst <- lapply(pttrn, function(i) {                                      
     # List available files
     fls <- list.files("data/MODIS_ARC/PROCESSED/ndvi_clrk", 
                            pattern = i, full.names = TRUE)  
@@ -70,6 +77,8 @@ stats <- foreach(h = c("MOD13Q1", "MYD13Q1"), .packages = lib) %dopar% {
                            bylayer = TRUE, suffix = names(rst), overwrite = TRUE)
     return(rst.crp)
   })
+  
+  ndvi.rst <- ndvi.rst[1:2]
   
 #   ndvi.rst <- lapply(pttrn, function(i) {
 #     fls <- list.files("data/processed/", full.names = TRUE, 
@@ -91,7 +100,7 @@ ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format =
 
   # Application of outlier check
   ndvi.rst.qa.sd <- calc(ndvi.rst.qa, fun = function(x) {
-    id <- tsOutliers(x, lower.limit = .4, upper.limit = .9, index = TRUE)
+    id <- tsOutliers(x, lower_quantile = .4, upper_quantile = .9, index = TRUE)
     x[id] <- NA
     return(x)
   })
@@ -114,9 +123,9 @@ ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format =
     writeRaster(ndvi.rst.qa.sd.fc, filename = "data/processed/BF", format = "GTiff", 
                 bylayer = TRUE, suffix = names(ndvi.rst.qa.sd), overwrite = TRUE)
   
-#   ndvi.fls.qa.sd.fc <- list.files("data/processed/", full.names = TRUE, 
-#                                   pattern = paste("^BF_", pttrn[1], sep = ".*"))
-#   ndvi.rst.qa.sd.fc <- stack(ndvi.fls.qa.sd.fc)
+  ndvi.fls.qa.sd.fc <- list.files("data/processed/", full.names = TRUE, 
+                                  pattern = paste("^BF_SD_QA_CRP", pttrn[1], sep = ".*"))
+  ndvi.rst.qa.sd.fc <- stack(ndvi.fls.qa.sd.fc)
 # 
 # dates <- orgTime(ndvi.fls.init)$inputLayerDates
 # dates_agg <- dates + 8
@@ -143,11 +152,11 @@ ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format =
 # org_agg <- orgTime(org_agg, nDays = "1 month", pillow = 0, 
 #                    pos1 = 1, pos2 = 8, format = "%Y%m%d")
 
-rst.wht <- whittaker.raster(ndvi.rst.qa.sd.fc, removeOutlier = TRUE, threshold = 2000,
+rst.wht <- whittaker.raster(vi = ndvi.rst.qa.sd.fc, removeOutlier = TRUE, threshold = 2000,
                             timeInfo = orgTime(ndvi.fls.init, pillow = 0), 
                             lambda = 6000, nIter = 3, groupYears = FALSE, 
                             outDirPath = paste0("data/processed/whittaker_", tolower(h)), 
-                            overwrite = TRUE)
+                            overwrite = TRUE, format = "raster")
  
 # Save files separately (takes some time, parallel processing suggested)
 dates <- orgTime(ndvi.fls.init)$inputLayerDates
@@ -183,12 +192,12 @@ outdir <- paste0("data/processed/whittaker_", tolower(h))
 #              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
 #              overwrite = TRUE)
 
-  fls_wht <- list.files(paste0("data/processed/whittaker_", g), 
+  fls_wht <- list.files(paste0("data/processed/whittaker_", tolower(h)), 
                         pattern = "^WHT", full.names = TRUE)
   rst_wht <- stack(fls_wht)
   
   fls_doy <- list.files("data/processed", full.names = TRUE,
-                        pattern = paste0("^CRP_", toupper(g), ".*composite"))
+                        pattern = paste0("^CRP_", toupper(h), ".*composite"))
   rst_doy <- stack(fls_doy)
   
   dates_doy <- as.numeric(substr(basename(fls_doy), 14, 20))
@@ -225,33 +234,33 @@ rst_scl <- foreach(i = unstack(rst_wht_aggmax), j = as.list(fls_scl),
   return(rst)
 }
 
-# 2011-2013
-fls_scl <- list.files(outdir, pattern = "^SCL", full.names = TRUE)
-
-# st <- grep("201101", fls_scl)
-# nd <- grep("201312", fls_scl)
-# fls_scl <- fls_scl[st:nd]
-
-rst_scl <- stack(fls_scl)
-
-mat_plt_val <- extract(rst_scl, plt_apoles)
-df_plt_val <- data.frame(PlotID = plt_apoles@data[, 1], mat_plt_val)
-names(df_plt_val)[2:ncol(df_plt_val)] <- 
-  sapply(strsplit(names(df_plt_val)[2:ncol(df_plt_val)], "_"), "[[", 4)
-write.csv(df_plt_val, "out/csv/ndvi_aggmin_200207_201409.csv", row.names = FALSE)
-
-months <- substr(sapply(strsplit(fls_scl, "_"), "[[", 5), 5, 6)
-indices <- as.numeric(as.factor(months))
-
-rst_scl_mmonth <- stackApply(rst_scl, indices = indices, fun = mean)
-
-plt_scl_mmonth <- data.frame(PlotId = plt_apoles$PlotID, 
-                             extract(rst_scl_mmonth, plt_apoles))
-
-id <- grep("mai2", plt_scl_mmonth$PlotId)
-plot(unlist(plt_scl_mmonth[id, 2:ncol(plt_scl_mmonth)]), type = "l", 
-     xlab = "Month", ylab = "NDVI")
-
+# # 2011-2013
+# fls_scl <- list.files(outdir, pattern = "^SCL", full.names = TRUE)
+# 
+# # st <- grep("201101", fls_scl)
+# # nd <- grep("201312", fls_scl)
+# # fls_scl <- fls_scl[st:nd]
+# 
+# rst_scl <- stack(fls_scl)
+# 
+# mat_plt_val <- extract(rst_scl, plt_apoles)
+# df_plt_val <- data.frame(PlotID = plt_apoles@data[, 1], mat_plt_val)
+# names(df_plt_val)[2:ncol(df_plt_val)] <- 
+#   sapply(strsplit(names(df_plt_val)[2:ncol(df_plt_val)], "_"), "[[", 4)
+# write.csv(df_plt_val, "out/csv/ndvi_aggmin_200207_201409.csv", row.names = FALSE)
+# 
+# months <- substr(sapply(strsplit(fls_scl, "_"), "[[", 5), 5, 6)
+# indices <- as.numeric(as.factor(months))
+# 
+# rst_scl_mmonth <- stackApply(rst_scl, indices = indices, fun = mean)
+# 
+# plt_scl_mmonth <- data.frame(PlotId = plt_apoles$PlotID, 
+#                              extract(rst_scl_mmonth, plt_apoles))
+# 
+# id <- grep("mai2", plt_scl_mmonth$PlotId)
+# plot(unlist(plt_scl_mmonth[id, 2:ncol(plt_scl_mmonth)]), type = "l", 
+#      xlab = "Month", ylab = "NDVI")
+# 
 #   st <- ifelse(h == "MOD13Q1", "2001", "2003")
 #   st <- "2003"
 #   nd <- "2013"
