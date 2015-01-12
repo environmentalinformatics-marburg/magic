@@ -7,10 +7,10 @@
 <link rel="stylesheet" href="jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
 
-<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/util.js"></script>
-<script src="/static/status.js"></script>
+<script src="util.js"></script>
+<script src="status.js"></script>
 
 
 
@@ -39,13 +39,38 @@
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="/static/index.html">back to main menu</a></p>
+<p style="text-align:right"><a href="index.html">back to Start Page<a><p>
 <h1 style="text-align:center">Time Series Status</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
+<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button></div>
 <hr/>
 </div>
 
+<div id="div_instructions" style="display:none">
+<script type="text/javascript">
+function show_instructions() {
+	if(document.getElementById("div_instructions").style.display==="none") {
+		document.getElementById("div_instructions").style.display = "inline";
+		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
+	} else {
+		document.getElementById("div_instructions").style.display = "none";
+		document.getElementById("button_instructions").innerHTML = "Show Instructions";
+	}
+}
+</script>
+<h3>Instructions</h3>
+On this page you can view the time span of data that each plot contains.
+<br>
+<br>
+First choose a set of plots and then click "query" to get the time spans of the plots.
+<br>
+The plots are sorted at time span end-date. Oldest end-dates are first. The entry at the right of each row ("x days") means the time span of day between this time span end-date and the latest end-date of this set plots. 
+<br>
+When there are long time spans between this plot end-date and the latest plot end-date the row is colored yellow, orange or red.
+
+<hr/>
+</div>
 
 <div class="input_elements">
 

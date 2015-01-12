@@ -3,9 +3,9 @@
 <head>
 <title>Export Time Series - choose region</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/util.js"></script>
+<script src="util.js"></script>
 <script type="text/javascript">
 
 var tasks = 0;
@@ -60,7 +60,7 @@ var updataRegions = function() {
 }
 
 var on_cancel = function() {
-	window.location = "/static/export.html";
+	window.location = "export.html";
 }
 
 var on_apply = function() {
@@ -73,7 +73,7 @@ var on_apply = function() {
 	incTask();	
 	$.post("/export/apply_region?region="+region,region)
 		 .done(function() {
-			window.location = "/static/export.html";
+			window.location = "export.html";
 			decTask();
 		 })
 		 .fail(function(jqXHR, textStatus, errorThrown) {
@@ -102,10 +102,27 @@ $(document).ready(ready);
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
+<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
 <h1 style="text-align:center">Export Time Series - choose region</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
+<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button></div>
+<hr/>
+</div>
+<div id="div_instructions" style="display:none">
+<script type="text/javascript">
+function show_instructions() {
+	if(document.getElementById("div_instructions").style.display==="none") {
+		document.getElementById("div_instructions").style.display = "inline";
+		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
+	} else {
+		document.getElementById("div_instructions").style.display = "none";
+		document.getElementById("button_instructions").innerHTML = "Show Instructions";
+	}
+}
+</script>
+<h3>Instructions</h3>
+On this page you can change the region of plots you are interested in. click on "cancel" to discard changed. click on "apply region" to confirm changes.
 <hr/>
 </div>
 <h3>Actions</h3>

@@ -3,9 +3,9 @@
 <head>
 <title>Export Time Series - settings</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/util.js"></script>
+<script src="util.js"></script>
 <script type="text/javascript">
 
 var tasks = 0;
@@ -32,7 +32,7 @@ $(document).ready(function(){
 	incTask();	
 	$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
-		window.location = "/static/export.html";
+		window.location = "export.html";
 	}
 	
 	$("#button_apply").button();
@@ -52,7 +52,7 @@ $(document).ready(function(){
 
 		$.postJSON("/export/apply_settings",json_settings)
 		 .done(function() {
-			window.location = "/static/export.html";
+			window.location = "export.html";
 			decTask();
 		 })
 		 .fail(function(jqXHR, textStatus, errorThrown) {alert("error sending settings data: "+textStatus+"  "+errorThrown);decTask();});	
@@ -90,12 +90,31 @@ $(document).ready(function(){
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="/static/export.html">back to Export Time Series</a></p>
+<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
 <h1 style="text-align:center">Export Time Series - settings</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
+<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button> </div>
 <hr/>
 </div>
+
+<div id="div_instructions" style="display:none">
+<script type="text/javascript">
+function show_instructions() {
+	if(document.getElementById("div_instructions").style.display==="none") {
+		document.getElementById("div_instructions").style.display = "inline";
+		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
+	} else {
+		document.getElementById("div_instructions").style.display = "none";
+		document.getElementById("button_instructions").innerHTML = "Show Instructions";
+	}
+}
+</script>
+<h3>Instructions</h3>
+On this page you can choose some setting of the zip file containing the exported data. Click on "cancel" to discard changed. Click on "apply settings" to confirm changes.
+<hr/>
+</div>
+
 <h3>Actions</h3>
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply settings</button>

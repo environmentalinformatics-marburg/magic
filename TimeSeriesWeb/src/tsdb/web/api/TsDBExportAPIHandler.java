@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +24,6 @@ import org.json.JSONWriter;
 
 import tsdb.DataQuality;
 import tsdb.Region;
-import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
@@ -115,6 +112,15 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			try {
 				long id = Long.parseLong(request.getParameter("id"));			
 				ret = handle_create_get_output(response,model,id);
+			} catch(Exception e) {
+				log.error(e);
+			}
+			break;
+		}
+		case "/create.zip": {
+			try {
+				long id = Long.parseLong(request.getParameter("id"));			
+				ret = handle_create_download(response,model,id);
 			} catch(Exception e) {
 				log.error(e);
 			}
@@ -260,7 +266,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			model.col_datetime = json.getBoolean("col_datetime");
 			model.write_header = json.getBoolean("write_header");
 
-			
+
 			TimespanType timespanType = TimespanType.parseText(json.getString("timespan_type"));
 			switch(timespanType) {
 			case ALL:
@@ -329,6 +335,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 
 	private boolean handle_download(HttpServletResponse response, ExportModel model) {
 		response.setContentType("application/zip");
+
 		try {
 			OutputStream outputstream = response.getOutputStream();
 			Region region = model.region;
@@ -359,7 +366,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}	
 	}
 
-	private long counter = 0;
+	private long counter = 1000000001;
 	private HashMap<Long,ZipExportProxy> zipExportProxyMap = new HashMap<Long,ZipExportProxy>();
 
 	private long createID() {
@@ -370,8 +377,10 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 
 	private boolean handle_create(HttpServletResponse response, ExportModel model) {
 		try {
-			System.out.println(SecureRandom.getInstanceStrong().nextLong());
+			//System.out.println(SecureRandom.getInstanceStrong().nextLong());
 			final long id = createID();
+
+			log.info("new export create id: "+id);
 
 
 			ZipExportProxy zipExportProxy = new ZipExportProxy(tsdb,model);
@@ -411,7 +420,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			JSONWriter json = new JSONWriter(response.getWriter());
 			json.object();
 			json.key("id");
-			json.value(id+111);
+			json.value(id/*+111*/);
 
 			json.key("finished");
 			json.value(finished);
@@ -424,13 +433,29 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			for(String line:output_lines) {
 				json.value(line);
 			}
-			json.endArray();			
+			json.endArray();
+
+			if(finished) {
+				json.key("filename");
+				json.value(zipExportProxy.getFilename());
+			}
+
 			json.endObject();
 			return true;
 		} catch(Exception e) {
 			log.error(e);
 			return false;
 		}		
+	}
+
+	private boolean handle_create_download(HttpServletResponse response, ExportModel model, long id) {
+		try {
+			response.setContentType("application/zip");
+			return true;
+		} catch(Exception e) {
+			log.error(e);
+			return false;
+		}
 	}
 
 }

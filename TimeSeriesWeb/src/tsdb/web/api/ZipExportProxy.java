@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class ZipExportProxy {
 
 	private final RemoteTsDB tsdb;
 	private final ExportModel model;
+	private File tempFile;
 
 	private Thread workerThread;
 	private ZipExport zipexport;
@@ -42,13 +44,20 @@ public class ZipExportProxy {
 		this.tsdb = tsdb;
 		this.model = model;
 		this.output_lines = new ArrayList<String>();
+		
+		try {
+			File downloadDir = new File(TsDBFactory.WEBDOWNLOAD_PATH);
+			downloadDir.mkdirs();
+			tempFile = File.createTempFile("result_", ".zip", downloadDir);
+		} catch (IOException e) {
+			tempFile = null;
+			log.info(e);
+		}
+		log.info(tempFile.getName());
 	}
 
 	public void startExport() {
 		try {
-		
-		File tempFile = File.createTempFile("plots", ".zip", new File(TsDBFactory.get_CSV_output_directory()));
-
 		//OutputStream outputstream = new ByteArrayOutputStream();
 		
 		OutputStream outputstream = new BufferedOutputStream(new FileOutputStream(tempFile));
@@ -123,5 +132,9 @@ public class ZipExportProxy {
 	
 	public int getProcessedPlots() {
 		return zipexport.getProcessedPlots();
+	}
+	
+	public String getFilename() {
+		return tempFile.getName();
 	}
 }

@@ -97,14 +97,16 @@ public class ZipExport {
 
 	public boolean writeToStream(OutputStream outputstream) {
 		printLine("start export...");
-		printLine("sensorNames: "+Util.arrayToString(sensorNames));
+		printLine("");
+		printLine("sensorNames       "+Util.arrayToString(sensorNames));
 		if(Util.empty(sensorNames)) {
 			return false;
 		}
 		if(Util.empty(plotIDs)) {
 			return false;
 		}
-		printLine("plots: "+plotIDs.length);
+		printLine("plots "+plotIDs.length);
+		printLine("");
 
 		try {
 			ZipOutputStream zipOutputStream = new ZipOutputStream(outputstream);
@@ -140,7 +142,7 @@ public class ZipExport {
 				}
 				processedPlots = 0;
 				for(String plotID:plotIDs) {
-					printLine("processing plotID: "+plotID);
+					printLine("processing plot "+plotID);
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
@@ -160,7 +162,7 @@ public class ZipExport {
 			} else {
 				processedPlots = 0;
 				for(String plotID:plotIDs) {
-					printLine("processing plotID: "+plotID);
+					printLine("processing plot "+plotID);
 					try {
 						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
 						if(!Util.empty(schema)) {
@@ -185,6 +187,7 @@ public class ZipExport {
 				}				
 			}
 			zipOutputStream.finish();
+			printLine("");
 			printLine("...finished");
 			return true;
 		} catch (IOException e) {

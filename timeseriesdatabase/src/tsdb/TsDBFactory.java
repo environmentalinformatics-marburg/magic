@@ -45,6 +45,7 @@ public class TsDBFactory {
 	public static String SOURCE_KI_TFI_PATH = "source/ki_tfi";
 
 	public static String WEBCONTENT_PATH = "webcontent";
+	public static String WEBDOWNLOAD_PATH = "webDownload";
 
 	public static String OUTPUT_PATH = "output";
 
@@ -88,6 +89,9 @@ public class TsDBFactory {
 			}
 			if(pathMap.containsKey("WEBCONTENT_PATH")) {
 				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
+			}
+			if(pathMap.containsKey("WEBDOWNLOAD_PATH")) {
+				WEBDOWNLOAD_PATH = pathMap.get("WEBDOWNLOAD_PATH");
 			}
 			if(pathMap.containsKey("OUTPUT_PATH")) {
 				OUTPUT_PATH = pathMap.get("OUTPUT_PATH");

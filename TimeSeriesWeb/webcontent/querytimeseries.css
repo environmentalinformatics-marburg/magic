@@ -52,7 +52,7 @@ ul {
 }
 
 div.bg {
-	background-image: url(/static/timeseries_bg3.png);
+	background-image: url(timeseries_bg3.png);
 	background-position: top left;
 	background-size: 100%;
 }

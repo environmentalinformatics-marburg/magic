@@ -3,9 +3,9 @@
 <head>
 <title>Export Time Series - choose plots</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/util.js"></script>
+<script src="util.js"></script>
 <script type="text/javascript">
 
 
@@ -121,14 +121,14 @@ $(document).ready(function(){
 	
 	$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
-		window.location = "/static/export.html";
+		window.location = "export.html";
 	}
 	
 	$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {	
 		$.post("/export/apply_plots",arrayToText(chosen_plots))
 		 .done(function() {
-			window.location = "/static/export.html";
+			window.location = "export.html";
 		 })
 		 .fail(function() {alert("error sending data");})		 
 	}
@@ -246,10 +246,30 @@ $(document).ready(function(){
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="/static/export.html">back to Export Time Series<a><p>
+<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
 <h1 style="text-align:center">Export Time Series - choose plots</h1>
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
+<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button> </div> 
+<hr/>
+</div>
+<div id="div_instructions" style="display:none">
+<script type="text/javascript">
+function show_instructions() {
+	if(document.getElementById("div_instructions").style.display==="none") {
+		document.getElementById("div_instructions").style.display = "inline";
+		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
+	} else {
+		document.getElementById("div_instructions").style.display = "none";
+		document.getElementById("button_instructions").innerHTML = "Show Instructions";
+	}
+}
+</script>
+<h3>Instructions</h3>
+On this page you can choose the plots of which some data should be exported. Click on "cancel" to discard changed. Click on "apply plots" to confirm changes.
+<br>
+<br>
+Double-click on one plot in the box of "Available Plots" to add it to your chosen plots in the box "Chosen Plots" and vice versa. You can use the "filter by" field to just list the plots of some sub-region to find specific plots more easily.
 <hr/>
 </div>
 <h3>Actions</h3>

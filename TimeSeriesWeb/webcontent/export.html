@@ -3,9 +3,9 @@
 <head>
 <title>Export Time Series</title>
 <meta charset="utf-8">
-<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
-<script src="/static/util.js"></script>
+<script src="util.js"></script>
 <script type="text/javascript">
 
 var tasks = 0;
@@ -145,22 +145,22 @@ $("#button_instructions").button();
 	
 $("#choose_region").button();
 document.getElementById("choose_region").onclick = function() {
-	window.location = "/static/export_region.html";
+	window.location = "export_region.html";
 }	
 	
 $("#choose_sensors").button();
 document.getElementById("choose_sensors").onclick = function() {
-	window.location = "/static/export_sensors.html";
+	window.location = "export_sensors.html";
 }		
 	
 $("#choose_plots").button();
 document.getElementById("choose_plots").onclick = function() {
-	window.location = "/static/export_plots.html";
+	window.location = "export_plots.html";
 }
 
 $("#choose_time").button();
 document.getElementById("choose_time").onclick = function() {
-	window.location = "/static/export_time.html";
+	window.location = "export_time.html";
 }
 
 $("#download").button();
@@ -172,11 +172,11 @@ document.getElementById("download").onclick = function() {
 
 $("#create").button();
 document.getElementById("create").onclick = function() {
-	window.location = "/static/export_create.html";
+	window.location = "export_create.html";
 }
 
 $("#button_settings").button();
-document.getElementById("button_settings").onclick = function() {window.location = "/static/export_settings.html";};	
+document.getElementById("button_settings").onclick = function() {window.location = "export_settings.html";};	
 decTask();
 });
 
@@ -199,7 +199,8 @@ var show_instructions = function() {
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="/static/index.html">back to main menu</a></p>
+<p style="text-align:right"><a href="index.html">back to Start Page<a><br>Export Summary Page<p>
+<p style="text-align:right"><p>
 <h1 style="text-align:center">Export Time Series</h1>
 <div style="text-align:right">
 <button id="button_instructions" onclick="show_instructions()">Show Instructions</button>
@@ -211,8 +212,9 @@ var show_instructions = function() {
 <div id="div_instructions" style="display:none">
 <h3>Instructions</h3>
 <p>On this page time series data can be downloaded as a zip-file.</p>
-<p>The summary part of this page shows currently chosen settings for this zip-file.</p>
-<p>In the actions part of this page settings can be changed.</p>
+<p>The summary section of this page shows currently chosen plots, sensors and other settings for this zip-file.</p>
+<p>In the actions section of this page settings can be changed.</p>
+At the right side of the actions section you can download the generated zip, with the specified settings. Before downloading check at the summary section if you chose suitable settings.
 <hr/>
 </div>
 <h3>Actions</h3>

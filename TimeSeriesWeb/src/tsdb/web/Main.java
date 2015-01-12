@@ -29,7 +29,12 @@ import tsdb.web.api.TsDBExportAPIHandler;
 public class Main {
 	
 	private static final int WEB_SERVER_PORT = 8080;
-	private static final String WEB_SERVER_BASE_URL = "/static";
+	private static final String WEB_SERVER_PREFIX_BASE_URL = "";	
+	private static final String WEBCONTENT_BASE_URL = WEB_SERVER_PREFIX_BASE_URL+"/static";
+	//private static final String WEBCONTENT_BASE_URL = WEB_SERVER_PREFIX_BASE_URL+"/2we4r5tggbg";
+	private static final String TSDB_API_BASE_URL = WEB_SERVER_PREFIX_BASE_URL+"/tsdb";
+	private static final String EXPORT_API_BASE_URL = WEB_SERVER_PREFIX_BASE_URL+"/export";
+	private static final String DOWNLOAD_BASE_URL = WEB_SERVER_PREFIX_BASE_URL+"/download";
 	
 	private static final Logger log = LogManager.getLogger();
 
@@ -58,20 +63,21 @@ public class Main {
 
 		Server server = new Server(WEB_SERVER_PORT);
 
-		ContextHandler contextStatic = new ContextHandler(WEB_SERVER_BASE_URL);
+		ContextHandler contextStatic = new ContextHandler(WEBCONTENT_BASE_URL);
 		ResourceHandler resource_handler = new ResourceHandler();
-		resource_handler.setDirectoriesListed(true);
+		//resource_handler.setDirectoriesListed(true);
+		resource_handler.setDirectoriesListed(false); // don't show directory content
 		//resource_handler.setWelcomeFiles(new String[]{ "helllo.html" });
 		resource_handler.setResourceBase(TsDBFactory.WEBCONTENT_PATH);
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] {resource_handler, new DefaultHandler()});
 		contextStatic.setHandler(handlers);
 
-		ContextHandler contextTsdb = new ContextHandler("/tsdb");
+		ContextHandler contextTsdb = new ContextHandler(TSDB_API_BASE_URL);
 		TsDBAPIHandler infoHandler = new TsDBAPIHandler(tsdb);
 		contextTsdb.setHandler(infoHandler);
 
-		ContextHandler contextExport = new ContextHandler("/export");
+		ContextHandler contextExport = new ContextHandler(EXPORT_API_BASE_URL);
 		TsDBExportAPIHandler exportHandler = new TsDBExportAPIHandler(tsdb);
 		HashSessionManager manager = new HashSessionManager();
 
@@ -79,9 +85,11 @@ public class Main {
 		SessionHandler sessions = new SessionHandler(manager);
 		contextExport.setHandler(sessions);
 		sessions.setHandler(exportHandler);
+		
+		
 
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-		contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport});
+		contexts.setHandlers(new Handler[] {contextStatic, contextTsdb, contextExport, createWebDownloadContext()});
 
 		server.setHandler(contexts);
 
@@ -92,12 +100,24 @@ public class Main {
 		//server.dumpStdErr();
 		System.out.println();
 		System.out.println();
-		System.out.println("Web Sever started at ***   http://[HOSTNAME]:"+WEB_SERVER_PORT+WEB_SERVER_BASE_URL+"   ***");
+		System.out.println("Web Sever started at ***   http://[HOSTNAME]:"+WEB_SERVER_PORT+WEBCONTENT_BASE_URL+"   ***");
 		System.out.println();
 		System.out.println("stop Web Server with 'Ctrl-C'");
 		System.out.println("waiting for requests...");
 		server.join();
 		System.out.println("...Web Sever stopped");		
+	}
+	
+	private static ContextHandler createWebDownloadContext() {
+		ContextHandler contextHandler = new ContextHandler(DOWNLOAD_BASE_URL);
+		ResourceHandler resourceHandler = new ResourceHandler();
+		//resourceHandler.setDirectoriesListed(true);
+		resourceHandler.setDirectoriesListed(false); // don't show directory content
+		resourceHandler.setResourceBase(TsDBFactory.WEBDOWNLOAD_PATH);
+		HandlerList handlers = new HandlerList();
+		handlers.setHandlers(new Handler[] {resourceHandler, new DefaultHandler()});
+		contextHandler.setHandler(handlers);
+		return contextHandler;
 	}
 
 
