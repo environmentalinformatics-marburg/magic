@@ -14,6 +14,10 @@ geometry.variables <- function(x){
      shapeIndex <- reclassify(cloudPatches, cbind(cloudStats$patchID,cloudStats$shape.index))
      #core area:
      coreArea <- reclassify(cloudPatches, cbind(cloudStats$patchID,cloudStats$core.area.index))
+     #perimeter:
+     perimeter <- reclassify(cloudPatches, cbind(cloudStats$patchID,cloudStats$perimeter))
+     #core.area.index
+     coreAreaIndex <- reclassify(cloudPatches, cbind(cloudStats$patchID,cloudStats$core.area.index))
      #the ratio of the patch perimeter (m) to area (m2)
      perimAreaRatio <- reclassify(cloudPatches, cbind(cloudStats$patchID,cloudStats$perim.area.ratio))
      #distance to edge:
@@ -24,7 +28,10 @@ geometry.variables <- function(x){
      tmp=zonal(distEdges,cloudPatches,fun="max")
      thickness=cloudPatches
      thickness=reclassify(thickness,tmp)
-     result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimAreaRatio,thickness,distEdges)
-     names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea","perimAreaRatio","thickness","distEdges")
+     result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimeter,
+                   coreAreaIndex, perimAreaRatio,thickness,distEdges)
+     names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea",
+                     "perimeter", "coreAreaIndex","perimAreaRatio",
+                     "thickness","distEdges")
      return(result)  
 }
