@@ -43,7 +43,10 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("export", target, baseRequest));		
+		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("export", target, baseRequest));
+		
+		//response.setHeader("Server", "");
+		//response.setHeader("Date", null);
 
 		baseRequest.setHandled(true);
 		response.setContentType("text/plain;charset=utf-8");

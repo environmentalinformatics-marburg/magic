@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Export Time Series - choose region</title>
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -30,7 +32,7 @@ var decTask = function() {
 
 var getRegion = function() {
 	incTask();
-	$.get("/export/region").done(function(data) {
+	$.get("../export/region").done(function(data) {
 		var rows = splitData(data);	
 		var region = rows[0][0];
 		getID(region).checked = true;
@@ -42,7 +44,7 @@ var updataRegions = function() {
 	incTask();
 	var region_div = getID("region_div");
 	region_div.innerHTML = "";
-	$.get("/tsdb/region_list").done(function(data) {
+	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {
 			var radio = document.createElement("input");
@@ -71,7 +73,7 @@ var on_apply = function() {
 		}
 	}
 	incTask();	
-	$.post("/export/apply_region?region="+region,region)
+	$.post("../export/apply_region?region="+region,region)
 		 .done(function() {
 			window.location = "export.html";
 			decTask();

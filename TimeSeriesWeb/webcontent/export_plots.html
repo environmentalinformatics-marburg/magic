@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Export Time Series - choose plots</title>
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -126,7 +128,7 @@ $(document).ready(function(){
 	
 	$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {	
-		$.post("/export/apply_plots",arrayToText(chosen_plots))
+		$.post("../export/apply_plots",arrayToText(chosen_plots))
 		 .done(function() {
 			window.location = "export.html";
 		 })
@@ -138,7 +140,7 @@ $(document).ready(function(){
 	getID("choose_all_button").onclick = on_choose_all_button;
 	getID("remove_all_button").onclick = on_remove_all_button;	
 	
-	$.get("/export/plots").done(function(data) {
+	$.get("../export/plots").done(function(data) {
 		chosen_plots = [];
 		rows = splitData(data);
 		for(i in rows) {
@@ -149,7 +151,7 @@ $(document).ready(function(){
 	}).fail(function() {alert("error getting data");});
 	
 	var update_filtered_available_select_from_regionName = function(regionName) {
-		$.get("/tsdb/region_plot_list?region="+regionName).done(function(data) {
+		$.get("../tsdb/region_plot_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		for(i in rows) {
 			available_plots.push(rows[i][0]);
@@ -161,7 +163,7 @@ $(document).ready(function(){
 	
 	var update_filtered_available_select_from_region = function() {
 		incTask();
-		$.get("/export/region").done(function(data) {
+		$.get("../export/region").done(function(data) {
 			var rows = splitData(data);	
 			var region = rows[0][0];
 			update_filtered_available_select_from_regionName(region);
@@ -170,7 +172,7 @@ $(document).ready(function(){
 	}
 	
 	var update_filtered_available_select_from_generalstation = function(generalstationName) {
-		$.get("/tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
+		$.get("../tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
 			var rows = splitData(data);
 			for(i in rows) {
 				available_plots.push(rows[i][0]);
@@ -196,7 +198,7 @@ $(document).ready(function(){
 		incTask();
 		var general_select = $("#general_select");
 		general_select.empty();
-		$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+		$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
 			var rows = splitData(data);
 			general_select.append(new Option("[all]","all"));
 			$.each(rows, function(i,row) {general_select.append(new Option(row[1],row[0]));})
@@ -206,7 +208,7 @@ $(document).ready(function(){
 	}
 	
 	incTask();
-	$.get("/export/region").done(function(data) {
+	$.get("../export/region").done(function(data) {
 		var rows = splitData(data);	
 		var region = rows[0][0];
 		update_general_select(region);

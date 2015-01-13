@@ -57,7 +57,7 @@ function runDisabled(disabled) {
 var updataRegions = function() {
 	incTask();
 	region_select.empty();
-	$.get("/tsdb/region_list").done(function(data) {
+	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		updateGeneralStations();
@@ -69,7 +69,7 @@ var updateGeneralStations = function() {
 	incTask();
 	var regionName = region_select.val();
 	generalstation_select.empty();	
-	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+	$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
@@ -94,7 +94,7 @@ var updateSensors = function() {
 		queryText = "general_station="+generalStationName;
 	}	
 	sensor_select.empty();	
-	$.get("/tsdb/sensor_list?"+queryText).done(function(data) {
+	$.get("../tsdb/sensor_list?"+queryText).done(function(data) {
 		var pre = -1;
 		var rows = splitData(data);
 		sensors = rows
@@ -137,7 +137,7 @@ var runQuerySensor = function() {
 	} else {
 		queryText = "generalstation="+generalStationName;
 	}
-	$.get("/tsdb/plot_list?"+queryText).done(function(data) {
+	$.get("../tsdb/plot_list?"+queryText).done(function(data) {
 		getID("result").innerHTML = "";	
 		var rows = splitData(data);
 		addValueScale(sensorName);
@@ -163,7 +163,7 @@ var addValueScale = function(sensorName) {
 		plotResult.innerHTML = "error in scale";
 		decTask();
 	}
-	image.src = "/tsdb/heatmap_scale?sensor="+sensorName;	
+	image.src = "../tsdb/heatmap_scale?sensor="+sensorName;	
 }
 
 var addDiagram = function(plotName, sensorName) {
@@ -202,5 +202,5 @@ var addDiagram = function(plotName, sensorName) {
 		plotResult.innerHTML = "";
 		decTask();
 	}
-	image.src = "/tsdb/query_heatmap?plot="+plotName+"&sensor="+sensorName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;	
+	image.src = "../tsdb/query_heatmap?plot="+plotName+"&sensor="+sensorName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;	
 }
