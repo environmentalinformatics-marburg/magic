@@ -48,6 +48,9 @@ public class TsDBFactory {
 	public static String WEBDOWNLOAD_PATH = "webDownload";
 
 	public static String OUTPUT_PATH = "output";
+	
+	public static String WEB_SERVER_PREFIX_BASE_URL = ""; //no prefix
+	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix	
 
 	static {
 		initPaths();
@@ -96,6 +99,10 @@ public class TsDBFactory {
 			if(pathMap.containsKey("OUTPUT_PATH")) {
 				OUTPUT_PATH = pathMap.get("OUTPUT_PATH");
 			}
+			//WEB_SERVER_PREFIX_BASE_URL
+			if(pathMap.containsKey("WEB_SERVER_PREFIX_BASE_URL")) {
+				WEB_SERVER_PREFIX_BASE_URL = pathMap.get("WEB_SERVER_PREFIX_BASE_URL");
+			}			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		

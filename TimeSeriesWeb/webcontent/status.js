@@ -41,7 +41,7 @@ $(document).ready(function(){
 var updataRegions = function() {
 	incTask();
 	region_select.empty();
-	$.get("/tsdb/region_list").done(function(data) {
+	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		updateGeneralStations();
@@ -53,7 +53,7 @@ var updateGeneralStations = function() {
 	incTask();
 	var regionName = region_select.val();
 	generalstation_select.empty();	
-	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+	$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
@@ -73,7 +73,7 @@ var runQuery = function() {
 		queryText = "generalstation="+generalStationName;
 	}
 	
-	$.getJSON("/tsdb/timespan?"+queryText).done(function(interval) {
+	$.getJSON("../tsdb/timespan?"+queryText).done(function(interval) {
 		getID("result").innerHTML = "";
 		var min_last = 999999999;
 		var max_last = 0;

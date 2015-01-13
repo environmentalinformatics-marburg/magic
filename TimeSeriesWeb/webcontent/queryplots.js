@@ -56,7 +56,7 @@ $(document).ready(function(){
 var updataRegions = function() {
 	incTask();
 	region_select.empty();
-	$.get("/tsdb/region_list").done(function(data) {
+	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		//region_select.selectmenu( "refresh" );
@@ -69,7 +69,7 @@ var updateGeneralStations = function() {
 	incTask();
 	var regionName = region_select.val();
 	generalstation_select.empty();	
-	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+	$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		var pre = -1;
 		$.each(rows, function(i,row) {
@@ -93,7 +93,7 @@ var updatePlots = function() {
 	incTask();
 	var generalstationName = generalstation_select.val();
 	plot_select.empty();	
-	$.get("/tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
+	$.get("../tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {plot_select.append(new Option(row[0],row[0]));})
 		//plot_select.selectmenu( "refresh" );
@@ -105,7 +105,7 @@ var runQueryPlot = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
 	var plotName = plot_select.val();
-	$.get("/tsdb/sensor_list?plot="+plotName).done(function(data) {
+	$.get("../tsdb/sensor_list?plot="+plotName).done(function(data) {
 		getID("result").innerHTML = "";
 		sensors = splitData(data);
 		$.each(sensors, function(i,row) {addDiagram(plotName,row[0],row[1],row[2]);})
@@ -139,6 +139,6 @@ var addDiagram = function(plotName, sensorName, sensorDesc, sensorUnit) {
 		sensorResult.removeChild(image);
 		decTask();
 	}
-	image.src = "/tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
+	image.src = "../tsdb/query_image?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
 	decTask();	
 }

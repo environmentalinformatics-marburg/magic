@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Console</title>
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
 <script src="jquery-2.1.1.min.js"></script>
 <script src="util.js"></script>
 <script type="text/javascript">
@@ -14,7 +16,7 @@ var execute = function(input_line) {
 	getID("status").innerHTML = "processing command: "+input_line;
 	document.getElementById("button_execute").disabled = true; 
 	$("#output").val($("#output").val()+"\ntsdb:$ "+input_line);
-	$.postJSONJSON("/tsdb/execute_console_command",{"input_line":input_line})
+	$.postJSONJSON("../tsdb/execute_console_command",{"input_line":input_line})
 	 .done(function(data) {
 		var commandThreadId = +data.commandThreadId;
 		window.setTimeout(function() {get_output(commandThreadId);}, 100);
@@ -32,7 +34,7 @@ var append_output = function(text) {
 }
 
 var get_output = function(commandThreadId) {
-	$.get("/tsdb/console_comand_get_output?commandThreadId="+commandThreadId).done(function(data) {
+	$.get("../tsdb/console_comand_get_output?commandThreadId="+commandThreadId).done(function(data) {
 		var output_lines = data.output_lines;
 		var running = data.running;
 		if(output_lines.length>0) {

@@ -106,7 +106,7 @@ function update_time_range_text() {
 var updataRegions = function() {
 	incTask();
 	region_input.empty();
-	$.get("/tsdb/region_list").done(function(data) {
+	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_input.append(new Option(row[1],row[0]));});
 		region_input.selectmenu( "refresh" );
@@ -119,7 +119,7 @@ var updateGeneralStations = function() {
 	incTask();
 	var regionName = region_input.val();
 	generalstation_input.empty();	
-	$.get("/tsdb/generalstation_list?region="+regionName).done(function(data) {
+	$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		var pre = -1;
 		$.each(rows, function(i,row) {
@@ -141,7 +141,7 @@ var updatePlots = function() {
 	incTask();
 	var generalstationName = generalstation_input.val();
 	plot_input.empty();	
-	$.get("/tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
+	$.get("../tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {plot_input.append(new Option(row[0],row[0]));})
 		plot_input.selectmenu( "refresh" );
@@ -160,7 +160,7 @@ var updateSensors = function() {
 	}
 	
 	sensor_input.empty();	
-	$.get("/tsdb/sensor_list?plot="+plotName).done(function(data) {
+	$.get("../tsdb/sensor_list?plot="+plotName).done(function(data) {
 		var pre = -1;		
 		sensors = splitData(data);		
 		$.each(sensors, function(i,row) {
@@ -220,7 +220,7 @@ var runQueryTable = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
 	var query = getQueryParameters();
-	$.get("/tsdb/query?"+query)
+	$.get("../tsdb/query?"+query)
 		.done(function(data) {
 			rows = splitData(data);
 			createTable(rows);
@@ -245,7 +245,7 @@ var runQueryDiagram = function() {
 		getID("result").innerHTML = "no data";
 		decTask();
 	}
-	image.src = "/tsdb/query_image?"+query;
+	image.src = "../tsdb/query_image?"+query;
 }
 
 var createTable = function(rows) {
