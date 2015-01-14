@@ -19,6 +19,7 @@ months <- substr(months, 5, 6)
 
 val_sum_agg <- aggregate(val_sum, by = list(months), FUN = sum)
 names(val_sum_agg) <- c("month", "value")
+val_sum_agg$month <- factor(month.abb, levels = month.abb)
 
 ggplot(aes(x = month, y = value), data = val_sum_agg) + 
   geom_histogram(stat = "identity") + 
@@ -52,39 +53,39 @@ ggplot(aes(x = month, y = value, group = interval, colour = interval),
   scale_colour_manual("", values = brewer.pal(4, "Reds")) + 
   theme_bw()
 
-# Separate fires inside the NP from fires outside the NP
-np_old <- readOGR(dsn = "data/protected_areas/", 
-                  layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
-                  p4s = "+init=epsg:4326")
-np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
-
-np_new <- readOGR(dsn = "data/protected_areas/", 
-                  layer = "fdetsch-kilimanjaro-1420532792846", 
-                  p4s = "+init=epsg:4326")
-np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
-np_new_utm_lines <- as(np_new_utm, "SpatialLines")
-
-rst_agg1m_inside <- mask(rst_agg1m, np_new_utm)
-rst_agg1m_outside <- mask(rst_agg1m, np_new_utm, inverse = TRUE)
-
-harm_0104_0613_inside <- multiVectorHarmonics(rst_agg1m_inside, time_info = yrmn, 
-                                              intervals = c(2001, 2006, 2010), width = 4)
-harm_0104_0613_inside$location <- "inside"
-harm_0104_0613_outside <- multiVectorHarmonics(rst_agg1m_outside, time_info = yrmn, 
-                                              intervals = c(2001, 2006, 2010), width = 4)
-harm_0104_0613_outside$location <- "outside"
-
-harm_0104_0613_inside_outside <- 
-  rbind(harm_0104_0613_inside, harm_0104_0613_outside)
-
-ggplot(aes(x = month, y = value, group = interval, colour = interval, 
-           fill = interval), data = harm_0104_0613_inside_outside) + 
-  geom_histogram(stat = "identity", position = "dodge") + 
-  facet_wrap(~location, ncol = 1) + 
-  labs(x = "\nMonth", y = "No. of active fires\n") +
-  scale_colour_manual("", values = c("grey75", "grey45", "black")) +   
-  scale_fill_manual("", values = c("grey75", "grey45", "black")) + 
-  theme_bw()
+# # Separate fires inside the NP from fires outside the NP
+# np_old <- readOGR(dsn = "data/protected_areas/", 
+#                   layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
+#                   p4s = "+init=epsg:4326")
+# np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
+# 
+# np_new <- readOGR(dsn = "data/protected_areas/", 
+#                   layer = "fdetsch-kilimanjaro-1420532792846", 
+#                   p4s = "+init=epsg:4326")
+# np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
+# np_new_utm_lines <- as(np_new_utm, "SpatialLines")
+# 
+# rst_agg1m_inside <- mask(rst_agg1m, np_new_utm)
+# rst_agg1m_outside <- mask(rst_agg1m, np_new_utm, inverse = TRUE)
+# 
+# harm_0104_0613_inside <- multiVectorHarmonics(rst_agg1m_inside, time_info = yrmn, 
+#                                               intervals = c(2001, 2006, 2010), width = 4)
+# harm_0104_0613_inside$location <- "inside"
+# harm_0104_0613_outside <- multiVectorHarmonics(rst_agg1m_outside, time_info = yrmn, 
+#                                               intervals = c(2001, 2006, 2010), width = 4)
+# harm_0104_0613_outside$location <- "outside"
+# 
+# harm_0104_0613_inside_outside <- 
+#   rbind(harm_0104_0613_inside, harm_0104_0613_outside)
+# 
+# ggplot(aes(x = month, y = value, group = interval, colour = interval, 
+#            fill = interval), data = harm_0104_0613_inside_outside) + 
+#   geom_histogram(stat = "identity", position = "dodge") + 
+#   facet_wrap(~location, ncol = 1) + 
+#   labs(x = "\nMonth", y = "No. of active fires\n") +
+#   scale_colour_manual("", values = c("grey75", "grey45", "black")) +   
+#   scale_fill_manual("", values = c("grey75", "grey45", "black")) + 
+#   theme_bw()
 
 # Same issue, but with rejection of cells intersected by NP border
 id_intersect <- foreach(i =1:ncell(rst_agg1m), .packages = lib, 

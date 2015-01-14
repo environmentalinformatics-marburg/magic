@@ -64,7 +64,7 @@ fire.df <- data.frame(x = coordinates(fire.shp.all)[, 1],
 # (Retrieve, save and) Import BING aerial image
 kili.map <- openproj(openmap(upperLeft = c(-2.83, 36.975), 
                              lowerRight = c(-3.425, 37.72), type = "bing", 
-                             minNumTiles = 40L), projection = "+init=epsg:21037")
+                             minNumTiles = 20L), projection = "+init=epsg:21037")
 # kili.map <- writeRaster(raster(kili.map), filename = "data/kili_bing_aerial", 
 #                         bylayer = FALSE, format = "GTiff", overwrite = TRUE)
 # 

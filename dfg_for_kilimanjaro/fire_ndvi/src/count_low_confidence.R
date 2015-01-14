@@ -78,19 +78,34 @@ fls_agg1m <- list.files("data/md14a1/low/aggregated", pattern = "^aggsum_md14a1"
                         full.names = TRUE)
 rst_agg1m <- stack(fls_agg1m)
 
-dates_mrg <- sapply(strsplit(basename(fls_mrg), "\\."), "[[", 2)
-dates_mrg <- substr(dates_mrg, 2, nchar(dates_mrg))
-dates_mrg <- as.Date(dates_mrg, format = "%Y%j")
-tbl_cfd$date <- dates_mrg
+dates_agg1m <- sapply(strsplit(basename(fls_agg1m), "_"), "[[", 3)
+dates_agg1m <- substr(dates_agg1m, 1, nchar(dates_agg1m)-4)
+dates_agg1m <- as.Date(paste0(dates_agg1m, "01"), format = "%Y%m%d")
 
-tbl_cfd_agg <- aggregate(tbl_cfd[, 1:4], by = list(as.yearmon(tbl_cfd$date)), 
-                         FUN = sum)
-tbl_cfd_agg[, 1] <- as.Date(tbl_cfd_agg[, 1])
-names(tbl_cfd_agg)[1] <- "date"
+val_fire_agg1m <- sapply(1:nlayers(rst_agg1m), function(i) {
+  sum(rst_agg1m[[i]][], na.rm = TRUE)
+})
 
-ggplot(aes(x = date, y = total), data = tbl_cfd_agg) + 
+df_fire_agg1m <- data.frame(date = dates_agg1m, total = val_fire_agg1m)
+
+# dates_mrg <- sapply(strsplit(basename(fls_mrg), "\\."), "[[", 2)
+# dates_mrg <- substr(dates_mrg, 2, nchar(dates_mrg))
+# dates_mrg <- as.Date(dates_mrg, format = "%Y%j")
+# tbl_cfd$date <- dates_mrg
+# 
+# tbl_cfd_agg <- aggregate(tbl_cfd[, 1:4], by = list(as.yearmon(tbl_cfd$date)), 
+#                          FUN = sum)
+# tbl_cfd_agg[, 1] <- as.Date(tbl_cfd_agg[, 1])
+# names(tbl_cfd_agg)[1] <- "date"
+
+p_monthly_ts <- ggplot(aes(x = date, y = total), data = df_fire_agg1m) + 
   geom_histogram(stat = "identity", fill = "grey50") + 
   stat_smooth(method = "lm", lwd = 2, lty = 2, color = "black") + 
   labs(x = "\nTime (months)", y = "No. of active fire pixels\n") + 
   theme_bw()
+
+png("out/proposal/fire_ts_agg1m.png", width = 30, height = 15, units = "cm", 
+    res = 300, pointsize = 15)
+print(p_monthly_ts)
+dev.off()
 
