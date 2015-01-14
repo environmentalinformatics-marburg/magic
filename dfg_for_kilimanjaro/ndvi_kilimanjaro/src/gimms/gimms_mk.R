@@ -19,7 +19,7 @@ dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
 ### GIMMS
 
 # Data import
-fls_gimms <- list.files("data/rst/whittaker", pattern = "_crp_utm_wht_aggmax", 
+fls_gimms <- list.files("data/rst/whittaker", pattern = "_crp_utm_wht_aggmax_dsn", 
                         full.names = TRUE)
 st_gimms <- grep(st, fls_gimms)[1]
 nd_gimms <- grep(nd, fls_gimms)[length(grep(nd, fls_gimms))]
@@ -48,11 +48,10 @@ rst_gimms_mk_p001 <- calc(rst_gimms_crp, fun = function(...) {
   return(tau)
 })
 
-
 ### MODIS
 
 # Data import
-fls_modis <- list.files("data/modis", pattern = "^SCL_AGGMAX_WHT", 
+fls_modis <- list.files("data/modis", pattern = "^DSN_SCL_AGGMAX_WHT", 
                         full.names = TRUE)
 st_modis <- grep(st, fls_modis)
 nd_modis <- grep(nd, fls_modis)
@@ -72,7 +71,24 @@ rst_modis_med <- foreach(i = 1:nlayers(rst_modis), .combine = "stack",
                            return(tmp)
                          }
 
-# Visualization
+
+### Statistics
+
+# Overall absolute and relative amount of highly significant pixels
+nona_abs <- sum(!is.na(rst_gimms_mk_p001[]))
+nona_rel <- nona_abs / ncell(rst_gimms_mk_p001)
+
+# Amount of positive significant pixels
+nona_pos <- sum(rst_gimms_mk_p001[] > 0, na.rm = TRUE)
+nona_pos_rel <- nona_pos / nona_abs
+
+# Amount of negative significant pixels
+nona_neg <- sum(rst_gimms_mk_p001[] < 0, na.rm = TRUE)
+nona_neg_rel <- nona_neg / nona_abs
+
+
+### Visualization
+
 p_mk <- foreach(i = list(rst_gimms_crp, rst_modis), j = list("gimms", "modis"),
                 .packages = c("raster", "rgdal"), .export = "visMannKendall") %do% {
   p <- visMannKendall(rst = i, 
@@ -118,5 +134,20 @@ levelplot(rst_gimms_mk001, colorkey = FALSE, margin = FALSE,
   as.layer(contourplot(dem, labels = FALSE, col = "grey65", cuts = 10, lwd = 1.2))
 
 
+### Statistics (sequel)
+
+# Identic arithmetic sign, MODIS vs. GIMMS
+val_modis_mk001 <- extract(rst_modis_mk001, rasterToPolygons(rst_gimms_mk001))
+med_modis_mk001 <- sapply(val_modis_mk001, function(i) median(i, na.rm = TRUE))
+
+df_gimms_modis_mk001 <- data.frame(gimms = rst_gimms_mk001[!is.na(rst_gimms_mk001)], 
+                                   modis = med_modis_mk001)
+sum((df_gimms_modis_mk001$gimms > 0 & df_gimms_modis_mk001$modis > 0) |
+      (df_gimms_modis_mk001$gimms < 0 & df_gimms_modis_mk001$modis < 0))
+
+# Number of GIMMS pixels encompassing significant Aqua MODIS pixels
+val_modis <- extract(rst_modis_mk001, rasterToPolygons(rst_gimms[[1]]))
+med_modis <- sapply(val_modis, function(i) median(i, na.rm = TRUE))
+sum(!is.na(med_modis))
 
 stopCluster(cl)
