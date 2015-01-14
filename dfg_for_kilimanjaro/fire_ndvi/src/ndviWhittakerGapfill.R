@@ -12,13 +12,13 @@ setwd(dsn)
 # Required packages and functions
 # install.packages("MODIS", repos="http://R-Forge.R-project.org")
 lib <- c("raster", "rgdal", "MODIS", "doParallel", "Kendall", "RColorBrewer", 
-         "reshape2", "ggplot2", "zoo", "GSODTools")
+         "reshape2", "ggplot2", "zoo", "GSODTools", "remote")
 sapply(lib, function(...) require(..., character.only = TRUE))
 
 source("src/aggregateNDVICells.R")
 
 # Parallelization
-registerDoParallel(cl <- makeCluster(4))
+registerDoParallel(cl <- makeCluster(3))
 
 
 ### Data import
@@ -232,6 +232,21 @@ rst_scl <- foreach(i = unstack(rst_wht_aggmax), j = as.list(fls_scl),
   rst <- writeRaster(rst, filename = j, format = "GTiff", overwrite = TRUE)
   
   return(rst)
+}
+
+# Deseasoning
+fls_scl <- list.files(outdir, pattern = "^SCL_AGGMAX", full.names = TRUE)
+
+st <- grep("200301", fls_scl)
+nd <- grep("201312", fls_scl)
+
+rst_scl <- stack(fls_scl[st:nd])
+
+rst_dsn <- deseason(rst_scl)
+
+fls_out <- paste0(outdir, "/DSN_", names(rst_scl))
+rst_dsn <- foreach(i = unstack(rst_dsn), j = as.list(fls_out), .combine = "stack") %do% {
+  writeRaster(i, filename = j, format = "GTiff", overwrite = TRUE)
 }
 
 # # 2011-2013
