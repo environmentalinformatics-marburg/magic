@@ -16,7 +16,7 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
                 .export = "visMannKendall") %dopar% {
                   
   fls_ndvi <- list.files(paste0("data/processed/whittaker_", i), 
-                         pattern = "^WHT.*.tif$", full.names = TRUE)
+                         pattern = "^DSN_SCL_AGGMAX_WHT.*.tif$", full.names = TRUE)
   
   st <- grep(st_year, fls_ndvi)[1]
   nd <- grep(nd_year, fls_ndvi)[length(grep(nd_year, fls_ndvi))]
@@ -30,14 +30,34 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
                       filename = paste0("out/mk/", i, "_mk001_0313"), 
                       format = "GTiff", overwrite = TRUE)
   
-#   png_out <- paste0("out/mk/", i, "_mk001_0313.png")
-#   png(png_out, units = "mm", width = 300, 
-#       res = 300, pointsize = 20)
-#   plot(p)
-#   dev.off()
-  
   return(p)
 }
+
+### Statistics
+fls_mk001 <- list.files("out/mk", pattern = "mk001_0313.tif$", full.names = TRUE)
+rst_mk001 <- lapply(fls_mk001, raster)
+
+# Terra amount of significant pixels
+val_mk001_terra <- rst_mk001[[1]][]
+val_mk001_terra_abs <- sum(!is.na(rst_mk001[[1]][]))
+val_mk001_terra_rel <- val_mk001_abs / ncell(rst_mk001[[1]])
+val_mk001_terra_abs_pos <- sum(val_mk001_terra > 0, na.rm = TRUE)
+val_mk001_terra_rel_pos <- val_mk001_terra_abs_pos / val_mk001_terra_abs
+val_mk001_terra_abs_neg <- sum(val_mk001_terra < 0, na.rm = TRUE)
+val_mk001_terra_rel_neg <- val_mk001_terra_abs_neg / val_mk001_terra_abs
+
+# Same for Aqua
+val_mk001_aqua <- rst_mk001[[2]][]
+val_mk001_aqua_abs <- sum(!is.na(rst_mk001[[2]][]))
+val_mk001_aqua_rel <- val_mk001_aqua_abs / ncell(rst_mk001[[2]])
+val_mk001_aqua_abs_pos <- sum(val_mk001_aqua > 0, na.rm = TRUE)
+val_mk001_aqua_rel_pos <- val_mk001_aqua_abs_pos / val_mk001_aqua_abs
+val_mk001_aqua_abs_neg <- sum(val_mk001_aqua < 0, na.rm = TRUE)
+val_mk001_aqua_rel_neg <- val_mk001_aqua_abs_neg / val_mk001_aqua_abs
+
+val_mk001 <- cbind(val_mk001_terra, val_mk001_aqua)
+val_mk001_cc <- val_mk001[complete.cases(val_mk001), ]
+mean(val_mk001_cc[, 1] - val_mk001_cc[, 2])
 
 ### Mann-Kendall values
 ls_val <- lapply("mk001", function(h) {
