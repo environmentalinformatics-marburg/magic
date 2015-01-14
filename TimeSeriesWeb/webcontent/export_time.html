@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Export Time Series - time</title>
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -28,7 +30,7 @@ var decTask = function() {
 
 var getTimespan = function() {
 	incTask();
-	$.get("/export/timespan").done(function(data) {
+	$.get("../export/timespan").done(function(data) {
 		var value = +data;
 		if(value===0) {
 			time_select.val(0);
@@ -66,7 +68,7 @@ function on_apply() {
 	
 	
 	
-	$.postJSON("/export/apply_settings",json_settings)
+	$.postJSON("../export/apply_settings",json_settings)
 		.done(function() {
 			window.location = "export.html";
 			decTask();
@@ -156,7 +158,7 @@ $(document).ready(function(){
 	
 	
 	incTask();
-	$.getJSON("/export/settings").done(function( data ) {
+	$.getJSON("../export/settings").done(function( data ) {
 		json_settings = data;
 		console.log(json_settings);
 		

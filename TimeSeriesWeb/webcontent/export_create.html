@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Export Time Series</title>
+<link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <script src="jquery-2.1.1.min.js"></script>
 <script src="util.js"></script>
@@ -16,7 +18,7 @@ function ready() {
 
 getID("status").innerHTML = "start creating zip-file";
 
-$.get("/export/create")
+$.get("../export/create")
 	.done(function(data) {
 		id = data.id;
 		total_plots = data.plots;
@@ -31,7 +33,7 @@ $.get("/export/create")
 }
 
 function get_output() {
-$.get("/export/create_get_output?id="+id)
+$.get("../export/create_get_output?id="+id)
 	.done(function(data) {
 		var processed_plots = data.processed_plots;
 		getID("progress").value = processed_plots;
@@ -66,7 +68,7 @@ function handle_download(filename) {
 	var a = document.createElement('a');
 	a.appendChild(document.createTextNode("click to download"));
 	a.title = "link to resulting zip file";
-	a.href = "/download/"+filename;
+	a.href = "../download/"+filename;
 	getID("download").appendChild(a);
 }
 

@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <title>Export Time Series - choose sensors</title>
+<meta name="robots" content="noindex" />
 <meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -158,7 +160,7 @@ $(document).ready(function(){
 	$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {	
 		setStateBusy();
-		$.post("/export/apply_sensors",arrayToText(chosen_sensors))
+		$.post("../export/apply_sensors",arrayToText(chosen_sensors))
 		 .done(function() {
 			window.location = "export.html";
 			setStateReady();
@@ -172,7 +174,7 @@ $(document).ready(function(){
 	getID("remove_all_button").onclick = on_remove_all_button;	
 	
 	setStateBusy();
-	$.get("/export/sensors").done(function(data) {		
+	$.get("../export/sensors").done(function(data) {		
 		chosen_sensors = [];
 		console.log("data: ["+data+"]");
 		rows = splitData(data);
@@ -187,7 +189,7 @@ $(document).ready(function(){
 	
 	var get_sensor_list = function(region) {
 		setStateBusy();
-		$.get("/tsdb/region_sensor_list?region="+region).done(function(data) {
+		$.get("../tsdb/region_sensor_list?region="+region).done(function(data) {
 			available_sensors = [];
 			rows = splitData(data);
 			for(i in rows) {
@@ -201,7 +203,7 @@ $(document).ready(function(){
 
 	var get_region = function() {
 		incTask();
-		$.get("/export/region").done(function(data) {
+		$.get("../export/region").done(function(data) {
 			var rows = splitData(data);	
 			var region = rows[0][0];
 			get_sensor_list(region);

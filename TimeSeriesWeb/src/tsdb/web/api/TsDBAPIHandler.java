@@ -79,6 +79,9 @@ public class TsDBAPIHandler extends AbstractHandler {
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	
 		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("tsdb", target, baseRequest));
 		
+		//response.setHeader("Server", "");
+		//response.setHeader("Date", null);
+		
 		Handler handler = handlerMap.get(target);
 		if(handler!=null) {
 			handler.handle(target, baseRequest, request, response);
