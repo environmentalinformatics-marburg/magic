@@ -1,7 +1,7 @@
 ### Environmental stuff
 
 # Working directory
-setwd("/media/fdetsch/XChange/kilimanjaro/gimms3g/gimms3g/")
+setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
 
 # Packages
 lib <- c("raster", "doParallel", "reshape2", "plyr", "dplyr", "ggplot2", 
