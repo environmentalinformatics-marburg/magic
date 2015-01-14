@@ -3,9 +3,9 @@ library(Kendall)
 library(RColorBrewer)
 library(doParallel)
 
-source("../../ndvi/src/visMannKendall.R")
-
 setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
+
+source("../../ndvi/src/visMannKendall.R")
 
 registerDoParallel(cl <- makeCluster(3))
 
@@ -74,7 +74,7 @@ rst_modis_med <- foreach(i = 1:nlayers(rst_modis), .combine = "stack",
 
 ### Statistics
 
-# Overall absolute and relative amount of highly significant pixels
+# Overall absolute and relative amount of highly significant GIMMS pixels
 nona_abs <- sum(!is.na(rst_gimms_mk_p001[]))
 nona_rel <- nona_abs / ncell(rst_gimms_mk_p001)
 
