@@ -19,7 +19,7 @@ nd <- "201212"
 ### GIMMS
 
 # Data import
-fls_gimms <- list.files("data/rst/whittaker", pattern = "_crp_utm_wht_aggmax", 
+fls_gimms <- list.files("data/rst/whittaker", pattern = "_crp_utm_wht_aggmax.tif$", 
                         full.names = TRUE)
 st_gimms <- grep(st, fls_gimms)[1]
 nd_gimms <- grep(nd, fls_gimms)[length(grep(nd, fls_gimms))]
@@ -102,6 +102,8 @@ mean(abs(diff_gimms_modis[, 2]))
 # })
 # df_diff_gimms_modis <- data.frame(cell = levels(df_gimms_modis_stats_mrg$cell), 
 #                                   diff_gimms_modis = do.call("c", ls_diff_gimms_modis))
+# 
+# mean(abs(df_diff_gimms_modis[, 2]))
 # 
 # tmp_mrg <- merge(diff_gimms_modis, df_diff_gimms_modis, by = "cell", sort = FALSE)
 # identical(tmp_mrg[, 2], tmp_mrg[, 3])
