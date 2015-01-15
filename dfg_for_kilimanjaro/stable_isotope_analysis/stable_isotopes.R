@@ -1,6 +1,6 @@
 library(ggplot2)
 library(lubridate)
-# library(plyr) 
+library(plyr) 
 
 
 # Check your working directory
@@ -12,15 +12,23 @@ iso <- read.csv2("iso_calc.csv", header = T)
 
 ##Preparation for plotting stuff
 # color id for plotting later on
-col.id <- c("orange", "red", "black", "yellow", "blue", "purple", "green", 
-            "pink", "cornflowerblue", "white", "brown")
-col.id.1 <- c("orange", "black", "blue", "purple", "green", "brown")
+col.id <- c("orange", "blue", "purple", "black", "yellow", "red", "white", 
+            "green", "brown","cornflowerblue", "pink")
+
+col.id.machame <- c("orange", "purple", "black", "yellow", "red")
+
+#col.id.1 <- c("orange", "black", "blue", "purple", "green", "brown")
+
 col.id.2 <- c("orange", "blue", "purple", "black", "yellow", "red", "white", 
               "green", "brown")
-col.id.3 <- c("orange", "red", "black", "yellow", "purple")
 
-# sort legend
-legend.order <- c("fer0", "fpd0", "fpo0", "foc0", "foc6", "flm1", "nkw1", 
+#col.id.3 <- c("orange", "red", "black", "yellow", "purple")
+
+# sort legends
+leg <- c("fer0", "fpd0", "fpo0", "foc0", "foc6", "flm1", "nkw1", 
+         "hom4", "sav5", "mnp1", "mnp2")
+
+leg.ord <- c("fer0", "fpd0", "fpo0", "foc0", "foc6", "flm1", "nkw1", 
                   "hom4", "sav5")
 
 
@@ -28,20 +36,64 @@ legend.order <- c("fer0", "fpd0", "fpo0", "foc0", "foc6", "flm1", "nkw1",
 ### for all data pairs available as well as differentiated 
 ### according to single sources (rainfall, fog and throughfall)
 
-sc.pl <- qplot(d18_16, dD_H, data = iso, color = plot_id_sp1, shape = type, 
-               xlab = "d18O%oGMWL", ylab = "d2H%oGMWL") + scale_color_manual(values = col.id)
-sm.all <- summary(lm(dD_H ~ d18_16, data = iso))
+iso.sm <- summary(lm(dD_H ~ d18_16, data = iso))
 
-# add local meteoric water line (lmwl) to plot
-sc.pl.lmwl <- qplot(d18_16, dD_H, data = iso, xlab = "d18O%oGMWL", ylab = "d2H%oGMWL", 
-                    geom = c("point", "smooth"), method = "lm", se = FALSE, 
-                    formula = y ~ x) 
+## Plot all available data pairs and
+## add local meteoric water line (lmwl) [Rsq 0.9348] and
+## global meteoric water line (gmwl) according to Craig (1961) to plot
 
-# add global meteoric water line (gmwl) according to Craig (1961) to plot
-sc.pl.lmwl.gmwl <- sc.pl.lmwl + geom_abline(intercept = 10, slope = 8) 
+iso.all.lmwl.gmwl <- qplot(d18_16, dD_H, data = iso, color = plot_id_sp1, shape = type, 
+                           xlab = "d18O%o \n
+                           black line: LMWL dD = 14.87d18O + 7.44,
+                           dashed: GMWL dD = 8d18O + 10",
+                           ylab = "d2H%o") + 
+  scale_color_manual(values = col.id, limits = leg, name = "Plot ID SP1") + 
+  geom_abline(intercept = 14.87, slope = 7.44) + 
+  geom_abline(intercept = 10, slope = 8, linetype = 2)
+
+# print "iso.all.lmwl.gmwl"
+png("out/iso.all.lmwl.gmwl.png", width = 22, height = 21, units = "cm", 
+    res = 300, pointsize = 15)
+print(iso.all.lmwl.gmwl)
+dev.off()
 
 
-## mean over all + regression line?
+## Build mean values for every plot and each precipitation type
+## and add GMWL and corresponding LMWL
+
+
+d18.16.mns <- aggregate(iso$d18_16, by = list(iso$plot_id_sp1, iso$type), 
+                        FUN = "mean", na.rm = TRUE)
+colnames(d18.16.mns) <- c("plot_id_sp1", "type", "d18_16_mn")
+
+dD.H.mns <- aggregate(iso$dD_H, by = list(iso$plot_id_sp1, iso$type), 
+                      FUN = "mean", na.rm = TRUE)
+colnames(dD.H.mns) <- c("plot_id_sp1", "type", "dD_H_mn")
+
+iso.mns <- merge(d18.16.mns, dD.H.mns)
+
+iso.mns.sm <- summary(lm(dD_H_mn ~ d18_16_mn, data = iso.mns))
+
+
+#plot 
+iso.mns.lmwl.gmwl <- qplot(d18_16_mn, dD_H_mn, data = iso.mns, shape = type,
+                           colour = plot_id_sp1, xlab = "d18O%o \n 
+                           black line: LMWL for mean values dD = 5.77d18O + 9.04, 
+                           dotted: LMWL for each available data pair dD = 14.87d18O + 7.44,
+                           dashed: GMWL dD = 8d18O + 10",
+                           ylab = "d2H%o") + 
+  scale_color_manual(values = col.id, limits = leg, name = "Plot ID SP1") + 
+  geom_abline(intercept = 9.04, slope = 5.77) +
+  geom_abline(intercept = 14.87, slope = 7.44, linetype = 3) +
+  geom_abline(intercept = 10, slope = 8, linetype = 2) 
+
+
+
+# print "iso.mns.lmwl.gmwl"
+png("out/iso.mns.lmwl.gmwl.png", width = 22, height = 21, units = "cm", 
+    res = 300, pointsize = 15)
+print(iso.mns.lmwl.gmwl)
+dev.off()
 
 
 
@@ -66,9 +118,6 @@ iso.machame <- subset(iso, iso$plot_id_sp1 != "hom4" &
                         iso$plot_id_sp1 != "mnp2")
 
 
-
-
-
 ### Regression machame transect only - test for "amount effect"
 ### of all available precipitation pairs, as well as differentiated 
 ### according to single sources (rainfall, fog and throughfall)
@@ -90,7 +139,6 @@ sm.tf.machame <- summary(lm(dD_H ~ d18_16, data = subset(iso.machame, iso.macham
 
 # plot for overview 
 
-col.id.machame <- c("orange", "purple", "black", "yellow", "red")
 
 # Achsenbeschriftung formatieren --> Sonderzeichen???
 # --> ??
@@ -100,17 +148,24 @@ sc.pl.machame <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1,
   geom_abline(intercept = 10, slope = 8, linetype = 2) + 
   geom_abline(intercept = 16.88, slope = 7.78)
 
-
-
-
-sc.pl.machame.all <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1, 
-                       shape = type, xlab = "d18O%o", ylab = "d2H%o") + 
+# faceting
+# lmwl anpassen?
+iso.machame.all <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1, 
+                           shape = type, xlab = "d18O%o \n 
+                           black line fitted LMWL to all Machame data pairs dD = 7.78d18O + 16.88
+                           dashed GMWL dD = 8d18O + 10",
+                           ylab = "d2H%o") + 
   facet_wrap( ~ type) +
-  scale_color_manual(values = col.id.machame, limits = c("fer0", "fpo0", "foc0", "foc6", "flm1")) +
+  scale_color_manual(values = col.id.machame, limits = c("fer0", "fpo0", "foc0", "foc6", "flm1"),
+                     name = "Plot ID SP1") +
   geom_abline(intercept = 10, slope = 8, linetype = 2) + 
   geom_abline(intercept = 16.88, slope = 7.78)
 
-
+# print "iso.machame.all"
+png("out/iso.machame.all.png", width = 30, height = 11, units = "cm", 
+    res = 300, pointsize = 15)
+print(iso.machame.all)
+dev.off()
 
 
 ### Regression machame transect only - test for "amount effect"
@@ -120,7 +175,7 @@ sc.pl.machame.all <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1
 
 ## regression fer0 only
 
-#fer0 <- subset(iso.machame, iso.machame$plot_id_sp1 == "fer0")
+fer0 <- subset(iso.machame, iso.machame$plot_id_sp1 == "fer0")
 sm.fer0 <- summary(lm(dD_H ~ d18_16, data = subset(iso.machame, iso.machame$plot_id_sp1 == "fer0")))  
 
 # fer0 rain
@@ -138,7 +193,7 @@ sm.fer0.tf <- summary(lm(dD_H ~ d18_16, data = subset(fer0, fer0$type == "tf")))
 
 ## regression flm1 only
 
-#flm1 <- subset(iso.machame, iso.machame$plot_id_sp1 == "flm1")
+flm1 <- subset(iso.machame, iso.machame$plot_id_sp1 == "flm1")
 sm.flm1 <- summary(lm(dD_H ~ d18_16, data = subset(iso.machame, iso.machame$plot_id_sp1 == "flm1")))  
 
 # flm1 rain
@@ -153,6 +208,31 @@ sm.flm1.fog <- summary(lm(dD_H ~ d18_16, data = subset(flm1, flm1$type == "fog")
 #flm1.tf <- subset(flm1, flm1$type == "tf")
 sm.flm1.tf <- summary(lm(dD_H ~ d18_16, data = subset(flm1, flm1$type == "tf")))
 
+
+## fpo0 foc0 und foc6 transparent?
+## ansonsten ein plot mit nur fer0 & flm1 facet
+
+iso.machame.bt.tp <- qplot(d18_16, dD_H, 
+                           data = subset(iso.machame, 
+                           iso.machame$plot_id_sp1 != "fpo0" &
+                           iso.machame$plot_id_sp1 != "foc0" &
+                           iso.machame$plot_id_sp1 != "foc6"), 
+                           color = plot_id_sp1, 
+                           shape = type, xlab = "d18O%o \n 
+                           black line fitted LMWL to all Machame data pairs dD = 7.78d18O + 16.88
+                           dashed GMWL dD = 8d18O + 10",
+                           ylab = "d2H%o") + 
+  facet_wrap( ~ type) +
+  scale_color_manual(values = c("orange", "red"), limits = c("fer0", "flm1"),
+                     name = "Plot ID SP1") +
+  geom_abline(intercept = 10, slope = 8, linetype = 2) + 
+  geom_abline(intercept = 16.88, slope = 7.78)
+
+# print "iso.machame.bt.tp"
+png("out/iso.machame.bt.tp.png", width = 30, height = 11, units = "cm", 
+    res = 300, pointsize = 15)
+print(iso.machame.bt.tp)
+dev.off()
 
 
 
@@ -172,58 +252,68 @@ iso$yrweek <- paste(iso$year, iso$week, sep = "-")
 
 
 # build monthly mean values of d18-16 & dD_H
-iso.mns <- aggregate(cbind(iso$d18_16, iso$dD_H), by = list(iso$yrmn, iso$plot_id_sp1, iso$type, 
-                                                            iso$elevation),
-                     FUN = "mean", na.rm = TRUE)
-colnames(iso.mns) <- c("date", "plot_id_sp1", "type", "d18_16", "dD_H")
+iso.mns.mnth <- aggregate(cbind(iso$d18_16, iso$dD_H), by = list(iso$yrmn, iso$plot_id_sp1, 
+                                                                 iso$type, iso$elevation),
+                          FUN = "mean", na.rm = TRUE)
+
+colnames(iso.mns.mnth) <- c("date", "plot_id_sp1", "type", "elevation","d18_16", "dD_H")
 
 # build monthly sums of amount_mm
-amnt.mns <- aggregate(iso$amount_mm, by = list(iso$yrmn, iso$plot_id_sp1, iso$type, iso$elevation), 
-                      FUN = "sum", na.rm = TRUE)
-colnames(amnt.mns) <- c("date", "plot_id_sp1", "type", "amount_mm")
+amnt.mns.mnth <- aggregate(iso$amount_mm, by = list(iso$yrmn, iso$plot_id_sp1, 
+                                                    iso$type, iso$elevation), 
+                           FUN = "sum", na.rm = TRUE)
+
+colnames(amnt.mns.mnth) <- c("date", "plot_id_sp1", "type", "elevation","amount_mm")
 
 
 # merge monthly mean of d18-16 & dD_H and monthly sums of amount_mm
-# to create graphik for publication
-iso.mns.all <- merge(amnt.mns, iso.mns)
+# to create graphik
+iso.mns.mnth.amnt <- merge(amnt.mns.mnth, iso.mns.mnth)
 
-
-# plotting stuff
-
-iso.mns.all$date <- factor(iso.mns.all$date)
 
 ### d18_16O
-iso.mns.all.18O.pl <- ggplot(subset(iso.mns.all, 
-                                  iso.mns.all$plot_id_sp1 != "mnp1" &
-                                  iso.mns.all$plot_id_sp1 != "mnp2"), 
+iso.mns.mnth.amnt.18O.pl <- ggplot(subset(iso.mns.mnth.amnt, 
+                                  iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                  iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
                          aes(x = date, y = d18_16, group = plot_id_sp1, 
                              colour = plot_id_sp1)) + 
   facet_grid(type ~ ., scales = "free") +
   geom_line() + 
-  scale_color_manual(values = col.id.2, limits = legend.order, name = "Plot ID SP1") + 
-  labs(x = "", y = "d18O%o") +
+  scale_color_manual(values = col.id.2, limits = leg.ord, name = "Plot ID SP1") + 
+  #labs(x = "", y = "d18O%o") +
+  ylab( expression(delta^{18}~O~permill)) +
+  xlab("") +
+  #ylab( expression(paste(delta,^{18},D))) +
+  scale_x_discrete(labels = c("12-11", "12-12", "13-01", "13-02", "13-03", "13-04",
+                              "13-05", "13-06", "13-07", "13-08", "13-09", "13-10", 
+                              "13-11", "13-12", "14-01", "14-02", "14-03", "14-04",
+                              "14-05", "14-06", "14-07", "14-08", "14-09", "14-10",
+                              "14-11")) +
   theme(
     panel.grid.major = element_line(color = "lightgray", size = 0.01),
     panel.background = element_rect(fill = NA),
     panel.border = element_rect(color = "gray", fill = NA))
+# --> x achse lesbar machen!
 
-
-# print "iso.mns.all.18O.pl"
-png("out/iso.mns.all.18O.pl.2.png", width = 30, height = 20, units = "cm", 
+# print "iso.mns.mnth.amnt.18O.pl"
+png("out/iso.mns.mnth.amnt.18O.pl.png", width = 30, height = 20, units = "cm", 
     res = 300, pointsize = 15)
-print(iso.mns.all.18O.pl)
+print(iso.mns.mnth.amnt.18O.pl)
 dev.off()
 
 
+
+-----------------------------------------------
+
 # strange values since 2014-05 --> visual check
-iso.mns.all.18O.1405.pl <- ggplot(subset(iso.mns.all, 
-                                    iso.mns.all$plot_id_sp1 != "mnp1" &
-                                      iso.mns.all$plot_id_sp1 != "mnp2" & 
-                                      iso.mns.all$plot_id_sp1 != "hom4" &
-                                      iso.mns.all$plot_id_sp1 != "sav5" &
-                                      iso.mns.all$plot_id_sp1 != "fpd0" &
-                                      iso.mns.all$plot_id_sp1 != "nkw1" &
-                                      iso.mns.all$date > "2014-05"),
+iso.mns.mnth.amnt.18O.1405.pl <- ggplot(subset(iso.mns.mnth.amnt, 
+                                    iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                      iso.mns.mnth.amnt$plot_id_sp1 != "mnp2" & 
+                                      iso.mns.mnth.amnt$plot_id_sp1 != "hom4" &
+                                      iso.mns.mnth.amnt$plot_id_sp1 != "sav5" &
+                                      iso.mns.mnth.amnt$plot_id_sp1 != "fpd0" &
+                                      iso.mns.mnth.amnt$plot_id_sp1 != "nkw1" &
+                                      iso.mns.mnth.amnt$date > "2014-05"),
                              aes(x = date, y = d18_16, group = plot_id_sp1, 
                                  colour = plot_id_sp1)) + 
   facet_grid(type ~ .) +
@@ -236,9 +326,9 @@ iso.mns.all.18O.1405.pl <- ggplot(subset(iso.mns.all,
 
 
 ### dD_H
-iso.mns.all.dDH.pl <- ggplot(subset(iso.mns.all, 
-                                    iso.mns.all$plot_id_sp1 != "mnp1" &
-                                    iso.mns.all$plot_id_sp1 != "mnp2"), 
+iso.mns.mnth.amnt.dDH.pl <- ggplot(subset(iso.mns.mnth.amnt, 
+                                    iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                    iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
                              aes(x = date, y = dD_H, group = plot_id_sp1, 
                                  colour = plot_id_sp1)) + 
   facet_grid(type ~ .) +
@@ -247,22 +337,22 @@ iso.mns.all.dDH.pl <- ggplot(subset(iso.mns.all,
   labs(x = "", y = "d2H%o")
 
 
-# print "iso.mns.all.dDH.pl"
-png("out/iso.mns.all.dDH.pl.png", width = 30, height = 20, units = "cm", 
+# print "iso.mns.mnth.amnt.dDH.pl"
+png("out/iso.mns.mnth.amnt.dDH.pl.png", width = 30, height = 20, units = "cm", 
     res = 300, pointsize = 15)
-print(iso.mns.all.dDH.pl)
+print(iso.mns.mnth.amnt.dDH.pl)
 dev.off()
 
 
 # strange values since 2014-05 --> visual check
-iso.mns.all.d2H.1405.pl <- ggplot(subset(iso.mns.all, 
-                                         iso.mns.all$plot_id_sp1 != "mnp1" &
-                                           iso.mns.all$plot_id_sp1 != "mnp2" & 
-                                           iso.mns.all$plot_id_sp1 != "hom4" &
-                                           iso.mns.all$plot_id_sp1 != "sav5" &
-                                           iso.mns.all$plot_id_sp1 != "fpd0" &
-                                           iso.mns.all$plot_id_sp1 != "nkw1" &
-                                           iso.mns.all$date > "2014-05"),
+iso.mns.mnth.amnt.d2H.1405.pl <- ggplot(subset(iso.mns.mnth.amnt, 
+                                         iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                           iso.mns.mnth.amnt$plot_id_sp1 != "mnp2" & 
+                                           iso.mns.mnth.amnt$plot_id_sp1 != "hom4" &
+                                           iso.mns.mnth.amnt$plot_id_sp1 != "sav5" &
+                                           iso.mns.mnth.amnt$plot_id_sp1 != "fpd0" &
+                                           iso.mns.mnth.amnt$plot_id_sp1 != "nkw1" &
+                                           iso.mns.mnth.amnt$date > "2014-05"),
                                   aes(x = date, y = dD_H, group = plot_id_sp1, 
                                       colour = plot_id_sp1)) + 
   facet_grid(type ~ .) +
