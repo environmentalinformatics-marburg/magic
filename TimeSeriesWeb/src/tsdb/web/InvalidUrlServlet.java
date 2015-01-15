@@ -4,28 +4,25 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
-public class InvalidUrlHandler extends AbstractHandler {
-	
-	private final String message;
-	
-	public InvalidUrlHandler(String message) {
+public class InvalidUrlServlet extends HttpServlet {
+	private static final long serialVersionUID = -7066685622900263032L;
+	private final String message;	
+	public InvalidUrlServlet(String message) {
 		this.message = message;
 	}
-
-	@Override
-	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		baseRequest.setHandled(true);
-		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		response.setContentType("text/html;charset=utf-8");
+	/*@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		resp.setContentType("text/html;charset=utf-8");
 		//response.setHeader("Server", "");
 		//response.setHeader("Date", null);
-		PrintWriter writer = response.getWriter();
+		PrintWriter writer = resp.getWriter();
 		writer.print("<!DOCTYPE html>");
 		writer.print("<html lang=\"en\">");
 		writer.print("<head>");
@@ -38,7 +35,7 @@ public class InvalidUrlHandler extends AbstractHandler {
 		writer.print("<body>");
 		writer.print(message);
 		writer.print("</body>");
-		writer.print("</html>");		
-	}
-
+		writer.print("</html>");
+	}*/
+	public static final ServletHolder SERVLET_HOLDER = new ServletHolder(new InvalidUrlServlet("error"));
 }

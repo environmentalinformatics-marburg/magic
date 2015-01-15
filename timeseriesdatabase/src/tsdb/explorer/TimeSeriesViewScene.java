@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,6 +88,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private ComboBox<PlotInfo> comboPlot;
 	private ComboBox<Sensor> comboSensor;
 
+	private Group overlayGroup;
+
 	private Double mouseStartMovePosX = null;
 	private Double mouseStartMovePosY = null;
 	private ComboBox<String> comboTime;
@@ -95,7 +98,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 	//private Line line;
 
 	private SimpleBooleanProperty autoFitProperty;
-	
+
 
 	private enum SelectionState {NO,SELECT_START,SELECT_END};
 	private ObjectProperty<SelectionState> selectionStateProperty;
@@ -103,10 +106,24 @@ public class TimeSeriesViewScene extends TsdbScene {
 	private Rectangle selectionRect;
 	private long selectionStartTimestamp;
 
+	private static class MaskEntry {
+		public final long startTimestamp;
+		public final long endTimestamp;
+		public Rectangle maskRect;
+		public MaskEntry(long startTimestamp, long endTimestamp, Rectangle maskRect) {
+			this.startTimestamp = startTimestamp;
+			this.endTimestamp = endTimestamp;
+			this.maskRect = maskRect;
+		}
+	}
+
+	private ArrayList<MaskEntry> maskList;
+
 	public TimeSeriesViewScene(RemoteTsDB tsdb) {
 		super("time series view");		
 		throwNull(tsdb);
 		this.tsdb = tsdb;
+		this.maskList = new ArrayList<MaskEntry>();
 	}
 
 	@Override
@@ -184,20 +201,19 @@ public class TimeSeriesViewScene extends TsdbScene {
 		Color selectionColor = new Color(b.getRed(), b.getGreen(), b.getBlue(), 0.5d);
 		selectionLineStart.setStroke(selectionColor);
 		selectionLineStart.setStrokeWidth(10);
-		
+
 		selectionRect = new Rectangle();
 		selectionRect.setFill(selectionColor);
 
 		//stackPane.getChildren().add(line);
 
 
-		Group group = new Group();
+		overlayGroup = new Group();
 		//group.setLayoutX(0);
 		//group.setLayoutY(0);
 		///group.getChildren().addAll(line0,line1,selectionLineStart,selectionRect);
-		group.getChildren().addAll(new Line(0,0,0,0),selectionLineStart,selectionRect);
-		stackPane.getChildren().add(group);
-
+		overlayGroup.getChildren().addAll(new Line(0,0,0,0),selectionLineStart,selectionRect);
+		stackPane.getChildren().add(overlayGroup);
 
 		/*Line line2 = new Line(0,0,0,0);
 		line2.setStroke(Color.ALICEBLUE);
@@ -343,6 +359,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 			repaint();
 		});
 
+		System.out.println("overlayGroup "+overlayGroup.getChildren().size());
+
 		return new BorderPane(center, sc, right, bottom, left);
 	}
 
@@ -394,6 +412,36 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		imageView.setImage(imageProperty.get());
 
+		updateMaskOverlay();
+
+	}
+
+	private void updateMaskOverlay() {
+		TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+		if(tsd!=null) {
+			for(MaskEntry maskEntry:maskList) {
+				int startX = tsd.calcDiagramX(maskEntry.startTimestamp);
+				int endX = tsd.calcDiagramX(maskEntry.endTimestamp);
+				if(endX<0) {
+					startX=0;
+					endX=0;
+				} else {
+					if(startX<0) {
+						startX=0;
+					}
+				}
+				if(endX==startX) {
+					endX++;
+				}
+				if(startX==0&&endX==1) {
+					maskEntry.maskRect.setVisible(false);
+				} else {
+					maskEntry.maskRect.setX(startX);
+					maskEntry.maskRect.setWidth(endX-startX);
+					maskEntry.maskRect.setVisible(true);
+				}
+			}
+		}
 	}
 
 	private void setRegions() {
@@ -599,6 +647,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onAlwaysMouseMoved(MouseEvent event) {
+		System.out.println("overlayGroup "+overlayGroup.getChildren().size()+"    "+ ((Group)selectionRect.getParent()).getChildren().size());
 		if(selectionStateProperty.get()== SelectionState.NO) {
 			selectionLineStart.setVisible(false);
 			selectionRect.setVisible(false);
@@ -715,33 +764,52 @@ public class TimeSeriesViewScene extends TsdbScene {
 	}
 
 	private void onMouseClicked(MouseEvent event) {
-
 		if(event.getButton()==MouseButton.SECONDARY) {
 			imageViewContextMenu.show(imageView, event.getSceneX(), event.getSceneY());
 		} else {
 			imageViewContextMenu.hide();			
 		}
 
-
 		if(event.getButton()==MouseButton.MIDDLE) {
-			System.out.println("*********************");
-			if(selectionStateProperty.get()==SelectionState.NO) {
-				selectionStateProperty.set(SelectionState.SELECT_START);
-				onAlwaysMouseMoved(event);
-			} else if(selectionStateProperty.get()==SelectionState.SELECT_START) {
-				TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
-				if(tsd!=null) {
-					selectionStartTimestamp = tsd.calcTimestamp(event.getX());
-				}
-				selectionStateProperty.set(SelectionState.SELECT_END);
-				onAlwaysMouseMoved(event);
-			}  else if(selectionStateProperty.get()==SelectionState.SELECT_END) {
-				selectionStateProperty.set(SelectionState.NO);
-				onAlwaysMouseMoved(event);
-			}
-			System.out.println(selectionStateProperty.get());
+			onMouseMiddleClicked(event);
 		}
+	}
 
+	private void onMouseMiddleClicked(MouseEvent event) {
+		System.out.println("*********************");
+		if(selectionStateProperty.get()==SelectionState.NO) {
+			selectionStateProperty.set(SelectionState.SELECT_START);
+			onAlwaysMouseMoved(event);
+		} else if(selectionStateProperty.get()==SelectionState.SELECT_START) {
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+			if(tsd!=null) {
+				selectionStartTimestamp = tsd.calcTimestamp(event.getX());
+			}
+			selectionStateProperty.set(SelectionState.SELECT_END);
+			onAlwaysMouseMoved(event);
+		}  else if(selectionStateProperty.get()==SelectionState.SELECT_END) {
+			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.get();
+			if(tsd!=null) {
+				selectionStateProperty.set(SelectionState.NO);
+
+				Color b = Color.CHARTREUSE;
+				Color maskColor = new Color(b.getRed(), b.getGreen(), b.getBlue(), 0.5d);
+
+				Rectangle maskRect = new Rectangle(selectionRect.getX(),selectionRect.getY(),selectionRect.getWidth(),selectionRect.getHeight());
+				System.out.println("maskRect "+maskRect);
+				maskRect.setFill(maskColor);
+				System.out.println("overlayGroup "+overlayGroup.getChildren().size());
+				overlayGroup.getChildren().add(maskRect);
+				System.out.println("overlayGroup "+overlayGroup.getChildren().size());
+
+				long selectionEndTimestamp = tsd.calcTimestamp(event.getX());
+
+				maskList.add(new MaskEntry(selectionStartTimestamp, selectionEndTimestamp, maskRect));			
+				onAlwaysMouseMoved(event);
+				updateMaskOverlay();
+			}
+		}
+		System.out.println(selectionStateProperty.get());
 	}
 
 	private void onScroll(ScrollEvent event) {
