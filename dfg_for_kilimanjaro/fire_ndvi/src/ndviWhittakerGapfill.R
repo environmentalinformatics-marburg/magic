@@ -69,7 +69,7 @@ stats <- foreach(h = c("MOD13Q1", "MYD13Q1"), .packages = lib) %dopar% {
   ndvi.rst <- lapply(pttrn, function(i) {                                      
     # List available files
     fls <- list.files("data/MODIS_ARC/PROCESSED/ndvi_clrk", 
-                           pattern = i, full.names = TRUE)  
+                      pattern = i, full.names = TRUE)  
     # Stack and crop files
     rst <- stack(fls)
     rst.crp <- crop(rst, extent(kili))
@@ -80,24 +80,24 @@ stats <- foreach(h = c("MOD13Q1", "MYD13Q1"), .packages = lib) %dopar% {
   
   ndvi.rst <- ndvi.rst[1:2]
   
-#   ndvi.rst <- lapply(pttrn, function(i) {
-#     fls <- list.files("data/processed/", full.names = TRUE, 
-#                       pattern = paste("^CRP_", i, sep = ".*"))
-#     stack(fls)
-#   })
+  #   ndvi.rst <- lapply(pttrn, function(i) {
+  #     fls <- list.files("data/processed/", full.names = TRUE, 
+  #                       pattern = paste("^CRP_", i, sep = ".*"))
+  #     stack(fls)
+  #   })
   
   # Rejection of low quality cells
   ndvi.rst.qa <- overlay(ndvi.rst[[1]], ndvi.rst[[2]], fun = function(x, y) {
     x[!y[] %in% c(0:2)] <- NA
     return(x)
   })
-ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format = "GTiff", 
-                           bylayer = TRUE, suffix = names(ndvi.rst[[1]]), overwrite = TRUE)
-
-#   ndvi.fls.qa <- list.files("data/processed/", full.names = TRUE, 
-#                             pattern = paste("^QA_", pttrn[1], sep = ".*"))
-#   ndvi.rst.qa <- stack(ndvi.fls.qa)
-
+  ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format = "GTiff", 
+                             bylayer = TRUE, suffix = names(ndvi.rst[[1]]), overwrite = TRUE)
+  
+  #   ndvi.fls.qa <- list.files("data/processed/", full.names = TRUE, 
+  #                             pattern = paste("^QA_", pttrn[1], sep = ".*"))
+  #   ndvi.rst.qa <- stack(ndvi.fls.qa)
+  
   # Application of outlier check
   ndvi.rst.qa.sd <- calc(ndvi.rst.qa, fun = function(x) {
     id <- tsOutliers(x, lower_quantile = .4, upper_quantile = .9, index = TRUE)
@@ -107,11 +107,11 @@ ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format =
   ndvi.rst.qa.sd <- 
     writeRaster(ndvi.rst.qa.sd, filename = "data/processed/SD", format = "GTiff", 
                 bylayer = TRUE, suffix = names(ndvi.rst.qa), overwrite = TRUE)
-
-#   ndvi.fls.qa.sd <- list.files("data/processed/", full.names = TRUE, 
-#                                pattern = paste("^SD_", pttrn[1], sep = ".*"))
-#   ndvi.rst.qa.sd <- stack(ndvi.fls.qa.sd)
-
+  
+  #   ndvi.fls.qa.sd <- list.files("data/processed/", full.names = TRUE, 
+  #                                pattern = paste("^SD_", pttrn[1], sep = ".*"))
+  #   ndvi.rst.qa.sd <- stack(ndvi.fls.qa.sd)
+  
   # Rejection of pixels surrounding cloudy cells
   ndvi.rst.qa.sd.fc <- do.call("stack", lapply(unstack(ndvi.rst.qa.sd), function(i) {
     cells <- which(is.na(i[]))
@@ -126,73 +126,83 @@ ndvi.rst.qa <- writeRaster(ndvi.rst.qa, filename = "data/processed/QA", format =
   ndvi.fls.qa.sd.fc <- list.files("data/processed/", full.names = TRUE, 
                                   pattern = paste("^BF_SD_QA_CRP", pttrn[1], sep = ".*"))
   ndvi.rst.qa.sd.fc <- stack(ndvi.fls.qa.sd.fc)
-# 
-# dates <- orgTime(ndvi.fls.init)$inputLayerDates
-# dates_agg <- dates + 8
-# yearmon_agg <- as.yearmon(dates_agg)
-# indices_agg <- as.numeric(as.factor(yearmon_agg))
-# 
-# outdir <- paste0("data/processed")
-# rst_qa_sd_fc_aggmax <- 
-#   stackApply(ndvi.rst.qa.sd.fc, indices = indices_agg, fun = max, bylayer = TRUE,
-#              filename = paste0(outdir, "/AGGMAX_BF_SD_QA_", h), format = "GTiff",  
-#              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
-#              overwrite = TRUE)
-
+  # 
+  # dates <- orgTime(ndvi.fls.init)$inputLayerDates
+  # dates_agg <- dates + 8
+  # yearmon_agg <- as.yearmon(dates_agg)
+  # indices_agg <- as.numeric(as.factor(yearmon_agg))
+  # 
+  # outdir <- paste0("data/processed")
+  # rst_qa_sd_fc_aggmax <- 
+  #   stackApply(ndvi.rst.qa.sd.fc, indices = indices_agg, fun = max, bylayer = TRUE,
+  #              filename = paste0(outdir, "/AGGMAX_BF_SD_QA_", h), format = "GTiff",  
+  #              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
+  #              overwrite = TRUE)
   
+  
+  ### Upscaling
+  
+  #   ndvi.rst.agg <- aggregate(ndvi.rst.qa.sd.fc, fact = 4, fun = median, 
+  #                             filename = "data/processed/agg1km/AGG1KM", 
+  #                             suffix = basename(ndvi.fls.qa.sd.fc), bylayer = TRUE, 
+  #                             format = "GTiff", overwrite = TRUE)
+  
+  ndvi.fls.agg <- list.files("data/processed/agg1km", pattern = "^AGG1KM", 
+                             full.names = TRUE)
+  ndvi.rst.agg <- stack(ndvi.fls.agg)
   
   ### Gap filling
   
   ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/ndvi_clrk", 
                               pattern = paste(h, "NDVI.tif$", sep = ".*"), 
                               full.names = TRUE, recursive = TRUE)
-
-# org_agg <- sapply(strsplit(names(rst_qa_sd_fc_aggmax), "_"), "[[", 6)
-# org_agg <- paste0(org_agg, "01")
-# org_agg <- orgTime(org_agg, nDays = "1 month", pillow = 0, 
-#                    pos1 = 1, pos2 = 8, format = "%Y%m%d")
-
-rst.wht <- whittaker.raster(vi = ndvi.rst.qa.sd.fc, removeOutlier = TRUE, threshold = 2000,
-                            timeInfo = orgTime(ndvi.fls.init, pillow = 0), 
-                            lambda = 6000, nIter = 3, groupYears = FALSE, 
-                            outDirPath = paste0("data/processed/whittaker_", tolower(h)), 
-                            overwrite = TRUE, format = "raster")
- 
-# Save files separately (takes some time, parallel processing suggested)
-dates <- orgTime(ndvi.fls.init)$inputLayerDates
-dates_jul <- strftime(dates, format = "%Y%j")
-
-outdir <- paste0("data/processed/whittaker_", tolower(h))
-rst.wht <- foreach(i = unstack(rst.wht[[1]]), j = dates_jul, .combine = "stack", 
-                   .packages = lib) %dopar% {
-  outfile <- paste0("WHT_", j)
-  file_out <- paste(outdir, outfile, sep = "/")
-  writeRaster(i, filename = file_out, format = "GTiff", overwrite = TRUE)
-}
-
-#   # Monthly aggregation
-#   fls.wht <- list.files(paste0("data/processed/whittaker_", tolower(h)), 
-#                         pattern = "^WHT.*.tif$", full.names = TRUE)
-#   rst.wht <- stack(fls.wht)
-
-dates_agg <- dates + 8
-yearmon_agg <- as.yearmon(dates_agg)
-indices_agg <- as.numeric(as.factor(yearmon_agg))
-
-outdir <- paste0("data/processed/whittaker_", tolower(h))
-# rst_wht_aggmax <- 
-#   stackApply(rst.wht, indices = indices_agg, fun = max, bylayer = TRUE,
-#              filename = paste0(outdir, "/AGGMAX_WHT"), format = "GTiff",  
-#              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
-#              overwrite = TRUE)
-# 
-# rst_wht_aggmin <- 
-#   stackApply(rst.wht, indices = indices_agg, fun = min, bylayer = TRUE,
-#              filename = paste0(outdir, "/AGGMIN_WHT"), format = "GTiff",  
-#              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
-#              overwrite = TRUE)
-
-  fls_wht <- list.files(paste0("data/processed/whittaker_", tolower(h)), 
+  
+  # org_agg <- sapply(strsplit(names(rst_qa_sd_fc_aggmax), "_"), "[[", 6)
+  # org_agg <- paste0(org_agg, "01")
+  # org_agg <- orgTime(org_agg, nDays = "1 month", pillow = 0, 
+  #                    pos1 = 1, pos2 = 8, format = "%Y%m%d")
+  
+  rst.wht <- whittaker.raster(vi = ndvi.fls.agg, removeOutlier = TRUE, threshold = 2000,
+                              timeInfo = orgTime(ndvi.fls.init, pillow = 0), 
+                              lambda = 6000, nIter = 3, groupYears = FALSE, 
+                              outDirPath = paste0("data/processed/whittaker_agg1km_", tolower(h)), 
+                              overwrite = TRUE, format = "raster")
+  
+  # Save files separately (takes some time, parallel processing suggested)
+  dates <- orgTime(ndvi.fls.init)$inputLayerDates
+  dates_jul <- strftime(dates, format = "%Y%j")
+  
+  outdir <- paste0("data/processed/whittaker_agg1km_", tolower(h))
+  rst.wht <- foreach(i = unstack(rst.wht[[1]]), j = dates_jul, .combine = "stack", 
+                     .packages = lib) %dopar% {
+                       outfile <- paste0("WHT_", j)
+                       file_out <- paste(outdir, outfile, sep = "/")
+                       writeRaster(i, filename = file_out, format = "GTiff", overwrite = TRUE)
+                     }
+  
+    # Monthly aggregation
+    fls.wht <- list.files(paste0("data/processed/whittaker_agg1km_", tolower(h)), 
+                          pattern = "^WHT.*.tif$", full.names = TRUE)
+  rst.wht <- stack(fls.wht)
+  
+  dates_agg <- dates + 8
+  yearmon_agg <- as.yearmon(dates_agg)
+  indices_agg <- as.numeric(as.factor(yearmon_agg))
+  
+  outdir <- paste0("data/processed/whittaker_", tolower(h))
+  # rst_wht_aggmax <- 
+  #   stackApply(rst.wht, indices = indices_agg, fun = max, bylayer = TRUE,
+  #              filename = paste0(outdir, "/AGGMAX_WHT"), format = "GTiff",  
+  #              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
+  #              overwrite = TRUE)
+  # 
+  # rst_wht_aggmin <- 
+  #   stackApply(rst.wht, indices = indices_agg, fun = min, bylayer = TRUE,
+  #              filename = paste0(outdir, "/AGGMIN_WHT"), format = "GTiff",  
+  #              suffix = strftime(unique(yearmon_agg), format = "%Y%m"), 
+  #              overwrite = TRUE)
+  
+  fls_wht <- list.files(paste0("data/processed/whittaker_agg1km_", tolower(h)), 
                         pattern = "^WHT", full.names = TRUE)
   rst_wht <- stack(fls_wht)
   
@@ -212,127 +222,127 @@ outdir <- paste0("data/processed/whittaker_", tolower(h))
                                        bylayer = TRUE, suffix = months_doy, 
                                        format = "GTiff", overwrite = TRUE)
   
-
-# Application of scale factor and removal of inconsistent values
-fls_wht_aggmax <- list.files(outdir, pattern = "^AGGMAX_WHT", full.names = TRUE)
-rst_wht_aggmax <- stack(fls_wht_aggmax)
-fls_scl <- paste0(outdir, "/SCL_", names(rst_wht_aggmax))
-
-rst_scl <- foreach(i = unstack(rst_wht_aggmax), j = as.list(fls_scl), 
-                   .packages = lib, .combine = "stack") %dopar% {                             
-  rst <- i
-  rst <- rst / 10000
   
-  id <- which(rst[] < -1 | rst[] > 1)
+  # Application of scale factor and removal of inconsistent values
+  fls_wht_aggmax <- list.files(outdir, pattern = "^AGGMAX_WHT", full.names = TRUE)
+  rst_wht_aggmax <- stack(fls_wht_aggmax)
+  fls_scl <- paste0(outdir, "/SCL_", names(rst_wht_aggmax))
   
-  if (length(id) > 0) {
-    rst[id] <- NA
+  rst_scl <- foreach(i = unstack(rst_wht_aggmax), j = as.list(fls_scl), 
+                     .packages = lib, .combine = "stack") %dopar% {                             
+                       rst <- i
+                       rst <- rst / 10000
+                       
+                       id <- which(rst[] < -1 | rst[] > 1)
+                       
+                       if (length(id) > 0) {
+                         rst[id] <- NA
+                       }
+                       
+                       rst <- writeRaster(rst, filename = j, format = "GTiff", overwrite = TRUE)
+                       
+                       return(rst)
+                     }
+  
+  # Deseasoning
+  fls_scl <- list.files(outdir, pattern = "^SCL_AGGMAX", full.names = TRUE)
+  
+  st <- grep("200301", fls_scl)
+  nd <- grep("201312", fls_scl)
+  
+  rst_scl <- stack(fls_scl[st:nd])
+  
+  rst_dsn <- deseason(rst_scl)
+  
+  fls_out <- paste0(outdir, "/DSN_", names(rst_scl))
+  rst_dsn <- foreach(i = unstack(rst_dsn), j = as.list(fls_out), .combine = "stack") %do% {
+    writeRaster(i, filename = j, format = "GTiff", overwrite = TRUE)
   }
   
-  rst <- writeRaster(rst, filename = j, format = "GTiff", overwrite = TRUE)
-  
-  return(rst)
-}
-
-# Deseasoning
-fls_scl <- list.files(outdir, pattern = "^SCL_AGGMAX", full.names = TRUE)
-
-st <- grep("200301", fls_scl)
-nd <- grep("201312", fls_scl)
-
-rst_scl <- stack(fls_scl[st:nd])
-
-rst_dsn <- deseason(rst_scl)
-
-fls_out <- paste0(outdir, "/DSN_", names(rst_scl))
-rst_dsn <- foreach(i = unstack(rst_dsn), j = as.list(fls_out), .combine = "stack") %do% {
-  writeRaster(i, filename = j, format = "GTiff", overwrite = TRUE)
-}
-
-# # 2011-2013
-# fls_scl <- list.files(outdir, pattern = "^SCL", full.names = TRUE)
-# 
-# # st <- grep("201101", fls_scl)
-# # nd <- grep("201312", fls_scl)
-# # fls_scl <- fls_scl[st:nd]
-# 
-# rst_scl <- stack(fls_scl)
-# 
-# mat_plt_val <- extract(rst_scl, plt_apoles)
-# df_plt_val <- data.frame(PlotID = plt_apoles@data[, 1], mat_plt_val)
-# names(df_plt_val)[2:ncol(df_plt_val)] <- 
-#   sapply(strsplit(names(df_plt_val)[2:ncol(df_plt_val)], "_"), "[[", 4)
-# write.csv(df_plt_val, "out/csv/ndvi_aggmin_200207_201409.csv", row.names = FALSE)
-# 
-# months <- substr(sapply(strsplit(fls_scl, "_"), "[[", 5), 5, 6)
-# indices <- as.numeric(as.factor(months))
-# 
-# rst_scl_mmonth <- stackApply(rst_scl, indices = indices, fun = mean)
-# 
-# plt_scl_mmonth <- data.frame(PlotId = plt_apoles$PlotID, 
-#                              extract(rst_scl_mmonth, plt_apoles))
-# 
-# id <- grep("mai2", plt_scl_mmonth$PlotId)
-# plot(unlist(plt_scl_mmonth[id, 2:ncol(plt_scl_mmonth)]), type = "l", 
-#      xlab = "Month", ylab = "NDVI")
-# 
-#   st <- ifelse(h == "MOD13Q1", "2001", "2003")
-#   st <- "2003"
-#   nd <- "2013"
-# 
-#   fls.wht <- fls.wht[grep(st, fls.wht):grep(nd, fls.wht)]
-#   rst.wht <- stack(fls.wht)
-#   
-#   rst.mk <- overlay(rst.wht, fun = function(x) MannKendall(as.numeric(x))$tau, 
-#                     filename = paste("out/MK", toupper(h), unique(substr(names(rst.wht), 1, 21)), st, nd, sep = "_"), 
-#                     format = "GTiff", overwrite = TRUE)
-#   rst.mk.p <- overlay(rst.wht, fun = function(x) MannKendall(as.numeric(x))$sl, 
-#                       filename = paste("out/MK_p", toupper(h), unique(substr(names(rst.wht), 1, 21)), st, nd, sep = "_"), 
-#                       format = "GTiff", overwrite = TRUE)
-# 
-#   fls.mk <- list.files("out", pattern = paste0("MK_", toupper(h), ".*.tif$"), 
-#                        full.names = TRUE)
-#   rst.mk <- raster(fls.mk)
-#   
-#   png(paste0(substr(fls.mk, 1, nchar(fls.mk)-4), ".png"), units = "mm", 
-#       width = 300, res = 300, pointsize = 20)
-#   print(spplot(rst.mk, scales = list(draw = TRUE), xlab = "x", ylab = "y", 
-#          col.regions = colorRampPalette(brewer.pal(11, "BrBG")), 
-#          sp.layout = list("sp.lines", rasterToContour(dem)), 
-#          par.settings = list(fontsize = list(text = 15)), at = seq(-.9, .9, .1)))
-#   dev.off()
-#   
-#   stats <- lapply(c(.01, .001), function(i) {
-#     rst.mk <- overlay(rst.wht, fun = function(x) {
-#       mk <- MannKendall(as.numeric(x))
-#       if (mk$sl >= i) return(NA) else return(mk$tau)
-#     }, filename = paste("out/MK", i, toupper(h), 
-#                         unique(substr(names(rst.wht), 1, 21)), sep = "_"), 
-#     format = "GTiff", overwrite = TRUE)
-#     
-#     fls.mk <- list.files("out", pattern = paste(i, toupper(h), ".tif$", sep = ".*"), 
-#                          full.names = TRUE)
-#     rst.mk <- raster(fls.mk)
-#     
-#     png(paste0(substr(fls.mk, 1, nchar(fls.mk)-4), ".png"), units = "mm", 
-#         width = 300, res = 300, pointsize = 20)
-#     print(spplot(rst.mk, scales = list(draw = TRUE), xlab = "x", ylab = "y", 
-#                  col.regions = colorRampPalette(brewer.pal(11, "BrBG")), 
-#                  sp.layout = list("sp.lines", rasterToContour(dem)), 
-#                  par.settings = list(fontsize = list(text = 15)), 
-#                  at = seq(-.9, .9, .1)))
-#     dev.off()
-#     
-#     val <- round(sum(!is.na(rst.mk[]))/ncell(rst.mk), digits = 3)
-#     
-#     val.pos <- round(sum(rst.mk[] > 0, na.rm = TRUE) / sum(!is.na(rst.mk[])), 3)
-#     val.neg <- round(sum(rst.mk[] < 0, na.rm = TRUE) / sum(!is.na(rst.mk[])), 3)
-#     
-#     return(data.frame(sensor = h, p = as.character(i), nona = val, 
-#                       nona_pos = val.pos, nona_neg = val.neg))
-#   })
-#   
-#   return(do.call("rbind", stats))
+  # # 2011-2013
+  # fls_scl <- list.files(outdir, pattern = "^SCL", full.names = TRUE)
+  # 
+  # # st <- grep("201101", fls_scl)
+  # # nd <- grep("201312", fls_scl)
+  # # fls_scl <- fls_scl[st:nd]
+  # 
+  # rst_scl <- stack(fls_scl)
+  # 
+  # mat_plt_val <- extract(rst_scl, plt_apoles)
+  # df_plt_val <- data.frame(PlotID = plt_apoles@data[, 1], mat_plt_val)
+  # names(df_plt_val)[2:ncol(df_plt_val)] <- 
+  #   sapply(strsplit(names(df_plt_val)[2:ncol(df_plt_val)], "_"), "[[", 4)
+  # write.csv(df_plt_val, "out/csv/ndvi_aggmin_200207_201409.csv", row.names = FALSE)
+  # 
+  # months <- substr(sapply(strsplit(fls_scl, "_"), "[[", 5), 5, 6)
+  # indices <- as.numeric(as.factor(months))
+  # 
+  # rst_scl_mmonth <- stackApply(rst_scl, indices = indices, fun = mean)
+  # 
+  # plt_scl_mmonth <- data.frame(PlotId = plt_apoles$PlotID, 
+  #                              extract(rst_scl_mmonth, plt_apoles))
+  # 
+  # id <- grep("mai2", plt_scl_mmonth$PlotId)
+  # plot(unlist(plt_scl_mmonth[id, 2:ncol(plt_scl_mmonth)]), type = "l", 
+  #      xlab = "Month", ylab = "NDVI")
+  # 
+  #   st <- ifelse(h == "MOD13Q1", "2001", "2003")
+  #   st <- "2003"
+  #   nd <- "2013"
+  # 
+  #   fls.wht <- fls.wht[grep(st, fls.wht):grep(nd, fls.wht)]
+  #   rst.wht <- stack(fls.wht)
+  #   
+  #   rst.mk <- overlay(rst.wht, fun = function(x) MannKendall(as.numeric(x))$tau, 
+  #                     filename = paste("out/MK", toupper(h), unique(substr(names(rst.wht), 1, 21)), st, nd, sep = "_"), 
+  #                     format = "GTiff", overwrite = TRUE)
+  #   rst.mk.p <- overlay(rst.wht, fun = function(x) MannKendall(as.numeric(x))$sl, 
+  #                       filename = paste("out/MK_p", toupper(h), unique(substr(names(rst.wht), 1, 21)), st, nd, sep = "_"), 
+  #                       format = "GTiff", overwrite = TRUE)
+  # 
+  #   fls.mk <- list.files("out", pattern = paste0("MK_", toupper(h), ".*.tif$"), 
+  #                        full.names = TRUE)
+  #   rst.mk <- raster(fls.mk)
+  #   
+  #   png(paste0(substr(fls.mk, 1, nchar(fls.mk)-4), ".png"), units = "mm", 
+  #       width = 300, res = 300, pointsize = 20)
+  #   print(spplot(rst.mk, scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+  #          col.regions = colorRampPalette(brewer.pal(11, "BrBG")), 
+  #          sp.layout = list("sp.lines", rasterToContour(dem)), 
+  #          par.settings = list(fontsize = list(text = 15)), at = seq(-.9, .9, .1)))
+  #   dev.off()
+  #   
+  #   stats <- lapply(c(.01, .001), function(i) {
+  #     rst.mk <- overlay(rst.wht, fun = function(x) {
+  #       mk <- MannKendall(as.numeric(x))
+  #       if (mk$sl >= i) return(NA) else return(mk$tau)
+  #     }, filename = paste("out/MK", i, toupper(h), 
+  #                         unique(substr(names(rst.wht), 1, 21)), sep = "_"), 
+  #     format = "GTiff", overwrite = TRUE)
+  #     
+  #     fls.mk <- list.files("out", pattern = paste(i, toupper(h), ".tif$", sep = ".*"), 
+  #                          full.names = TRUE)
+  #     rst.mk <- raster(fls.mk)
+  #     
+  #     png(paste0(substr(fls.mk, 1, nchar(fls.mk)-4), ".png"), units = "mm", 
+  #         width = 300, res = 300, pointsize = 20)
+  #     print(spplot(rst.mk, scales = list(draw = TRUE), xlab = "x", ylab = "y", 
+  #                  col.regions = colorRampPalette(brewer.pal(11, "BrBG")), 
+  #                  sp.layout = list("sp.lines", rasterToContour(dem)), 
+  #                  par.settings = list(fontsize = list(text = 15)), 
+  #                  at = seq(-.9, .9, .1)))
+  #     dev.off()
+  #     
+  #     val <- round(sum(!is.na(rst.mk[]))/ncell(rst.mk), digits = 3)
+  #     
+  #     val.pos <- round(sum(rst.mk[] > 0, na.rm = TRUE) / sum(!is.na(rst.mk[])), 3)
+  #     val.neg <- round(sum(rst.mk[] < 0, na.rm = TRUE) / sum(!is.na(rst.mk[])), 3)
+  #     
+  #     return(data.frame(sensor = h, p = as.character(i), nona = val, 
+  #                       nona_pos = val.pos, nona_neg = val.neg))
+  #   })
+  #   
+  #   return(do.call("rbind", stats))
 }
 
 # Store percentage information about significant NDVI pixels
@@ -368,8 +378,8 @@ rst.qa <- lapply(c("MOD13Q1", "MYD13Q1"), function(h) {
   
   fls <- list.files("data/processed/", full.names = TRUE, 
                     pattern = paste("^BF_", h, sep = ".*"))
-
-#   st <- ifelse(h == "MOD13Q1", "2001", "2003")
+  
+  #   st <- ifelse(h == "MOD13Q1", "2001", "2003")
   st <- "2003"
   nd <- "2013"
   
@@ -384,13 +394,13 @@ rst.wht <- lapply(c("MOD13Q1", "MYD13Q1"), function(h) {
   fls <- list.files(paste0("data/processed/whittaker_", tolower(h)), 
                     pattern = "NDVI_Year.*_year.*.tif$", full.names = TRUE)
   
-#   st <- ifelse(h == "MOD13Q1", "2001", "2003")
+  #   st <- ifelse(h == "MOD13Q1", "2001", "2003")
   st <- "2003"
   nd <- "2013"
   
   fls <- fls[grep(st, fls)[1]:grep(nd, fls)[length(grep(nd, fls))]]
   rst <- stack(fls)
-
+  
   return(rst)
 })
 
@@ -398,7 +408,7 @@ dat.wht <- lapply(c("MOD13Q1", "MYD13Q1"), function(h) {
   fls.crp <- list.files("data/processed/",
                         pattern = paste("^CRP", h, "NDVI.tif$", sep = ".*"))
   
-#   st <- ifelse(h == "MOD13Q1", "2001", "2003")
+  #   st <- ifelse(h == "MOD13Q1", "2001", "2003")
   st <- "2003"
   nd <- "2013"
   
