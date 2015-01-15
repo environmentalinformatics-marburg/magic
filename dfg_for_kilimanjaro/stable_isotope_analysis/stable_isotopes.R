@@ -42,10 +42,11 @@ iso.sm <- summary(lm(dD_H ~ d18_16, data = iso))
 ## global meteoric water line (gmwl) according to Craig (1961) to plot
 
 iso.all.lmwl.gmwl <- qplot(d18_16, dD_H, data = iso, color = plot_id_sp1, shape = type, 
-                           xlab = "d18O%o \n
-                           black line: LMWL dD = 14.87d18O + 7.44,
+                           xlab = "d18O %o \n
+                           black line: LMWL for mean values dD = 5.77d18O + 9.04, 
+                           dotted: LMWL for each available data pair dD = 14.87d18O + 7.44,
                            dashed: GMWL dD = 8d18O + 10",
-                           ylab = "d2H%o") + 
+                           ylab = expression(delta^{2}*H ~ "\u2030")) + 
   scale_color_manual(values = col.id, limits = leg, name = "Plot ID SP1") + 
   geom_abline(intercept = 14.87, slope = 7.44) + 
   geom_abline(intercept = 10, slope = 8, linetype = 2)
@@ -102,7 +103,7 @@ iso.mns.lmwl.gmwl <- qplot(d18_16_mn, dD_H_mn, data = iso.mns, shape = type,
                            black line: LMWL for mean values dD = 5.77d18O + 9.04, 
                            dotted: LMWL for each available data pair dD = 14.87d18O + 7.44,
                            dashed: GMWL dD = 8d18O + 10",
-                           ylab = "d2H%o") + 
+                           ylab = expression(delta^{2}*H ~ "\u2030")) + 
   scale_color_manual(values = col.id, limits = leg, name = "Plot ID SP1") + 
   geom_abline(intercept = 9.04, slope = 5.77) +
   geom_abline(intercept = 14.87, slope = 7.44, linetype = 3) +
@@ -122,7 +123,7 @@ iso.mns.lmwl.gmwl.diff <- qplot(d18_16_mn, dD_H_mn, data = iso.mns, shape = type
                                 black line: LMWL for mean values dD = 5.77d18O + 9.04, 
                                 dotted: LMWL for each available data pair dD = 14.87d18O + 7.44,
                                 dashed: GMWL dD = 8d18O + 10",
-                                ylab = "d2H%o") + 
+                                ylab = expression(delta^{2}*H ~ "\u2030")) + 
   facet_wrap( ~ type) +
   scale_color_manual(values = col.id, limits = leg, name = "Plot ID SP1") + 
   geom_abline(intercept = 9.04, slope = 5.77) +
@@ -167,7 +168,8 @@ sm.tf.machame <- summary(lm(dD_H ~ d18_16, data = subset(iso.machame, iso.macham
 
 # plot quick for overview 
 sc.pl.machame <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1, 
-                       shape = type, xlab = "d18O%o", ylab = "d2H%o") + 
+                       shape = type, xlab = expression(delta^{18}*O ~ "\u2030"), 
+                       ylab = expression(delta^{2}*H ~ "\u2030")) + 
   scale_color_manual(values = col.id.machame, limits = c("fer0", "fpo0", "foc0", "foc6", "flm1")) +
   geom_abline(intercept = 10, slope = 8, linetype = 2) + 
   geom_abline(intercept = 16.88, slope = 7.78)
@@ -179,7 +181,7 @@ iso.machame.all <- qplot(d18_16, dD_H, data = iso.machame, color = plot_id_sp1,
                            shape = type, xlab = "d18O%o \n 
                            black line fitted LMWL to all Machame data pairs dD = 7.78d18O + 16.88
                            dashed GMWL dD = 8d18O + 10",
-                           ylab = "d2H%o") + 
+                           ylab = expression(delta^{2}*H ~ "\u2030")) + 
   facet_wrap( ~ type) +
   scale_color_manual(values = col.id.machame, limits = c("fer0", "fpo0", "foc0", "foc6", "flm1"),
                      name = "Plot ID SP1") +
@@ -244,7 +246,7 @@ iso.machame.bt.tp <- qplot(d18_16, dD_H,
                            shape = type, xlab = "d18O%o \n 
                            black line fitted LMWL to all Machame data pairs dD = 7.78d18O + 16.88
                            dashed GMWL dD = 8d18O + 10",
-                           ylab = "d2H%o") + 
+                           ylab = expression(delta^{2}*H ~ "\u2030")) + 
   facet_wrap( ~ type) +
   scale_color_manual(values = c("orange", "red"), limits = c("fer0", "flm1"),
                      name = "Plot ID SP1") +
@@ -294,15 +296,15 @@ colnames(amnt.mns.mnth) <- c("date", "plot_id_sp1", "type", "elevation","amount_
 iso.mns.mnth.amnt <- merge(amnt.mns.mnth, iso.mns.mnth)
 
 
-### d18_16O scale_x_continuous?
-iso.mns.mnth.amnt.18O.pl <- ggplot(subset(iso.mns.mnth.amnt, 
-                                  iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
-                                  iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
-                         aes(x = date, y = d18_16, group = plot_id_sp1, 
-                             colour = plot_id_sp1)) + 
+### d18_16O 
+iso.mns.mnth.amnt.18O <- ggplot(subset(iso.mns.mnth.amnt, 
+                                       iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                       iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
+                                aes(x = date, y = d18_16, group = plot_id_sp1, 
+                                colour = plot_id_sp1)) + 
   facet_grid(type ~ ., scales = "free") +
   geom_line() + 
-  scale_color_manual(values = col.id.2, limits = leg.ord, name = "Plot ID SP1") + 
+  scale_color_manual(values = col.id.3, limits = leg.ord, name = "Plot ID SP1") + 
   ylab( expression(delta^{18}*O ~ "\u2030")) +
   xlab("") +
   scale_x_discrete(labels = c("12-11", "12-12", "13-01", "13-02", "13-03", "13-04",
@@ -317,24 +319,24 @@ iso.mns.mnth.amnt.18O.pl <- ggplot(subset(iso.mns.mnth.amnt,
     panel.border = element_rect(color = "gray", fill = NA))
 
 
-# print "iso.mns.mnth.amnt.18O.pl"
-png("out/iso.mns.mnth.amnt.18O.pl.png", width = 30, height = 20, units = "cm", 
+# print "iso.mns.mnth.amnt.18O"
+png("out/iso.mns.mnth.amnt.18O.png", width = 30, height = 20, units = "cm", 
     res = 300, pointsize = 15)
-print(iso.mns.mnth.amnt.18O.pl)
+print(iso.mns.mnth.amnt.18O)
 dev.off()
 
 
 
 
 ### dD_H
-iso.mns.mnth.amnt.dDH.pl <- ggplot(subset(iso.mns.mnth.amnt, 
-                                          iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
-                                          iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
-                                   aes(x = date, y = dD_H, group = plot_id_sp1, 
-                                       colour = plot_id_sp1)) + 
+iso.mns.mnth.amnt.dDH <- ggplot(subset(iso.mns.mnth.amnt, 
+                                       iso.mns.mnth.amnt$plot_id_sp1 != "mnp1" &
+                                       iso.mns.mnth.amnt$plot_id_sp1 != "mnp2"), 
+                                aes(x = date, y = dD_H, group = plot_id_sp1, 
+                                colour = plot_id_sp1)) + 
   facet_grid(type ~ .) +
   geom_line() + 
-  scale_color_manual(values = col.id.2, limits = leg.ord, name = "Plot ID SP1") + 
+  scale_color_manual(values = col.id.3, limits = leg.ord, name = "Plot ID SP1") + 
   labs(x = "", y = expression(delta^{2}*H ~ "\u2030")) + 
   scale_x_discrete(labels = c("12-11", "12-12", "13-01", "13-02", "13-03", "13-04",
                               "13-05", "13-06", "13-07", "13-08", "13-09", "13-10", 
@@ -348,10 +350,10 @@ iso.mns.mnth.amnt.dDH.pl <- ggplot(subset(iso.mns.mnth.amnt,
     panel.border = element_rect(color = "gray", fill = NA))
 
 
-# print "iso.mns.mnth.amnt.dDH.pl"
-png("out/iso.mns.mnth.amnt.dDH.pl.png", width = 30, height = 20, units = "cm", 
+# print "iso.mns.mnth.amnt.dDH"
+png("out/iso.mns.mnth.amnt.dDH.png", width = 30, height = 20, units = "cm", 
     res = 300, pointsize = 15)
-print(iso.mns.mnth.amnt.dDH.pl)
+print(iso.mns.mnth.amnt.dDH)
 dev.off()
 
 -----------------------------------------------
@@ -446,5 +448,3 @@ png("out/iso.mns.mnth.elvtn.2DH.png", width = 30, height = 20, units = "cm",
     res = 300, pointsize = 15)
 print(iso.mns.mnth.elvtn.2DH)
 dev.off()
-
-
