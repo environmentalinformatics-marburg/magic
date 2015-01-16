@@ -36,7 +36,7 @@ rst_modis_myd13 <- stack(fls_modis_myd13)
 # rst_modis_myd13 <- deseason(rst_modis_myd13)
 
 ls_scores_niter20 <- lapply(1:20, function(n_iter) {
-  cat("No. of iteration:", n_iter)
+  cat("No. of iteration:", n_iter, "\n")
 # ls_scores_niter20 <- foreach(n_iter = 1:20) %do% {
   
   indices <- foreach(i = 1:12, .combine = "c") %do% {
@@ -47,8 +47,9 @@ ls_scores_niter20 <- lapply(1:20, function(n_iter) {
     return(train_id)
   }
   
-  fls_out <- c(paste0("data/rst/dwnscl_agg1km/gimms_ndvi3g_dwnscl_0311_pureeval_", 
-                      c("noreduceboth", "reduceboth", "dsn_noreduceboth", "dsn_reduceboth")))
+  fls_out <- c(paste("data/rst/dwnscl_agg1km/gimms_ndvi3g_dwnscl_0311_pureeval", 
+                      c("noreduceboth", "reduceboth", "dsn_noreduceboth", "dsn_reduceboth"), 
+                      formatC(n_iter, width = 2, flag = "0"), sep = "_"))
 #   results_eot <- foreach(i = c(rep(FALSE, 2), rep(TRUE, 2)), j = c(FALSE, TRUE, FALSE, TRUE), 
 #                          filename = fls_out, .packages = lib, .export = "downscaleEvaluation") %dopar%
     downscaleEvaluation(rst_pred = rst_modis_myd13, 
@@ -68,7 +69,7 @@ ls_scores_niter20 <- lapply(1:20, function(n_iter) {
   ################################################################################
   
   dsn <- FALSE
-  i <- paste("0311_pureeval", "noreduceboth", sep = "_")
+  i <- paste("0311_pureeval", "noreduceboth", formatC(n_iter, width = 2, flag = "0"), sep = "_")
 
 #   ls_scores <- 
 #   foreach(i = paste("0311_pureeval", c("noreduceboth", "reduceboth", "dsn_noreduceboth", "dsn_reduceboth"), sep = "_"), 
