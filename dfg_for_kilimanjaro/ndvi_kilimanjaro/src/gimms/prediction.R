@@ -6,29 +6,30 @@ registerDoParallel(cl <- makeCluster(3))
 
 # Temporal range
 st <- "200301"
-nd <- "201212"
+nd <- "201112"
 
 ## GIMMS NDVI3G
 fls_gimms <- list.files("data/rst/whittaker", pattern = "_wht_aggmax.tif$", 
                         full.names = TRUE)
-fls_gimms <- fls_gimms[grep("198201", fls_gimms):length(fls_gimms)]
+fls_gimms <- fls_gimms[grep("198201", fls_gimms):grep(nd, fls_gimms)]
 rst_gimms <- stack(fls_gimms)
-fls_gimms_0312 <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
-rst_gimms_0312 <- stack(fls_gimms_0312)
+fls_gimms_0311 <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
+rst_gimms_0311 <- stack(fls_gimms_0312)
 
 
 ### MODIS NDVI
-fls_modis_myd13 <- list.files("data/modis", pattern = "^SCL_AGGMAX.*.tif$", 
+fls_modis <- list.files("data/modis", pattern = "^SCL_AGGMAX.*.tif$", 
                               full.names = TRUE)
-rst_modis_myd13 <- stack(fls_modis_myd13)
+fls_modis_0311 <- fls_modis[grep(st, fls_modis):grep(nd, fls_modis)]
+rst_modis_0311 <- stack(fls_modis)
 
 ### calculate EOT
-ndvi_modes <- eot(x = rst_gimms_0312, y = rst_modis_myd13, n = 10, 
+ndvi_modes <- eot(x = rst_gimms_0311, y = rst_modis_0311, n = 10, 
                   standardised = FALSE, reduce.both = FALSE, 
                   verbose = TRUE, write.out = TRUE, path.out = "data/eot")
 
 ### calculate number of modes necessary for explaining 98% variance
-nm <- nXplain(ndvi_modes, 0.92)
+nm <- nXplain(ndvi_modes, 0.95)
 
 ### prediction using claculated intercept, slope and GIMMS NDVI values
 mod_predicted <- predict(object = ndvi_modes,
@@ -38,7 +39,7 @@ mod_predicted <- predict(object = ndvi_modes,
 projection(mod_predicted) <- projection(rst_gimms)
 
 dir_out <- unique(dirname(fls_gimms))
-file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_8212")
+file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_8211")
 mod_predicted <- writeRaster(mod_predicted, filename = file_out, 
                              format = "GTiff", bylayer = FALSE, 
                              overwrite = TRUE)
