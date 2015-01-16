@@ -12,12 +12,16 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
@@ -342,6 +346,32 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 	}
 
+	private static class PriorityRunnable implements Runnable, Comparable<PriorityRunnable> {
+		final Runnable entry;
+		final int seqNum;
+		final int priority;
+		public PriorityRunnable(Runnable entry,int seqNum,int priority) {
+			seqNum = seqNum;
+			this.entry = entry;
+			this.seqNum = seqNum;
+			this.priority = priority;
+		}
+		@Override
+		public int compareTo(PriorityRunnable o) {
+			if(this.priority<o.priority) {
+				return -1;
+			}
+			if(this.priority>o.priority) {
+				return +1;
+			}
+			return this.seqNum < o.seqNum ? -1 : 1;
+		}
+		@Override
+		public void run() {
+			entry.run();			
+		}
+	}
+
 
 
 
@@ -359,13 +389,15 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 		updateScreen(null);
 
-		if(executorQueryTimeSeries!=null) {			
+		/*if(executorQueryTimeSeries!=null) {			
 			executorQueryTimeSeries.shutdownNow();			
 		}
 		//executorQueryTimeSeries = Executors.newWorkStealingPool();
 		//executorQueryTimeSeries = createPriorityExecutor(Thread.MIN_PRIORITY);
 		executorQueryTimeSeries = createPriorityExecutor(1,Thread.MIN_PRIORITY);
 
+		//ExecutorService es = Executors.newFixedThreadPool(2);
+		
 
 
 
@@ -373,13 +405,33 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			executorDrawImages.shutdownNow();		
 		}
 		//executorDrawImages = Executors.newWorkStealingPool();
-		executorDrawImages = createPriorityExecutor(1,Thread.MIN_PRIORITY+1);
+		executorDrawImages = createPriorityExecutor(1,Thread.MIN_PRIORITY+1); */
+		
+		
+		if(executorQueryTimeSeries!=null) {
+			executorQueryTimeSeries.shutdownNow();
+		}
+		if(executorDrawImages!=null) {		
+			executorDrawImages.shutdownNow();		
+		}
+		final int nThreads = ForkJoinPool.getCommonPoolParallelism();
+		//final int nThreads = 16;
+		System.out.println("nThreads "+nThreads);
+		ThreadPoolExecutor tpe = new ThreadPoolExecutor(nThreads, nThreads, nThreads, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<Runnable>());
+		executorQueryTimeSeries = tpe;
+		executorDrawImages = tpe;
+		
 
-
+		int seqCounter = 0;
 		for(QueryEntry queryEntry:queryList) {
+			
+			final int sq = seqCounter;
 
 			queryEntry.timestampSeriesProperty.addListener((s,o,ts)->{
 				if(ts!=null) {
+					
+					
+					
 					System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 					final int width = (int)borderPaneDiagrams.getWidth()-30;
@@ -422,7 +474,9 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 					};
 
 					try {
-						executorDrawImages.submit(drawImageTask);
+						//executorDrawImages.submit(new PriorityRunnable(drawImageTask,0,0));
+						
+						executorDrawImages.execute(new PriorityRunnable(drawImageTask,sq,0));
 					} catch(Exception e) {
 						log.error(e);
 					}
@@ -446,10 +500,13 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 			};
 
 			try {
-				executorQueryTimeSeries.submit(queryTimeSeriesTask);
+				//executorQueryTimeSeries.submit(new PriorityRunnable(queryTimeSeriesTask,0,0));
+				executorQueryTimeSeries.execute(new PriorityRunnable(queryTimeSeriesTask,seqCounter,1));
 			} catch(Exception e) {
 				log.error(e);
 			}
+			
+			seqCounter++;
 		}
 
 

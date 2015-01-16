@@ -18,5 +18,7 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.servlet_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.servlet.source_9.2.3.v20140905.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.api_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.api.source_9.2.3.v20140905.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.websocket.common_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.websocket.common.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.servlet_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.servlet.source_9.2.3.v20140905.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.security_9.2.3.v20140905.jar" sourcepath="lib/source/org.eclipse.jetty.security.source_9.2.3.v20140905.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
