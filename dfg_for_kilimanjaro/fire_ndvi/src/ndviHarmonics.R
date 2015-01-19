@@ -174,15 +174,15 @@ diff_max_x <- overlay(rst.har[[1]][[1]], rst.har[[2]][[1]], fun = function(x, y)
   return(val_diff)
 })
 
-cols_div <- colorRampPalette(brewer.pal(11, "BrBG"))
-p_diff_max_x <- 
-  spplot(diff_max_x, col.regions = cols_div(100), scales = list(draw = TRUE), 
-         xlab = "x", ylab = "y", at = seq(-6.5, 6.5, 1),
-         sp.layout = list("sp.lines", rasterToContour(dem), col = "grey65"))
-png("out/harmonic/harmonic_modis_diff_max_x_0306_1013.png", width = 20, 
-    height = 17.5, units = "cm", pointsize = 15, res = 300)
-print(p_diff_max_x)
-dev.off()
+# cols_div <- colorRampPalette(brewer.pal(11, "BrBG"))
+# p_diff_max_x <- 
+#   spplot(diff_max_x, col.regions = cols_div(100), scales = list(draw = TRUE), 
+#          xlab = "x", ylab = "y", at = seq(-6.5, 6.5, 1),
+#          sp.layout = list("sp.lines", rasterToContour(dem), col = "grey65"))
+# png("out/harmonic/harmonic_modis_diff_max_x_0306_1013.png", width = 20, 
+#     height = 17.5, units = "cm", pointsize = 15, res = 300)
+# print(p_diff_max_x)
+# dev.off()
 
 
 diff_min_x <- overlay(rst.har[[1]][[3]], rst.har[[2]][[3]], fun = function(x, y) {
