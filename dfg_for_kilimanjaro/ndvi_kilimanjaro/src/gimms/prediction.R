@@ -1,34 +1,53 @@
+setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
+
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr")
+         "ggplot2", "dplyr", "Kendall", "RColorBrewer")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 registerDoParallel(cl <- makeCluster(3))
 
+# DEM
+dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
+
+# Old and new National Park borders
+np_old <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
+                  layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
+                  p4s = "+init=epsg:4326")
+np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
+np_old_utm_sl <- as(np_old_utm, "SpatialLines")
+
+np_new <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
+                  layer = "fdetsch-kilimanjaro-1420532792846", 
+                  p4s = "+init=epsg:4326")
+np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
+np_new_utm_sl <- as(np_new_utm, "SpatialLines")
+
 # Temporal range
 st <- "200301"
-nd <- "201212"
+nd <- "201112"
 
 ## GIMMS NDVI3G
 fls_gimms <- list.files("data/rst/whittaker", pattern = "_wht_aggmax.tif$", 
                         full.names = TRUE)
-fls_gimms <- fls_gimms[grep("198201", fls_gimms):length(fls_gimms)]
+fls_gimms <- fls_gimms[grep("198201", fls_gimms):grep(nd, fls_gimms)]
 rst_gimms <- stack(fls_gimms)
-fls_gimms_0312 <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
-rst_gimms_0312 <- stack(fls_gimms_0312)
+fls_gimms_0311 <- fls_gimms[grep(st, fls_gimms):grep(nd, fls_gimms)]
+rst_gimms_0311 <- stack(fls_gimms_0311)
 
 
 ### MODIS NDVI
-fls_modis_myd13 <- list.files("data/modis", pattern = "^SCL_AGGMAX.*.tif$", 
+fls_modis <- list.files("data/modis", pattern = "^SCL_AGGMAX.*.tif$", 
                               full.names = TRUE)
-rst_modis_myd13 <- stack(fls_modis_myd13)
+fls_modis_0311 <- fls_modis[grep(st, fls_modis):grep(nd, fls_modis)]
+rst_modis_0311 <- stack(fls_modis_0311)
 
 ### calculate EOT
-ndvi_modes <- eot(x = rst_gimms_0312, y = rst_modis_myd13, n = 10, 
+ndvi_modes <- eot(x = rst_gimms_0311, y = rst_modis_0311, n = 25, 
                   standardised = FALSE, reduce.both = FALSE, 
                   verbose = TRUE, write.out = TRUE, path.out = "data/eot")
 
 ### calculate number of modes necessary for explaining 98% variance
-nm <- nXplain(ndvi_modes, 0.92)
+nm <- nXplain(ndvi_modes, 0.95)
 
 ### prediction using claculated intercept, slope and GIMMS NDVI values
 mod_predicted <- predict(object = ndvi_modes,
@@ -38,12 +57,35 @@ mod_predicted <- predict(object = ndvi_modes,
 projection(mod_predicted) <- projection(rst_gimms)
 
 dir_out <- unique(dirname(fls_gimms))
-file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_8212")
+file_out <- paste0(dir_out, "/gimms_ndvi3g_dwnscl_8211")
 mod_predicted <- writeRaster(mod_predicted, filename = file_out, 
                              format = "GTiff", bylayer = FALSE, 
                              overwrite = TRUE)
 
 # mod_predicted <- stack(file_out)
+
+### mann-kendall trend statistics
+file_out <- paste0(file_out, "_mk")
+mod_predicted_mk <- 
+  foreach(i = c(1, .05, .01, .001), j = c("", "0.05", "0.01", "0.001")) %do%
+  calc(mod_predicted, fun = function(...) {
+    mk <- MannKendall(...)
+    sl <- mk$sl
+    tau <- mk$tau
+    tau[abs(sl) >= i] <- NA
+    return(tau)
+  }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
+
+cols_div <- colorRampPalette(brewer.pal(11, "BrBG"))
+p_mk <- 
+  spplot(mod_predicted_mk[[1]], col.regions = cols_div(100), ylab = "y", 
+         at = seq(-.5, .5, .1), scales = list(draw = TRUE), xlab = "x", 
+         sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey65"), 
+                          list("sp.lines", np_old_utm_sl, lwd = 1.6, lty = 2), 
+                          list("sp.lines", np_new_utm_sl, lwd = 1.6))) 
+
+kendallStats(mod_predicted_mk[[4]])
+
 
 ### visualise plots
 plt <- readOGR(dsn = "data/coords/", 
