@@ -62,12 +62,12 @@ mod_predicted <- writeRaster(mod_predicted, filename = file_out,
                              format = "GTiff", bylayer = FALSE, 
                              overwrite = TRUE)
 
-# mod_predicted <- stack(file_out)
+mod_predicted <- stack("data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif")
 
 ### mann-kendall trend statistics
 file_out <- paste0(file_out, "_mk")
 mod_predicted_mk <- 
-  foreach(i = c(1, .05, .01, .001), j = c("", "0.05", "0.01", "0.001")) %do%
+  foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
   calc(mod_predicted, fun = function(...) {
     mk <- MannKendall(...)
     sl <- mk$sl
@@ -75,6 +75,7 @@ mod_predicted_mk <-
     tau[abs(sl) >= i] <- NA
     return(tau)
   }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
+
 
 cols_div <- colorRampPalette(brewer.pal(11, "BrBG"))
 p_mk <- 
