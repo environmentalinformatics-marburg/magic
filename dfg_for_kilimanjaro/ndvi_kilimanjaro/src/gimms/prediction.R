@@ -1,10 +1,12 @@
 setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
 
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr", "Kendall", "RColorBrewer")
+         "ggplot2", "dplyr", "Kendall", "RColorBrewer", "rgeos")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 registerDoParallel(cl <- makeCluster(3))
+
+source("kendallStats.R")
 
 # DEM
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
@@ -66,27 +68,69 @@ mod_predicted <- stack("data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif")
 
 ### mann-kendall trend statistics
 file_out <- paste0(file_out, "_mk")
-mod_predicted_mk <- 
-  foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
-  calc(mod_predicted, fun = function(...) {
-    mk <- MannKendall(...)
-    sl <- mk$sl
-    tau <- mk$tau
-    tau[abs(sl) >= i] <- NA
-    return(tau)
-  }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
+# mod_predicted_mk <- 
+#   foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
+#   calc(mod_predicted, fun = function(...) {
+#     mk <- MannKendall(...)
+#     sl <- mk$sl
+#     tau <- mk$tau
+#     tau[abs(sl) >= i] <- NA
+#     return(tau)
+#   }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
 
+mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "mk", 
+                               full.names = TRUE)[4:1]
+mod_predicted_mk <- lapply(mod_predicted_mk, raster)
 
 cols_div <- colorRampPalette(brewer.pal(11, "BrBG"))
 p_mk <- 
   spplot(mod_predicted_mk[[1]], col.regions = cols_div(100), ylab = "y", 
          at = seq(-.5, .5, .1), scales = list(draw = TRUE), xlab = "x", 
+         par.settings = list(fontsize = list(text = 15)),
          sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey65"), 
                           list("sp.lines", np_old_utm_sl, lwd = 1.6, lty = 2), 
                           list("sp.lines", np_new_utm_sl, lwd = 1.6))) 
 
+png("vis/mk/gimms_mk_8211.png", width = 26, height = 18, units = "cm", 
+    pointsize = 15, res = 300)
+print(p_mk)
+dev.off()
+
 kendallStats(mod_predicted_mk[[4]])
 
+## comparison with pettorelli et al. 2012
+
+# mannkendall raster with p < .05 
+rst_mk_001 <- mod_predicted_mk[[4]]
+
+# reject pixels intersecting np border
+id_intersect <- foreach(i =1:ncell(rst_mk_05), .packages = lib, 
+                        .combine = "c") %dopar% {
+                          rst <- rst_mk_05
+                          rst[][-i] <- NA
+                          
+                          if (all(is.na(rst[]))) {
+                            return(FALSE)
+                          } else {
+                          shp <- rasterToPolygons(rst)
+                          return(gIntersects(np_new_utm_sl, shp))
+                          }
+                        }
+
+rst_mk_001_rmb <- rst_mk_001
+rst_mk_001_rmb[id_intersect] <- NA
+
+# share of positive and negative trends inside np
+val_mk_001_rmb <- extract(rst_mk_001_rmb, np_new_utm)[[1]]
+sum(val_mk_001_rmb > 0, na.rm = TRUE) / sum(!is.na(val_mk_001_rmb))
+sum(val_mk_001_rmb < 0, na.rm = TRUE) / sum(!is.na(val_mk_001_rmb))
+
+# share of positive and negative trends outside np
+rst_mk_001_rmb_out <- mask(rst_mk_001_rmb, 
+                           as(np_new_utm[1, ], "SpatialPolygons"), inverse = TRUE)
+
+sum(rst_mk_001_rmb_out[] > 0, na.rm = TRUE) / sum(!is.na(rst_mk_001_rmb_out[]))
+sum(rst_mk_001_rmb_out[] < 0, na.rm = TRUE) / sum(!is.na(rst_mk_001_rmb_out[]))
 
 ### visualise plots
 plt <- readOGR(dsn = "data/coords/", 

@@ -16,6 +16,11 @@ rst_diff <- lapply(fls_diff, raster)
 diff_max_x <- rst_diff[[1]]
 diff_max_y <- rst_diff[[2]]
 
+# statistics
+val_diff_max_x <- diff_max_x[]
+sum(val_diff_max_x != 0, na.rm = TRUE) / ncell(diff_max_x)
+sum(val_diff_max_x < 0, na.rm = TRUE) / sum(val_diff_max_x != 0, na.rm = TRUE)
+sum(val_diff_max_x > 0, na.rm = TRUE) / sum(val_diff_max_x != 0, na.rm = TRUE)
 
 rst_month_max <- raster("data/rst/harmonic/GIMMS_st_st_max_x.tif")
 rst_diff_month <- raster("data/rst/harmonic/diff_max_x.tif")
@@ -108,6 +113,34 @@ print(p_1)
 dev.off()
 
 # seasons instead of years
+rcl_ssn <- matrix(c(1, 3, 1, 
+                  3, 6, 4, 
+                  6, 9, 7, 
+                  9, 12, 10, 
+                  12, 13, 1), byrow = TRUE, ncol = 3)
+rst_month_max_rcl <- reclassify(rst_month_max, rcl_ssn, right = FALSE)
+rat_month_max_rcl <- ratify(rst_month_max_rcl)
+rat_rcl <- levels(rat_month_max_rcl)[[1]]
+rat_rcl$season <- c("DJF", "MAM", "JJA", "SON")
+levels(rat_month_max_rcl) <- rat_rcl
+
+# hcl color scheme prerequisites
+val_month_max_rcl <- sort(unique(rst_month_max_rcl[]))
+col_month_max_rcl <- data.frame(cell = 1:length(val_month_max_rcl), 
+                            h = -360/12 + val_month_max_rcl * 360/12, 
+                            l = 80,
+                            c = 65)
+
+p_1_rcl <- levelplot(rat_month_max_rcl, scales = list(draw = TRUE), 
+                     xlab = list("x", cex = 1.5), ylab = list("y", cex = 1.5), 
+                     par.settings = list("axis.text" = list(cex = 1.1)), 
+                     col.regions = hcl(h = col_month_max_rcl$h, c = 70, l = 65)) + 
+  layer(sp.lines(rasterToContour(dem), col = "grey75"))
+
+png("vis/harmonic/h_month_max_ssn__l_80__c_65__8291_0211.png", width = 30, height = 25, 
+    units = "cm", pointsize = 15, res = 300)
+print(p_1_rcl)
+dev.off()
 
 
 ### second plot, maximum ndvi and amplitude shift
