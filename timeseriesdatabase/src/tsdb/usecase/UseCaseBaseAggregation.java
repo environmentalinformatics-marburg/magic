@@ -38,7 +38,7 @@ public class UseCaseBaseAggregation {
 		//String[] queryParameterNames = new String[] {"Ta_200"};
 		String[] queryParameterNames = null;
 		
-		TimestampSeries timeSeries = TimestampSeries.create(qp.query_base_aggregated(plotID, queryParameterNames, null, null, DataQuality.NO));
+		TimestampSeries timeSeries = TimestampSeries.create(qp.query_base_aggregated(plotID, queryParameterNames, null, null, DataQuality.NO),plotID);
 
 
 		

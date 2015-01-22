@@ -1,8 +1,13 @@
 package tsdb;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,24 +16,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.Serializer;
 
-public class TimeSeriesMask {
+public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
+	//private static final long serialVersionUID = -5310913775843602700L;
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private ArrayList<Interval> intervals;
-	
+
 	public TimeSeriesMask() {
 		this(new ArrayList<Interval>());
 	}
-	
+
 	private TimeSeriesMask(ArrayList<Interval> intervals) {
+		throwNull(intervals);
 		this.intervals = intervals;
 	}
-	
+
 	public ArrayList<Interval> getIntervals() {
 		return intervals;
 	}
-	
+
 	public void addInterval(Interval interval) {
+		throwNull(interval);
 		ArrayList<Interval> result = new ArrayList<Interval>(intervals.size()+1);
 		Iterator<Interval> it = intervals.iterator();
 		Interval current;
@@ -37,10 +46,10 @@ public class TimeSeriesMask {
 		} else {
 			current = null;
 		}
-		
+
 		while(interval!=null||current!=null) {
 			//log.info("now intverval "+interval+" current  "+current);
-			
+
 			if(interval==null) { // current!=null
 				result.add(current);
 				if(it.hasNext()) {
@@ -77,8 +86,35 @@ public class TimeSeriesMask {
 		}		
 		intervals = result;
 		System.out.println("intervals "+intervals.size());
-	}	
+	}
+
+	public Iterator<Interval> getIterator() {
+		return intervals.iterator();
+	}
 	
+	public boolean isEmpty() {
+		return intervals.isEmpty();
+	}
+
+	/*private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		SERIALIZER.serialize(out, this);
+	}
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		TimeSeriesMask tsm = SERIALIZER.deserialize(in, -1);
+		this.intervals = tsm.intervals;
+	}*/
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		SERIALIZER.serialize(out, this);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException {
+		TimeSeriesMask tsm = SERIALIZER.deserialize(in, -1);
+		this.intervals = tsm.intervals;
+	}	
+
 	private static class TimeSeriesMaskSerializer implements Serializer<TimeSeriesMask>, Serializable {
 		private static final long serialVersionUID = -537733926693978436L;
 		@Override
@@ -108,6 +144,6 @@ public class TimeSeriesMask {
 			return -1;
 		}
 	};
-	
+
 	public static final Serializer<TimeSeriesMask> SERIALIZER = new TimeSeriesMaskSerializer();	
 }

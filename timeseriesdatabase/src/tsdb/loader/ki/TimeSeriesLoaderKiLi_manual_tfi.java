@@ -76,7 +76,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 	private void loadOneFile_structure_kili_tfi(VirtualPlot virtualPlot, Path path) {		
 		CSVIterator input_iterator = CSVIterator.create(path);
 		if(input_iterator!=null&&input_iterator.hasNext()) {
-			TimestampSeries timestampSeries = input_iterator.toTimestampSeries();
+			TimestampSeries timestampSeries = input_iterator.toTimestampSeries(virtualPlot.plotID);
 			long start = timestampSeries.getFirstTimestamp();
 			long end = timestampSeries.getLastTimestamp();
 			String serial = null;

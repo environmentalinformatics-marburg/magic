@@ -46,7 +46,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 		this.name = name;
 	}
 	
-	public static TimestampSeries create(TsIterator input_iterator) {
+	public static TimestampSeries create(TsIterator input_iterator, String name) {
 		if(!input_iterator.hasNext()) {
 			log.warn("TimestampSeries.create: input_iterator is empty");
 			//new Exception().printStackTrace(System.out);
@@ -57,7 +57,9 @@ public class TimestampSeries implements TsIterable, Serializable {
 			TsEntry next = input_iterator.next();
 			entryList.add(next);
 		}
-		return new TimestampSeries(input_iterator.getNames(), entryList, null);
+		TimestampSeries ts = new TimestampSeries(input_iterator.getNames(), entryList, null);
+		ts.name = name;
+		return ts;
 	}
 	
 	@Override

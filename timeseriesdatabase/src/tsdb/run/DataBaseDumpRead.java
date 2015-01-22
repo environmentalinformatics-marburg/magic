@@ -1,7 +1,6 @@
-package tsdb.usecase;
+package tsdb.run;
 
 import java.io.BufferedInputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,17 +17,41 @@ import tsdb.streamdb.StreamDB;
 public class DataBaseDumpRead {
 
 	private static final Logger log = LogManager.getLogger();
+	
+	public static void printHelp() {
+		System.out.println("*** database dumb reader ***");
+		System.out.println("first parameter is path to dump file to load");
+	}
 
 	public static void main(String[] args) throws IOException {
+		
+		//Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump.tss");
+		Path pathToFile = null;
+		if(args.length==0) {
+			printHelp();
+			return;
+		} else if(args.length==1) {
+			pathToFile = Paths.get(args[0]);
+		} else {
+			printHelp();
+			return;
+		}
+		
+		if(!pathToFile.toFile().exists()) {
+			System.out.println("file not found: "+pathToFile);
+			printHelp();
+			return;
+		}
+		
 
 		System.out.println("open streamDB...");
 
 
 		StreamDB streamdb = new StreamDB(TsDBFactory.STORAGE_PATH+"/streamdb");
 		try {
-
-
-			Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump.tss");
+			
+			
+			
 			BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(pathToFile.toFile()));
 			DataInputStream dataInput = new DataInputStream(fileInputStream);
 
@@ -52,9 +75,9 @@ public class DataBaseDumpRead {
 				final int valueCount = dataInput.readInt();
 
 				System.out.println(stationName+" "+sensorName+" "+valueCount);
-				
+
 				DataEntry[] data = new DataEntry[valueCount];
-				
+
 				for(int i=0;i<valueCount;i++) {
 
 					int timestamp = dataInput.readInt();
@@ -72,21 +95,7 @@ public class DataBaseDumpRead {
 			dataInput.close();
 
 		} finally {
-
 			streamdb.close();
-
 		}
-
-
-
-
-
-
-
-
-
-
-
 	}
-
 }

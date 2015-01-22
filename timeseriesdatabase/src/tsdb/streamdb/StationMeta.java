@@ -10,18 +10,20 @@ import org.mapdb.Serializer;
 public class StationMeta {
 
 	private static final String DB_NAME_SENSOR_MAP_PREFIX = "sensorMap/";
+	private static final String DB_NAME_SENSOR_TIME_SERIES_MASK_MAP_PREFIX = "sensorTimeSeriesMaskMap/";
 	
 	public final String stationName;
 	public final String db_name_sensor_map;
+	public final String db_name_sensor_time_series_mask_map;
 	
 	public StationMeta(String stationName) {
-		this.stationName = stationName;
-		this.db_name_sensor_map = DB_NAME_SENSOR_MAP_PREFIX+stationName;
+		this(stationName, DB_NAME_SENSOR_MAP_PREFIX+stationName,DB_NAME_SENSOR_TIME_SERIES_MASK_MAP_PREFIX+stationName);
 	}
 	
-	private StationMeta(String name, String db_name_sensor_map) {
-		this.stationName = name;
+	private StationMeta(String stationName, String db_name_sensor_map, String db_name_sensor_time_series_mask_map) {
+		this.stationName = stationName;
 		this.db_name_sensor_map = db_name_sensor_map;
+		this.db_name_sensor_time_series_mask_map = db_name_sensor_time_series_mask_map;
 	}
 	
 	private static class StationMetaSerializer implements Serializer<StationMeta>, Serializable {
@@ -31,13 +33,15 @@ public class StationMeta {
 				throws IOException {
 			out.writeUTF(value.stationName);
 			out.writeUTF(value.db_name_sensor_map);
+			out.writeUTF(value.db_name_sensor_time_series_mask_map);			
 		}
 		@Override
 		public StationMeta deserialize(DataInput in, int available)
 				throws IOException {
-			String n = in.readUTF();
-			String d = in.readUTF();
-			return new StationMeta(n,d);
+			String station = in.readUTF();
+			String sensorM = in.readUTF();
+			String sensorMaskM = in.readUTF();
+			return new StationMeta(station,sensorM,sensorMaskM);
 		}
 		@Override
 		public int fixedSize() {

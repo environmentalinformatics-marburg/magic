@@ -62,4 +62,8 @@ public interface StreamStorage {
 	String[] getSensorNames(String stationName);
 
 	StreamIterator getRawSensorIterator(String stationName, String sensorName, Long start, Long end);
+
+	TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName);
+
+	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask);
 }

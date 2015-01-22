@@ -52,7 +52,7 @@ $(document).ready(function(){
 		json_settings.col_datetime = document.getElementById("col_datetime").checked;
 		json_settings.write_header = document.getElementById("write_header").checked;
 
-		$.postJSON("/export/apply_settings",json_settings)
+		$.postJSON("../export/apply_settings",json_settings)
 		 .done(function() {
 			window.location = "export.html";
 			decTask();
@@ -62,7 +62,7 @@ $(document).ready(function(){
 	}
 	
 	incTask();
-	$.getJSON("/export/settings").done(function( data ) {
+	$.getJSON("../export/settings").done(function( data ) {
 		json_settings = data;
 		console.log(json_settings);
 		document.getElementById("interpolate").checked = json_settings.interpolate;

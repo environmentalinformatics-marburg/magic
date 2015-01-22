@@ -116,10 +116,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			this.interval = interval;
 			this.maskRect = maskRect;
 		}
-		public static MaskEntry of(int start, int end, Rectangle maskRect) {
-			return new MaskEntry(Interval.of(start, end),maskRect); 
-		}
-		
+
 		@Override
 		public String toString() {
 			return interval+"  "+maskRect;
@@ -136,7 +133,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		this.timeSeriesMask = new TimeSeriesMask();
 		this.maskRectList = new ArrayList<MaskEntry>();
 	}
-	
+
 	private void recreateMaskRectList() {		
 		Color b = Color.CHARTREUSE;
 		Color maskColor = new Color(b.getRed(), b.getGreen(), b.getBlue(), 0.5d);
@@ -206,8 +203,22 @@ public class TimeSeriesViewScene extends TsdbScene {
 				//mainStage.display(selectedFile);
 			}
 		});
+		
+		MenuItem menuItemSaveMask = new MenuItem("save mask");
+		menuItemSaveMask.setOnAction(e->{
+			TimeSeriesDiagram ts = timeSeriesDiagramProperty.get();
+			if(ts!=null&&timeSeriesMask!=null&&!timeSeriesMask.isEmpty()) {			
+				try {
+				tsdb.setTimeSeriesMask(ts.getTimeStampSeries().name, ts.getTimeStampSeries().sensorNames[0], timeSeriesMask);
+				} catch(Exception exception) {
+					log.error(exception);
+				}
+			}
+		});
+		
+		
 
-		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue,menuItemSave);
+		imageViewContextMenu = new ContextMenu(menuItemResetView,menuItemFitValues,menuItemAutoFitValue,menuItemSave,menuItemSaveMask);
 		imageViewContextMenu.setAutoHide(true);
 
 		stackPane = new StackPane();
@@ -373,6 +384,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 		timeSeriesDiagramProperty.addListener(o->{
 			zoomFactorTime=1;
 			createImage();
+			recreateMaskRectList();
 		});
 
 		imageProperty = new SimpleObjectProperty<Image>();
@@ -429,7 +441,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			for(MaskEntry maskEntry:maskRectList) {
 				int startX = tsd.calcDiagramX(maskEntry.interval.start);
 				int endX = tsd.calcDiagramX(maskEntry.interval.end+1)-1;
-				
+
 				if(endX<range[0] || range[1]<startX) {
 					maskEntry.maskRect.setVisible(false);
 				} else {
@@ -574,6 +586,14 @@ public class TimeSeriesViewScene extends TsdbScene {
 			TimestampSeries ts = tsdb.plot(null, plot.name, sensorNames, agg, quality, false, startTimestamp, endTimestamp);
 			if(ts!=null) {
 				tsd = new TimeSeriesDiagram(ts,agg,sensor.category);
+				try {
+					timeSeriesMask = tsdb.getTimeSeriesMask(plot.name, sensorNames[0]);
+					if(timeSeriesMask==null) {
+						timeSeriesMask = new TimeSeriesMask();
+					}
+				} catch (Exception e) {
+					log.error(e);
+				}
 			}
 		} catch (Exception e) {
 			log.error(e);
@@ -865,9 +885,9 @@ public class TimeSeriesViewScene extends TsdbScene {
 			break;
 		case SELECT_END:
 			updateSelectionEndTimestamp(event.getX());
-			
+
 			timeSeriesMask.addInterval(Interval.of((int)selectionStartTimestamp, (int)selectionEndTimestamp));
-			
+
 			/*Color b = Color.CHARTREUSE;
 			Color maskColor = new Color(b.getRed(), b.getGreen(), b.getBlue(), 0.5d);
 			Rectangle maskRect = new Rectangle();
@@ -875,7 +895,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			overlayGroup.getChildren().add(maskRect);			
 			maskRectList.add(MaskEntry.of((int)selectionStartTimestamp, (int)selectionEndTimestamp, maskRect));			
 			updateMaskOverlay();*/			
-			
+
 			selectionStateProperty.set(SelectionState.NO);
 			//updateSelectionOverlay();
 			recreateMaskRectList();
@@ -889,7 +909,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 
 
-/*
+		/*
 		System.out.println("*********************");
 		if(selectionStateProperty.get()==SelectionState.NO) {
 			selectionStateProperty.set(SelectionState.SELECT_START);

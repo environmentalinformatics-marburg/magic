@@ -8,6 +8,7 @@ import tsdb.DataQuality;
 import tsdb.LoggerType;
 import tsdb.Region;
 import tsdb.Sensor;
+import tsdb.TimeSeriesMask;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
@@ -65,5 +66,9 @@ public interface RemoteTsDB extends Remote {
 	//query
 	TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) throws RemoteException;
 	TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) throws RemoteException;
-	TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;	
+	TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) throws RemoteException;
+	
+	//time series mask
+	TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) throws RemoteException;
+	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) throws RemoteException;	
 }
