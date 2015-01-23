@@ -16,12 +16,16 @@ np_old <- readOGR(dsn = "../../ndvi/data/protected_areas/",
                   layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
                   p4s = "+init=epsg:4326")
 np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
+# writeOGR(np_old_utm, dsn = "data/shp", driver = "ESRI Shapefile",
+#          layer = "fdetsch-kilimanjaro-national-park-1420535670531_epsg21037")
 np_old_utm_sl <- as(np_old_utm, "SpatialLines")
 
 np_new <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
                   layer = "fdetsch-kilimanjaro-1420532792846", 
                   p4s = "+init=epsg:4326")
 np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
+# writeOGR(np_new_utm, dsn = "data/shp", driver = "ESRI Shapefile",
+#          layer = "fdetsch-kilimanjaro-new_np-1420532792846_epsg21037")
 np_new_utm_sl <- as(np_new_utm, "SpatialLines")
 
 # Temporal range
