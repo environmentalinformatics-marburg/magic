@@ -24,6 +24,14 @@ public class SourceCatalog {
 	private BTreeMap<String, SourceEntry> catalogMap;
 
 	public SourceCatalog(String databasePath) {
+		
+		try {
+			File dir = new File(databasePath);
+			dir.mkdirs();
+		} catch(Exception e) {
+			log.error(e);
+		}
+		
 		this.db = DBMaker.newFileDB(new File(databasePath+DB_FILENAME_PREFIX))
 						 .compressionEnable()
 				         .closeOnJvmShutdown()
