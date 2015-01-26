@@ -146,7 +146,7 @@ public class Builder implements Iterable<TsEntry> {
 	}
 	
 	public TimestampSeries createTimestampSeries() {
-		return Util.ifnull(this.create(), it->TimestampSeries.create(it));
+		return Util.ifnull(this.create(), it->TimestampSeries.create(it,"no name"));
 	}
 
 

@@ -51,6 +51,14 @@ public class CacheStorage {
 	//private Map<String,ConcurrentNavigableMap<Long,TimeSeriesEntry>> streamMap;
 
 	public CacheStorage(String cachePath) {
+		
+		try {
+			File dir = new File(cachePath);
+			dir.mkdirs();
+		} catch(Exception e) {
+			log.error(e);
+		}
+		
 		this.db = DBMaker.newFileDB(new File(cachePath+"cachedb"))
 				.compressionEnable()
 				//.transactionDisable() //not safe

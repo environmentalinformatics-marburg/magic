@@ -24,6 +24,7 @@ import tsdb.QueryProcessor;
 import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.Station;
+import tsdb.TimeSeriesMask;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
@@ -330,7 +331,7 @@ public class ServerTsDB implements RemoteTsDB {
 					if(it==null||!it.hasNext()) {
 						return null;
 					}
-					return it.toTimestampSeries();
+					return it.toTimestampSeries(plotID);
 				}
 			} catch (Exception e) {
 				log.error(e);
@@ -358,7 +359,7 @@ public class ServerTsDB implements RemoteTsDB {
 			return null;
 		}
 		//System.out.println(it.getProcessingChain().getText());
-		return it.toTimestampSeries();
+		return it.toTimestampSeries(plotID);
 	}
 
 	@Override
@@ -371,12 +372,22 @@ public class ServerTsDB implements RemoteTsDB {
 		if(it==null||!it.hasNext()) {
 			return null;
 		}
-		return it.toTimestampSeries();		
+		return it.toTimestampSeries(streamName);		
 	}
 
 	@Override
 	public TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
 		QueryProcessor qp = new QueryProcessor(tsdb);
 		return qp.query_raw(plotID, querySchema, queryStart, queryEnd);
-	}	
+	}
+	
+	@Override
+	public TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) {
+		return tsdb.streamStorage.getTimeSeriesMask(stationName, sensorName);
+	}
+	
+	@Override
+	public void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) {
+		 tsdb.streamStorage.setTimeSeriesMask(stationName, sensorName, timeSeriesMask);
+	}
 }

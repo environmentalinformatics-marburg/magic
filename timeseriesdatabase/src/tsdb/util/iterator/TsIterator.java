@@ -59,8 +59,8 @@ public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEn
 		return TimeSeries.create(this);
 	}
 	
-	public TimestampSeries toTimestampSeries() {
-		return TimestampSeries.create(this);
+	public TimestampSeries toTimestampSeries(String name) {
+		return TimestampSeries.create(this,name);
 	}
 	
 	public static TsSchema[] toSchemas(TsIterator[] input_iterators) {

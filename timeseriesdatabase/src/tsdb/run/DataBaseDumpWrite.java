@@ -1,4 +1,4 @@
-package tsdb.usecase;
+package tsdb.run;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +29,12 @@ public class DataBaseDumpWrite {
 
 	public static void main(String[] args) throws IOException {
 
-		Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump.tss");
+		LocalDateTime ldt = LocalDateTime.now();
+		
+		DateTimeFormatter.ISO_DATE_TIME.format(ldt);
+		String dateText = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm").format(ldt);
+		
+		Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump_"+dateText+".tss");
 		Files.createDirectories(pathToFile.getParent());
 		//Files.createFile(pathToFile);
 		FileOutputStream fileOutputStream = new FileOutputStream(pathToFile.toFile());

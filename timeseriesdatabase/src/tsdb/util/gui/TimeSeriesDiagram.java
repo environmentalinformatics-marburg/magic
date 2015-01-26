@@ -149,6 +149,10 @@ public class TimeSeriesDiagram {
 	public double calcValue(double posY) {
 		return ((diagramMaxY-posY)/diagramValueFactor)+diagramMinValue;
 	}
+	
+	public float[] getDiagramXMinMax() {
+		return new float[]{diagramMinX,diagramMaxX};
+	}
 
 	private static class ValueLine {
 		public final float x0;

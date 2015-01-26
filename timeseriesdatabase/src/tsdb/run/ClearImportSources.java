@@ -72,7 +72,7 @@ public class ClearImportSources {
 		log.info((timeEndOpen-timeStartOpen)/1000+" s Open");
 		log.info((timeEndBE-timeStartBE)/1000+" s BE");
 		log.info((timeEndKI-timeStartKI)/1000+" s KI");
-		log.info((timeEndKItfi-timeStartKItfi)/1000+" s KItfi");
+		log.info((timeEndKItfi-timeStartKItfi)/1000+" s KI tfi");
 		log.info((timeEndClose-timeStartClose)/1000+" s Close");
 		log.info((timeEnd-timeStart)/1000+" s total");
 		

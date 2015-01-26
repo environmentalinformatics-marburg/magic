@@ -32,6 +32,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
@@ -93,8 +94,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 	private BorderPane borderPaneDiagrams;
 
 
-	private ExecutorService executorQueryTimeSeries;
-	private ExecutorService executorDrawImages;
+	private PriorityExecutor executor;
+
 	private ComboBox<String> comboTime;
 	private HashMap<String, Sensor> sensorMap;
 	private ComboBox<DiagramType> comboView;
@@ -104,7 +105,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 
-
+		executor = new PriorityExecutor();
 
 	}
 
@@ -294,87 +295,6 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		}
 	}
 
-
-	static class PriorityThreadFactory implements ThreadFactory { // source from Executors.defaultThreadFactory();
-		private static final AtomicInteger poolNumber = new AtomicInteger(1);
-		private final ThreadGroup group;
-		private final AtomicInteger threadNumber = new AtomicInteger(1);
-		private final String namePrefix;
-		private final int priority;
-
-		PriorityThreadFactory(int priority) {
-			SecurityManager s = System.getSecurityManager();
-			group = (s != null) ? s.getThreadGroup() :
-				Thread.currentThread().getThreadGroup();
-			namePrefix = "pool-" +
-					poolNumber.getAndIncrement() +
-					"-thread-";
-			this.priority = priority;
-		}
-
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(group, r,
-					namePrefix + threadNumber.getAndIncrement(),
-					0);
-			if (t.isDaemon())
-				t.setDaemon(false);
-			/*if (t.getPriority() != Thread.NORM_PRIORITY)
-                t.setPriority(Thread.NORM_PRIORITY);*/
-			t.setPriority(priority);
-			return t;
-		}
-	}
-
-	static ThreadPoolExecutor createPriorityExecutor(int nThreads, int priority) {
-		int corePoolSize = nThreads;
-		int maximumPoolSize = nThreads;
-		long keepAliveTime = 0L;
-		TimeUnit unit = TimeUnit.MILLISECONDS;
-		BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
-		//ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		ThreadFactory threadFactory = new PriorityThreadFactory(priority);
-		/*ThreadFactory threadFactory = new ThreadFactory() {			
-			@Override
-			public Thread newThread(Runnable r) {
-				Thread thread = new Thread(r);
-				thread.setPriority(Thread.MIN_PRIORITY);
-				return null;
-			}
-		};*/
-		RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.AbortPolicy();
-		return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, rejectedExecutionHandler);
-
-	}
-
-	private static class PriorityRunnable implements Runnable, Comparable<PriorityRunnable> {
-		final Runnable entry;
-		final int seqNum;
-		final int priority;
-		public PriorityRunnable(Runnable entry,int seqNum,int priority) {
-			seqNum = seqNum;
-			this.entry = entry;
-			this.seqNum = seqNum;
-			this.priority = priority;
-		}
-		@Override
-		public int compareTo(PriorityRunnable o) {
-			if(this.priority<o.priority) {
-				return -1;
-			}
-			if(this.priority>o.priority) {
-				return +1;
-			}
-			return this.seqNum < o.seqNum ? -1 : 1;
-		}
-		@Override
-		public void run() {
-			entry.run();			
-		}
-	}
-
-
-
-
 	private void onSetCurrent(ActionEvent event) {
 
 		queryList = selectionQueryList;
@@ -388,57 +308,26 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 		scrollBar.setVisibleAmount(imageviewCount);
 
 		updateScreen(null);
+		executor.clear();
 
-		/*if(executorQueryTimeSeries!=null) {			
-			executorQueryTimeSeries.shutdownNow();			
-		}
-		//executorQueryTimeSeries = Executors.newWorkStealingPool();
-		//executorQueryTimeSeries = createPriorityExecutor(Thread.MIN_PRIORITY);
-		executorQueryTimeSeries = createPriorityExecutor(1,Thread.MIN_PRIORITY);
-
-		//ExecutorService es = Executors.newFixedThreadPool(2);
-		
-
-
-
-		if(executorDrawImages!=null) {		
-			executorDrawImages.shutdownNow();		
-		}
-		//executorDrawImages = Executors.newWorkStealingPool();
-		executorDrawImages = createPriorityExecutor(1,Thread.MIN_PRIORITY+1); */
-		
-		
-		if(executorQueryTimeSeries!=null) {
-			executorQueryTimeSeries.shutdownNow();
-		}
-		if(executorDrawImages!=null) {		
-			executorDrawImages.shutdownNow();		
-		}
-		final int nThreads = ForkJoinPool.getCommonPoolParallelism();
-		//final int nThreads = 16;
-		System.out.println("nThreads "+nThreads);
-		ThreadPoolExecutor tpe = new ThreadPoolExecutor(nThreads, nThreads, nThreads, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<Runnable>());
-		executorQueryTimeSeries = tpe;
-		executorDrawImages = tpe;
-		
 
 		int seqCounter = 0;
 		for(QueryEntry queryEntry:queryList) {
-			
+
 			final int sq = seqCounter;
 
 			queryEntry.timestampSeriesProperty.addListener((s,o,ts)->{
 				if(ts!=null) {
-					
-					
-					
-					System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
+
+
+
+					//System.out.println("************************** add task create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 					final int width = (int)borderPaneDiagrams.getWidth()-30;
 					final int height = (int)imageHeight;
 
 					Runnable drawImageTask = ()->{
-						System.out.println("************************** create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
+						log.info("EXECUTE create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 
 						BufferedImage bufferedImage = new BufferedImage( width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -467,16 +356,16 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
 
 						try {
-							Platform.runLater(()->queryEntry.imageProperty.set(image));
+							Platform.runLater(()->{log.info("RUN_LATER imageProperty.set");queryEntry.imageProperty.set(image);});
+							Task a;
 						} catch(Exception e) {
 							log.error(e);
 						}
+						log.info("STOP create image "+queryEntry.plotID+"  "+queryEntry.sensor.name);
 					};
 
 					try {
-						//executorDrawImages.submit(new PriorityRunnable(drawImageTask,0,0));
-						
-						executorDrawImages.execute(new PriorityRunnable(drawImageTask,sq,0));
+						executor.addTask(drawImageTask,sq,0);
 					} catch(Exception e) {
 						log.error(e);
 					}
@@ -485,80 +374,29 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 
 
-			System.out.println("************************** add task query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
+			//System.out.println("************************** add task query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 
 			Runnable queryTimeSeriesTask = ()->{
-				System.out.println("************************** query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
+				log.info("EXECUTE query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 				try {
 					TimestampSeries ts = tsdb.plot(null, queryEntry.plotID, new String[]{queryEntry.sensor.name}, AggregationInterval.HOUR, DataQuality.STEP, false, queryEntry.startTimestamp, queryEntry.endTimestamp);
 					if(ts!=null) {
-						Platform.runLater(()->queryEntry.timestampSeriesProperty.set(ts));
+						Platform.runLater(()->{log.info("RUN_LATER timestampSeriesProperty.set");queryEntry.timestampSeriesProperty.set(ts);});
 					}
 				} catch (Exception e) {
 					log.error(e);
 				}
+				log.info("STOP query TimestampSeries"+queryEntry.plotID+"  "+queryEntry.sensor.name);
 			};
 
 			try {
-				//executorQueryTimeSeries.submit(new PriorityRunnable(queryTimeSeriesTask,0,0));
-				executorQueryTimeSeries.execute(new PriorityRunnable(queryTimeSeriesTask,seqCounter,1));
+				executor.addTask(queryTimeSeriesTask,seqCounter,1);
 			} catch(Exception e) {
 				log.error(e);
 			}
-			
+
 			seqCounter++;
 		}
-
-
-
-		/*vboxQueryImages.getChildren().clear();
-
-		System.out.println("vboxQueryImages "+vboxQueryImages.getWidth()+"  "+vboxQueryImages.getHeight());
-
-		ExecutorService executor = Executors.newWorkStealingPool();
-
-		for(QueryEntry queryEntry:queryList) {
-
-
-			ImageView imageView = new ImageView();
-			vboxQueryImages.getChildren().add(imageView);
-
-			executor.submit(()->{
-
-				System.out.println("get "+queryEntry.plotID+"  "+queryEntry.sensorName);
-				//vboxQueryImages.getChildren().add(new Button(queryEntry.plotID+"  "+queryEntry.sensorName));
-				try {			
-					TimestampSeries ts = tsdb.plot(null, queryEntry.plotID, new String[]{queryEntry.sensorName}, AggregationInterval.HOUR, DataQuality.STEP, false, null, null);
-					if(ts!=null) {
-						TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,SensorCategory.TEMPERATURE);
-
-						try {
-							BufferedImage bufferedImage = new BufferedImage((int)borderPaneDiagrams.getWidth()-30,(int)200,java.awt.image.BufferedImage.TYPE_INT_RGB);
-							Graphics2D gc = bufferedImage.createGraphics();
-							gc.setBackground(new java.awt.Color(255, 255, 255));
-							gc.setColor(new java.awt.Color(0, 0, 0));
-							gc.clearRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
-							gc.dispose();
-							TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
-							tsd.draw(tsp);
-							WritableImage image = SwingFXUtils.toFXImage(bufferedImage, null);
-
-							Platform.runLater(()->imageView.setImage(image));
-
-
-						} catch (Exception e) {
-							e.printStackTrace();
-
-						}
-
-
-					}
-				} catch (Exception e) {
-					log.error(e);
-				}
-			});			
-		}*/
-
 
 	}
 
@@ -806,12 +644,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 	@Override
 	protected void onClose() {
-		if(executorQueryTimeSeries!=null) {			
-			executorQueryTimeSeries.shutdownNow();			
-		}
-		if(executorDrawImages!=null) {		
-			executorDrawImages.shutdownNow();		
-		}
+		executor.clear();
 	}
 
 	void updateSelectionQueryList() {
@@ -884,7 +717,4 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 		selectedCountProperty.set(""+selectionQueryList.size());		
 	}
-
-
-
 }

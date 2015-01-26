@@ -224,4 +224,18 @@ public class StreamStorageMapDB implements StreamStorage{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public TimeSeriesMask getTimeSeriesMask(String stationName,
+			String sensorName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setTimeSeriesMask(String stationName, String sensorName,
+			TimeSeriesMask timeSeriesMask) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -5,7 +5,7 @@ var time_select;
 var quality_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
-var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014"];
+var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var testingImage = "";
 
 var sensors;

@@ -28,7 +28,7 @@ public class TSDServer implements TSDServerInterface {
 	@Override
 	public TimestampSeries query(String plotID, String[] querySchema, Long queryStart, Long queryEnd, DataQuality dataQuality, AggregationInterval aggregationInterval, boolean interpolated) {
 		TsIterator it = qp.query_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, aggregationInterval, interpolated);
-		TimestampSeries timestampSeries = TimestampSeries.create(it);
+		TimestampSeries timestampSeries = TimestampSeries.create(it,plotID);
 		return timestampSeries;
 	}
 

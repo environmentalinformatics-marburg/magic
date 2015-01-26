@@ -142,5 +142,16 @@ public class StreamStorageStreamDB implements StreamStorage {
 		}
 		return set.toArray(new String[set.size()]);
 	}
+	
+	@Override
+	public TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) {
+		return streamdb.getSensorTimeSeriesMask(stationName, sensorName, false);
+	}
+	
+	@Override
+	public void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) {
+		streamdb.setSensorTimeSeriesMask(stationName, sensorName, timeSeriesMask);
+		streamdb.commit();
+	}
 
 }

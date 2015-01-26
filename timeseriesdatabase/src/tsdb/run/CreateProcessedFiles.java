@@ -83,7 +83,7 @@ public class CreateProcessedFiles {
 								(new File(CSV_OUTPUT_PATH+"processed/"+sensorName)).mkdir();
 								
 								long count = 0;
-								TimestampSeries timestampSeries = TimestampSeries.create(it);
+								TimestampSeries timestampSeries = TimestampSeries.create(it,"no name");
 								for(TsEntry e:timestampSeries.entryList) {
 									if(!Float.isNaN(e.data[0])) {
 										count++;
