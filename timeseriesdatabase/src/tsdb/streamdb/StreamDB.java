@@ -18,6 +18,7 @@ import org.mapdb.DBMaker;
 
 import tsdb.TimeConverter;
 import tsdb.TimeSeriesMask;
+import tsdb.TsDBFactory;
 import tsdb.util.iterator.TsIterator;
 
 
@@ -34,6 +35,13 @@ public class StreamDB {
 	public StreamDB(String streamdbPathPrefix) {
 		throwNull(streamdbPathPrefix);
 		String pathName = streamdbPathPrefix;
+
+		try {
+			File dir = new File(streamdbPathPrefix);			
+			dir.getParentFile().mkdirs();
+		} catch(Exception e) {
+			log.error(e);
+		}
 
 		db = DBMaker.newFileDB(new File(pathName))
 				//.checksumEnable()
@@ -113,19 +121,19 @@ public class StreamDB {
 		StationMeta stationMeta = stationMetaMap.get(stationName);		
 		if(stationMeta==null&&createIfNotExists){
 			stationMeta = new StationMeta(stationName);
-			
+
 			db.checkNameNotExists(stationMeta.db_name_sensor_map);
 			db.createTreeMap(stationMeta.db_name_sensor_map)
 			.keySerializer(BTreeKeySerializer.STRING)
 			.valueSerializer(SensorMeta.SERIALIZER)
 			.makeOrGet();
-			
+
 			db.checkNameNotExists(stationMeta.db_name_sensor_time_series_mask_map);
 			db.createTreeMap(stationMeta.db_name_sensor_time_series_mask_map)
 			.keySerializer(BTreeKeySerializer.STRING)
 			.valueSerializer(TimeSeriesMask.SERIALIZER)
 			.makeOrGet();
-			
+
 			stationMetaMap.put(stationName, stationMeta);			
 		}
 		if(stationMeta==null) {
@@ -161,7 +169,7 @@ public class StreamDB {
 		}
 		return sensorMeta;
 	}
-	
+
 	private SensorMeta getSensorMeta(String stationName, String sensorName, boolean createIfNotExists) {
 		throwNull(stationName);
 		throwNull(sensorName);
@@ -205,7 +213,7 @@ public class StreamDB {
 			return getSensorTimeSeriesMask(stationMeta, sensorName, false);
 		}		
 	}
-	
+
 	public void setSensorTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) {
 		throwNull(stationName);
 		throwNull(sensorName);

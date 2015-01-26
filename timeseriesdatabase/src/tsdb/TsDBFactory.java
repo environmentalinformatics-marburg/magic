@@ -50,7 +50,11 @@ public class TsDBFactory {
 	public static String OUTPUT_PATH = "output";
 	
 	public static String WEB_SERVER_PREFIX_BASE_URL = ""; //no prefix
-	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix	
+	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix
+	
+	public static String JUST_ONE_REGION = null;
+	//public static String JUST_ONE_REGION = "BE";
+	//public static String JUST_ONE_REGION = "KI";
 
 	static {
 		initPaths();
@@ -102,7 +106,10 @@ public class TsDBFactory {
 			//WEB_SERVER_PREFIX_BASE_URL
 			if(pathMap.containsKey("WEB_SERVER_PREFIX_BASE_URL")) {
 				WEB_SERVER_PREFIX_BASE_URL = pathMap.get("WEB_SERVER_PREFIX_BASE_URL");
-			}			
+			}
+			if(pathMap.containsKey("JUST_ONE_REGION")) {
+				JUST_ONE_REGION = pathMap.get("JUST_ONE_REGION");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
