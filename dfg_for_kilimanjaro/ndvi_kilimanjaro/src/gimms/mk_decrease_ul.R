@@ -1,13 +1,14 @@
 library(reshape2)
 library(ggplot2)
 library(Rsenal)
+library(bfast)
 
 # predicted data
 fls_prd <- "data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif"
 rst_prd <- stack(fls_prd)
-mat_prd <- as.matrix(rst_prd)   # results identical to `as.data.frame`
 
 # # spatial clustering
+# mat_prd <- as.matrix(rst_prd)   # results identical to `as.data.frame`
 # clstr_prd <- kmeans(mat_prd, centers = 3, nstart = 4, iter.max = 100, 
 #                     algorithm = "Ll")
 # 
@@ -31,6 +32,12 @@ ls_prd_split <- splitRaster(fls_prd)
 rst_prd_ul <- ls_prd_split[[1]]
 
 rst_prd_ul[id_rm] <- NA
+
+# output storage of masked data
+fls_prd_mk_001_ul <- list.files("data/rst/whittaker", pattern = "8211_0_0.tif$")
+file_out <- paste0("data/rst/whittaker/ul/", fls_prd_mk_001_ul)
+rst_prd_ul <- writeRaster(rst_prd_ul, file_out,  
+                          bylayer = FALSE, overwrite = TRUE)
 
 st <- as.Date("1982-01-01")
 nd <- as.Date("2011-12-31")
@@ -58,8 +65,7 @@ print(p_prd_ul)
 dev.off()
 
 # time series decomposition
-library(miscTools)
-md_prd_ul <- colMedians(df_prd_ul, na.rm = TRUE)
+md_prd_ul <- apply(df_prd_ul, 2, FUN = median, na.rm = TRUE)
 ts_prd_ul <- ts(md_prd_ul, start = c(1982, 1), end = c(2011, 12), 
                 frequency = 12)
 stl_prd_ul <- stl(ts_prd_ul, s.window = "periodic")
