@@ -24,6 +24,7 @@ import org.json.JSONWriter;
 
 import tsdb.DataQuality;
 import tsdb.Region;
+import tsdb.TsDBFactory;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
@@ -44,7 +45,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("export", target, baseRequest));
-		
+
 		//response.setHeader("Server", "");
 		//response.setHeader("Date", null);
 
@@ -64,7 +65,18 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			model.timespanDatesFrom = "2014-04";
 			model.timespanDatesTo = "2014-09";
 			try {
-				model.region = tsdb.getRegions()[0];
+				if(TsDBFactory.JUST_ONE_REGION==null) {
+					model.region = tsdb.getRegions()[0];
+				} else {
+					Region[] regions = tsdb.getRegions();
+					model.region = regions[0];
+					for(Region region:regions) {
+						if(region.name.equals(TsDBFactory.JUST_ONE_REGION)) {
+							model.region = region;
+							break;
+						}
+					}
+				}
 			} catch(Exception e) {
 				log.error(e);
 			}
