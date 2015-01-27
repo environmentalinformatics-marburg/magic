@@ -7,23 +7,23 @@
 #Author:Hanna, January 2015
 ################################################################################
 rm(list=ls())
-
+options(warn=2)
 ################################################################################
 #                           USER ADJUSTMENTS
 ################################################################################
 
 
-
 msgpath="/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
 radarpath="/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
 functionpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/code/functions/"
+resultpath="/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/results"
 
-referenceimage<- "glcm_filter$size_3$WV6.2[[1]]"#"IR3.9" #This image will be 
+referenceimage<-"glcm_filter$size_3$WV6.2[[1]]"#"IR3.9" #This image will be 
 #used together with the radar data to define "no data"
 
 datasetTime<-"day"
 includeAllscenes=TRUE
-samplesize=0.005 # number of scenes for training
+samplesize=0.1 # number of scenes for training
 
 
 ### Define  variables###########################################################
@@ -78,6 +78,7 @@ datatable=data.frame()
 
 source(paste0(functionpath,"geometryParameters.R"))
 source(paste0(functionpath,"TextureParameters.R"))
+source(paste0(functionpath,"glcmPerPatch.R"))
 
 
 ################################################################################
@@ -157,6 +158,8 @@ for (i in months){
 
 ### only process data if the MSG raster include valid data #####################
        if(min(values(is.na(scenerasters)))==1) next
+###... or at least 50 cloud pixels (otherwise texture might not work)
+       if(sum(!is.na(values((scenerasters))))<50) next
 
 ################################################################################
 ###                 caluclate derivated variables 
@@ -186,16 +189,42 @@ for (i in months){
                                         var=c("mean", "variance", "homogeneity", 
                                                       "contrast", "dissimilarity", 
                                                       "entropy","second_moment"))
+
+
 ### Geometry parameters #########################################################
       cloud_geometry <- geometry.variables (x=scenerasters[[4]])
 
+### Texture per Patch ##########################################################
+      glcmPatches<-glcmPerPatch(x=scenerasters[[xderivTexture]],cloud_geometry$cloudPatches)
+      glcmPerPatchRaster<-foreach(i=2:ncol(glcmPatches),.combine=stack,
+          .packages=c("raster","doParallel"))%dopar%{
+            reclassify(cloud_geometry$cloudPatches,matrix(c(glcmPatches[,1],glcmPatches[,i]),ncol=2))}
+      reclasstable=cbind(1:max(values(cloud_geometry$cloudPatches),na.rm=TRUE),
+                         1:max(values(cloud_geometry$cloudPatches),na.rm=TRUE)%in%glcmPatches[,1])
+      reclasstable[reclasstable[,2]==0,2]=NA
+      reclasstable[!is.na(reclasstable[,2]),2]=reclasstable[!is.na(reclasstable[,2]),1]
+      reclasstable=reclasstable[is.na(reclasstable[,2]),]
+      if (nrow(glcmPatches)==1){
+        glcmPerPatchRaster=reclassify(glcmPerPatchRaster,matrix(reclasstable,ncol=2))
+      } else{
+        glcmPerPatchRaster=reclassify(glcmPerPatchRaster,reclasstable)
+      }
+      names(glcmPerPatchRaster)<-colnames(glcmPatches)[-1]
+      names(glcmPerPatchRaster)=paste0("pp_",names(glcmPerPatchRaster))
 ### zonal stat #################################################################
       tmpStats=zonal(scenerasters[[1:(nlayers(scenerasters)-1)]],
                      cloud_geometry$cloudPatches,fun="mean")
       ZonalStats=cloud_geometry$cloudPatches
-      MeanPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
-                           .packages=c("raster","doParallel"))%dopar%{
-                             reclassify(ZonalStats,tmpStats[,c(1,i)])} 
+#      if (max (cloud_geometry$cloudPatches)==1){
+        MeanPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
+                             .packages=c("raster","doParallel"))%dopar%{
+                               reclassify(ZonalStats,matrix(tmpStats[,c(1,i)],ncol=2))} 
+        
+#      } else{
+#      MeanPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
+#                           .packages=c("raster","doParallel"))%dopar%{
+#                             reclassify(ZonalStats,tmpStats[,c(1,i)])} 
+#      }
       names(MeanPerPatch)=paste0("mean_",names(scenerasters)[
         1:(nlayers(scenerasters)-1)])
 
@@ -203,9 +232,13 @@ for (i in months){
                      cloud_geometry$cloudPatches,fun="sd")
       SdPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
                          .packages=c("raster","doParallel"))%dopar%{
-                           reclassify(ZonalStats,tmpStats[,c(1,i)])} 
+                           reclassify(ZonalStats,matrix(tmpStats[,c(1,i)],ncol=2))} 
+
       names(SdPerPatch)=paste0("sd_",names(scenerasters)[
         1:(nlayers(scenerasters)-1)])
+
+##sd and mean from texture filter!!!
+
 
 ################################################################################
 ###             Compile data table
@@ -213,32 +246,34 @@ for (i in months){
     
       glcm_3=as.data.frame(lapply(glcm_filter$size_3,values))
       names(glcm_3)<-paste0("f3_",names(glcm_3))
+
  
 #      glcm_5=as.data.frame(lapply(glcm_filter$size_5,values))
 #      names(glcm_5)<-paste0("f5_",names(glcm_5))
 
       reference<-eval(parse(text=paste0(referenceimage)))
-      noDataIdentifier<-!is.na(values(radardata))&!is.na(values(reference))
+      noDataIdentifier<-!is.na(values(radardata))&!is.na(values(reference))&!is.na(values(glcmPerPatchRaster$pp_contrast_T8.7_10.8))
       
       dayOfYear<-strptime(date, "%Y%m%d")$yday+1
 
       datatable <- rbind(datatable,
-                         cbind(rep(date,nrow(glcm_3[noDataIdentifier,])),
-                               coordinates(radardata)[noDataIdentifier,],
-                               rep(dayOfYear,nrow(glcm_3[noDataIdentifier,])),
+                         cbind(rep(date,sum(noDataIdentifier)),
+                                coordinates(radardata)[noDataIdentifier,],
+                                rep(dayOfYear,sum(noDataIdentifier)),
                                cbind(values(scenerasters))[noDataIdentifier,],
                                cbind(values(MeanPerPatch))[noDataIdentifier,],
                                cbind(values(SdPerPatch))[noDataIdentifier,],
+                               cbind(values(glcmPerPatchRaster))[noDataIdentifier,],
                                cbind(values(cloud_geometry))[noDataIdentifier,-1],
                                glcm_3[noDataIdentifier,],
-                               #glcm_5[noDataIdentifier,],
+ #                              glcm_5[noDataIdentifier,],
                                values(radardata)[noDataIdentifier]))
  
       rm(scenerasters,cloud_geometry,glcm_3,
-         #glcm_5,
+ #        glcm_5,
          glcm_filter,T6.2_10.8,
          T7.3_12.0,T8.7_10.8,T10.8_12.0,T3.9_7.3,T3.9_10.8,sunzenith,radardata,
-         scenes,radarpathtmp,tmp,date,reference,MeanPerPatch,SdPerPatch,
+         scenes,radarpathtmp,tmp,date,reference,MeanPerPatch,SdPerPatch,glcmPerPatchRaster,
          tmpStats,ZonalStats)
       gc()      
 
@@ -252,6 +287,5 @@ names(datatable)[2]="X"
 names(datatable)[3]="Y"
 names(datatable)[4]="JDay"
 names(datatable)[ncol(datatable)]="Radar"
-save(datatable,file=paste0(
-  "/media/hanna/ubt_kdata_0005/improve_DE_retrieval/datatable_",datasetTime,".RData"))
+save(datatable,file=paste0(resultpath,"/datatable_",datasetTime,".RData"))
 
