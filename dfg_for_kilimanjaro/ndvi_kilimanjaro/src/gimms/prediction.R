@@ -82,7 +82,7 @@ file_out <- paste0(file_out, "_mk")
 #     return(tau)
 #   }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
 
-mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "mk", 
+mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "mk.*.tif$", 
                                full.names = TRUE)[4:1]
 mod_predicted_mk <- lapply(mod_predicted_mk, raster)
 
@@ -106,6 +106,7 @@ kendallStats(mod_predicted_mk[[4]])
 
 # mannkendall raster with p < .05 
 rst_mk_001 <- mod_predicted_mk[[4]]
+rst_mk_05 <- mod_predicted_mk[[2]]
 
 # reject pixels intersecting np border
 id_intersect <- foreach(i =1:ncell(rst_mk_05), .packages = lib, 
@@ -121,10 +122,17 @@ id_intersect <- foreach(i =1:ncell(rst_mk_05), .packages = lib,
                           }
                         }
 
+rst_mk_05_rmb <- rst_mk_05
+rst_mk_05_rmb[id_intersect] <- NA
+
 rst_mk_001_rmb <- rst_mk_001
 rst_mk_001_rmb[id_intersect] <- NA
 
 # share of positive and negative trends inside np
+val_mk_05_rmb <- extract(rst_mk_05_rmb, np_new_utm)[[1]]
+sum(val_mk_05_rmb > 0, na.rm = TRUE) / sum(!is.na(val_mk_05_rmb))
+sum(val_mk_05_rmb < 0, na.rm = TRUE) / sum(!is.na(val_mk_05_rmb))
+
 val_mk_001_rmb <- extract(rst_mk_001_rmb, np_new_utm)[[1]]
 sum(val_mk_001_rmb > 0, na.rm = TRUE) / sum(!is.na(val_mk_001_rmb))
 sum(val_mk_001_rmb < 0, na.rm = TRUE) / sum(!is.na(val_mk_001_rmb))
