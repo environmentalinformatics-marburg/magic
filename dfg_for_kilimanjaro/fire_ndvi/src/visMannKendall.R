@@ -1,5 +1,5 @@
 visMannKendall <- function(rst, 
-                           dem,
+#                            dem,
                            p_value = NULL, 
                            sp.layout = NULL,
                            at = seq(-1, 1, .2),
@@ -29,7 +29,7 @@ visMannKendall <- function(rst,
   # Plotting
   spplot(ndvi.mk, scales = list(draw = TRUE), xlab = "x", ylab = "y", 
          col.regions = col.regions, 
-         sp.layout = list("sp.lines", rasterToContour(dem), col = "grey50"), 
+#          sp.layout = list("sp.lines", rasterToContour(dem), col = "grey50"), 
          par.settings = list(fontsize = list(text = 15)), 
          at = at, alpha.regions = alpha.regions)
   

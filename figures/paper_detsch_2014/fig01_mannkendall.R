@@ -1,12 +1,25 @@
+setwd("/media/envin/XChange/kilimanjaro/ndvi/")
+
 lib <- c("grid", "Rsenal", "latticeExtra", "doParallel", "ggplot2")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
+source("src/panel.smoothconts.R")
 source("src/visMannKendall.R")
 
 registerDoParallel(cl <- makeCluster(2))
 
 ### DEM
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
+dem_flipped <- flip(dem, "y")
+x <- coordinates(dem_flipped)[, 1]
+y <- coordinates(dem_flipped)[, 2]
+z <- dem_flipped[]
+
+p_dem <- levelplot(z ~ x * y, colorkey = FALSE, at = seq(1000, 6000, 1000), 
+                   panel = function(...) {
+                     panel.smoothconts(zlevs.conts = seq(1000, 5500, 500), 
+                                       labels = c(1000, "", 2000, "", 3000, "", 4000, "", 5000, ""), ...)
+                   })
 
 ### Mann-Kendall rasters for NDVI (2003-2013)
 st_year <- "2003"
@@ -30,6 +43,8 @@ p_mk <- foreach(i = c("mod13q1", "myd13q1"), .packages = lib,
                       filename = paste0("out/mk/", i, "_mk001_0313"), 
                       format = "GTiff", overwrite = TRUE)
   
+  p <- p + as.layer(p_dem)
+  
   return(p)
 }
 
@@ -40,7 +55,7 @@ rst_mk001 <- lapply(fls_mk001, raster)
 # Terra amount of significant pixels
 val_mk001_terra <- rst_mk001[[1]][]
 val_mk001_terra_abs <- sum(!is.na(rst_mk001[[1]][]))
-val_mk001_terra_rel <- val_mk001_abs / ncell(rst_mk001[[1]])
+val_mk001_terra_rel <- val_mk001_terra_abs / ncell(rst_mk001[[1]])
 val_mk001_terra_abs_pos <- sum(val_mk001_terra > 0, na.rm = TRUE)
 val_mk001_terra_rel_pos <- val_mk001_terra_abs_pos / val_mk001_terra_abs
 val_mk001_terra_abs_neg <- sum(val_mk001_terra < 0, na.rm = TRUE)
@@ -119,6 +134,7 @@ vp_dens <- viewport(x = .8, y = .5,
 ### Final figure
 png("out/final/fig01_mannkendall.png", width = 26, height = 36, units = "cm", 
     res = 300, pointsize = 15)
+plot.new()
 print(p_mk_comb)
 downViewport(trellis.vpname(name = "figure"))
 pushViewport(vp_dens)
