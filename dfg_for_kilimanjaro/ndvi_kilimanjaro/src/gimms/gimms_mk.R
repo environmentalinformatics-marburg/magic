@@ -11,7 +11,7 @@ registerDoParallel(cl <- makeCluster(3))
 
 # Temporal range
 st <- "200301"
-nd <- "201212"
+nd <- "201112"
 
 # DEM
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")

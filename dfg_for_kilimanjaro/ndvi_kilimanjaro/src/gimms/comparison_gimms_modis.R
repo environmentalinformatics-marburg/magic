@@ -5,7 +5,7 @@ setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
 
 # Packages
 lib <- c("raster", "doParallel", "reshape2", "plyr", "dplyr", "ggplot2", 
-         "Rsenal", "scales", "RColorBrewer")
+         "Rsenal", "scales", "RColorBrewer", "latticeExtra")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 # Parallelization
@@ -13,7 +13,7 @@ registerDoParallel(cl <- makeCluster(3))
 
 # Temporal range
 st <- "200301"
-nd <- "201212"
+nd <- "201112"
 
 
 ### GIMMS
@@ -163,25 +163,25 @@ ggplot(aes(x = date), data = df_gimms_modis_stats_mrg) +
         axis.text = element_text(size = 10))
 dev.off()
 
-# IOA Gimms vs. MODIS mean
-png("vis/comparison_gimms_modis_mean.png", width = 30, height = 20, units = "cm", 
-    res = 300, pointsize = 10)
-ggplot(aes(x = date), data = df_gimms_modis_stats_mrg) + 
-  geom_ribbon(aes(ymin = modis_quan10, ymax = modis_quan90), 
-              fill = "darkolivegreen", alpha = .25) + 
-  geom_line(aes(y = modis_mean), color = "darkolivegreen4", lwd = 1, lty = 1) + 
-  geom_line(aes(y = gimms), lwd = 1, color = "grey20") + 
-  geom_text(aes(label = paste("IOA:", ioa)), data = df_ioa_mean, fontface = "bold", 
-            x = Inf, y = -Inf, hjust = 1.2, vjust = -.4, size = 2.5) +
-  facet_wrap(~ cell, ncol = 9) + 
-  scale_x_date(labels = date_format("%Y"), breaks = date_breaks("4 years"), 
-               minor_breaks = date_breaks("2 years"), 
-               limits = as.Date(c("2003-01-01", "2012-12-01"))) + 
-  theme_bw() + 
-  labs(x = "\nTime (months)", y = "NDVI\n") +
-  theme(axis.title = element_text(size = 18), 
-        axis.text = element_text(size = 10))
-dev.off()
+# # IOA Gimms vs. MODIS mean
+# png("vis/comparison_gimms_modis_mean.png", width = 30, height = 20, units = "cm", 
+#     res = 300, pointsize = 10)
+# ggplot(aes(x = date), data = df_gimms_modis_stats_mrg) + 
+#   geom_ribbon(aes(ymin = modis_quan10, ymax = modis_quan90), 
+#               fill = "darkolivegreen", alpha = .25) + 
+#   geom_line(aes(y = modis_mean), color = "darkolivegreen4", lwd = 1, lty = 1) + 
+#   geom_line(aes(y = gimms), lwd = 1, color = "grey20") + 
+#   geom_text(aes(label = paste("IOA:", ioa)), data = df_ioa_mean, fontface = "bold", 
+#             x = Inf, y = -Inf, hjust = 1.2, vjust = -.4, size = 2.5) +
+#   facet_wrap(~ cell, ncol = 9) + 
+#   scale_x_date(labels = date_format("%Y"), breaks = date_breaks("4 years"), 
+#                minor_breaks = date_breaks("2 years"), 
+#                limits = as.Date(c("2003-01-01", "2012-12-01"))) + 
+#   theme_bw() + 
+#   labs(x = "\nTime (months)", y = "NDVI\n") +
+#   theme(axis.title = element_text(size = 18), 
+#         axis.text = element_text(size = 10))
+# dev.off()
 
 # Rasterized mean difference between GIMMS and MODIS[median]
 rst_diff <- rst_gimms_crp[[1]]
@@ -257,9 +257,17 @@ dev.off()
 ### Predicted GIMMS data
 
 # Data import
-fls_modis_prd <- list.files("data/eot_eval", pattern = "dwnscl.tif", 
-                            full.names = TRUE)
+fls_modis_prd <- "data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif"
 rst_modis_prd <- stack(fls_modis_prd)
+
+# 2003-2011
+dates_8211 <- seq(as.Date("1982-01-01"), as.Date("2011-12-31"), "month")
+id_200301 <- which(dates_8211 == "2003-01-01")
+id_201112 <- which(dates_8211 == "2011-12-01")
+dates_0311 <- dates_8211[id_200301:id_201112]
+dates_0311 <- strftime(dates_0311, format = "%Y%m")
+
+rst_modis_prd <- rst_modis_prd[[id_200301:id_201112]]
 
 # GIMMS predicted pixel extraction per original GIMMS pixel 
 # and 0.1, 0.5, 0.9 quantile calculation
@@ -282,13 +290,15 @@ ls_modis_prd_stats_mlt <- foreach(g = 1:4, h = c("mean", "quan10", "quan50", "qu
     i[, g]
   }))
   df_val <- data.frame(cell = 1:nrow(val), val)
-  names(df_val)[2:ncol(df_val)] <- dates[-(1:60)]
+  names(df_val)[2:ncol(df_val)] <- dates_0311
   df_val_mlt <- melt(df_val, id.vars = 1, variable.name = "month", 
                      value.name = paste("modis_prd", h, sep = "_"))
   return(df_val_mlt)
 }
 df_modis_prd_stats_mrg <- Reduce(function(...) merge(..., by = c("cell", "month")), 
                              ls_modis_prd_stats_mlt)
+df_modis_prd_stats_mrg$date <- as.Date(paste0(df_modis_prd_stats_mrg$month, "01"), 
+                                       format = "%Y%m%d")
 
 # Merge with corresponding GIMMS data and reformat
 df_gimms_modis_stats_mrg <- merge(df_gimms_crp_mlt, df_modis_stats_mrg, 
@@ -300,7 +310,7 @@ df_gimms_modis_stats_mrg$date <- as.Date(paste0(df_gimms_modis_stats_mrg$month, 
                                          format = "%Y%m%d")
 
 df_gimms_modis_stats_mrg_prd <- 
-  merge(df_gimms_modis_stats_mrg, df_modis_prd_stats_mrg, by = c(1, 2), all.x = TRUE)
+  merge(df_gimms_modis_stats_mrg, df_modis_prd_stats_mrg, by = c("cell", "month", "date"), all.x = TRUE)
 
 # IOA calculation
 id_cc <- complete.cases(df_gimms_modis_stats_mrg_prd[, c("modis_quan50", "modis_prd_quan50")])
@@ -323,8 +333,8 @@ ggplot(aes(x = date), data = df_gimms_modis_stats_mrg_prd) +
   geom_line(aes(y = gimms), lwd = 1, color = "grey20") + 
   geom_text(aes(label = paste("IOA:", ioa)), data = df_ioa,
             x = -Inf, y = -Inf, hjust = -.2, vjust = -.4, size = 2.5) +
-  geom_text(aes(label = paste("IOA:", ioa)), data = df_prd_ioa,
-            x = Inf, y = -Inf, hjust = 1.2, vjust = -.4, size = 2.5, colour = "darkred") +
+#   geom_text(aes(label = paste("IOA:", ioa)), data = df_prd_ioa,
+#             x = Inf, y = -Inf, hjust = 1.2, vjust = -.4, size = 2.5, colour = "darkred") +
   facet_wrap(~ cell, ncol = 9) + 
   scale_x_date(labels = date_format("%Y"), breaks = date_breaks("4 years"), 
                minor_breaks = date_breaks("2 years"), 
