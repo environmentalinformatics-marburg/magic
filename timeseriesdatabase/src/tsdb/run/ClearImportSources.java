@@ -68,16 +68,24 @@ public class ClearImportSources {
 		
 		log.info("end import");
 		
+		long timeStartAvg = System.currentTimeMillis();
+		CreateStationGroupAverageCache.main(null);
+		long timeEndAvg = System.currentTimeMillis();
+		
+		long timeStartCompact = System.currentTimeMillis();
+		RunCompact.main(null);
+		long timeEndCompact = System.currentTimeMillis();
+		
 		log.info((timeEndClear-timeStartClear)/1000+" s Clear");
 		log.info((timeEndOpen-timeStartOpen)/1000+" s Open");
-		log.info((timeEndBE-timeStartBE)/1000+" s BE");
-		log.info((timeEndKI-timeStartKI)/1000+" s KI");
-		log.info((timeEndKItfi-timeStartKItfi)/1000+" s KI tfi");
+		log.info((timeEndBE-timeStartBE)/1000+" s BE import");
+		log.info((timeEndKI-timeStartKI)/1000+" s KI import");
+		log.info((timeEndKItfi-timeStartKItfi)/1000+" s KI tfi import");
 		log.info((timeEndClose-timeStartClose)/1000+" s Close");
-		log.info((timeEnd-timeStart)/1000+" s total");
-		
-		
-		CreateStationGroupAverageCache.main(null);
+		log.info((timeEnd-timeStart)/1000+" s total import");
+		log.info("");
+		log.info((timeEndAvg-timeStartAvg)/1000+" s create averages");
+		log.info((timeEndCompact-timeStartCompact)/1000+" s compact streamDB");
 		
 		//System.exit(0);
 	}

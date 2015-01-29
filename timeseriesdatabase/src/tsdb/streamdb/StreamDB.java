@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -195,7 +196,7 @@ public class StreamDB {
 			maskMap.put(sensorName, mask);
 		}
 		if(mask==null) {
-			log.warn("no time series mask: "+sensorName+"  in station: "+stationMeta.stationName);
+			//log.info("no time series mask: "+sensorName+"  in station: "+stationMeta.stationName);
 		}
 		return mask;		
 	}	
@@ -264,18 +265,38 @@ public class StreamDB {
 			insertIntoOneChunk(chunkMetaMap,chunkMap,entryList);
 		}
 	}
+	
+	/**
+	 * get meta, that is correct target of timestamp if present
+	 * @param timestamp
+	 */
+	private ChunkMeta getChunkMeta(BTreeMap<Integer, ChunkMeta> chunkMetaMap, int timestamp) {
+		int timestamp_year = TimeConverter.roundLowerYear(timestamp);
+		int timestamp_next_year = TimeConverter.roundNextYear(timestamp);
+		Integer key = chunkMetaMap.ceilingKey(timestamp_year);
+		if(key==null) {
+			return null;
+		}
+		if(timestamp_next_year<=key) {
+			return null;
+		}
+		ChunkMeta chunkMeta = chunkMetaMap.get(key);
+		throwNull(chunkMeta);
+		return chunkMeta;
+	}
 
 	private void insertIntoOneChunk(BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> chunkMap, ArrayList<DataEntry> entryList) {
-		int timestamp_chunk = TimeConverter.roundLowerYear(entryList.get(0).timestamp);
+		//int timestamp_chunk = TimeConverter.roundLowerYear(entryList.get(0).timestamp);
 		int timestamp_next_year = TimeConverter.roundNextYear(entryList.get(0).timestamp);
 		if(timestamp_next_year<=entryList.get(entryList.size()-1).timestamp) {
 			throw new RuntimeException("data of more than one chunk");
 		}
-		ChunkMeta chunkMeta = chunkMetaMap.get(timestamp_chunk);
-		if(chunkMeta==null) {
+		//ChunkMeta oldChunkMeta = chunkMetaMap.get(timestamp_chunk);
+		ChunkMeta oldChunkMeta = getChunkMeta(chunkMetaMap, entryList.get(0).timestamp);
+		if(oldChunkMeta==null) {
 			insertChunk(chunkMetaMap,chunkMap,new Chunk(entryList.toArray(new DataEntry[0])));
 		} else {
-			Chunk oldChunk = chunkMap.get(chunkMeta.firstTimestamp);
+			Chunk oldChunk = chunkMap.get(oldChunkMeta.firstTimestamp);
 			Iterator<DataEntry> oldIt = Arrays.stream(oldChunk.data).iterator();
 			Iterator<DataEntry> newIt = entryList.iterator();
 			ArrayList<DataEntry> resultList = new ArrayList<DataEntry>();
@@ -303,7 +324,21 @@ public class StreamDB {
 				}				
 			}
 
+			removeChunk(chunkMetaMap,chunkMap,oldChunkMeta);
 			insertChunk(chunkMetaMap,chunkMap,new Chunk(resultList.toArray(new DataEntry[0])));
+		}
+	}
+
+	private void removeChunk(BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> chunkMap, ChunkMeta oldChunkMeta) {
+		throwNull(chunkMetaMap);
+		throwNull(chunkMap);
+		throwNull(oldChunkMeta);
+		//log.info("remove chunk "+oldChunkMeta);
+		if(chunkMetaMap.remove(oldChunkMeta.firstTimestamp)==null) {
+			log.error("could not remove oldChunkMeta");
+		}
+		if(chunkMap.remove(oldChunkMeta.firstTimestamp)==null) {
+			log.error("could not remove old Chunk");
 		}
 	}
 

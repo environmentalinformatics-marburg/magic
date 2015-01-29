@@ -48,13 +48,52 @@ public class VirtualRawSource extends RawSource.Abstract {
 
 	@Override
 	public TsIterator get(Long start, Long end) {		
+		if(start!=null&&end!=null&&start>end) {
+			throw new RuntimeException("interval error");
+		}		
 		List<TimestampInterval<StationProperties>> intervalList = virtualPlot.getStationList(start, end, schema);			 
 		List<StreamIterator> processing_iteratorList = new ArrayList<StreamIterator>();				
 		for(TimestampInterval<StationProperties> interval:intervalList) {
 			String[] stationSchema = tsdb.getValidSchema(interval.value.get_serial(), schema);
 			if(stationSchema.length>0) {
+				if(interval.start!=null&&interval.end!=null&&interval.start>interval.end) {
+					throw new RuntimeException("interval error");
+				}
+//TODO !!!!!!  add start and end from parameter !!!!!!
+				Long intervalStart = interval.start;
+				if(start!=null) {
+					if(intervalStart==null) {
+						intervalStart = start;
+					} else if(intervalStart<start){
+						intervalStart = start;
+					}
+				}
+				Long intervalEnd = interval.end;
+				if(end!=null) {
+					if(intervalEnd==null) {
+						intervalEnd = end;
+					} else if(end<intervalEnd) {
+						intervalEnd = end;
+					}
+				}
+				
+				if(intervalStart!=null&&intervalEnd!=null&&intervalStart>intervalEnd) {
+					throw new RuntimeException("interval calc error");
+				}
+				if(intervalStart!=null&&interval.start!=null&&intervalStart<interval.start) {
+					throw new RuntimeException("interval calc error");
+				}
+				if(intervalEnd!=null&&interval.end!=null&&intervalEnd>interval.end) {
+					throw new RuntimeException("interval calc error");
+				}
+				if(intervalStart!=null&&interval.end!=null&&intervalStart>interval.end) {
+					throw new RuntimeException("interval calc error");
+				}
+				if(intervalEnd!=null&&interval.start!=null&&intervalEnd<interval.start) {
+					throw new RuntimeException("interval calc error");
+				}
 
-				StreamIterator it = tsdb.streamStorage.getRawSensorIterator(interval.value.get_serial(), schema[0], interval.start, interval.end); // just one sensor
+				StreamIterator it = tsdb.streamStorage.getRawSensorIterator(interval.value.get_serial(), schema[0], intervalStart, intervalEnd); // just one sensor
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);
 				}

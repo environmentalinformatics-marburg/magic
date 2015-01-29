@@ -39,7 +39,8 @@ public class ImageCreation {
 		TimeSeriesDiagram tsd = new TimeSeriesDiagram(timestampseries, aggregationInterval, diagramType);
 		
 		
-		BufferedImage bufferedImage = new BufferedImage(6000,600,java.awt.image.BufferedImage.TYPE_INT_RGB);
+		//BufferedImage bufferedImage = new BufferedImage(6000,600,java.awt.image.BufferedImage.TYPE_INT_RGB);
+		BufferedImage bufferedImage = new BufferedImage(1280,400,java.awt.image.BufferedImage.TYPE_INT_RGB);
 		Graphics2D gc = bufferedImage.createGraphics();
 		gc.setBackground(new java.awt.Color(255, 255, 255));
 		gc.setColor(new java.awt.Color(0, 0, 0));

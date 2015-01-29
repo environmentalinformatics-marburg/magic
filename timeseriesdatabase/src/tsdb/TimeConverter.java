@@ -84,6 +84,10 @@ public class TimeConverter implements Serializable {
 		}
 		return oleMinutesToLocalDateTime(oleTimeMinutes).toString();
 	}
+	
+	public static String oleMinutesToText(long oleTimeMinutesStart, long oleTimeMinutesEnd) {
+		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
+	}
 
 	public static long parseTimestamp(String dateText, String timeText, boolean isISOdate) {		
 		int dayOfMonth;

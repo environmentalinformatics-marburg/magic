@@ -171,7 +171,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			createImage();
 		});
 		CheckMenuItem menuItemAutoFitValue = new CheckMenuItem("auto fit values");
-		System.out.println("cc autoFitProperty: "+autoFitProperty);
+		//log.info("cc autoFitProperty: "+autoFitProperty);
 		autoFitProperty.bind(menuItemAutoFitValue.selectedProperty());	
 
 		menuItemFitValues.disableProperty().bind(autoFitProperty);
@@ -392,7 +392,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			repaint();
 		});
 
-		System.out.println("overlayGroup "+overlayGroup.getChildren().size());
+		//log.info("overlayGroup "+overlayGroup.getChildren().size());
 
 		return new BorderPane(center, sc, right, bottom, left);
 	}
@@ -788,7 +788,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 			TimeSeriesDiagram tsd = timeSeriesDiagramProperty.getValue();
 			long timestampOffset = tsd.calcTimestamp((float) (currentMovePosX-mouseStartMovePosX))-tsd.calcTimestamp(0f);;
-			System.out.println("MouseDragged "+(currentMovePosX-mouseStartMovePosX)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
+			//log.info("MouseDragged "+(currentMovePosX-mouseStartMovePosX)+"    "+timestampOffset+"   "+TimeConverter.oleMinutesToText(timestampOffset));
 			mouseStartMovePosX = currentMovePosX;
 			double prevDiagramMin = tsd.getDiagramMinTimestamp();
 			double prevDiagramMax = tsd.getDiagramMaxTimestamp();

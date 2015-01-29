@@ -29,9 +29,9 @@ public class Explorer extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		
-		System.out.println(System.getProperty("java.awt.headless"));
+		//log.info("java.awt.headless: "+System.getProperty("java.awt.headless"));
 		System.setProperty("java.awt.headless", "true");
-		System.out.println(System.getProperty("java.awt.headless"));
+		//log.info("java.awt.headless: "+System.getProperty("java.awt.headless"));
 		
 		StringProperty connectionTextProperty = new SimpleStringProperty();
 

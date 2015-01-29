@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 
+import tsdb.TimeConverter;
+
 public class StreamIterator implements Iterator<DataEntry> {
 	
 	private static final Logger log = LogManager.getLogger();
@@ -37,6 +39,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 
 	private void nextChunk() {
 		ChunkMeta chunkMeta = chunkMetaIterator.next();
+		//log.info("chunk "+TimeConverter.oleMinutesToText(chunkMeta.firstTimestamp,chunkMeta.lastTimestamp));
 		Chunk chunk = sensorChunkMap.get(chunkMeta.firstTimestamp);
 		if(minTimestamp<=chunkMeta.firstTimestamp) {
 			if(chunkMeta.lastTimestamp<=maxTimestamp) {

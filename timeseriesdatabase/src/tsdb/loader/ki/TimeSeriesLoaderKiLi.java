@@ -58,7 +58,7 @@ public class TimeSeriesLoaderKiLi {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(root);
 			for(Path subPath:stream) {
 				if(Files.isDirectory(subPath)) {
-					loadOneDirectory_structure_kili(subPath, ascCollectorMap);
+					readOneDirectory_structure_kili(subPath, ascCollectorMap);
 				} else {
 					log.warn("file in root directory: "+subPath+"   of   "+root);
 				}
@@ -76,11 +76,11 @@ public class TimeSeriesLoaderKiLi {
 	 * @param kiliPath
 	 * @param ascCollectorMap
 	 */
-	public void loadOneDirectory_structure_kili(Path kiliPath, TreeMap<String, Path> ascCollectorMap) {
+	public void readOneDirectory_structure_kili(Path kiliPath, TreeMap<String, Path> ascCollectorMap) {
 		try {
 			if(Files.exists(kiliPath)) {
 				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
-				log.info("load directory of files:    "+kiliPath);
+				log.info("read directory of files:    "+kiliPath);
 				for(Path path:stream) {
 					String filename = path.getName(path.getNameCount()-1).toString();
 					int ascIndex = filename.toLowerCase().indexOf(".asc");
@@ -306,7 +306,7 @@ public class TimeSeriesLoaderKiLi {
 				if(Files.isDirectory(path)) {
 					DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
 					for(Path subPath:subStream) {
-						loadOneDirectory_structure_kili(subPath, ascCollectorMap);
+						readOneDirectory_structure_kili(subPath, ascCollectorMap);
 					}
 					subStream.close();
 				}
