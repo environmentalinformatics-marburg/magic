@@ -156,7 +156,7 @@ ggplot(aes(x = date), data = df_gimms_modis_stats_mrg) +
   facet_wrap(~ cell, ncol = 9) + 
   scale_x_date(labels = date_format("%Y"), breaks = date_breaks("4 years"), 
                minor_breaks = date_breaks("2 years"), 
-               limits = as.Date(c("2003-01-01", "2012-12-01"))) + 
+               limits = as.Date(c("2003-01-01", "2011-12-01"))) + 
   theme_bw() + 
   labs(x = "\nTime (months)", y = "NDVI\n") + 
   theme(axis.title = element_text(size = 18), 
