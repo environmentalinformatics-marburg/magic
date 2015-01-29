@@ -28,10 +28,30 @@ geometry.variables <- function(x){
      tmp=zonal(distEdges,cloudPatches,fun="max")
      thickness=cloudPatches
      thickness=reclassify(thickness,tmp)
+    ##### outer circle
+    oci=c()
+  
+    for (i in 1:max(values(cloudPatches),na.rm=TRUE)){
+      cp=cloudPatches
+      cp[cp!=i]=NA
+      cpp=rasterToPolygons(cp,dissolve=TRUE)
+      centroid=gCentroid(cpp, byid=TRUE,id=attributes(cpp)$plotOrder)
+      
+      dist<- distanceFromPoints(cloudPatches, centroid)
+      dist[is.na(cp)]=NA
+      oci[i]=max(values(dist),na.rm=TRUE)
+    }
+  outerCircle <- reclassify(cloudPatches, cbind(cloudStats$patchID,oci))
+  outerInnerCircle <- outerCircle-thickness
+  ###
+  
+  
+  
      result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimeter,
-                   coreAreaIndex, perimAreaRatio,thickness,distEdges)
+                   coreAreaIndex, perimAreaRatio,thickness,distEdges,outerCircle,
+                   outerInnerCircle)
      names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea",
                      "perimeter", "coreAreaIndex","perimAreaRatio",
-                     "thickness","distEdges")
+                     "thickness","distEdges","outerCircle","outerInnerCircle")
      return(result)  
 }
