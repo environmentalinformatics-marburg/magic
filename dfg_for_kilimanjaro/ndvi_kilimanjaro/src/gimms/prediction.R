@@ -72,15 +72,15 @@ mod_predicted <- stack("data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif")
 
 ### mann-kendall trend statistics
 file_out <- paste0(file_out, "_mk")
-# mod_predicted_mk <- 
-#   foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
-#   calc(mod_predicted, fun = function(...) {
-#     mk <- MannKendall(...)
-#     sl <- mk$sl
-#     tau <- mk$tau
-#     tau[abs(sl) >= i] <- NA
-#     return(tau)
-#   }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
+mod_predicted_mk <- 
+  foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
+  calc(mod_predicted, fun = function(...) {
+    mk <- MannKendall(...)
+    sl <- mk$sl
+    tau <- mk$tau
+    tau[abs(sl) >= i] <- NA
+    return(tau)
+  }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
 
 mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "mk.*.tif$", 
                                full.names = TRUE)[4:1]

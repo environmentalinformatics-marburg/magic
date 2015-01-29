@@ -1,5 +1,7 @@
 library(zoo)
+library(bfast)
 library(latticeExtra)
+library(reshape2)
 
 library(doParallel)
 registerDoParallel(cl <- makeCluster(3))
@@ -75,6 +77,13 @@ dev.off()
 fls_prd_ul <- list.files("data/rst/whittaker/ul", pattern = "8211_0_0.tif$", 
                          full.names = TRUE)
 rst_prd_ul <- stack(fls_prd_ul)
+
+fls_prd_mk_ul <- "data/rst/whittaker/ul/gimms_ndvi3g_dwnscl_8211_mk001_0_0.tif"
+rst_prd_mk_ul <- raster(fls_prd_mk_ul)
+
+id_rm <- which((is.na(rst_prd_mk_ul[])) | (rst_prd_mk_ul[] > -.25))
+rst_prd_ul[id_rm] <- NA
+
 df_prd_ul <- as.data.frame(rst_prd_ul)
 
 md_prd_ul <- apply(df_prd_ul, 2, FUN = median, na.rm = TRUE)
@@ -99,8 +108,11 @@ levels(mlt_bfast_prd_ul$component) <- c("Input time series", paste(c("Seasonal",
 #   facet_wrap(~ component, ncol = 1, scales = "free_y") + 
 #   theme_bw()
 
-p_bfast_prd_ul <- 
-  xyplot(value ~ time | component, data = mlt_bfast_prd_ul, layout = c(1, 4),
+# p_bfast_prd_ul <- 
+
+png("vis/bfast/bfast_ul.png", width = 30, height = 25, units = "cm", 
+    pointsize = 15, res = 600)
+xyplot(value ~ time | component, data = mlt_bfast_prd_ul, layout = c(1, 4),
          xlab = "\nTime (months)", ylab = "", 
          as.table = TRUE, scales = list(y = list(relation = "free")), 
          panel = function(x, y) {
@@ -118,7 +130,7 @@ for (i in c(2, 4)) {
   panel.abline(h = 0, lty = 2, col = "grey50")
   trellis.unfocus()
 }
-
+dev.off()
 
 # precip bfast
 ts_prcp <- ts(prcp[, 3], start = c(1982, 1), end = c(2011, 12), frequency = 12)
