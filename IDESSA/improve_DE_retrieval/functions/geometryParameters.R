@@ -52,8 +52,8 @@ geometry.variables <- function(x){
      result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimeter,
                    coreAreaIndex, perimAreaRatio,innerCircle,distEdges,outerCircle,
                    outerInnerCircle,borg)
-     names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea",
-                     "perimeter", "coreAreaIndex","perimAreaRatio",
-                     "innerCircle","distEdges","outerCircle","outerInnerCircle",names(borg))
+     names(result)=c("cloudPatches","Ar","SI","CA",
+                     "Up", "CAI","PAR",
+                     "Re","distEdges","Ru","OIC",names(borg))
      return(result)  
 }
