@@ -24,14 +24,14 @@ geometry.variables <- function(x){
      edges<-boundaries(cloudPatches, type='inner')
      distEdges<- gridDistance(edges,origin=1) 
      values(distEdges)[is.na(values(cloudPatches))]=NA
-     #thickness (largest circle)= maximum distance from edge
+     #innerCirlce (largest circle)= maximum distance from edge
      tmp=zonal(distEdges,cloudPatches,fun="max")
-     thickness=cloudPatches
-     thickness=reclassify(thickness,tmp)
-    ##### outer circle
-    oci=c()
+     innerCirlce=cloudPatches
+     innerCircle=reclassify(innerCirlce,tmp)
+     ##### outer circle
+     oci=c()
   
-    for (i in 1:max(values(cloudPatches),na.rm=TRUE)){
+     for (i in 1:max(values(cloudPatches),na.rm=TRUE)){
       cp=cloudPatches
       cp[cp!=i]=NA
       cpp=rasterToPolygons(cp,dissolve=TRUE)
@@ -40,18 +40,22 @@ geometry.variables <- function(x){
       dist<- distanceFromPoints(cloudPatches, centroid)
       dist[is.na(cp)]=NA
       oci[i]=max(values(dist),na.rm=TRUE)
-    }
-  outerCircle <- reclassify(cloudPatches, cbind(cloudStats$patchID,oci))
-  outerInnerCircle <- outerCircle-thickness
-  ###
+     }
+     outerCircle <- reclassify(cloudPatches, cbind(cloudStats$patchID,oci))
+     outerInnerCircle <- outerCircle-innerCirlce
+
+  ### Indices listed and/or developed by Borg 98
+    Dk=sqrt((cloudArea/pi))*2
+    Uk=Dk*pi
+    borg<-borg_indices(Ar=cloudArea,Ur=perimeter,Ue=innerCirlce,Uu=outerCircle,Dk=Dk,Uk=Uk)
+    
   
-  
-  
+  ##############################################################################  
      result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimeter,
-                   coreAreaIndex, perimAreaRatio,thickness,distEdges,outerCircle,
-                   outerInnerCircle)
+                   coreAreaIndex, perimAreaRatio,innerCirlce,distEdges,outerCircle,
+                   outerInnerCircle,borg)
      names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea",
                      "perimeter", "coreAreaIndex","perimAreaRatio",
-                     "thickness","distEdges","outerCircle","outerInnerCircle")
+                     "innerCirlce","distEdges","outerCircle","outerInnerCircle",names(borg))
      return(result)  
 }
