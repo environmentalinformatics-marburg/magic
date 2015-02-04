@@ -24,14 +24,36 @@ geometry.variables <- function(x){
      edges<-boundaries(cloudPatches, type='inner')
      distEdges<- gridDistance(edges,origin=1) 
      values(distEdges)[is.na(values(cloudPatches))]=NA
-     #thickness (largest circle)= maximum distance from edge
+     #innerCircle (largest circle)= maximum distance from edge
      tmp=zonal(distEdges,cloudPatches,fun="max")
-     thickness=cloudPatches
-     thickness=reclassify(thickness,tmp)
+     innerCircle=cloudPatches
+     innerCircle=reclassify(innerCircle,tmp)
+     ##### outer circle
+     oci=c()
+  
+     for (i in 1:max(values(cloudPatches),na.rm=TRUE)){
+      cp=cloudPatches
+      cp[cp!=i]=NA
+      cpp=rasterToPolygons(cp,dissolve=TRUE)
+      centroid=gCentroid(cpp, byid=TRUE,id=attributes(cpp)$plotOrder)
+      
+      dist<- distanceFromPoints(cloudPatches, centroid)
+      dist[is.na(cp)]=NA
+      oci[i]=max(values(dist),na.rm=TRUE)
+     }
+     outerCircle <- reclassify(cloudPatches, cbind(cloudStats$patchID,oci))
+     outerInnerCircle <- outerCircle-innerCircle
+
+  ### Indices listed and/or developed by Borg 98
+    borg<-borg_indices(Ar=cloudArea,Ur=perimeter,De=innerCircle*2,Du=outerCircle*2)
+    
+  
+  ##############################################################################  
      result<-stack(cloudPatches,cloudArea,shapeIndex,coreArea,perimeter,
-                   coreAreaIndex, perimAreaRatio,thickness,distEdges)
-     names(result)=c("cloudPatches","cloudArea","shapeIndex","coreArea",
-                     "perimeter", "coreAreaIndex","perimAreaRatio",
-                     "thickness","distEdges")
+                   coreAreaIndex, perimAreaRatio,innerCircle,distEdges,outerCircle,
+                   outerInnerCircle,borg)
+     names(result)=c("cloudPatches","Ar","SI","CA",
+                     "Up", "CAI","PAR",
+                     "Re","distEdges","Ru","OIC",names(borg))
      return(result)  
 }

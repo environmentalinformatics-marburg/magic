@@ -1,6 +1,7 @@
 # packages
 library(GSODTools)
 library(ggplot2)
+library(bfast)
 
 # gsod data
 data(gsodstations)

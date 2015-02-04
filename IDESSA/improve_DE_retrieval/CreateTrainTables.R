@@ -65,9 +65,6 @@ if (datasetTime=="night"){
 }
 
 
-
-
-
 ################################################################################
 #                           Load libraries
 ################################################################################
@@ -85,11 +82,11 @@ source(paste0(functionpath,"glcmPerPatch.R"))
 ###             Define random test scenes (0.25%)
 ################################################################################
 ##alle kombination aus k,i,l. davon 25%
-pi=formatC(1:12,flag=0,width=2)
+pi1=formatC(1:12,flag=0,width=2)
 pk=formatC(1:30,flag=0,width=2)
 pl=formatC(0:23,flag=0,width=2)
 
-allscenes<-expand.grid(pi,pk,pl)
+allscenes<-expand.grid(pi1,pk,pl)
 set.seed(25)
 trainingscenes<-allscenes[sample(nrow(allscenes),samplesize*nrow(allscenes)),]
 trainingscenes=apply( trainingscenes , 1 , paste , collapse = "" )
@@ -185,7 +182,7 @@ for (i in months){
     
 ### Texture parameters #########################################################
       glcm_filter <- texture.variables (x=scenerasters[[xderivTexture]],
-                                        n_grey = 32,filter=c(3),                  #increase to 64?
+                                        n_grey = 32,filter=c(3),    
                                         var=c("mean", "variance", "homogeneity", 
                                                       "contrast", "dissimilarity", 
                                                       "entropy","second_moment"))
@@ -198,9 +195,11 @@ for (i in months){
       glcmPatches<-glcmPerPatch(x=scenerasters[[xderivTexture]],cloud_geometry$cloudPatches)
       glcmPerPatchRaster<-foreach(i=2:ncol(glcmPatches),.combine=stack,
           .packages=c("raster","doParallel"))%dopar%{
-            reclassify(cloud_geometry$cloudPatches,matrix(c(glcmPatches[,1],glcmPatches[,i]),ncol=2))}
+            reclassify(cloud_geometry$cloudPatches,matrix(c(
+              glcmPatches[,1],glcmPatches[,i]),ncol=2))}
       reclasstable=cbind(1:max(values(cloud_geometry$cloudPatches),na.rm=TRUE),
-                         1:max(values(cloud_geometry$cloudPatches),na.rm=TRUE)%in%glcmPatches[,1])
+                         1:max(values(cloud_geometry$cloudPatches),
+                               na.rm=TRUE)%in%glcmPatches[,1])
       reclasstable[reclasstable[,2]==0,2]=NA
       reclasstable[!is.na(reclasstable[,2]),2]=reclasstable[!is.na(reclasstable[,2]),1]
       reclasstable=reclasstable[is.na(reclasstable[,2]),]
@@ -211,23 +210,17 @@ for (i in months){
       }
       names(glcmPerPatchRaster)<-colnames(glcmPatches)[-1]
       names(glcmPerPatchRaster)=paste0("pp_",names(glcmPerPatchRaster))
-### zonal stat #################################################################
+### zonal stat: Mean,sd,min,max per Pacth ######################################
+      ZonalStats=cloud_geometry$cloudPatches
+###mean
       tmpStats=zonal(scenerasters[[1:(nlayers(scenerasters)-1)]],
                      cloud_geometry$cloudPatches,fun="mean")
-      ZonalStats=cloud_geometry$cloudPatches
-#      if (max (cloud_geometry$cloudPatches)==1){
         MeanPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
                              .packages=c("raster","doParallel"))%dopar%{
                                reclassify(ZonalStats,matrix(tmpStats[,c(1,i)],ncol=2))} 
-        
-#      } else{
-#      MeanPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
-#                           .packages=c("raster","doParallel"))%dopar%{
-#                             reclassify(ZonalStats,tmpStats[,c(1,i)])} 
-#      }
       names(MeanPerPatch)=paste0("mean_",names(scenerasters)[
         1:(nlayers(scenerasters)-1)])
-
+###sd
       tmpStats=zonal(scenerasters[[1:(nlayers(scenerasters)-1)]],
                      cloud_geometry$cloudPatches,fun="sd")
       SdPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
@@ -236,9 +229,22 @@ for (i in months){
 
       names(SdPerPatch)=paste0("sd_",names(scenerasters)[
         1:(nlayers(scenerasters)-1)])
-
-##sd and mean from texture filter!!!
-
+###min
+      tmpStats=zonal(scenerasters[[1:(nlayers(scenerasters)-1)]],
+               cloud_geometry$cloudPatches,fun="min")
+      MinPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
+                   .packages=c("raster","doParallel"))%dopar%{
+                     reclassify(ZonalStats,matrix(tmpStats[,c(1,i)],ncol=2))} 
+      names(MinPerPatch)=paste0("min_",names(scenerasters)[
+        1:(nlayers(scenerasters)-1)])
+###max
+      tmpStats=zonal(scenerasters[[1:(nlayers(scenerasters)-1)]],
+               cloud_geometry$cloudPatches,fun="max")
+      MaxPerPatch=foreach(i=2:ncol(tmpStats),.combine=stack,
+                    .packages=c("raster","doParallel"))%dopar%{
+                      reclassify(ZonalStats,matrix(tmpStats[,c(1,i)],ncol=2))} 
+      names(MaxPerPatch)=paste0("max_",names(scenerasters)[
+        1:(nlayers(scenerasters)-1)])
 
 ################################################################################
 ###             Compile data table
@@ -252,7 +258,8 @@ for (i in months){
 #      names(glcm_5)<-paste0("f5_",names(glcm_5))
 
       reference<-eval(parse(text=paste0(referenceimage)))
-      noDataIdentifier<-!is.na(values(radardata))&!is.na(values(reference))&!is.na(values(glcmPerPatchRaster$pp_contrast_T8.7_10.8))
+      noDataIdentifier<-!is.na(values(radardata))&!is.na(values(reference))&!is.na(
+        values(glcmPerPatchRaster$pp_contrast_T8.7_10.8))
       
       dayOfYear<-strptime(date, "%Y%m%d")$yday+1
 
@@ -263,6 +270,8 @@ for (i in months){
                                cbind(values(scenerasters))[noDataIdentifier,],
                                cbind(values(MeanPerPatch))[noDataIdentifier,],
                                cbind(values(SdPerPatch))[noDataIdentifier,],
+                               cbind(values(MinPerPatch))[noDataIdentifier,],
+                               cbind(values(MaxPerPatch))[noDataIdentifier,],
                                cbind(values(glcmPerPatchRaster))[noDataIdentifier,],
                                cbind(values(cloud_geometry))[noDataIdentifier,-1],
                                glcm_3[noDataIdentifier,],
