@@ -120,3 +120,37 @@ ggplot(aes(x = month, y = value, group = interval, colour = interval,
   scale_colour_manual("", values = c("grey75", "grey45", "black")) +   
   scale_fill_manual("", values = c("grey75", "grey45", "black")) + 
   theme_bw()
+
+# seasonality, split into 4 tiles
+fls_agg1m <- list.files("data/md14a1/low/aggregated", pattern = "^aggsum_md14a1", 
+                        full.names = TRUE)
+rst_agg1m <- stack(fls_agg1m)
+rst_agg1m <- writeRaster(rst_agg1m, "data/md14a1/low/aggregated/split/aggsum_md14a1.tif", 
+                         format = "GTiff", overwrite = TRUE, bylayer = FALSE)
+fls_agg1m <- "data/md14a1/low/aggregated/split/aggsum_md14a1.tif"
+rst_agg1m_split <- splitRaster(fls_agg1m)
+
+registerDoParallel(cl <- makeCluster(4))
+harm_agg1m_split <- foreach(i = rst_agg1m_split, j = c("ul", "ll", "ur", "lr"), 
+                            .packages = lib, .combine = "rbind") %dopar% {
+  harm_0104_0407_0710_1013 <- multiVectorHarmonics(i, time_info = yrmn, 
+                                                   intervals = c(2001, 2005, 2009), 
+                                                   width = 5)
+  
+  return(data.frame(tile = j, harm_0104_0407_0710_1013))
+}
+
+harm_agg1m_split$tile <- factor(harm_agg1m_split$tile, 
+                                levels = c("ul", "ur", "ll", "lr"))
+
+cols_gry <- c("grey25", "grey50", "grey75")
+ggplot(aes(x = month, y = value, group = interval, colour = interval, 
+           fill = interval), data = harm_agg1m_split) + 
+  geom_histogram(stat = "identity", position = "dodge") + 
+  facet_wrap(~ tile, ncol = 2) + 
+  labs(x = "\nMonth", y = "No. of active fires\n") +
+  scale_colour_manual("", values = cols_gry) + 
+  scale_fill_manual("", values = cols_gry) + 
+  theme_bw()
+
+stopCluster(cl)
