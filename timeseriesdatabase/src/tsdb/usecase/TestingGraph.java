@@ -38,7 +38,6 @@ public class TestingGraph {
 	
 		//it.writeCSV(CSV_OUTPUT_PATH+"TestingGraph.csv");
 		//it.writeConsole();
-		
 		System.out.println("...end");
 	}
 

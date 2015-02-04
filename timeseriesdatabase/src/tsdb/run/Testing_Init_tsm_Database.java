@@ -34,7 +34,7 @@ public class Testing_Init_tsm_Database {
 		System.gc();
 		//timeseriesloaderBE.loadDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_data_source_be_tsm"));
 		System.gc();
-		timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_data_source_ki_tsm"));
+		timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_data_source_ki_tsm"),true);
 		System.gc();
 		
 		

@@ -44,5 +44,38 @@ public class TimestampInterval<T extends Serializable> implements Serializable {
 				return Long.compare(t1.end,t2.end);
 			}
 		}
-	}; 
+	};
+
+	public static final Comparator<TimestampInterval<?>> START_END_COMPARATOR = new Comparator<TimestampInterval<?>>() {			
+		@Override
+		public int compare(TimestampInterval<?> a, TimestampInterval<?> b) {
+			if(a.start==null) {
+				if(b.start!=null) {
+					return -1;
+				}
+			} else {
+				if(b.start==null) {
+					return 1;
+				} else {
+					int c = Long.compare(a.start, b.start);
+					if(c!=0) {
+						return c;
+					}
+				}
+			}			
+			if(a.end==null) {
+				if(b.end==null) {
+					return 0;
+				} else {
+					return 1;
+				}
+			} else {
+				if(b.end==null) {
+					return -1;
+				} else {
+					return Long.compare(a.end, b.end);
+				}
+			}				
+		}
+	};	
 }

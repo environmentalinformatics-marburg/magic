@@ -51,14 +51,14 @@ public class TimeSeriesLoaderKiLi {
 	 * load load directory with directories of files: structure of tsm
 	 * @param root
 	 */
-	public void loadDirectory_with_stations_flat(Path root) {
+	public void loadDirectory_with_stations_flat(Path root, boolean checkExcluded) {
 		log.info("load directory with directories of files:      "+root);		
 		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();		
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(root);
 			for(Path subPath:stream) {
 				if(Files.isDirectory(subPath)) {
-					readOneDirectory_structure_kili(subPath, ascCollectorMap);
+					readOneDirectory_structure_kili(subPath, ascCollectorMap, checkExcluded);
 				} else {
 					log.warn("file in root directory: "+subPath+"   of   "+root);
 				}
@@ -76,7 +76,7 @@ public class TimeSeriesLoaderKiLi {
 	 * @param kiliPath
 	 * @param ascCollectorMap
 	 */
-	public void readOneDirectory_structure_kili(Path kiliPath, TreeMap<String, Path> ascCollectorMap) {
+	public void readOneDirectory_structure_kili(Path kiliPath, TreeMap<String, Path> ascCollectorMap, boolean checkExcluded) {
 		try {
 			if(Files.exists(kiliPath)) {
 				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
@@ -85,12 +85,15 @@ public class TimeSeriesLoaderKiLi {
 					String filename = path.getName(path.getNameCount()-1).toString();
 					int ascIndex = filename.toLowerCase().indexOf(".asc");
 					if(ascIndex!=-1) {
-						boolean excluded = excludes.contains(filename);
-						if(!excluded) {
-							for(String prefix:excludePrefixes) {
-								if(filename.startsWith(prefix)) {
-									excluded = true;
-									break;
+						boolean excluded = false;
+						if(checkExcluded) {
+							excluded = excludes.contains(filename);
+							if(!excluded) {
+								for(String prefix:excludePrefixes) {
+									if(filename.startsWith(prefix)) {
+										excluded = true;
+										break;
+									}
 								}
 							}
 						}
@@ -167,7 +170,7 @@ public class TimeSeriesLoaderKiLi {
 			}
 		}
 	}
-	
+
 	public void insertTimestampseries(Station station, StationProperties properties, TimestampSeries timestampSeries, String[] translatedInputSchema, Path ascPath) {
 		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties, ascPath.toString());
 		if(loader==null) {
@@ -181,11 +184,11 @@ public class TimeSeriesLoaderKiLi {
 		}
 		tsdb.streamStorage.insertEventList(timestampSeries.name, eventList, timestampSeries.getFirstTimestamp(), timestampSeries.getLastTimestamp(), station.loggerType.sensorNames);
 		String[] resultSchema = loader.getResultSchema();
-		
+
 		tsdb.sourceCatalog.insert(SourceEntry.of(timestampSeries, ascPath, resultSchema));
 	}
-	
-	
+
+
 	@Deprecated
 	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
 		String currentInfoPrefix = "";
@@ -306,7 +309,7 @@ public class TimeSeriesLoaderKiLi {
 				if(Files.isDirectory(path)) {
 					DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
 					for(Path subPath:subStream) {
-						readOneDirectory_structure_kili(subPath, ascCollectorMap);
+						readOneDirectory_structure_kili(subPath, ascCollectorMap,true);
 					}
 					subStream.close();
 				}
@@ -371,40 +374,40 @@ public class TimeSeriesLoaderKiLi {
 		excludes.add("gra2_rug_____dk320-20185_15_08_2012_09-21-00.asc"); //no data
 		excludes.add("gra2_rug_____dk320-20185_28.05.2012_12-22-07.asc"); //no data
 		excludes.add("hom3_rug___________________dk320-20165_30.05.2012_12-05-06.asc"); //no data
-		
+
 		excludes.add("DK320-20165_26_09_2012_14-56-47.asc"); //no station 51021038
 		excludes.add("ki_xx000000_xxx_201108220620_201111080055_mez_ra01_nai05_0000.asc"); //no station 51021038
 		excludes.add("ki_xx000000_xxx_201110191030_201201161825_mez_ra01_nai05_0000.asc"); //no station 51021038
 		excludes.add("ki_xx000000_xxx_201111081110_201201112145_mez_ra01_nai05_0000.asc"); //no station 51021038
-		
+
 		excludes.add("DK320-20208_26_09_2012_10-10-54.asc"); //no station 51021056
-		
+
 		excludes.add("DK320-20231_5-5-2012_13-03-56.asc"); // no station 510210309
-		
+
 		excludes.add("DK320-20472_26_09_2012_11-34-00.asc");// no station 51071138
-		
+
 		excludes.add("DK320-20474_24_09_2012_09-48-43.asc");// no station 51071154
-		
+
 		excludes.add("DK341-25290_01_10_2012_11-23-35.asc");// no station 80081055
-		
+
 		excludes.add("DK390-25299_24_09_2012_09-39-12.asc");// no station 80091054
 		excludes.add("DK390-25301_24_09_2012_09-32-41.asc");// no station 80091054
 		excludes.add("DK390-25303_24_09_2012_09-29-10.asc");// no station 80091054
 		excludes.add("DK390-25304_24_09_2012_09-23-45.asc");// no station 80091054
 		excludes.add("DK390-25305_01_10_2012_10-29-05.asc");// no station 80091054
 		excludes.add("DK390-25309_24_09_2012_09-19-51.asc");// no station 80091054
-		
+
 		excludes.add("DK390-25300_01_10_2012_11-08-11.asc");// no station 80091055
-		
+
 		excludes.add("DK390-25306_01_10_2012_16-17-50.asc");// no station 80091038
-		
+
 		excludes.add("ki_xx000000_xxx_201108171000_201111241245_mez_ra01_nai05_0000.asc"); // no station 51021020161
-		
+
 		excludes.add("ki_xx000000_xxx_201108220620_201111080055_mez_ra01_nai05_0000.asc"); // no station 51021038
 		excludes.add("ki_xx000000_xxx_201108220620_201111080055_mez_ra01_nai05_0000.asc"); // no station 51021038
 		excludes.add("ki_xx000000_xxx_201110191030_201201161825_mez_ra01_nai05_0000.asc"); // no station 51021038
 		excludes.add("ki_xx000000_xxx_201111081110_201201112145_mez_ra01_nai05_0000.asc"); // no station 51021038
-		
+
 		excludes.add("ki_xx00cof4_xxx_201106210930_201107050405_mez_ra01_nai05_0000.asc"); // no station 51021020230
 		excludes.add("ki_xx00hom5_xxx_201102230000_201103072115_mez_ra01_nai05_0000.asc"); // no station 51021020230
 		excludes.add("rug_cof4_201107051257.asc"); // no station 51021020230

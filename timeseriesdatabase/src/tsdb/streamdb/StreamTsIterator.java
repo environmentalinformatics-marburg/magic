@@ -14,6 +14,13 @@ public class StreamTsIterator extends TsIterator {
 		this(input_iterator,input_iterator.sensorName);
 	}
 	
+	public static StreamTsIterator of(StreamIterator input_iterator) {
+		if(input_iterator==null) {
+			return null;
+		}
+		return new StreamTsIterator(input_iterator);
+	}
+	
 	public StreamTsIterator(Iterator<DataEntry> input_iterator, String sensorName) {
 		super(new TsSchema(new String[]{sensorName}));
 		this.input_iterator = input_iterator;

@@ -3,11 +3,18 @@ package tsdb.web;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Collections;
 
 import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.security.authentication.DigestAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -21,6 +28,9 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.security.Credential;
+import org.eclipse.jetty.util.security.Password;
 
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
@@ -141,7 +151,8 @@ public class Main {
 				contextRedirect,
 				Robots_txt_Handler.CONTEXT_HANDLER,
 				//x,
-				createContextInvalidURL()
+				createContextInvalidURL(),
+				createContextTestingLogin()
 		};
 
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection();
@@ -163,6 +174,39 @@ public class Main {
 		System.out.println("waiting for requests...");
 		server.join();
 		System.out.println("...Web Sever stopped");		
+	}
+
+	private static ContextHandler createContextTestingLogin() {
+		ContextHandler context = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"/login");		
+		ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+		context.setHandler(security);
+		
+		Constraint constraint = new Constraint();
+        constraint.setName("auth");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[] { "user", "admin" });
+		
+		ConstraintMapping mapping = new ConstraintMapping();
+        mapping.setPathSpec("/*");
+        mapping.setConstraint(constraint);
+		
+		security.setConstraintMappings(Collections.singletonList(mapping));
+		security.setAuthenticator(new DigestAuthenticator());
+		HashLoginService loginService = new HashLoginService("Login"/*, "realm.properties"*/);
+		String userName = "uu";
+		Credential credential = new Password("pp");
+		String[] roles = new String[]{"admin"};
+		loginService.putUser(userName, credential, roles);
+		security.setLoginService(loginService);
+		
+		ResourceHandler resourceHandler = new ResourceHandler();
+		resourceHandler.setDirectoriesListed(true); // show directory content
+		resourceHandler.setResourceBase(TsDBFactory.WEBDOWNLOAD_PATH);
+		HandlerList handlers = new HandlerList();
+		handlers.setHandlers(new Handler[] {resourceHandler, new DefaultHandler()});
+		security.setHandler(handlers);
+
+		return context;
 	}
 
 	private static ContextHandler createContextWebcontent() {

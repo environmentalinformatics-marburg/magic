@@ -525,7 +525,13 @@ public class Util {
 		return new String[]{e};
 	}
 
-	
-
+	public static void createDirectoriesOfFile(String filepath) {
+		try {
+			File dir = new File(filepath);			
+			dir.getParentFile().mkdirs();
+		} catch(Exception e) {
+			log.error(e);
+		}
+	}
 	
 }

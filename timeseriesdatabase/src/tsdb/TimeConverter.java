@@ -2,7 +2,9 @@ package tsdb;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,13 +81,54 @@ public class TimeConverter implements Serializable {
 	}
 
 	public static String oleMinutesToText(Long oleTimeMinutes) {
-		if(oleTimeMinutes==null) {
+		if(oleTimeMinutes==null||oleTimeMinutes==-1) {
 			return "---";
 		}
 		return oleMinutesToLocalDateTime(oleTimeMinutes).toString();
 	}
 	
+	public static String oleMinutesToDateTimeFileText(long oleTimeMinutes) {
+		return oleMinutesToDateTimeFileText(Long.valueOf(oleTimeMinutes));
+	}
+	
+	public static String oleMinutesToDateTimeFileText(Long oleTimeMinutes) {
+		if(oleTimeMinutes==null||oleTimeMinutes==-1) {
+			return "xxxx_xx_xx";
+		}
+		LocalDate date = oleMinutesToLocalDateTime(oleTimeMinutes).toLocalDate();
+		
+		String s = "";
+		s += date.getYear();
+		s += "_";
+		if(date.getMonthValue()<10) {
+			s += "0";
+		}
+		s += date.getMonthValue();
+		s += "_";
+		if(date.getDayOfMonth()<10) {
+			s += "0";
+		}
+		s += date.getDayOfMonth();
+		s += "__";		
+		LocalTime time = oleMinutesToLocalDateTime(oleTimeMinutes).toLocalTime();
+		if(time.getHour()<10) {
+			s += "0";
+		}
+		s += time.getHour();
+		s += "_";
+		if(time.getMinute()<10) {
+			s += "0";
+		}
+		s += time.getMinute();
+		
+		return s;
+	}
+	
 	public static String oleMinutesToText(long oleTimeMinutesStart, long oleTimeMinutesEnd) {
+		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
+	}
+	
+	public static String oleMinutesToText(Long oleTimeMinutesStart, Long oleTimeMinutesEnd) {
 		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
 	}
 

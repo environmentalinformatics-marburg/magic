@@ -69,7 +69,7 @@ public class VirtualBase extends Base.Abstract  {
 				if(interval.start!=null&&interval.end!=null&&interval.start>interval.end) {
 					throw new RuntimeException("interval error");
 				}
-//TODO !!!!!!  add start and end from parameter !!!!!!
+
 				Long intervalStart = interval.start;
 				if(start!=null) {
 					if(intervalStart==null) {
@@ -103,15 +103,10 @@ public class VirtualBase extends Base.Abstract  {
 					throw new RuntimeException("interval calc error");
 				}				
 				
-				
-				
-				
-				
-				
 				//Node node = StationBase.create(timeSeriesDatabase, interval.value.get_serial(), stationSchema, dataQuality);
 				Station station = tsdb.getStation(interval.value.get_serial());
 				Node node = StationBase.of(tsdb, station, stationSchema, stationGen);
-//TODO !!!!!!  add start and end from parameter !!!!!!				
+		
 				TsIterator it = node.get(intervalStart, intervalEnd);
 				if(it!=null&&it.hasNext()) {
 					processing_iteratorList.add(it);

@@ -51,7 +51,7 @@ public class ClearImportSources {
 		log.info("import KI tsm");
 		log.info("from "+TsDBFactory.SOURCE_BE_TSM_PATH);
 		long timeStartKI = System.currentTimeMillis();
-		timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_KI_TSM_PATH));
+		timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_KI_TSM_PATH),true);
 		long timeEndKI = System.currentTimeMillis();
 		System.gc();
 		log.info("import KI tfi");
