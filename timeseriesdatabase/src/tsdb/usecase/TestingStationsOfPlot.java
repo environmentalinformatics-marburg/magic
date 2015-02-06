@@ -15,10 +15,31 @@ import tsdb.util.iterator.TsIterator;
 
 public class TestingStationsOfPlot {
 	
+	/*
+	 
+	 view:
+	 
+	 plot/logger_type/station 
+	 
+	 
+	 query_logger_types( plot )  ->  logger_types at plot
+	 
+	 query_stations( plot , logger_type ) ->  stations of logger_type at plot
+	 
+	 query_time_series( plot , station ) ->  time series of station at plot
+	 
+	 
+	 
+	 */
+	
+	
+	
+	
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		String plotID = "cof3";
+		//String plotID = "cof3";
+		String plotID = "nkw1";
 		String[] querySchema = new String[]{"Ta_200"};
 		
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);

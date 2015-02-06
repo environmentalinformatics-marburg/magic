@@ -50,7 +50,7 @@ public class TestingWebSocket {
 
 	public static void run(RemoteTsDB tsdb) throws Exception {
 
-		try{
+		/*try{
 			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.WEBCONTENT_PATH,"rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
 			for(int i=0;i<indexedColors.length;i++) {
@@ -62,7 +62,7 @@ public class TestingWebSocket {
 			TimeSeriesPainterGraphics2D.setIndexedColors(indexedColors);
 		} catch(Exception e) {
 			log.error(e);
-		}
+		}*/
 
 
 

@@ -37,13 +37,22 @@ public class Handler_heatmap_scale extends MethodHandler {
 		}	
 
 		try {
+			BufferedImage bufferedImage;
 
-			int imageWidth = 800;
-			BufferedImage bufferedImage = new BufferedImage(imageWidth, 24, java.awt.image.BufferedImage.TYPE_INT_RGB);
+			if(sensorName.equals("WD")) {
+				
+				int imageWidth = 200;
+				bufferedImage = new BufferedImage(imageWidth, 200, java.awt.image.BufferedImage.TYPE_INT_RGB);
+				TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);			
+				TimeSeriesHeatMap.drawRoundScale(tsp, sensorName);
 
-			TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);		
+			} else {
 
-			TimeSeriesHeatMap.drawScale(tsp, sensorName);
+				int imageWidth = 800;
+				bufferedImage = new BufferedImage(imageWidth, 24, java.awt.image.BufferedImage.TYPE_INT_RGB);
+				TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);			
+				TimeSeriesHeatMap.drawScale(tsp, sensorName);
+			}
 
 			try {
 				ImageIO.write(bufferedImage, "png", response.getOutputStream());

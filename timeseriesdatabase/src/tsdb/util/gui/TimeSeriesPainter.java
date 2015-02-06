@@ -10,8 +10,10 @@ public interface TimeSeriesPainter {
 	float getMinY();
 	float getMaxX();
 	float getMaxY();	
-	void setColor(int r, int g, int b);	
+	void setColor(int r, int g, int b);
+	void setColorTransparent();	
 	void drawLine(float x0, float y0, float x1, float y1);
+	void fillCircle(float cx, float cy, float r);
 	void setColorAxisLine();
 	void setColorZeroLine();
 	void setColorYScaleLine();
@@ -38,5 +40,6 @@ public interface TimeSeriesPainter {
 	void setColorRectWaterSecondary();
 	void setIndexedColor(float value);
 	void setIndexedColorRange(float min, float max);
+	void setColorScale(String name);
 	float[] getIndexColorRange();
 }

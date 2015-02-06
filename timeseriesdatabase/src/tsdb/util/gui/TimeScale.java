@@ -127,7 +127,7 @@ public class TimeScale {
 
 	}
 
-	private String getMonthText(int month) {
+	public static String getMonthText(int month) {
 		switch(month) {
 		case 1: return "jan";
 		case 2: return "feb";

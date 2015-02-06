@@ -16,5 +16,9 @@ public class Pair<A,B> {
 		this.a = a;
 		this.b = b;
 	}
+	
+	public static <A,B> Pair<A, B> of(A a, B b) {
+		return new Pair<A, B>(a,b);
+	}
 
 }

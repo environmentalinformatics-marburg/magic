@@ -224,7 +224,12 @@ public class TimeSeriesDiagram {
 		if(compareTs!=null) {
 			drawGraph(tsp,compareTs,false);
 		}
-		drawGraph(tsp,timestampseries,true);		
+		drawGraph(tsp,timestampseries,true);
+		
+		
+		tsp.setColor(150, 150, 150);
+		int start_year = TimeConverter.oleMinutesToLocalDateTime(timestampseries.getFirstTimestamp()).getYear();
+		tsp.drawText("["+start_year+"]", tsp.getMinX(), tsp.getMaxY(), PosHorizontal.LEFT, PosVerical.BOTTOM);
 	}
 
 	public long getDataMinTimestamp() {

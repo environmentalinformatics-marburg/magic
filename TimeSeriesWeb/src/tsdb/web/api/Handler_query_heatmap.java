@@ -131,11 +131,14 @@ public class Handler_query_heatmap extends MethodHandler {
 				return;
 			}
 			int imageWidth = (int) ((ts.getLastTimestamp()-ts.getFirstTimestamp())/(60*24));
-			BufferedImage bufferedImage = new BufferedImage(imageWidth, 24, java.awt.image.BufferedImage.TYPE_INT_RGB);
+			int imageHeight = 36;
+			BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, java.awt.image.BufferedImage.TYPE_INT_RGB);
 
 			TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);		
 
-			new TimeSeriesHeatMap(ts).draw(tsp,sensorName);
+			TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
+			tshm.draw(tsp,sensorName);
+			tshm.drawTimescale(tsp, 0, 24, imageWidth+1, imageHeight-1);
 			
 			try {
 				ImageIO.write(bufferedImage, "png", response.getOutputStream());

@@ -7,6 +7,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.WritableImage;
@@ -68,10 +71,22 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		gc.setColor(new Color(r,g,b));
 
 	}
+	
+	@Override
+	public void setColorTransparent() {
+		gc.setColor(new Color(255,255,255,255));
+		
+	}
 
 	@Override
 	public void drawLine(float x0, float y0, float x1, float y1) {
 		gc.drawLine((int)x0, (int)y0, (int)x1, (int)y1);		
+	}
+	
+	@Override
+	public void fillCircle(float cx, float cy, float r) {
+		gc.fillOval((int)(cx-r), (int)(cy-r), (int)(r*2), (int)(r*2));
+		
 	}
 
 	@Override
@@ -227,6 +242,10 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	public void setColorXScaleHourLine() {
 		gc.setColor(new Color(240,240,255));		
 	}
+	
+	
+	
+	private static HashMap<String,Color[]> colorScaleMap = new HashMap<String,Color[]>();
 
 	
 
@@ -242,10 +261,32 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 			indexedColors[i] = getSpectraColor(v);
 			
 		}
+		colorScaleMap.put("default",indexedColors);
 	}
 	
-	public static void setIndexedColors(Color[] indexedColors) {
+	public static void setIndexedColors(String name, Color[] indexedColors) {		
+		colorScaleMap.put(name, indexedColors);		
 		TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
+		
+		/*Color[] c = new Color[indexedColors.length*2];
+		for(int i=0;i<indexedColors.length;i++) {
+			c[i] = indexedColors[i];
+			c[c.length-1-i] = indexedColors[i];
+		}
+		
+		colorScaleMap.put("round_rainbow", c);*/
+
+	}
+	
+	@Override
+	public void setColorScale(String name) {
+		Color[] c = colorScaleMap.get(name);
+		if(c==null) {
+			c = colorScaleMap.get("default");
+		}
+		if(c!=null) {
+			indexedColors = c;
+		}		
 	}
 
 	private static Color getSpectraColor(float value) {
@@ -315,5 +356,9 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	public float[] getIndexColorRange() {
 		return new float[]{minValue,maxValue};
 	}
+
+	
+
+
 
 }

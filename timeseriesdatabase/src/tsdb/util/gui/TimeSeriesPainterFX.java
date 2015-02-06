@@ -308,4 +308,21 @@ public class TimeSeriesPainterFX implements TimeSeriesPainter {
 		return null;
 	}
 
+	@Override
+	public void setColorScale(String name) {
+		// TODO Auto-generated method stub		
+	}
+
+	@Override
+	public void setColorTransparent() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fillCircle(float cx, float cy, float r) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
