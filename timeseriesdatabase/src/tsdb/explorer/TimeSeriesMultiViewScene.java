@@ -345,7 +345,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 						if(queryEntry.diagramType==DiagramType.HEATMAP) {
 							TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
-							tshm.draw(tsp, queryEntry.sensor.name);
+							tshm.draw(tsp, queryEntry.sensor.name,0);
 						}
 
 						gc = bufferedImage.createGraphics();					

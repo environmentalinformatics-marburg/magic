@@ -3,10 +3,13 @@ var generalstation_select;
 var sensor_select;
 var time_select;
 var quality_select;
+var scale_factor_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
+var scaleFactors = [1,2,3,4];
 var testingImage = "";
+var scale_factor = 2;
 
 var sensors;
 
@@ -19,14 +22,19 @@ $(document).ready(function(){
 	sensor_select = $("#sensor_select");
 	time_select = $("#time_select");
 	quality_select = $("#quality_select");
+	scale_factor_select = $("#scale_factor_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
 	quality_select.val(2);
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
+	
+	$.each(scaleFactors, function(i,factor) {scale_factor_select.append(new Option("x"+factor,factor));});
+	scale_factor_select.val(2);
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updateSensors;	
 	getID("sensor_select").onchange = updateSensor;
 	getID("query_sensor").onclick = runQuerySensor;
+	getID("scale_factor_select").onchange = updateScaleFactor;
 	
 	updataRegions();
 	decTask();
@@ -126,6 +134,20 @@ var updateSensor = function() {
 	decTask();
 }
 
+ function updateScaleFactor() {
+	 incTask();
+	 var factor = scale_factor_select.val();
+	 if(factor>0 && factor<10) {
+		 scale_factor = factor;
+		 $(".heatmap img").each(function(i,img) {
+			img.width = img.naturalWidth*scale_factor;
+			img.height = img.naturalHeight*scale_factor;
+		});
+		 
+	 }
+	 decTask();
+ }
+
 var runQuerySensor = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
@@ -169,6 +191,7 @@ var addValueScale = function(sensorName) {
 var addDiagram = function(plotName, sensorName) {
 	incTask();
 	var plotResult = getID("result").appendChild(document.createElement("div"));
+	plotResult.className = "heatmap";
 	var plotResultTitle = plotResult.appendChild(document.createElement("div"));
 	plotResultTitle.innerHTML += "query "+plotName+"...";
 	var qualityName = qualities[quality_select.val()];
@@ -179,21 +202,23 @@ var addDiagram = function(plotName, sensorName) {
 		timeParameter = "&year="+timeName;
 	}
 	var image = new Image();
-	var need_to_scale = true;
+	//var need_to_scale = true;
 	plotResult.appendChild(image);
 	image.onload = function() {
 		plotResultTitle.innerHTML = plotName;
 		decTask();
-		testingImage = image;
-		if(need_to_scale) {
+		image.width = image.naturalWidth*scale_factor;
+		image.height = image.naturalHeight*scale_factor;
+		//testingImage = image;
+		/*if(need_to_scale) {
 			need_to_scale = false;
 			image.width = image.width*2;			
-			image.height = 24*2;
+			image.height = (24+12)*2;
 			//image.width = image.width*4;			
 			//image.height = 24*4;
 			//image.width = image.width*3;			
 			//image.height = 24*3;//image.height = image.height*3;
-		}
+		}*/
 	}
 	image.onerror = function() {	
 		/*plotResultTitle.innerHTML = plotName+": no data";

@@ -3,6 +3,7 @@ package tsdb.util.gui;
 import static tsdb.util.AssumptionCheck.throwNull;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
@@ -28,6 +29,9 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	Color color_black = new Color(0,0,0);
 	Color color_grey = new Color(190,190,190);
 	Color color_light_blue = new Color(220,220,255);
+	
+	Font fontDefault;
+	Font fontSmall;
 
 	public TimeSeriesPainterGraphics2D(BufferedImage bufferedImage) {
 		this(bufferedImage.createGraphics(),0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
@@ -39,11 +43,28 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		//gc.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);		
 		//gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		//gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		//gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		this.gc = gc;
 		this.minX = minX;
 		this.minY = minY;
 		this.maxX = maxX;
 		this.maxY = maxY;
+		
+		fontDefault = gc.getFont();
+		fontSmall = fontDefault.deriveFont(9f);
+	}
+	
+	@Override
+	public void setFontDefault() {
+		gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		gc.setFont(fontDefault);
+	}
+	
+	@Override
+	public void setFontSmall() {
+		gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		gc.setFont(fontSmall);
 	}
 
 	@Override
@@ -91,7 +112,7 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void fillRect(float xMin, float yMin, float xMax, float yMax) {
-		gc.fillRect((int)xMin, (int)yMin, (int)(xMax-xMin), (int)(yMax-yMin));
+		gc.fillRect((int)xMin, (int)yMin, (int)(xMax-xMin+1), (int)(yMax-yMin+1));
 	}
 
 	@Override

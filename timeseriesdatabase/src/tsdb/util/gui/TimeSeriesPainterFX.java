@@ -325,4 +325,16 @@ public class TimeSeriesPainterFX implements TimeSeriesPainter {
 		
 	}
 
+	@Override
+	public void setFontDefault() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setFontSmall() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

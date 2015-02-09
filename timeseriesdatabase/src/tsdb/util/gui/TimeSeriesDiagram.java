@@ -115,7 +115,7 @@ public class TimeSeriesDiagram {
 		}
 
 		dataValueRange = dataMaxValue-dataMinValue;
-		
+
 		diagramMinValue = dataMinValue;
 		diagramMaxValue = dataMaxValue;
 		diagramValueRange = diagramMaxValue-diagramMinValue;
@@ -129,7 +129,7 @@ public class TimeSeriesDiagram {
 		diagramMaxTimestamp = dataMaxTimestamp;
 		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
 	}
-	
+
 	public TimestampSeries getTimeStampSeries() {
 		return timestampseries;
 	}
@@ -145,11 +145,11 @@ public class TimeSeriesDiagram {
 	public int calcDiagramY(double value) {
 		return (int) (diagramMaxY-((value-diagramMinValue)*diagramValueFactor));
 	}
-	
+
 	public double calcValue(double posY) {
 		return ((diagramMaxY-posY)/diagramValueFactor)+diagramMinValue;
 	}
-	
+
 	public float[] getDiagramXMinMax() {
 		return new float[]{diagramMinX,diagramMaxX};
 	}
@@ -175,7 +175,7 @@ public class TimeSeriesDiagram {
 			this.y1 = y1;
 		}
 	}
-	
+
 	private static class RawPoint {
 		public final float x;
 		public final float y;
@@ -184,7 +184,7 @@ public class TimeSeriesDiagram {
 			this.y = y;
 		}
 	}
-	
+
 	private static class RawConnect {
 		public final float x0;
 		public final float y0;
@@ -225,11 +225,16 @@ public class TimeSeriesDiagram {
 			drawGraph(tsp,compareTs,false);
 		}
 		drawGraph(tsp,timestampseries,true);
-		
-		
+
+
 		tsp.setColor(150, 150, 150);
 		int start_year = TimeConverter.oleMinutesToLocalDateTime(timestampseries.getFirstTimestamp()).getYear();
-		tsp.drawText("["+start_year+"]", tsp.getMinX(), tsp.getMaxY(), PosHorizontal.LEFT, PosVerical.BOTTOM);
+		try {
+			tsp.setFontSmall();
+			tsp.drawText(""+start_year+"", tsp.getMinX(), tsp.getMaxY(), PosHorizontal.LEFT, PosVerical.BOTTOM);
+		} finally {
+			tsp.setFontDefault();
+		}
 	}
 
 	public long getDataMinTimestamp() {
@@ -253,11 +258,11 @@ public class TimeSeriesDiagram {
 		diagramMaxTimestamp = max;
 		diagramTimestampRange = max-min;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	public float getDataMinValue() {
 		return dataMinValue;
 	}
@@ -279,12 +284,12 @@ public class TimeSeriesDiagram {
 		diagramMaxValue = max;
 		diagramValueRange = max-min;
 	}
-	
+
 	public void fitDiagramValueRangeToDiagramTimestampRange() {
-		
+
 		float min = Float.MAX_VALUE;
 		float max = Float.MIN_VALUE;		
-		
+
 		for(TsEntry entry:timestampseries) {
 			if(entry.timestamp<diagramMinTimestamp) {
 				continue;
@@ -302,7 +307,7 @@ public class TimeSeriesDiagram {
 				}
 			}
 		}
-		
+
 		setDiagramValueRange(min,max);
 	}
 
@@ -322,7 +327,7 @@ public class TimeSeriesDiagram {
 				if(entry.timestamp<diagramMinTimestamp) {
 					continue;
 				}
-				
+
 				long timestamp = entry.timestamp;
 				float value = entry.data[0];
 				if(Float.isNaN(value)) {
@@ -338,7 +343,7 @@ public class TimeSeriesDiagram {
 					prevY = y;
 					hasPrev = true;
 				}
-				
+
 				if(entry.timestamp>diagramMaxTimestamp) {
 					break;
 				}
@@ -363,31 +368,31 @@ public class TimeSeriesDiagram {
 				log.error("unknown diagram type: "+diagramType);
 			}
 		} else { // raw
-			
+
 			ArrayList<RawPoint> pointList = new ArrayList<RawPoint>();
 			ArrayList<RawConnect> connectList = new ArrayList<RawConnect>();
-			
+
 			boolean hasPrev = false;
 			float prevX = 0;
 			float prevY = 0;
 			for(TsEntry entry:ts) {
-				
+
 				if(entry.timestamp<diagramMinTimestamp) {
 					continue;
 				}
-				
+
 				long timestamp = entry.timestamp;
 				float value = entry.data[0];
-				
+
 				if(Float.isNaN(value)) {
 					hasPrev = false;
 				} else {
-					
+
 					long check = TimeConverter.DateTimeToOleMinutes(TimeConverter.oleMinutesToLocalDateTime(timestamp));
 					if(check!=timestamp) {
 						throw new RuntimeException();
 					}
-					
+
 					int x = calcDiagramX(timestamp);
 					int y = calcDiagramY(value);
 					pointList.add(new RawPoint(x, y));
@@ -398,7 +403,7 @@ public class TimeSeriesDiagram {
 					prevY = y;
 					hasPrev = true;
 				}
-				
+
 				if(entry.timestamp>diagramMaxTimestamp) {
 					break;
 				}

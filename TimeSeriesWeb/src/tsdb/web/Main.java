@@ -176,8 +176,8 @@ public class Main {
 		System.out.println("...Web Sever stopped");		
 	}
 
-	private static ContextHandler createContextTestingLogin() {
-		ContextHandler context = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"/login");		
+	private static ContextHandler createContextTestingLogin() {		
+		ContextHandler context = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"/login");
 		ConstraintSecurityHandler security = new ConstraintSecurityHandler();
 		context.setHandler(security);
 		

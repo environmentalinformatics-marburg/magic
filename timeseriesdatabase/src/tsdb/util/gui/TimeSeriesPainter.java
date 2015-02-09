@@ -42,4 +42,6 @@ public interface TimeSeriesPainter {
 	void setIndexedColorRange(float min, float max);
 	void setColorScale(String name);
 	float[] getIndexColorRange();
+	void setFontDefault();
+	void setFontSmall();
 }
