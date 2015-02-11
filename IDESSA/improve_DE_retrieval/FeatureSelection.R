@@ -2,10 +2,11 @@ library(caret)
 library(doParallel)
 
 
-responseName="RInfo" #RInfo
+responseName="Rain"#,RInfo"
 time="day"#"inb" "night"
+sampsize=0.1#,0.05
 
-datapath="/media/memory18201/casestudies/Improve_DE_retrieval/results"
+datapath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
 functionpath="home/hmeyer/Improve_DE_retrieval/functions/trainFuctions"
 
 
@@ -21,7 +22,6 @@ for (i in list.files(functionpath)){
 }
 
 
-
 ################################################################################
 ### Rainfall area
 ################################################################################
@@ -35,7 +35,7 @@ if (responseName=="RInfo"){
   
   set.seed(20)
   samples<-createDataPartition(response,
-                               p = 0.001,list=FALSE)
+                               p = sampsize,list=FALSE)
   
   response=response[samples]
   response=as.factor(response)
@@ -60,83 +60,74 @@ if (responseName=="RInfo"){
   
   rctrl <- rfeControl(index=cvSplits,
                       functions = nnetFuncs,
-                      method="cv")
-
-### Feature selection ##########################################################
+                      method="cv",
+                      returnResamp = "all")
+  
+  ### Feature selection ##########################################################
   rfeModel <- rfe(predictors,
-            response,
-            sizes = seq(5,ncol(predictors),10),
-            method = "nnet",
-            rfeControl = rctrl,
-            trControl=tctrl,
-            #tuneLength=2,
-            tuneGrid=expand.grid(.size = c(1:5,seq(10,ncol(predictors),5)),
-                                 .decay = seq(0.01,0.1,0.02)),
-            metric="ROC",
-            maximize=TRUE)
-
+                  response,
+                  sizes = c(1:5,seq(10,ncol(predictors),10)),
+                  method = "nnet",
+                  rfeControl = rctrl,
+                  trControl=tctrl,
+                  #tuneLength=2,
+                  tuneGrid=expand.grid(.size = c(2,8,20,40,80),
+                                       .decay = 0.05),
+                  metric="ROC",
+                  maximize=TRUE)
+  
   save(rfeModel,file=paste0(datapath,"/rfe_",time,"_",responseName,".RData"))
 }
-
 
 
 ################################################################################
 ### Rainfall rate
 ################################################################################
-If (response=="Rain"){
-#select 10% of raining pixels for feature selection
-
+if (responseName=="Rain"){
+  #select 10% of raining pixels for feature selection
+  
+  
+  datatable<-datatable[datatable$Radar>0.06,]
   response<- datatable$Radar
-  response<- response[response>0.06]  
-
+  
+  
   set.seed(20)
   samples<-createDataPartition(response,
-                             p = 0.010,list=FALSE)
+                               p = sampsize,list=FALSE)
   predictors=datatable[samples,4:(ncol(datatable)-1)]
+  response=response[samples]
   rm(datatable)
   gc()
   predictors=scale(predictors)
-
+  
   set.seed(20)
   cvSplits <- createFolds(response, k = 10,returnTrain=TRUE)
   
   ### Training Settings ##########################################################
-  
-  
-  
   nnetFuncs <- caretFuncs #Default caret functions
-  
-  
-  tctrl <- trainControl(
-    method="cv")
-  
+  tctrl <- trainControl(method="cv")
   rctrl <- rfeControl(index=cvSplits,
                       functions = nnetFuncs,
-                      method="cv")
+                      method="cv",
+                      returnResamp = "all")
   
-### Feature selection ##########################################################
-
+  ### Feature selection ##########################################################
+  
   rfeModel <- rfe(predictors,
                   response,
-                  sizes = seq(5,ncol(predictors),10),
+                  sizes = c(1:5,seq(10,ncol(predictors),10)),
                   method = "nnet",
                   rfeControl = rctrl,
                   trControl=tctrl,
-                  tuneGrid=expand.grid(.size = c(1:5,seq(10,ncol(predictors),5)),
-                                       .decay = seq(0.01,0.1,0.02)),
+                  tuneGrid=expand.grid(.size = c(2,8,20,40,80),
+                                       .decay = 0.05),
                   metric="RMSE",
                   maximize=FALSE)
   
-
-
-save(rfeModel,file=paste0(datapath,"/rfe_",time,"_",responseName,".RData"))
+  
+  save(rfeModel,file=paste0(datapath,"/rfe_",time,"_",responseName,".RData"))
 }
-
-}
-
 
 #######
 
 stopCluster(cl)
-
-
