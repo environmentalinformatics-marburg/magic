@@ -18,6 +18,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
+import tsdb.raw.TimestampSeries;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
@@ -235,6 +236,12 @@ public class StreamStorageMapDB implements StreamStorage{
 	@Override
 	public void setTimeSeriesMask(String stationName, String sensorName,
 			TimeSeriesMask timeSeriesMask) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void insertTimestampSeries(TimestampSeries timestampSeries) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -236,6 +236,7 @@ public class StreamDB {
 
 
 	public void insertSensorData(String stationName, String sensorName, DataEntry[] data) {	
+		log.info("streamDB insert data "+stationName+" "+sensorName+" "+data.length);
 		throwNull(stationName);
 		throwNull(sensorName);
 		throwNull(data);

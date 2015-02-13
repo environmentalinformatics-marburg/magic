@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
+import tsdb.explorer.metadata.MetadataScene;
 import tsdb.remote.RemoteTsDB;
 
 public class Explorer extends Application {

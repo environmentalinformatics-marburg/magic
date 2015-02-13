@@ -4,6 +4,7 @@ import java.io.FileReader;
 
 import static tsdb.util.AssumptionCheck.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TimeConverter;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -43,12 +45,35 @@ public class Table {
 		public ColumnReaderFloat(int rowIndex) {
 			super(rowIndex);
 		}
-		public float get(String[] row) {			
+		public float get(String[] row, boolean warnIfEmpty) {			
 			try {
+				String textValue = row[rowIndex];
+				if(!warnIfEmpty&&textValue.isEmpty()) {
+					return Float.NaN;
+				}
 				return Float.parseFloat(row[rowIndex]);
 			} catch(NumberFormatException e) {
 				log.warn(row[rowIndex]+"not parsed");
 				return Float.NaN;
+			}
+		}
+	}
+	
+	public static class ColumnReaderTimestamp {
+		
+		private final int rowIndexDate;
+		private final int rowIndexTime;
+		
+		public ColumnReaderTimestamp(int rowIndexDate, int rowIndexTime) {
+			this.rowIndexDate = rowIndexDate;
+			this.rowIndexTime = rowIndexTime;
+		}
+		public long get(String[] row) {			
+			try {
+				return TimeConverter.parseTimestamp(row[rowIndexDate], row[rowIndexTime], true);				
+			} catch(NumberFormatException e) {
+				log.warn(row[rowIndexDate]+"  "+row[rowIndexTime]+"not parsed");
+				return -1;
 			}
 		}
 	}
@@ -139,6 +164,19 @@ public class Table {
 			return null;
 		}
 		return new ColumnReaderFloat(columnIndex);
+	}
+	
+	public ColumnReaderTimestamp createColumnReaderTimestamp(String colDate, String colTime) {
+		int columnIndexDate = getColumnIndex(colDate);
+		if(columnIndexDate<0) {
+			return null;
+		}
+		int columnIndexTime = getColumnIndex(colTime);
+		if(columnIndexTime<0) {
+			return null;
+		}
+		
+		return new ColumnReaderTimestamp(columnIndexDate, columnIndexTime);	
 	}
 
 

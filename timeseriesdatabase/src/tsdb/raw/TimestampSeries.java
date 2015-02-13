@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeConverter;
+import tsdb.streamdb.DataEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimeSeriesEntryIterator;
 import tsdb.util.iterator.TsIterable;
@@ -60,6 +61,37 @@ public class TimestampSeries implements TsIterable, Serializable {
 		TimestampSeries ts = new TimestampSeries(input_iterator.getNames(), entryList, null);
 		ts.name = name;
 		return ts;
+	}
+	
+	/**
+	 * Only finite elements are added to result array
+	 * @param sensorName
+	 * @return
+	 */
+	public DataEntry[] toDataEntyArray(String sensorName) {
+		int index = -1;
+		for (int i = 0; i < sensorNames.length; i++) {
+			if(sensorNames[i].equals(sensorName)) {
+				index = i;
+				break;
+			}
+		}
+		if(index<0) {
+			log.warn("sensorName not found "+sensorName);
+			return null;
+		}
+		ArrayList<DataEntry> resultList = new ArrayList<DataEntry>(entryList.size());
+		for(TsEntry entry:entryList) {
+			float value = entry.data[index];
+			if(Float.isFinite(value)) {
+				resultList.add(new DataEntry((int) entry.timestamp,value));
+			}
+		}
+		if(resultList.isEmpty()) {
+			log.warn("list empty "+sensorName);
+			return null;
+		}
+		return resultList.toArray(new DataEntry[0]);
 	}
 	
 	@Override

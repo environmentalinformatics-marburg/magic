@@ -487,16 +487,17 @@ public class TsDB {
 
 	public void insertBaseAggregation(String sensorName, AggregationType aggregateType) {
 		Sensor sensor = getSensor(sensorName);
-		if(sensor!=null) {
-			if(baseAggregationExists(sensorName)) {
-				log.warn("base aggregation already exists: "+sensorName);
-			} else {
-				baseAggregationSensorNameSet.add(sensorName);
-			}
-			sensor.baseAggregationType = aggregateType;
+		if(sensor==null) {
+			log.trace("created new sensor "+sensorName);
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+		}			
+		if(baseAggregationExists(sensorName)) {
+			log.warn("base aggregation already exists: "+sensorName);
 		} else {
-			log.warn("sensor does not exist; base aggregation not inserted: "+sensorName);
+			baseAggregationSensorNameSet.add(sensorName);
 		}
+		sensor.baseAggregationType = aggregateType;
 	}
 
 	public String[] getBaseSchema(String[] rawSchema) {
@@ -519,7 +520,7 @@ public class TsDB {
 	//*********************************************** end base aggregation *************************************************************************
 
 	public String[] getValidSchema(String plotID, String[] schema) {
-
+		log.info(" ---------  "+schema+"  "+plotID);
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return virtualPlot.getValidSchemaEntries(schema);

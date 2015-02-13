@@ -986,7 +986,7 @@ public class ConfigLoader {
 
 		for(String[] row:table.rows) {
 			String plotID = plotidReader.get(row);
-			float elevation = elevationReader.get(row);
+			float elevation = elevationReader.get(row,true);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
 				log.warn("plotID not found: "+plotID);
@@ -1008,8 +1008,8 @@ public class ConfigLoader {
 				log.trace("virtual plotID not found: "+plotID+"  in "+configFile);
 				continue;
 			}
-			float easting = eastingReader.get(row);
-			float northing = northingReader.get(row);
+			float easting = eastingReader.get(row,true);
+			float northing = northingReader.get(row,true);
 			virtualPlot.geoPosEasting = easting;
 			virtualPlot.geoPosNorthing = northing;
 		}

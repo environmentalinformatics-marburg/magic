@@ -1,6 +1,7 @@
 package tsdb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
@@ -9,6 +10,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.raw.TimestampSeries;
 import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamDB;
 import tsdb.streamdb.StreamIterator;
@@ -102,7 +104,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 		}		
 		return streamdb.getTsIterator(stationName, sensorNames, minTimestamp, maxTimestamp);
 	}
-	
+
 	@Override
 	public StreamIterator getRawSensorIterator(String stationName, String sensorName, Long start, Long end) {
 		log.info("StreamDB get raw sensor "+stationName+" with "+sensorName+"     at "+TimeConverter.oleMinutesToText(start)+" - "+TimeConverter.oleMinutesToText(end));
@@ -134,7 +136,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 		}
 		return new long[]{interval[0],interval[1]};
 	}
-	
+
 	@Override
 	public String[] getSensorNames(String stationName) {
 		NavigableSet<String> set = streamdb.getSensorNames(stationName);
@@ -143,16 +145,29 @@ public class StreamStorageStreamDB implements StreamStorage {
 		}
 		return set.toArray(new String[set.size()]);
 	}
-	
+
 	@Override
 	public TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) {
 		return streamdb.getSensorTimeSeriesMask(stationName, sensorName, false);
 	}
-	
+
 	@Override
 	public void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) {
 		streamdb.setSensorTimeSeriesMask(stationName, sensorName, timeSeriesMask);
 		streamdb.commit();
+	}
+
+	@Override
+	public void insertTimestampSeries(TimestampSeries timestampSeries) {
+		log.warn("TODO       streamDB insert TimestampSeries "+timestampSeries.name);
+		String stationName = timestampSeries.name;
+		for(String sensorName:timestampSeries.sensorNames) {
+			DataEntry[] data = timestampSeries.toDataEntyArray(sensorName);
+			System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
+			streamdb.insertSensorData(stationName, sensorName, data);
+
+		}
+
 	}
 
 }

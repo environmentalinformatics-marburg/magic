@@ -24,7 +24,6 @@ import de.umr.jepc.store.Event;
  *
  */
 public class Station {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb; //not null
@@ -168,11 +167,13 @@ public class Station {
 	}*/
 
 	public String[] getValidSchemaEntries(String[] querySchema) {		
-		return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		//return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		return Util.getValidEntries(querySchema, getSchema());
 	}
 
 	public boolean isValidSchema(String[] querySchema) {
-		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		//return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, getSchema()));
 	}
 
 	public boolean isValidBaseSchema(String[] querySchema) {

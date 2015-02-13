@@ -98,7 +98,7 @@ public class KiliCollector {
 		public String toCSVRow() {
 			return plot+","+logger+","+station+","+TimeConverter.oleMinutesToText((long) firstTimestamp)+","+TimeConverter.oleMinutesToText((long) lastTimestamp)+","+status+","+md5+","+filesize+","+filename;
 		}
-		
+
 		public String createNewFilename() {
 			String s = plot==null?"xxxx":plot;
 			s += "_";
@@ -140,6 +140,8 @@ public class KiliCollector {
 		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add"));
 		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/new_20150123-115021380218_ki_20150122-085711"));
 		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add_conflict"));
+		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add_20150205-080049"));
+		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_asc_recursive(Paths.get("c:/timeseriesdatabase_preprocess/to_add_20150205-080049"));
 
 
 
@@ -190,7 +192,7 @@ public class KiliCollector {
 		String PREPROCESSED_EMPTY_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_empty").toString();
 		String PREPROCESSED_ERROR_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_error").toString();
 		String PREPROCESSED_NO_PLOT_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_no_plot").toString();
-		
+
 		String pathLogNewEmptyFiles = station_scan_path+"/"+"new_empty_files.csv";
 		Util.createDirectoriesOfFile(pathLogNewEmptyFiles);
 		PrintStream outNewEmptyFiles = new PrintStream(new FileOutputStream(pathLogNewEmptyFiles));
@@ -199,7 +201,7 @@ public class KiliCollector {
 			try {
 				Path source = Paths.get(collectorEntry.filename);
 				String filename = source.toFile().getName();
-				
+
 				String targetRoot = PREPROCESSED_ERROR_PATH;
 				switch(collectorEntry.status) {
 				case "ok":
@@ -216,12 +218,12 @@ public class KiliCollector {
 				default:
 					//nothing
 				}
-				
+
 				if(filename.equals("sav0_wxt_80031130066__2013_01_16__2013_01_26.asc")) {
 					System.out.println(collectorEntry.filename);
 				}
-				
-				
+
+
 				Path target = Paths.get(targetRoot, filename);
 				CopyOption options = StandardCopyOption.COPY_ATTRIBUTES;
 				Util.createDirectoriesOfFile(target.toString());
@@ -231,7 +233,7 @@ public class KiliCollector {
 				log.error(e+"  "+collectorEntry.filename);
 			}
 		}
-		
+
 		outNewEmptyFiles.close();
 
 
@@ -240,141 +242,6 @@ public class KiliCollector {
 		System.out.println("collectorMapToAdd1 "+collectorMapToAdd1.size());
 		System.out.println("md5MapToAdd "+md5MapToAdd.size());
 		System.out.println("collectorMapProcessed "+collectorMapProcessed.size());
-
-		/*
-		for(CollectorEntry collectorEntry : collectorMapProcessed.values()) {
-			if(!collectorEntry.status.equals("ok") && !collectorEntry.status.equals("empty")) {
-				System.out.println(collectorEntry.status+ "     " + collectorEntry.filename);
-			}
-		}
-
-		TreeMap<String, List<CollectorEntry>> plotMap = new TreeMap<String,List<CollectorEntry>>();
-		TreeMap<String, List<CollectorEntry>> stationMap = new TreeMap<String,List<CollectorEntry>>();
-		TreeMap<String, List<CollectorEntry>> md5Map = new TreeMap<String,List<CollectorEntry>>();
-
-		String pathEmpty = station_scan_path+"/"+"empty.csv";
-		try {
-			File dir = new File(pathEmpty);			
-			dir.getParentFile().mkdirs();
-		} catch(Exception e) {
-			log.error(e);
-		}
-		PrintStream outEmpty = new PrintStream(new FileOutputStream(pathEmpty));
-
-		String pathNoStation = station_scan_path+"/"+"no_station.csv";
-		try {
-			File dir = new File(pathNoStation);			
-			dir.getParentFile().mkdirs();
-		} catch(Exception e) {
-			log.error(e);
-		}
-		PrintStream outNoStation = new PrintStream(new FileOutputStream(pathNoStation));
-
-		String pathStationNoPlot = station_scan_path+"/"+"station_no_plot.csv";
-		try {
-			File dir = new File(pathStationNoPlot);			
-			dir.getParentFile().mkdirs();
-		} catch(Exception e) {
-			log.error(e);
-		}
-		PrintStream outStationNoPlot = new PrintStream(new FileOutputStream(pathStationNoPlot));
-
-		for(CollectorEntry collectorEntry : collectorMapProcessed.values()) {
-			if(!collectorEntry.status.equals("ok") && !collectorEntry.status.equals("empty")) {
-				System.out.println(collectorEntry.status+ "     " + collectorEntry.filename);				
-			}
-
-			if(true){
-				String key = collectorEntry.md5;
-				if(key==null) {
-					key = "unknown";
-				}
-				List<CollectorEntry> entryList = md5Map.get(key);
-				if(entryList==null) {
-					entryList = new ArrayList<CollectorEntry>();
-					md5Map.put(key,entryList);
-				}
-				entryList.add(collectorEntry);
-			}
-
-
-			if(collectorEntry.station==null)  {
-				outNoStation.println(collectorEntry.toCSVRow());
-			} else if(collectorEntry.status.equals("empty")) {
-				outEmpty.println(collectorEntry.toCSVRow());
-			} else {
-
-				if(true){
-					List<CollectorEntry> entryList = stationMap.get(collectorEntry.station);
-					if(entryList==null) {
-						entryList = new ArrayList<CollectorEntry>();
-						stationMap.put(collectorEntry.station,entryList);
-					}
-					entryList.add(collectorEntry);
-				}
-
-				if(collectorEntry.plot==null) {
-					outStationNoPlot.println(collectorEntry.toCSVRow());
-				} else {
-					List<CollectorEntry> entryList = plotMap.get(collectorEntry.plot);
-					if(entryList==null) {
-						entryList = new ArrayList<CollectorEntry>();
-						plotMap.put(collectorEntry.plot,entryList);
-					}
-					entryList.add(collectorEntry);
-				}
-			}
-		}
-
-		outEmpty.close();
-		outNoStation.close();
-		outStationNoPlot.close();
-
-		for(Entry<String, List<CollectorEntry>> mapEntry:plotMap.entrySet()) {
-			String path = station_scan_path+"/"+"plot"+"/"+mapEntry.getKey()+".csv";
-			try {
-				File dir = new File(path);			
-				dir.getParentFile().mkdirs();
-			} catch(Exception e) {
-				log.error(e);
-			}
-
-			PrintStream out = new PrintStream(new FileOutputStream(path));
-			mapEntry.getValue().sort(CollectorEntry.LOGGER_FIRST_TIMESTAMP_COMPARATOR);
-			for(CollectorEntry collectorEntry:mapEntry.getValue()) {
-				out.println(collectorEntry.toCSVRow());			
-			}
-			out.close();
-		}
-
-		for(Entry<String, List<CollectorEntry>> mapEntry:stationMap.entrySet()) {
-			String path = station_scan_path+"/"+"station"+"/"+mapEntry.getKey()+".csv";
-			try {
-				File dir = new File(path);			
-				dir.getParentFile().mkdirs();
-			} catch(Exception e) {
-				log.error(e);
-			}
-
-			PrintStream out = new PrintStream(new FileOutputStream(path));
-			mapEntry.getValue().sort(CollectorEntry.LOGGER_FIRST_TIMESTAMP_COMPARATOR);
-			for(CollectorEntry collectorEntry:mapEntry.getValue()) {
-				out.println(collectorEntry.toCSVRow());			
-			}
-			out.close();
-		}
-
-		String pathDuplicates = station_scan_path+"/"+"duplicates.csv";
-		PrintStream outDuplicates = new PrintStream(new FileOutputStream(pathDuplicates));
-		for(List<CollectorEntry> entryList:md5Map.values()) {
-			if(entryList.size()>1) {
-				for(CollectorEntry collectorEntry:entryList) {
-					outDuplicates.println(collectorEntry.toCSVRow());	
-				}
-				outDuplicates.println();
-			}
-		}
-		outDuplicates.close();*/
 
 		System.out.println("...finished");
 	}
@@ -396,6 +263,67 @@ public class KiliCollector {
 			log.error(e);
 		}
 		return readWithAscCollectorMap(ascCollectorMap);
+	}
+
+
+	public HashMap<String, CollectorEntry> readDirectory_with_asc_recursive(Path root) {
+		log.info("load directory with directories of files:      "+root);		
+		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();
+		readDirectory_with_asc_recursive_internal(root,ascCollectorMap);
+		return readWithAscCollectorMap(ascCollectorMap);
+	}
+
+	private void readDirectory_with_asc_recursive_internal(Path root, TreeMap<String,Path> ascCollectorMap) {
+		try {
+			readDirectory_with_asc_files(root, ascCollectorMap);
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		try {
+			DirectoryStream<Path> stream = Files.newDirectoryStream(root);
+			for(Path subPath:stream) {
+				if(Files.isDirectory(subPath)) {
+					readDirectory_with_asc_recursive_internal(subPath,ascCollectorMap);
+				} 
+			}
+			stream.close();
+		} catch (IOException e) {
+			log.error(e);
+		}		
+	}
+
+	private void readDirectory_with_asc_files(Path directory_path, TreeMap<String,Path> ascCollectorMap) {
+		try {
+			if(Files.exists(directory_path)) {
+				DirectoryStream<Path> stream = Files.newDirectoryStream(directory_path);
+				//log.info("read directory of files:    "+directory_path);
+				for(Path path:stream) {
+					if(!Files.isDirectory(path)) {
+						String filename = path.getName(path.getNameCount()-1).toString();
+						int ascIndex = filename.toLowerCase().indexOf(".asc");
+						if(ascIndex!=-1) {	
+							String fileKey = filename.substring(0, ascIndex);						
+							if(!ascCollectorMap.containsKey(fileKey)) {
+								ascCollectorMap.put(fileKey, path);		
+							} else {
+								log.error("file key already present: "+fileKey);
+							}										
+						} else {
+							int binIndex = filename.toLowerCase().indexOf(".bin");
+							if(binIndex<0) {
+								log.warn("no asc file: "+filename);
+							}
+						}
+					}
+				}
+				stream.close();
+			} else {
+				log.warn("directory not found: "+directory_path);
+			}
+		} catch (IOException e) {
+			log.error(e);
+		}		
 	}
 
 	private static String getMD5(Path filename) {

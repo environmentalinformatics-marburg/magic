@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import tsdb.raw.TimestampSeries;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.iterator.TsIterator;
 import de.umr.jepc.Attribute;
@@ -66,4 +67,6 @@ public interface StreamStorage {
 	TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName);
 
 	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask);
+
+	public void insertTimestampSeries(TimestampSeries timestampSeries);
 }

@@ -72,7 +72,7 @@ public class VirtualPlot {
 		if(intervalList.isEmpty()) {
 			return new String[0]; //empty schema
 		}
-		
+
 		TreeSet<String> sensorNameSet = new TreeSet<String>();
 		for(TimestampInterval<StationProperties> interval:intervalList) {
 			String stationName = interval.value.get_serial();
@@ -88,9 +88,9 @@ public class VirtualPlot {
 			String[] sensorNames = station.getSchema();
 			sensorNameSet.addAll(Arrays.asList(sensorNames));
 		}
-		
+
 		return sensorNameSet.toArray(new String[sensorNameSet.size()]);  
-		
+
 		/*LinkedHashSet<LoggerType> loggerSet = new LinkedHashSet<LoggerType>();
 		for(TimestampInterval<StationProperties> interval:intervalList) {
 			LoggerType loggerType = tsdb.getLoggerType(interval.value.get_logger_type_name());
@@ -106,7 +106,7 @@ public class VirtualPlot {
 				sensorNameSet.add(sensorName);
 			}
 		}
-		
+
 		return sensorNameSet.toArray(new String[0]);*/
 	}
 
@@ -162,9 +162,9 @@ public class VirtualPlot {
 		if(schema==null) {
 			schema = getSchema();
 		}
-		
+
 		ArrayList<TimestampInterval<StationProperties>> tempList = new ArrayList<TimestampInterval<StationProperties>>(intervalList); // because ConcurrentModificationException
-		
+
 		tempList.sort( (a,b) -> {
 			if(a.start==null) {
 				if(b.start==null) {
@@ -187,11 +187,29 @@ public class VirtualPlot {
 		List<TimestampInterval<StationProperties>> resultIntervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		while(it.hasNext()) {
 			TimestampInterval<StationProperties> interval = it.next();
-			if(schemaOverlaps(tsdb.getLoggerType(interval.value.get_logger_type_name()).sensorNames,schema)) {
+			/*if(schemaOverlaps(tsdb.getLoggerType(interval.value.get_logger_type_name()).sensorNames,schema)) {
 				if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
 					resultIntervalList.add(interval);
 				}
+			}*/
+			String stationID = interval.value.get_serial();
+			if(stationID!=null) {
+				Station station = tsdb.getStation(stationID);
+				if(station!=null) {
+					String[] stationSchema = station.getSchema();
+					log.info("in     *********************"+Arrays.toString(stationSchema));
+					if(schemaOverlaps(stationSchema,schema)) {
+						if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
+							resultIntervalList.add(interval);
+						}
+					}
+				} else {
+					log.warn("station not found "+stationID);
+				}
+			} else {
+				log.warn("no stationID");
 			}
+
 		}
 		return resultIntervalList;
 	}

@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -542,11 +543,12 @@ public class TimeSeriesViewScene extends TsdbScene {
 			return;
 		}
 
-		Sensor sensor = comboSensor.getValue();
+		Sensor sensor = comboSensor.getValue();		
 		if(sensor==null) {
 			timeSeriesDiagramProperty.setValue(null);
 			return;
-		}		
+		}
+		
 
 		Long startTimestamp = null;
 		Long endTimestamp = null;		
@@ -584,6 +586,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 
 		try {			
 			TimestampSeries ts = tsdb.plot(null, plot.name, sensorNames, agg, quality, false, startTimestamp, endTimestamp);
+			log.info(plot.name+"    update sensor "+sensor.name+"  "+ts);
 			if(ts!=null) {
 				tsd = new TimeSeriesDiagram(ts,agg,sensor.category);
 				try {
@@ -596,6 +599,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 		}
 
@@ -623,8 +627,12 @@ public class TimeSeriesViewScene extends TsdbScene {
 				}
 
 				String[] sensorNames = tsdb.getSensorNamesOfPlot(plot.name);
+				log.info(plot.name+" : "+Arrays.toString(sensorNames));
 				for(String sensorName:sensorNames) {
 					Sensor sensor = sensorMap.get(sensorName);
+					if(sensor==null) {
+						sensor = new Sensor(sensorName);
+					}
 					if(sensor.isAggregable() || agg==AggregationInterval.RAW) {
 						sensorList.addAll(sensor);
 					}

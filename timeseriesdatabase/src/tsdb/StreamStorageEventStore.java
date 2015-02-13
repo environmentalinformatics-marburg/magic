@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.raw.TimestampSeries;
 import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.iterator.TsIterator;
@@ -210,6 +211,12 @@ public class StreamStorageEventStore implements StreamStorage {
 	@Override
 	public void setTimeSeriesMask(String stationName, String sensorName,
 			TimeSeriesMask timeSeriesMask) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void insertTimestampSeries(TimestampSeries timestampSeries) {
 		// TODO Auto-generated method stub
 		
 	}

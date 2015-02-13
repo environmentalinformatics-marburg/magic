@@ -20,6 +20,11 @@ import tsdb.util.iterator.TsIterator;
  */
 public class PeakSmoothIterator extends InputProcessingIterator {
 
+	public enum FillType {		
+		COPY,
+		TIME_DIVISION
+	}
+
 	private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*2;
 
 	private static final int TIMESTEP=60;
@@ -29,7 +34,9 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private long currentTimestamp;
 	private float[] fillData;
 	private long nextTimestamp;
-	
+
+	private final FillType[] fillTypes;
+
 	public static TsSchema createSchema(TsSchema tsSchema) {
 		String[] names = tsSchema.names;
 		Aggregation aggregation = Aggregation.CONSTANT_STEP;
@@ -41,8 +48,9 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 		return new TsSchema(names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);		
 	}
 
-	public PeakSmoothIterator(TsIterator input_iterator) {
+	public PeakSmoothIterator(TsIterator input_iterator, FillType[] fillTypes) {
 		super(input_iterator, createSchema(input_iterator.getSchema()));
+		this.fillTypes = fillTypes;
 		columns = input_iterator.getNames().length;
 		if(input_iterator.hasNext()) {
 			TsEntry first = input_iterator.next();	
@@ -84,8 +92,17 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 	private void updateFillData(long deltaTime,float[] data) {
 		fillData = new float[columns];
 		for(int c=0;c<columns;c++) {
-			fillData[c] = (data[c]/(deltaTime/TIMESTEP));
-			//fillData[c] = (data[c]*60*24*7)/deltaTime;
+			switch(fillTypes[c]) {
+			case COPY:
+				fillData[c] = data[c];
+				break;
+			case TIME_DIVISION:
+				fillData[c] = (data[c]/(deltaTime/TIMESTEP));
+				//fillData[c] = (data[c]*60*24*7)/deltaTime;
+				break;
+				default:
+					throw new RuntimeException("fill type unknown");
+			}
 		}
 	}
 

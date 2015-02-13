@@ -13,20 +13,25 @@ import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
 public class CSVIterator extends TsIterator {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	public static TsSchema createSchema(String[] sensorNames) {
 		return new TsSchema(sensorNames);
 	}
-	
-	public static CSVIterator create(Path path) {
-		return create(path.toString());
+
+	public static CSVIterator create(Path path, boolean trimSpacesInHeader) {
+		return create(path.toString(), trimSpacesInHeader);
 	}
 
-	public static CSVIterator create(String filename) {
+	public static CSVIterator create(String filename, boolean trimSpacesInHeader) {
 		Table table = Table.readCSV(filename, ',');
 		String[] schema = Arrays.copyOfRange(table.names, 2, table.names.length);
+		if(trimSpacesInHeader) {
+			for(int i=0; i<schema.length; i++) {		
+				schema[i] = schema[i].trim();
+			}
+		}
 		return new CSVIterator(schema,table.rows,filename);
 	}
 
