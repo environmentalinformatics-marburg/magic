@@ -3,7 +3,9 @@ library(Kendall)
 library(RColorBrewer)
 library(doParallel)
 
-setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
+switch(Sys.info()[["sysname"]], 
+       "Linux" = setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/"), 
+       "Windows" = setwd("D:/kilimanjaro/gimms3g/gimms3g/"))
 
 source("../../ndvi/src/visMannKendall.R")
 
@@ -126,12 +128,17 @@ rst_modis_mk001 <- raster("vis/mk/modis_mk001_0313.tif")
 #                                 filename = "vis/mk/modis_mk001_0313", 
 #                                 format = "GTiff", overwrite = TRUE)
 
-levelplot(rst_gimms_mk001, colorkey = FALSE, margin = FALSE,
+p_mk_modis_gimms <- levelplot(rst_gimms_mk001, colorkey = FALSE, margin = FALSE,
           col.regions = c("red", "black"), alpha.regions = .4, 
           at = seq(-1, 1, 1)) + 
   as.layer(levelplot(rst_modis_mk001, col.regions = c("red", "black"), 
                      at = seq(-1, 1, 1))) + 
   as.layer(contourplot(dem, labels = FALSE, col = "grey65", cuts = 10, lwd = 1.2))
+
+png("vis/modis_gimms_mk.png", width = 25, height = 22, units = "cm", 
+    pointsize = 18, res = 600)
+print(p_mk_modis_gimms)
+dev.off()
 
 
 ### Statistics (sequel)

@@ -1,31 +1,38 @@
-setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
+switch(Sys.info()[["sysname"]], 
+       "Linux" = setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/"), 
+       "Windows" = setwd("D:/kilimanjaro/gimms3g/gimms3g/"))
+
+source("../../ndvi/src/panel.smoothconts.R")
 
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr", "Kendall", "RColorBrewer", "rgeos")
+         "ggplot2", "dplyr", "Kendall", "RColorBrewer", "rgeos", "Rsenal")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 registerDoParallel(cl <- makeCluster(3))
 
 source("kendallStats.R")
 
-# DEM
+### DEM
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
+dem_flipped <- flip(dem, "y")
+x <- coordinates(dem_flipped)[, 1]
+y <- coordinates(dem_flipped)[, 2]
+z <- dem_flipped[]
+
+p_dem <- levelplot(z ~ x * y, colorkey = FALSE, at = seq(1000, 6000, 1000), 
+                   panel = function(...) {
+                     panel.smoothconts(zlevs.conts = seq(1000, 5500, 500), 
+                                       labels = c(1000, "", 2000, "", 3000, "", 4000, "", 5000, ""),
+                                       col = "grey50", ...)
+                   })
 
 # Old and new National Park borders
-np_old <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
-                  layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
-                  p4s = "+init=epsg:4326")
-np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
-# writeOGR(np_old_utm, dsn = "data/shp", driver = "ESRI Shapefile",
-#          layer = "fdetsch-kilimanjaro-national-park-1420535670531_epsg21037")
+np_old_utm <- readOGR(dsn = "data/shp", 
+                      layer = "fdetsch-kilimanjaro-national-park-1420535670531_epsg21037")
 np_old_utm_sl <- as(np_old_utm, "SpatialLines")
 
-np_new <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
-                  layer = "fdetsch-kilimanjaro-1420532792846", 
-                  p4s = "+init=epsg:4326")
-np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
-# writeOGR(np_new_utm, dsn = "data/shp", driver = "ESRI Shapefile",
-#          layer = "fdetsch-kilimanjaro-new_np-1420532792846_epsg21037")
+np_new_utm <- readOGR(dsn = "data/shp", 
+                      layer = "fdetsch-kilimanjaro-new_np-1420532792846_epsg21037")
 np_new_utm_sl <- as(np_new_utm, "SpatialLines")
 
 # Temporal range
@@ -91,13 +98,16 @@ p_mk <-
   spplot(mod_predicted_mk[[1]], col.regions = cols_div(100), ylab = "y", 
          at = seq(-.5, .5, .1), scales = list(draw = TRUE), xlab = "x", 
          par.settings = list(fontsize = list(text = 15)),
-         sp.layout = list(list("sp.lines", rasterToContour(dem), col = "grey65"), 
-                          list("sp.lines", np_old_utm_sl, lwd = 1.6, lty = 2), 
-                          list("sp.lines", np_new_utm_sl, lwd = 1.6))) 
+         sp.layout = list(list("sp.lines", np_old_utm_sl, lwd = 1.6, lty = 2), 
+                          list("sp.lines", np_new_utm_sl, lwd = 1.6))) + 
+  as.layer(p_dem)
+
+p_mk_envin <- envinmrRasterPlot(p_mk)
 
 png("vis/mk/gimms_mk_8211.png", width = 26, height = 18, units = "cm", 
     pointsize = 15, res = 300)
-print(p_mk)
+plot.new()
+print(p_mk_envin)
 dev.off()
 
 kendallStats(mod_predicted_mk[[4]])

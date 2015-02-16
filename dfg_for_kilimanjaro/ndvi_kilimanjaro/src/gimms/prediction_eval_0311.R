@@ -91,7 +91,7 @@ ls_scores_niter20 <- lapply(1:20, function(n_iter) {
                          tmp_r <- diag(cor(tmp_val_prd, tmp_val_obs, use = "complete.obs"))
                          tmp_rsq <- tmp_r^2
                          
-                         tmp_scores <- data.frame(type = j, ME = tmp_me, MAE = tmp_mae, 
+                         tmp_scores <- data.frame(type = "REDUCE.BOTH = FALSE", ME = tmp_me, MAE = tmp_mae, 
                                                   RMSE = tmp_rmse, R = tmp_r, Rsq = tmp_rsq)
 #                          return(tmp_scores)
 #                        }
@@ -107,12 +107,17 @@ write.table(df_scores_niter20, "data/eot_eval_agg1km/scores_niter20.csv",
 
 mlt_scores <- melt(df_scores_niter20, id.vars = "type")
 
-ggplot(aes(x = factor(variable), y = value), data = mlt_scores) + 
+p_scores <- ggplot(aes(x = factor(variable), y = value), data = mlt_scores) + 
   geom_boxplot() + 
   geom_hline(aes(yintercept = 0), colour = "grey65", linetype = "dashed") + 
-#   facet_wrap(~ type, ncol = 2) + 
   labs(x = "", y = "") + 
-  theme_bw()
+  theme_bw() + 
+  theme(text = element_text(size = 18))
+
+png("vis/comparison_obs_prd_0311_scores.png", width = 15, height = 20, 
+    units = "cm", pointsize = 18, res = 600)
+print(p_scores)
+dev.off()
 
 colMeans(df_scores_niter20[, 2:6])
 

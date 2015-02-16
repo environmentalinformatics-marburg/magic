@@ -1,5 +1,6 @@
 library(Rsenal)
 library(grid)
+library(rasterVis)
 
 source("../../ndvi/src/panel.smoothconts.R")
 
@@ -67,11 +68,21 @@ p_month_max_nd_dem <- p_month_max_nd + as.layer(p_dem)
 p_month_max_nd_dem_envin <- envinmrRasterPlot(p_month_max_nd_dem)
 
 # diff month max
-rcl_mat <- cbind(-7, -3, -3)
+rcl_mat <- matrix(c(-7.5, -.5, -1, 
+                    .5, 7.5, 1), ncol = 3, byrow = TRUE)
 rst_diff_month_rcl <- reclassify(rst_diff[[1]], rcl_mat)
 
+rat_diff_month_rcl <- ratify(rst_diff_month_rcl)
+rat <- levels(rat_diff_month_rcl)[[1]]
+rat$month <- c("-", "0", "+")
+levels(rat_diff_month_rcl) <- rat
+
+p_diff_max_x <- levelplot(rat_diff_month_rcl, col.regions = rev(brewer.pal(9, "RdBu")), 
+                          at = -1.5:1.5, scales = list(draw = TRUE), 
+                          xlab = "x", ylab = "y")
+
 p_diff_max_x <- spplot(rst_diff_month_rcl, col.regions = rev(brewer.pal(9, "RdBu")), 
-                       at = -3.5:3.5, scales = list(draw = TRUE), 
+                       at = -1.5:1.5, scales = list(draw = TRUE), 
                        xlab = "x", ylab = "y")
 
 p_diff_max_x_dem <- p_diff_max_x + as.layer(p_dem)
@@ -92,7 +103,7 @@ p_comb <- latticeCombineGrid(list(p_month_max_st_dem_envin,
                                   p_diff_max_y_dem_envin), 
                              layout = c(2, 2))
 
-png("vis/harmonic/p_comb.png", width = 26, height = 30, units = "cm", 
+png("vis/harmonic/p_comb_rat.png", width = 26, height = 30, units = "cm", 
     pointsize = 15, res = 600)
 plot.new()
 print(p_comb)
@@ -103,10 +114,12 @@ vp1 <- viewport(x = 0.25, y = -.05,
                 just = c("centre", "top"),
                 name = "key.vp")
 pushViewport(vp1)
-draw.colorkey(key = list(col = rev(brewer.pal(9, "RdBu")), width = 1,
-                         at = seq(-3.5, 3.5, 1),
+draw.colorkey(key = list(col = rev(brewer.pal(9, "RdBu")), width = 1, height = .5,
+#                          at = -1:1, labels = c("-", "0", "+"), 
+                         at = seq(-1.5, 1.5, 1), 
+labels = list(labels = c("-", "0", "+"), at = c(-1, 0, 1)), 
                          space = "bottom"), draw = TRUE)
-grid.text("Seasonal shift (months)", x = 0.5, y = -.05, just = c("centre", "top"))
+grid.text("Seasonal shift", x = 0.5, y = -.05, just = c("centre", "top"))
 upViewport()
 vp2 <- viewport(x = 0.76, y = -.05,
                 height = 0.07, width = 0.4,
