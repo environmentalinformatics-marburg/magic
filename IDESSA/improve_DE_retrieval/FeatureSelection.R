@@ -20,7 +20,7 @@ registerDoParallel(cl)
 for (i in list.files(functionpath)){
   source(paste(functionpath,"/",i,sep=""))
 }
-nnetFuncs <- caretFuncs #Default caret functions
+
 
 ################################################################################
 ### Rainfall area
@@ -49,7 +49,7 @@ if (responseName=="RInfo"){
   
   ### Training Settings ##########################################################
   
-
+  nnetFuncs <- caretFuncs #Default caret functions
   
   nnetFuncs$summary <- twoClassSummary
   

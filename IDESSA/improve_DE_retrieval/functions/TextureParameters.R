@@ -1,4 +1,4 @@
-texture.variables <- function(x,nrasters=1:nlayers(x),filter,var,parallel=TRUE,n_grey = 64){
+texture.variables <- function(x,nrasters=1:nlayers(x),filter,var,parallel=TRUE,n_grey = 32){
   #' Calculate selected Texture parameters from clouds based on spectral properties
   #' 
   #' @param x A rasterLayer or a rasterStack containing different channels
@@ -23,12 +23,12 @@ texture.variables <- function(x,nrasters=1:nlayers(x),filter,var,parallel=TRUE,n
       if (parallel){
         glcm_filter[[j]]=foreach(i=nrasters,.packages= c("glcm","raster"))%dopar%{
           glcm(x[[i]], window = c(filter[j], filter[j]), #n_grey kleiner dann schneller
-              shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey) #average texture for each shift
+              shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey,na_opt="ignore") #average texture for each shift
         } 
       } else {
         glcm_filter[[j]]=foreach(i=nrasters,.packages= c("glcm","raster"))%do%{
           glcm(x[[i]], window = c(filter[j], filter[j]), #n_grey kleiner dann schneller
-               shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey) #average texture for each shift  
+               shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey,na_opt="ignore") #average texture for each shift  
         }
       }
 
@@ -38,7 +38,9 @@ texture.variables <- function(x,nrasters=1:nlayers(x),filter,var,parallel=TRUE,n
       
     } else {
       glcm_filter[[j]]=glcm(x[[i]], window = c(filter[j], filter[j]), #n_grey kleiner dann schneller
-           shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey) #average texture for each shift     
+           shift=list(c(0,1), c(1,1), c(1,0), c(1,-1)),statistics=var,n_grey=n_grey,
+           #na_opt="ignore",
+           ) #average texture for each shift     
     }   
   }
   names(glcm_filter)=paste0("size_",filter)
