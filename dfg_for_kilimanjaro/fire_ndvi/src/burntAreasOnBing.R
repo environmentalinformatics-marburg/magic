@@ -6,7 +6,7 @@ rm(list = ls(all = TRUE))
 # Working directory
 switch(Sys.info()[["sysname"]], 
        "Linux" = {path.wd <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
-       "Windows" = {path.wd <- "F:/kilimanjaro/ndvi/"})
+       "Windows" = {path.wd <- "D:/kilimanjaro/ndvi/"})
 setwd(path.wd)
 
 # Required packages and functions
@@ -19,7 +19,7 @@ lib <- c("doParallel", "raster", "rgdal", "OpenStreetMap", "ggplot2",
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
 fun <- paste("src", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
-                      "ndviCell.R", "evalTree.R", "kifiModisDownload.R"), sep = "/")
+                      "ndviCell.R", "evalTree.R", "panel.smoothconts.R"), sep = "/")
 sapply(fun, source)
 
 # Parallelization
@@ -106,13 +106,24 @@ fire.ts.rst.cc.ssn <-
 
 # Number of burns per pixel
 dem <- raster("data/DEM_ARC1960_30m_Hemp.tif")
+dem_flipped <- flip(dem, "y")
+x <- coordinates(dem_flipped)[, 1]
+y <- coordinates(dem_flipped)[, 2]
+z <- dem_flipped[]
 
-np_old <- readOGR(dsn = "data/protected_areas/", 
+p_dem <- levelplot(z ~ x * y, colorkey = FALSE, at = seq(1000, 6000, 1000), 
+                   panel = function(...) {
+                     panel.smoothconts(zlevs.conts = seq(1000, 5500, 500), 
+                                       labels = c(1000, "", 2000, "", 3000, "", 4000, "", 5000, ""), 
+                                       col = "grey50", ...)
+                   })
+
+np_old <- readOGR(dsn = "data/protected_areas", 
                   layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
                   p4s = "+init=epsg:4326")
 np_old_utm <- spTransform(np_old, CRS("+init=epsg:21037"))
 
-np_new <- readOGR(dsn = "data/protected_areas/", 
+np_new <- readOGR(dsn = "data/protected_areas", 
                   layer = "fdetsch-kilimanjaro-1420532792846", 
                   p4s = "+init=epsg:4326")
 np_new_utm <- spTransform(np_new, CRS("+init=epsg:21037"))
@@ -133,15 +144,16 @@ reds <- colorRampPalette(brewer.pal(9, "Reds"))
 
 img_agg_sum <- 
   levelplot(rst_agg_sum, col.regions = reds(116)[seq(20, 116, 12)], 
-            FUN.margin = sum, at = seq(1, 17, 2), scales = list(draw = TRUE), 
+            FUN.margin = sum, scales = list(draw = TRUE), at = seq(1, 17, 2), 
             xlab = list(label = "x", cex = 1.4), ylab = list(label = "y", cex = 1.4), 
             par.settings = list(layout.heights = list(bottom.padding = 8))) + 
-  as.layer(contourplot(dem, labels = FALSE, cuts = 10)) + 
+  as.layer(p_dem) + 
   layer(sp.polygons(np_old_utm, lwd = 1.6, lty = 2)) + 
   layer(sp.polygons(np_new_utm, lwd = 1.6))
 
 png("out/proposal/fire_agg_sum_01_13.png", width = 26, height = 24, units = "cm", 
     res = 300, pointsize = 15)
+plot.new()
 print(img_agg_sum)
 trellis.focus("legend", side = "bottom", clipp.off = TRUE, highlight = FALSE)
 grid.text("No. of active fires", 0.5, 0, hjust = 0.5, vjust = 2)

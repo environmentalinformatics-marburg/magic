@@ -1,14 +1,13 @@
-lib <- c("raster", "rgdal", "doParallel")
+lib <- c("raster", "rgdal", "Kendall", "doParallel", "OpenStreetMap", "ggplot2")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
-source("src/kiliBingImage.R")
 source("src/uniqueFires.R")
 source("src/uniqueFiresKendall.R")
 
 registerDoParallel(cl <- makeCluster(4))
 
 # osm data
-bng <- kiliBingImage(minNumTiles = 40)
+bng <- kiliAerial(minNumTiles = 20)
 
 # modis ndvi mk data
 fls_ndvi_mk <- "out/mk/myd13q1_mk001_0313.tif"
@@ -37,6 +36,7 @@ unique_fires_1113 <- subset(unique_fires, year %in% 2010:2013)
 
 unique_fires_1012 <- subset(unique_fires, year %in% 2010:2012)
 unique_fires_0212 <- subset(unique_fires, year %in% 2002:2012)
+unique_fires_0211 <- subset(unique_fires, year %in% 2002:2011)
 
 # modis masks for 2003-05, 2011-13 (both Aqua), 2010-12, 2002-12 (both 1-km)
 ls_mk <- foreach(i = list(unique_fires_0305, unique_fires_1113, 
@@ -101,6 +101,11 @@ png("out/fire/burnt_ndvi_mk_0306_1013.png", width = 12, height = 25, units = "cm
 print(p_mk_0306_1013)
 dev.off()
 
+library(dplyr)
+df_mk_0306_1013 %>% 
+  group_by(period) %>%
+  summarise(median(ndvi_mk, na.rm = TRUE))
+
 # # 1-km mk value extraction
 # ls_1km_1012 <- extract(rst_1km_mk, shp_tmp_1012)
 # val_1km_1012 <- if (is.list(ls_1km_1012)) do.call("c", ls_1km_1012) else as.numeric(ls_1km_1012)
@@ -113,7 +118,71 @@ dev.off()
 df_mk_0306_1013 <- do.call("rbind", ls_mk[1:2])
 
 
-# differentiation in 2002-2012
+# mk 2002-2012 vs. mk 1982-2001
+fls_1km <- "../gimms3g/gimms3g/data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif"
+rst_1km <- stack(fls_1km)
+
+st <- as.Date("1982-01-01")
+nd <- as.Date("2011-12-01")
+st_nd <- seq(st, nd, "month")
+
+# rst_1km_8201 <- rst_1km[[1:grep("2001-12-01", st_nd)]]
+# rst_1km_8201_mk <- overlay(rst_1km_8201, fun = function(x) {
+#   mk <- MannKendall(x)
+#   tau <- mk$tau
+#   sl <- mk$sl
+#   tau[sl >= .01] <- NA
+#   return(tau)
+# }, filename = "../gimms3g/gimms3g/data/rst/whittaker/gimms_ndvi3g_dwnscl_8201_mk01.tif", 
+# overwrite = TRUE, format = "GTiff")
+fls_1km_8201_mk <- "../gimms3g/gimms3g/data/rst/whittaker/gimms_ndvi3g_dwnscl_8201_mk001.tif"
+rst_1km_8201_mk <- raster(fls_1km_8201_mk)
+
+# rst_1km_0211 <- rst_1km[[grep("2002-01-01", st_nd):(grep("2011-12-01", st_nd))]]
+# rst_1km_0211_mk <- overlay(rst_1km_0211, fun = function(x) {
+#   mk <- MannKendall(x)
+#   tau <- mk$tau
+#   sl <- mk$sl
+#   tau[sl >= .01] <- NA
+#   return(tau)
+# }, filename = "../gimms3g/gimms3g/data/rst/whittaker/gimms_ndvi3g_dwnscl_0211_mk01.tif", 
+# overwrite = TRUE, format = "GTiff")
+fls_1km_0211_mk <- "../gimms3g/gimms3g/data/rst/whittaker/gimms_ndvi3g_dwnscl_0211_mk001.tif"
+rst_1km_0211_mk <- raster(fls_1km_0211_mk)
+
+df_8201 <- uniqueFiresKendall(template = rst_agg1m[[1]], 
+                              cell_id = unique_fires_0211$cell, 
+                              time_stamp = unique_fires_0211$month,
+                              rst = rst_1km_8201_mk, period = "1982-2001",
+                              fun = function(x) {
+                                if (all(is.na(x))) NA else mean(x, na.rm = TRUE)
+                              })
+
+df_0211 <- uniqueFiresKendall(template = rst_agg1m[[1]], 
+                              cell_id = unique_fires_0211$cell, 
+                              time_stamp = unique_fires_0211$month,
+                              rst = rst_1km_0211_mk, period = "2002-2011",
+                              fun = function(x) {
+                                if (all(is.na(x))) NA else mean(x, na.rm = TRUE)
+                              })
+
+df_8201_0211 <- rbind(df_8201, df_0211)
+
+p_mk_8201_0211 <- ggplot(aes(x = period, y = ndvi_mk, group = period), 
+                         data = df_8201_0211) + 
+  geom_boxplot(fill = "grey75") + 
+  geom_hline(aes(y = 0), col = "grey10", linetype = "dashed") + 
+  labs(x = "", y = expression("Kendall's" ~ tau)) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, face = "bold"), 
+        axis.title.y = element_text(size = 15))
+
+png("out/fire/burnt_ndvi_mk_8201_0211.png", width = 12, height = 18, units = "cm", 
+    pointsize = 18, res = 300)
+print(p_mk_8201_0211)
+dev.off()
+
+# period 2002-12 from entire gimms 1-km time frame mk
 df_0212 <- ls_mk[[4]]
 
 id_pos <- which(df_0212[, 4] > 0)
@@ -138,12 +207,27 @@ id_cc <- complete.cases(df_0212)
 df_0212 <- df_0212[id_cc, ]
 df_0212$sign <- ifelse(df_0212[, 4] > 0, "pos", "neg")
 
-autoplot(bng) + 
-  geom_polygon(aes(long, lat, group = group), data = shp_0212_pos, 
-               col = "red", fill = "transparent") + 
-  geom_polygon(aes(long, lat, group = group), data = shp_0212_neg, 
-               col = "blue", fill = "transparent")
+# autoplot(bng) + 
+#   geom_polygon(aes(long, lat, group = group), data = shp_0212_pos, 
+#                col = "red", fill = "transparent") + 
+#   geom_polygon(aes(long, lat, group = group), data = shp_0212_neg, 
+#                col = "blue", fill = "transparent")
+# 
+# ggplot(df_0212, aes(x = as.numeric(as.character(month)), group = sign, 
+#                     colour = sign)) + 
+#   geom_density()
 
-ggplot(df_0212, aes(x = as.numeric(as.character(month)), group = sign, 
-                    colour = sign)) + 
-  geom_density()
+p_mk_0212 <- ggplot(aes(x = period, y = ndvi_mk), data = df_0212) + 
+  geom_boxplot(fill = "grey75") + 
+  geom_hline(aes(y = 0), col = "grey10", linetype = "dashed") + 
+  labs(x = "", y = expression("Kendall's" ~ tau)) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, face = "bold"), 
+        axis.title.y = element_text(size = 15))
+
+png("out/fire/burnt_ndvi_mk_0212.png", width = 6, height = 18, units = "cm", 
+    pointsize = 18, res = 300)
+print(p_mk_0212)
+dev.off()
+
+median(df_0212$ndvi_mk, na.rm = TRUE)

@@ -1,7 +1,11 @@
-lib <- c("raster", "zoo", "ggplot2", "doParallel", "RColorBrewer", "rgeos")
+lib <- c("raster", "zoo", "ggplot2", "doParallel", "RColorBrewer", "rgeos", 
+         "Rsenal")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
-setwd("/media/envin/XChange/kilimanjaro/ndvi/")
+switch(Sys.info()[["sysname"]], 
+       "Linux" = {path.wd <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
+       "Windows" = {path.wd <- "D:/kilimanjaro/ndvi/"})
+setwd(path.wd)
 
 source("src/multiVectorHarmonics.R")
 
@@ -43,15 +47,26 @@ ggplot(aes(x = month, y = value, group = interval, colour = interval,
 
 # Same issue, but for 2001-04 vs. 2004-07 vs. 2007-10 vs. 2010-13
 harm_0104_0407_0710_1013 <- multiVectorHarmonics(rst_agg1m, time_info = yrmn, 
-                                                 intervals = seq(2001, 2010, 3), 
-                                                 width = 4)
+                                                 intervals = seq(2001, 2009, 4), 
+                                                 width = 5)
 
-ggplot(aes(x = month, y = value, group = interval, colour = interval), 
-       data = harm_0104_0407_0710_1013) + 
-  geom_line(lwd = 2) + 
+cols_qul <- brewer.pal(3, "Dark2")
+
+p_agg1m_harm <- ggplot(aes(x = month, y = value, group = interval, 
+                           colour = interval, fill = interval), 
+                       data = harm_0104_0407_0710_1013) + 
+  geom_histogram(stat = "identity", lwd = 2, position = "dodge") + 
   labs(x = "\nMonth", y = "No. of active fires\n") +
-  scale_colour_manual("", values = brewer.pal(4, "Reds")) + 
-  theme_bw()
+  scale_colour_manual("", values = cols_qul) + 
+  scale_fill_manual("", values = cols_qul) + 
+  theme_bw() + 
+  theme(text = element_text(size = 15), 
+        axis.title = element_text(size = 18))
+
+png("out/fire/harmonics_0105_0509_0913.png", width = 25, height = 20, 
+    units = "cm", pointsize = 15, res = 600)
+print(p_agg1m_harm)
+dev.off()
 
 # # Separate fires inside the NP from fires outside the NP
 # np_old <- readOGR(dsn = "data/protected_areas/", 
@@ -144,13 +159,20 @@ harm_agg1m_split$tile <- factor(harm_agg1m_split$tile,
                                 levels = c("ul", "ur", "ll", "lr"))
 
 cols_gry <- c("grey25", "grey50", "grey75")
-ggplot(aes(x = month, y = value, group = interval, colour = interval, 
+p_agg1m_harm_split <- ggplot(aes(x = month, y = value, group = interval, colour = interval, 
            fill = interval), data = harm_agg1m_split) + 
   geom_histogram(stat = "identity", position = "dodge") + 
   facet_wrap(~ tile, ncol = 2) + 
   labs(x = "\nMonth", y = "No. of active fires\n") +
-  scale_colour_manual("", values = cols_gry) + 
-  scale_fill_manual("", values = cols_gry) + 
-  theme_bw()
+  scale_colour_manual("", values = cols_qul) + 
+  scale_fill_manual("", values = cols_qul) + 
+  theme_bw() + 
+  theme(text = element_text(size = 15), 
+        axis.title = element_text(size = 18))
+
+png("out/fire/harmonics_0105_0509_0913_split.png", width = 25, height = 20, 
+    units = "cm", pointsize = 15, res = 600)
+print(p_agg1m_harm_split)
+dev.off()
 
 stopCluster(cl)
