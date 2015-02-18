@@ -182,6 +182,9 @@ png("out/fire/burnt_ndvi_mk_8201_0211.png", width = 12, height = 18, units = "cm
 print(p_mk_8201_0211)
 dev.off()
 
+median(df_8201$ndvi_mk, na.rm = TRUE)
+median(df_0211$ndvi_mk, na.rm = TRUE)
+
 # period 2002-12 from entire gimms 1-km time frame mk
 df_0212 <- ls_mk[[4]]
 
