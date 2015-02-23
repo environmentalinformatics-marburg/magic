@@ -5,7 +5,7 @@ nd <- "2011-12"
 
 # nairobi, makindu
 fls_prcp_nai_mak <- list.files("data/gsod", pattern = "^prcp_mnth", full.names = TRUE)
-dat_prcp_nai_mak <- lapply(fls_prcp, function(i) {
+dat_prcp_nai_mak <- lapply(fls_prcp_nai_mak, function(i) {
   dat <- read.csv(i)
   dat[, 1] <- as.Date(dat[, 1])
   return(dat)
