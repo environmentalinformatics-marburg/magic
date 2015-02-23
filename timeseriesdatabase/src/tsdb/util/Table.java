@@ -21,7 +21,7 @@ import au.com.bytecode.opencsv.CSVReader;
  *
  */
 public class Table {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	public static class ColumnReader {
@@ -53,17 +53,21 @@ public class Table {
 				}
 				return Float.parseFloat(row[rowIndex]);
 			} catch(NumberFormatException e) {
-				log.warn(row[rowIndex]+"not parsed");
-				return Float.NaN;
+				if(row[rowIndex].toLowerCase().equals("na")) {
+					return Float.NaN;
+				} else {
+					log.warn(row[rowIndex]+" not parsed");
+					return Float.NaN;
+				}
 			}
 		}
 	}
-	
+
 	public static class ColumnReaderTimestamp {
-		
+
 		private final int rowIndexDate;
 		private final int rowIndexTime;
-		
+
 		public ColumnReaderTimestamp(int rowIndexDate, int rowIndexTime) {
 			this.rowIndexDate = rowIndexDate;
 			this.rowIndexTime = rowIndexTime;
@@ -73,6 +77,21 @@ public class Table {
 				return TimeConverter.parseTimestamp(row[rowIndexDate], row[rowIndexTime], true);				
 			} catch(NumberFormatException e) {
 				log.warn(row[rowIndexDate]+"  "+row[rowIndexTime]+"not parsed");
+				return -1;
+			}
+		}
+	}
+	
+	public static class ColumnReaderSlashTimestamp {
+		private final int rowIndexDateTime;
+		public ColumnReaderSlashTimestamp(int rowIndexDateTime) {
+			this.rowIndexDateTime = rowIndexDateTime;
+		}
+		public long get(String[] row) {			
+			try {
+				return TimeConverter.parseTimestampSlashFormat(row[rowIndexDateTime]);				
+			} catch(NumberFormatException e) {
+				log.warn(row[rowIndexDateTime]+"  "+row[rowIndexDateTime]+"not parsed");
 				return -1;
 			}
 		}
@@ -165,7 +184,7 @@ public class Table {
 		}
 		return new ColumnReaderFloat(columnIndex);
 	}
-	
+
 	public ColumnReaderTimestamp createColumnReaderTimestamp(String colDate, String colTime) {
 		int columnIndexDate = getColumnIndex(colDate);
 		if(columnIndexDate<0) {
@@ -175,8 +194,16 @@ public class Table {
 		if(columnIndexTime<0) {
 			return null;
 		}
-		
+
 		return new ColumnReaderTimestamp(columnIndexDate, columnIndexTime);	
+	}
+	
+	public ColumnReaderSlashTimestamp createColumnReaderSlashTimestamp(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderSlashTimestamp(columnIndex);
 	}
 
 

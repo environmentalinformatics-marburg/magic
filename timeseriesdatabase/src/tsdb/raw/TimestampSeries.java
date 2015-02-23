@@ -1,7 +1,18 @@
 package tsdb.raw;
 
+import java.io.Externalizable;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,34 +30,79 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class TimestampSeries implements TsIterable, Serializable {
-	
+public class TimestampSeries implements TsIterable, Serializable, Externalizable {
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private static final long serialVersionUID = 6078067255995220349L;
-	
+
 	public static final TimestampSeries EMPTY_TIMESERIES = new TimestampSeries(new String[0],new ArrayList<TsEntry>(0),null);
-	
-	public String[] sensorNames;	
-	public List<TsEntry> entryList;
-	public Integer timeinterval; // null if raw data
+
 	public String name;
+	public String[] sensorNames;
+	public Integer timeinterval; // null if raw data
+	public List<TsEntry> entryList;
 	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeUTF(name);
+		out.writeInt(sensorNames.length);
+		for(String sensorName:sensorNames) {
+			out.writeUTF(sensorName);
+		}
+		out.writeObject(timeinterval);
+		out.writeInt(entryList.size());
+		for(TsEntry entry:entryList) {
+			out.writeInt((int) entry.timestamp);
+			for(int i=0;i<sensorNames.length;i++) {
+				out.writeFloat(entry.data[i]);
+			}
+		}
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		this.name = in.readUTF();
+		final int sensorCount = in.readInt();
+		this.sensorNames = new String[sensorCount];
+		for(int i=0;i<sensorCount;i++) {
+			this.sensorNames[i] = in.readUTF();
+		}
+		timeinterval = (Integer) in.readObject();
+		final int entryCount = in.readInt();
+		this.entryList = new ArrayList<TsEntry>(entryCount);
+		for(int r=0;r<entryCount;r++) {
+			int timestamp = in.readInt();
+			float[] data = new float[sensorCount];
+			for(int i=0;i<sensorCount;i++) {
+				data[i] = in.readFloat();
+			}
+			this.entryList.add(new TsEntry(timestamp,data));
+		}		
+	}
 	
+	/**
+	 * for Externalizable only!
+	 */
+	public TimestampSeries() {
+		
+	}
+
+
 	public TimestampSeries(String[] sensorNames, List<TsEntry> entryList,Integer timeinterval) {
 		this.sensorNames = sensorNames;
 		this.entryList = entryList;
 		this.timeinterval = timeinterval;
 		this.name = null;
 	}
-	
+
 	public TimestampSeries(String name, String[] sensorNames, List<TsEntry> entryList) {
 		this.sensorNames = sensorNames;
 		this.entryList = entryList;
 		this.timeinterval = null;
 		this.name = name;
 	}
-	
+
 	public static TimestampSeries create(TsIterator input_iterator, String name) {
 		if(!input_iterator.hasNext()) {
 			log.warn("TimestampSeries.create: input_iterator is empty");
@@ -62,7 +118,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 		ts.name = name;
 		return ts;
 	}
-	
+
 	/**
 	 * Only finite elements are added to result array
 	 * @param sensorName
@@ -93,7 +149,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 		}
 		return resultList.toArray(new DataEntry[0]);
 	}
-	
+
 	@Override
 	public String toString() {
 		int n = entryList.size()>=10?10:entryList.size();
@@ -112,10 +168,10 @@ public class TimestampSeries implements TsIterable, Serializable {
 			}
 			s+='\n';
 		}
-		
+
 		return s;
 	}
-	
+
 	public void removeEmptyColumns() {
 		int[] columnEntryCounter = new int[sensorNames.length];
 		for(int i=0;i<sensorNames.length;i++) {
@@ -161,7 +217,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 		sensorNames = newParameterNames;
 		entryList = newEntryList;
 	}
-	
+
 	/*public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
 		boolean time=false;
 		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
@@ -229,7 +285,7 @@ public class TimestampSeries implements TsIterable, Serializable {
 			log.error(e);
 		}
 	}*/
-	
+
 	public TimestampSeries getTimeInterval(long start, long end) {
 		List<TsEntry> resultList = new ArrayList<TsEntry>();
 		for(TsEntry entry:entryList) {
@@ -240,9 +296,9 @@ public class TimestampSeries implements TsIterable, Serializable {
 		}
 		return new TimestampSeries(sensorNames,resultList,timeinterval);
 	}
-	
+
 	public List<Long> getNaNList(String parameterName) {
-		
+
 		int columnID = Util.stringArrayToMap(sensorNames).get(parameterName);
 
 		List<Long> gapList = new ArrayList<Long>();
@@ -259,15 +315,15 @@ public class TimestampSeries implements TsIterable, Serializable {
 		}
 		return gapList;
 	}	
-	
+
 	public long getFirstTimestamp() {
 		return this.entryList.get(0).timestamp;
 	}
-	
+
 	public long getLastTimestamp() {
 		return this.entryList.get(entryList.size()-1).timestamp;
 	}
-	
+
 	public int size() {
 		return entryList.size();
 	}
@@ -277,4 +333,35 @@ public class TimestampSeries implements TsIterable, Serializable {
 		return new TimeSeriesEntryIterator(entryList.iterator(),sensorNames);
 	}
 
+	public static void writeToBinaryFile(TimestampSeries tss, String filename) throws IOException {
+		ObjectOutputStream objectOutputStream = null;
+		try {
+			RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+			FileOutputStream fos = new FileOutputStream(raf.getFD());
+			objectOutputStream = new ObjectOutputStream(fos);
+			objectOutputStream.writeObject(tss);
+		} finally {
+			if (objectOutputStream != null) {
+				objectOutputStream.close();
+			} 		
+		}
+	}
+	
+	public static TimestampSeries readFromBinaryFile(String filename) throws IOException, ClassNotFoundException {
+		ObjectInputStream objectInputStream = null;
+		try {
+			RandomAccessFile raf = new RandomAccessFile(filename, "r");
+			FileInputStream fos = new FileInputStream(raf.getFD());
+			objectInputStream = new ObjectInputStream(fos);
+			return (TimestampSeries) objectInputStream.readObject();
+		} finally {
+			if (objectInputStream != null) {
+				objectInputStream.close();
+			} 		
+		}
+	}
+
+
+
+	
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.security.DefaultUserIdentity;
+import org.eclipse.jetty.security.MappedLoginService.RolePrincipal;
+import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -78,6 +82,15 @@ public class TsDBAPIHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	
 		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("tsdb", target, baseRequest));
+		
+		/*log.info("auth   "+request.getAuthType());
+		UserAuthentication userAuthentication = (UserAuthentication) baseRequest.getAuthentication();
+		if(userAuthentication!=null&&userAuthentication.isUserInRole(null, "admin")) {
+			log.info("is admin");
+		}*/
+		
+		
+		
 		
 		//response.setHeader("Server", "");
 		//response.setHeader("Date", null);

@@ -19,6 +19,10 @@ public class TsEntry implements Serializable {
 	public final DataQuality[] qualityFlag; // maybe null
 	public final int[][] qualityCounter; // maybe null
 	public final boolean[] interpolated; // maybe null
+	
+	public static TsEntry of(long timestamp, float ... values) {
+		return new TsEntry(timestamp, values);
+	}
 
 	public TsEntry(long timestamp, float[] data, DataQuality[] qualityFlag,int[][] qualityCounter) {
 		this(timestamp, data, qualityFlag, qualityCounter, null);

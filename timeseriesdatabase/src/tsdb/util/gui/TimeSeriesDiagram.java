@@ -88,7 +88,7 @@ public class TimeSeriesDiagram {
 		default:
 			System.out.println("error in agg");
 		}
-
+		
 		dataMinValue = Float.MAX_VALUE;
 		dataMaxValue = -Float.MAX_VALUE;
 		dataCount = 0f;

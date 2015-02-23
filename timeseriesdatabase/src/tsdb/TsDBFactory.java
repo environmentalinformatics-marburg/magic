@@ -43,6 +43,7 @@ public class TsDBFactory {
 	public static String SOURCE_BE_TSM_PATH = "source/be_tsm";
 	public static String SOURCE_KI_TSM_PATH = "source/ki_tsm";
 	public static String SOURCE_KI_TFI_PATH = "source/ki_tfi";
+	public static String SOURCE_SA_DAT_PATH = "source/sa_dat";
 
 	public static String WEBCONTENT_PATH = "webcontent";
 	public static String WEBDOWNLOAD_PATH = "webDownload";
@@ -55,6 +56,8 @@ public class TsDBFactory {
 	public static String JUST_ONE_REGION = null;
 	//public static String JUST_ONE_REGION = "BE";
 	//public static String JUST_ONE_REGION = "KI";
+	
+	public static boolean WEB_SERVER_LOGIN = false;
 
 	static {
 		initPaths();
@@ -94,6 +97,9 @@ public class TsDBFactory {
 			if(pathMap.containsKey("SOURCE_KI_TFI_PATH")) {
 				SOURCE_KI_TFI_PATH = pathMap.get("SOURCE_KI_TFI_PATH");
 			}
+			if(pathMap.containsKey("SOURCE_SA_DAT_PATH")) {
+				SOURCE_SA_DAT_PATH = pathMap.get("SOURCE_SA_DAT_PATH");
+			}
 			if(pathMap.containsKey("WEBCONTENT_PATH")) {
 				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
 			}
@@ -110,6 +116,20 @@ public class TsDBFactory {
 			if(pathMap.containsKey("JUST_ONE_REGION")) {
 				JUST_ONE_REGION = pathMap.get("JUST_ONE_REGION");
 			}
+			if(pathMap.containsKey("WEB_SERVER_LOGIN")) {
+				
+				if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("true")) {
+					WEB_SERVER_LOGIN = true;
+				} else if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("false")) {
+					WEB_SERVER_LOGIN = false;
+				} else {
+					log.warn("ini config value for WEB_SERVER_LOGIN unknown: "+pathMap.get("WEB_SERVER_LOGIN"));
+					WEB_SERVER_LOGIN = false;
+				}
+				
+				
+				
+			}			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
@@ -160,7 +180,13 @@ public class TsDBFactory {
 			configLoader.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf"); // KiLi 5. read time interval of stations and insert it in virtualplot objects
 			configLoader.readUpdatedPlotGeoPosConfig(configDirectory+"kili_plots_correct_xy.csv");
 			configLoader.calcNearestVirtualPlots();
-			//*** KilI end
+			//*** Kili end
+			
+			//*** South Africa start
+			
+			configLoader.read_sa_stationList(configDirectory+"sa_stationList.csv");
+			
+			//*** South Africa end
 
 			//*** sensor config	start		
 			configLoader.readIgnoreSensorNameConfig(configDirectory+"ignore_sensors.ini"); // read and insert sensor names that should be not inserted in database

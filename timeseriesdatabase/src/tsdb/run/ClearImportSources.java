@@ -59,7 +59,14 @@ public class ClearImportSources {
 		long timeStartKItfi = System.currentTimeMillis();
 		TimeSerieaLoaderKiLi_manual_tfi.loadOneDirectory_structure_kili_tfi(Paths.get(TsDBFactory.SOURCE_KI_TFI_PATH));
 		long timeEndKItfi = System.currentTimeMillis();
+		System.gc();		
+		log.info("import SA dat");
+		log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
+		long timeStartSA = System.currentTimeMillis();
+		SouthAfricaImport.main(null);
+		long timeEndSA = System.currentTimeMillis();
 		System.gc();
+		
 
 		long timeStartClose = System.currentTimeMillis();
 		tsdb.close();
@@ -81,6 +88,7 @@ public class ClearImportSources {
 		log.info((timeEndBE-timeStartBE)/1000+" s BE import");
 		log.info((timeEndKI-timeStartKI)/1000+" s KI import");
 		log.info((timeEndKItfi-timeStartKItfi)/1000+" s KI tfi import");
+		log.info((timeEndSA-timeStartSA)/1000+" s SA import");
 		log.info((timeEndClose-timeStartClose)/1000+" s Close");
 		log.info((timeEnd-timeStart)/1000+" s total import");
 		log.info("");

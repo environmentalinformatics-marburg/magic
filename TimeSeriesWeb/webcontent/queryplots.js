@@ -2,11 +2,13 @@ var region_select;
 var generalstation_select;
 var plot_select;
 var time_select;
+var time_month_select;
 var aggregation_select;
 var quality_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
+var monthText = ["[whole year]","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 var tasks = 0;
 
@@ -39,19 +41,33 @@ $(document).ready(function(){
 	generalstation_select = $("#generalstation_select");
 	plot_select = $("#plot_select");
 	time_select = $("#time_select");
+	time_month_select = $("#time_month_select");
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
 	quality_select.val(2);
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
+	time_month_select.hide();
+	$.each(monthText, function(i,text) {time_month_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
-	getID("generalstation_select").onchange = updatePlots;	
+	getID("generalstation_select").onchange = updatePlots;
+	getID("time_select").onchange = onUpdateTime;	
 	getID("query_plot").onclick = runQueryPlot;
 	
 	updataRegions();
 	decTask();
 });
+
+
+function onUpdateTime() {
+	if(time_select.val()==0) {
+		time_month_select.hide();
+	} else {
+		time_month_select.show();
+	}
+}
+
 
 var updataRegions = function() {
 	incTask();
@@ -125,6 +141,10 @@ var addDiagram = function(plotName, sensorName, sensorDesc, sensorUnit) {
 	var timeName = timeText[time_select.val()];
 	if(timeName!="[all]") {
 		timeParameter = "&year="+timeName;
+		var month = time_month_select.val();
+		if(month!=0) {
+			timeParameter += "&month="+month;
+		}
 	}
 	incTask();
 	var image = new Image();

@@ -163,9 +163,10 @@ public class StreamStorageStreamDB implements StreamStorage {
 		String stationName = timestampSeries.name;
 		for(String sensorName:timestampSeries.sensorNames) {
 			DataEntry[] data = timestampSeries.toDataEntyArray(sensorName);
-			System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
-			streamdb.insertSensorData(stationName, sensorName, data);
-
+			if(data!=null&&data.length>0) {
+				System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
+				streamdb.insertSensorData(stationName, sensorName, data);
+			}
 		}
 
 	}

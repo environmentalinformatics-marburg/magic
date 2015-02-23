@@ -142,17 +142,19 @@ public class Main {
 		//x.addFilter(holder, pathSpec, dispatches);
 		//x.addServlet(RobotsTxtServlet.SERVLET_HOLDER, "/robots.txt");
 		//x.addServlet(InvalidUrlServlet.SERVLET_HOLDER, "/*");
+		
+		boolean wrap = TsDBFactory.WEB_SERVER_LOGIN;
 
 		ContextHandler[] contexts = new ContextHandler[] {
-				createContextWebcontent(), 
-				createContextTsDB(tsdb), 
-				createContextExport(tsdb), 
-				createContextWebDownload(),
+				wrapLogin(createContextWebcontent(),wrap), 
+				wrapLogin(createContextTsDB(tsdb),wrap), 
+				wrapLogin(createContextExport(tsdb),wrap), 
+				wrapLogin(createContextWebDownload(),wrap),
 				contextRedirect,
 				Robots_txt_Handler.CONTEXT_HANDLER,
 				//x,
 				createContextInvalidURL(),
-				createContextTestingLogin()
+				//createContextTestingLogin()
 		};
 
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection();
@@ -175,8 +177,37 @@ public class Main {
 		server.join();
 		System.out.println("...Web Sever stopped");		
 	}
+	
+	private static ContextHandler wrapLogin(ContextHandler contextHandler, boolean wrap) {
+		if(!wrap) {
+			return contextHandler;
+		}		
+		ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+		security.setHandler(contextHandler);
+		ContextHandler security_context = new ContextHandler();
+		security_context.setHandler(security);
+		
+		Constraint constraint = new Constraint();
+        constraint.setName("auth1");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[] { "user", "admin" });
+		
+		ConstraintMapping mapping = new ConstraintMapping();
+        mapping.setPathSpec("/*");
+        mapping.setConstraint(constraint);
+		
+		security.setConstraintMappings(Collections.singletonList(mapping));
+		security.setAuthenticator(new DigestAuthenticator());
+		HashLoginService loginService = new HashLoginService("Web Server Login", "realm.properties");
+		/*String userName = "uu";
+		Credential credential = new Password("pp");
+		String[] roles = new String[]{"admin"};
+		loginService.putUser(userName, credential, roles);*/
+		security.setLoginService(loginService);
+		return security_context;
+	}
 
-	private static ContextHandler createContextTestingLogin() {		
+	/*private static ContextHandler createContextTestingLogin() {		
 		ContextHandler context = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"/login");
 		ConstraintSecurityHandler security = new ConstraintSecurityHandler();
 		context.setHandler(security);
@@ -192,8 +223,8 @@ public class Main {
 		
 		security.setConstraintMappings(Collections.singletonList(mapping));
 		security.setAuthenticator(new DigestAuthenticator());
-		HashLoginService loginService = new HashLoginService("Login"/*, "realm.properties"*/);
-		String userName = "uu";
+		HashLoginService loginService = new HashLoginService("Login"/*, "realm.properties"*///);
+		/*String userName = "uu";
 		Credential credential = new Password("pp");
 		String[] roles = new String[]{"admin"};
 		loginService.putUser(userName, credential, roles);
@@ -207,7 +238,7 @@ public class Main {
 		security.setHandler(handlers);
 
 		return context;
-	}
+	}*/
 
 	private static ContextHandler createContextWebcontent() {
 		ContextHandler contextStatic = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+WEBCONTENT_PART_URL);

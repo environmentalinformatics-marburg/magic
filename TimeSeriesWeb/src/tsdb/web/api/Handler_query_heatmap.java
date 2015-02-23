@@ -108,7 +108,10 @@ public class Handler_query_heatmap extends MethodHandler {
 				log.error(e);
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 				return;
-			}
+			}				
+		} else {
+			startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
+			endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
 		}
 
 		try {
@@ -130,9 +133,9 @@ public class Handler_query_heatmap extends MethodHandler {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
 			}
-			
+
 			float xDiagramMin = 24;
-			
+
 			int imageWidth = (int) ((ts.getLastTimestamp()-ts.getFirstTimestamp())/(60*24))+(int)xDiagramMin;
 			int imageHeight = (24+12);
 			BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -140,13 +143,13 @@ public class Handler_query_heatmap extends MethodHandler {
 			TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);		
 
 			TimeSeriesHeatMap tshm = new TimeSeriesHeatMap(ts);
-			
-			
-			
+
+
+
 			tshm.draw(tsp,sensorName, xDiagramMin);
 			tshm.drawTimescale(tsp, xDiagramMin, 24, imageWidth+1, imageHeight-1);
 			tshm.leftField(tsp,0,0,xDiagramMin-1,imageHeight-1);
-			
+
 			try {
 				ImageIO.write(bufferedImage, "png", response.getOutputStream());
 				response.setStatus(HttpServletResponse.SC_OK);

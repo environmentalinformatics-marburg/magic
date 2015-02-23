@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -130,6 +132,19 @@ public class TimeConverter implements Serializable {
 	
 	public static String oleMinutesToText(Long oleTimeMinutesStart, Long oleTimeMinutesEnd) {
 		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
+	}
+	
+	private static DateTimeFormatter DATE_TIME_FORMATER_SLASH = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+	
+	/**
+	 * format: yyyy/MM/dd HH:mm
+	 * example: 2010/08/25 00:05
+	 * @param dateTimeText
+	 * @return timestamp
+	 */
+	public static long parseTimestampSlashFormat(String dateTimeText) {		
+		LocalDateTime dt = LocalDateTime.parse(dateTimeText, DATE_TIME_FORMATER_SLASH);
+		return TimeConverter.DateTimeToOleMinutes(dt);
 	}
 
 	public static long parseTimestamp(String dateText, String timeText, boolean isISOdate) {		

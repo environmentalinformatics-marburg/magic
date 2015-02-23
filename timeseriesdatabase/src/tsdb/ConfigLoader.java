@@ -1015,6 +1015,32 @@ public class ConfigLoader {
 		}
 	}
 
+	public void read_sa_stationList(String configFile) {
+		
+		GeneralStation generalStation = new GeneralStation("general", tsdb.getRegion("SA"), "general", "general");
+		tsdb.insertGeneralStation(generalStation);
+		
+		LoggerType loggerType = new LoggerType("sa_logger", new String[]{"Ta_200"});
+		tsdb.insertLoggerType(loggerType);
+		
+		
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_stationID = table.createColumnReader("StasName");
+		for(String[] row:table.rows) {
+			String stationID = cr_stationID.get(row);
+			
+			Map<String, String> propertyMap = new TreeMap<String, String>();
+			propertyMap.put("PLOTID", stationID);
+			propertyMap.put("DATE_START","1999-01-01");
+			propertyMap.put("DATE_END","2099-12-31");
+			StationProperties stationProperties = new StationProperties(propertyMap);			
+			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
+			propertyList.add(stationProperties);			
+			Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
+			tsdb.insertStation(station);
+		}
+	}
+
 	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
 	try{		
 		Table table = Table.readCSV(config_file);		
