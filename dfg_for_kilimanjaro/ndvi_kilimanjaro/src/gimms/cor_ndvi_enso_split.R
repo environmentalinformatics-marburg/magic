@@ -33,6 +33,11 @@ num_split_ltm <- foreach(i = rst_split, j = list("0_0", "0_1", "1_0", "1_1"),
   return(ltm_ext)
 }
 
+num_split_ltm %>%
+  group_by(quadrant) %>% 
+  summarise(minimum_x = x[which.min(y)], minimum = min(y), 
+            maximum_x = x[which.max(y)], maximum = max(y))
+
 # el nino
 groups <- list("all El Ninos", "pure El Ninos", "pure m/s El Ninos", 
                "El Ninos w IOD+", "m/s El Ninos w IOD+", "purest IOD+")
@@ -127,6 +132,7 @@ p_nino <- ggplot(aes(x, y, group = group, colour = group), data = ndvi_split_sp)
   #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
+  guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
   theme_bw()
 
 png("vis/cor_ndvi_oni/ts_nino_ndvi_split.png", width = 36, height = 15, 
@@ -229,6 +235,7 @@ p_nina <- ggplot(aes(x, y, group = group, colour = group), data = ndvi_split_sp)
   #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
+  guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
   theme_bw()
 
 png("vis/cor_ndvi_oni/ts_nina_ndvi_split.png", width = 36, height = 15, 
