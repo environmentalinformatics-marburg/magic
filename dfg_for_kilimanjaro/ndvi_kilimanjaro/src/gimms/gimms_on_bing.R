@@ -28,6 +28,17 @@ kili.map <- openproj(openmap(upperLeft = c(ymax(ext_gimms), xmin(ext_gimms)),
                              type = "bing", minNumTiles = 40L), 
                              projection = "+init=epsg:21037")
 
+# # visualization of split bing image
+# library(Rsenal)
+# rst_kili <- raster(kili.map)
+# rst_kili <- writeRaster(rst_kili, "data/bing/bing_aerial", format = "GTiff", 
+#                         bylayer = FALSE, overwrite = TRUE)
+# rst_kili_split <- splitRaster("data/bing/bing_aerial.tif")
+# 
+# par(mfrow = c(2, 2))
+# for (i in c(1, 3, 2, 4))
+#   plotRGB(rst_kili_split[[i]])
+
 # np borders
 np_old <- readOGR(dsn = "../../ndvi/data/protected_areas/", 
                   layer = "fdetsch-kilimanjaro-national-park-1420535670531", 
