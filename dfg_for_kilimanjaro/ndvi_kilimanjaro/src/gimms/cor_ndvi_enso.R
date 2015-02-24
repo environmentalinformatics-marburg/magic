@@ -208,6 +208,15 @@ png("vis/cor_ndvi_oni/ts_nino_ndvi.png", width = 30, height = 12, units = "cm",
 print(p_nino)
 dev.off()
 
+# occurrence of each group
+ssn_cnt_nino <- foreach(nino = groups_nino, iod = groups_iod, group = groups, 
+                        span = rep(8, length(groups)), .combine = "rbind") %do% {
+  oni_mlt_sub <- subset(oni_mlt, (Type %in% nino) & (IOD %in% iod))
+  ssn_cnt <- length(unique(oni_mlt_sub$Season))
+  df_ssn_cnt <- data.frame(Group = group, Count = ssn_cnt)
+  return(df_ssn_cnt)
+}
+
 # la nina
 groups <- list("all La Ninas", "pure La Ninas", "pure m/s La Ninas", 
                "La Ninas w IOD+", "m/s La Ninas w IOD+", "purest IOD+")
@@ -225,6 +234,11 @@ groups_iod <- list(c("M", "", "P"),
                    "P", 
                    "P", 
                    "P")
+
+nina <- groups_nina[[6]]
+iod <- groups_iod[[6]]
+group <- groups[[6]]
+span <- 8
 
 ndvi_sp <- foreach(nina = groups_nina, iod = groups_iod, group = groups, 
                    span = rep(8, length(groups)), .packages = lib, 
@@ -309,6 +323,15 @@ png("vis/cor_ndvi_oni/ts_nina_ndvi.png", width = 30, height = 12, units = "cm",
 print(p_nina)
 dev.off()
 
+# occurrence of each group
+ssn_cnt_nina <- foreach(nina = groups_nina, iod = groups_iod, group = groups, 
+                        span = rep(8, length(groups)), .combine = "rbind") %do% {
+  oni_mlt_sub <- subset(oni_mlt, (Type %in% nina) & (IOD %in% iod))
+  ssn_cnt <- length(unique(oni_mlt_sub$Season))
+  df_ssn_cnt <- data.frame(Group = group, Count = ssn_cnt)
+  return(df_ssn_cnt)
+}
+                     
 
 ## ccf
 
