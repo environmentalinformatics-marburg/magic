@@ -132,16 +132,11 @@ public class KiliCollector {
 		TsDB tsdb = TsDBFactory.createDefault();
 		KiliCollector kiliCollector = new KiliCollector(tsdb);
 
-		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));
-		HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_empty"));	
+		HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));
+		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/empty"));	
 		TreeMap<String, List<CollectorEntry>> md5MapBasis = createMD5Map(collectorMapBasis);
 
-		HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));
-		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add"));
-		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/new_20150123-115021380218_ki_20150122-085711"));
-		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add_conflict"));
-		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/to_add_20150205-080049"));
-		//HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_asc_recursive(Paths.get("c:/timeseriesdatabase_preprocess/to_add_20150205-080049"));
+		HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/source"));
 
 
 
@@ -205,7 +200,8 @@ public class KiliCollector {
 				String targetRoot = PREPROCESSED_ERROR_PATH;
 				switch(collectorEntry.status) {
 				case "ok":
-					targetRoot = Paths.get(PREPROCESSED_PATH,collectorEntry.plot).toString();
+					//targetRoot = Paths.get(PREPROCESSED_PATH,collectorEntry.plot).toString();
+					targetRoot = Paths.get(PREPROCESSED_PATH).toString();
 					filename = collectorEntry.createNewFilename();
 					break;			
 				case "empty":

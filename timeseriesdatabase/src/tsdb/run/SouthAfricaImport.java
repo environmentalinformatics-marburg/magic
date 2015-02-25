@@ -35,13 +35,21 @@ public class SouthAfricaImport {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}*/
-		
-		Path root = Paths.get(TsDBFactory.SOURCE_SA_DAT_PATH);
-		readDirectoryRecursive(tsdb,root);
+
+		new SouthAfricaImport(tsdb);
 
 		System.out.println("...end");
 		tsdb.close();
 
+	}
+
+	public SouthAfricaImport(TsDB tsdb) {
+		try {
+			Path root = Paths.get(TsDBFactory.SOURCE_SA_DAT_PATH);
+			readDirectoryRecursive(tsdb,root);
+		} catch (Exception e) {
+			log.error(e);
+		}
 	}
 
 	public static void readDirectoryRecursive(TsDB tsdb, Path rootDirectory) {

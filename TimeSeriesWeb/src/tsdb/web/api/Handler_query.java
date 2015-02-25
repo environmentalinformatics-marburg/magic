@@ -107,8 +107,27 @@ public class Handler_query extends MethodHandler {
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 					return;
 				}
-				startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
-				endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+				String timeMonth = request.getParameter("month");
+				if(timeMonth==null) {
+					startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+					endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+				} else {
+					try {
+						int month = Integer.parseInt(timeMonth);
+						if(month<1||month>12) {
+							log.error("month out of range "+month);
+							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+							return;
+						}
+						LocalDateTime dateMonth = LocalDateTime.of(year, month, 1, 0, 0);
+						startTime = TimeConverter.DateTimeToOleMinutes(dateMonth);
+						endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
+					} catch (Exception e) {
+						log.error(e);
+						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+						return;
+					}	
+				}				
 			} catch (Exception e) {
 				log.error(e);
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

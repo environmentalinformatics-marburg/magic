@@ -7,6 +7,9 @@ import static tsdb.util.AssumptionCheck.throwNulls;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
@@ -22,6 +25,7 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class VirtualBase extends Base.Abstract  {
+	private static final Logger log = LogManager.getLogger();
 
 	private final VirtualPlot virtualPlot; //not null	
 	private final String[] schema; // not null
@@ -49,7 +53,8 @@ public class VirtualBase extends Base.Abstract  {
 			}			
 			querySchema = tsdb.getBaseSchema(schema);
 			if(querySchema==null) {
-				throw new RuntimeException("empty base schema in VirtualPlot: "+virtualPlot.plotID);
+				log.warn("empty base schema in VirtualPlot: "+virtualPlot.plotID);
+				return null;
 			}
 		}
 		return new VirtualBase(tsdb, virtualPlot, querySchema, stationGen);		

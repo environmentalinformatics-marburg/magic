@@ -63,7 +63,7 @@ public class ClearImportSources {
 		log.info("import SA dat");
 		log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
 		long timeStartSA = System.currentTimeMillis();
-		SouthAfricaImport.main(null);
+		new SouthAfricaImport(tsdb);
 		long timeEndSA = System.currentTimeMillis();
 		System.gc();
 		

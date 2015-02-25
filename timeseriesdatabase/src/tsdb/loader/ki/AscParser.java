@@ -138,8 +138,9 @@ public class AscParser {
 
 				String[] columns = currentLine.split("(\\s|;)+");
 
-				if(columns.length!=sensorNames.length+2) {
-					log.error("different column count: "+currentLine+"  in "+filename);
+				if(columns.length!=sensorNames.length+2) {					
+					String endoffile = currentLineIndex==lines.length?"at end of file":"at line within file";					
+					log.warn("different column count "+endoffile+" : "+currentLine+"  in "+filename);
 					break rowLoop;
 				}
 

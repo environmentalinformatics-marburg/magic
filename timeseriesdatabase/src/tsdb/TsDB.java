@@ -1,6 +1,7 @@
 package tsdb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -520,7 +521,7 @@ public class TsDB {
 	//*********************************************** end base aggregation *************************************************************************
 
 	public String[] getValidSchema(String plotID, String[] schema) {
-		log.info(" ---------  "+schema+"  "+plotID);
+		log.info(" ---------  "+Arrays.toString(schema)+"  "+plotID);
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return virtualPlot.getValidSchemaEntries(schema);

@@ -170,6 +170,10 @@ public class StreamDB {
 		}
 		return sensorMeta;
 	}
+	
+	public SensorMeta getSensorMeta(String stationName, String sensorName) {
+		return getSensorMeta(stationName, sensorName, false);
+	}
 
 	private SensorMeta getSensorMeta(String stationName, String sensorName, boolean createIfNotExists) {
 		throwNull(stationName);
@@ -236,7 +240,7 @@ public class StreamDB {
 
 
 	public void insertSensorData(String stationName, String sensorName, DataEntry[] data) {	
-		log.info("streamDB insert data "+stationName+" "+sensorName+" "+data.length);
+		//log.info("streamDB insert data "+stationName+" "+sensorName+" "+data.length);
 		throwNull(stationName);
 		throwNull(sensorName);
 		throwNull(data);
@@ -308,7 +312,11 @@ public class StreamDB {
 			while(old_curr!=null||new_curr!=null) {				
 				if(old_curr!=null) {
 					if(new_curr!=null) {
-						if(old_curr.timestamp<new_curr.timestamp) {
+						if(old_curr.timestamp==new_curr.timestamp) {// overwrite old data with new data
+							resultList.add(new_curr);
+							old_curr = oldIt.hasNext()?oldIt.next():null;
+							new_curr = newIt.hasNext()?newIt.next():null;
+						} else if(old_curr.timestamp<new_curr.timestamp) {
 							resultList.add(old_curr);
 							old_curr = oldIt.hasNext()?oldIt.next():null;
 						} else {

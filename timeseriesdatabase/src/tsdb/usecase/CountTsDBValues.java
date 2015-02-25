@@ -1,9 +1,15 @@
 package tsdb.usecase;
 
+import java.util.concurrent.CompletionStage;
+
+import org.mapdb.BTreeMap;
+
 import tsdb.TsDBFactory;
 import tsdb.streamdb.ChunkMeta;
+import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.SensorMeta;
 import tsdb.streamdb.StreamDB;
+import tsdb.streamdb.StreamIterator;
 
 public class CountTsDBValues {
 
@@ -30,20 +36,41 @@ public class CountTsDBValues {
 					sensorValues += chunkMeta.entryCount;
 					sensorChunkCount++;
 				}
-				//System.out.println(stationName+"  "+sensorMeta.sensorName + "  "+sensorValues+ " values in "+sensorChunkCount+" chunks");
+				System.out.println(stationName+"  "+sensorMeta.sensorName + "  "+sensorValues+ " values in "+sensorChunkCount+" chunks");
 				stationValues += sensorValues;
 				stationChunkCount += sensorChunkCount;
 				stationSensorCount++;
 			}
-			//System.out.println(stationName+"  "+stationValues+ " values in "+stationSensorCount+" sensors and "+stationChunkCount+" chunks");
+			System.out.println(stationName+"  "+stationValues+ " values in "+stationSensorCount+" sensors and "+stationChunkCount+" chunks");
 			dbValues += stationValues;
 			dbChunkCount += stationChunkCount;
 			dbSensorCount += stationSensorCount;
-			dbStationCount++;
+			dbStationCount++;			
 		}
+		System.out.println();
 		System.out.println("db  "+dbValues+ " values in "+dbStationCount+" stations and "+dbSensorCount+" sensors and "+dbChunkCount+" chunks");
 		
+		
+		/*SensorMeta sensorMeta = streamdb.getSensorMeta("51021020159", "Ta_200");
+		//streamdb.getSensorMeta(stationMeta, sensorName, createIfNotExists)
+		BTreeMap<Integer, ChunkMeta> chunkMetaMap = streamdb.getSensorChunkMetaMap(sensorMeta);
+		for(ChunkMeta chunkMeta:chunkMetaMap.values()) {
+			System.out.println(chunkMeta);
+		}
+		
+		
+		StreamIterator it = streamdb.getSensorIterator(sensorMeta, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		
+		while(it.hasNext()) {
+			DataEntry e = it.next();
+			System.out.println(e);
+		}*/
+		
+		
+		
 		streamdb.close();
+		
+		CompletionStage c = null;
 
 	}
 

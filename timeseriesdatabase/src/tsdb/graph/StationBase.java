@@ -23,7 +23,16 @@ public class StationBase extends Base.Abstract {
 
 	public static StationBase of(TsDB tsdb,Station station, String[] querySchema, NodeGen stationGen) {
 		if(querySchema==null) {
-			querySchema = tsdb.getBaseSchema(station.loggerType.sensorNames);
+			//querySchema = tsdb.getBaseSchema(station.loggerType.sensorNames);
+			String[] rawSensorNames = tsdb.streamStorage.getSensorNames(station.stationID);
+			if(rawSensorNames==null || rawSensorNames.length==0) {
+				return null;
+			}
+			//querySchema = tsdb.getBaseSchema(station.getSchema());
+			querySchema = tsdb.getBaseSchema(rawSensorNames);
+		}
+		if(querySchema==null || querySchema.length==0) {
+			return null;
 		}
 		Node source = stationGen.get(station.stationID, querySchema);
 		return new StationBase(tsdb, source);

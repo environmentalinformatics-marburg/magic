@@ -24,40 +24,40 @@ import static tsdb.util.AssumptionCheck.*;
  *
  */
 public class CreateStationGroupAverageCache {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	public interface CbPrint {
 		public void println(String text);
 	}
-	
+
 	private final TsDB tsdb;
 	private CbPrint cbPrint;
 
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		
+
 		new CreateStationGroupAverageCache(tsdb).run();
-		
+
 		tsdb.close();
 		System.out.println("...end");
 	}
-	
+
 	public CreateStationGroupAverageCache(TsDB tsdb) {
 		this(tsdb,text->System.out.println(text));
 	}
-	
+
 	public CreateStationGroupAverageCache(TsDB tsdb, CbPrint cbPrint) {
 		throwNulls(tsdb,cbPrint);
 		this.tsdb = tsdb;
 		this.cbPrint = cbPrint;
 	}
-	
+
 	public void run() {
-		
+
 		long startRunTime = System.currentTimeMillis();
-		
+
 		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
 
 		for(String group:tsdb.getGeneralStationGroups()) {
@@ -84,31 +84,44 @@ public class CreateStationGroupAverageCache {
 				for(String plotID:list) {
 					try {
 						Continuous continuous = continuousGen.get(plotID,null);
-						Addition addition = Addition.createWithElevationTemperature(tsdb,continuous,plotID);
-						if(addition!=null) {
-							additions.add(addition);
+						if(continuous!=null) {
+							Addition addition = Addition.createWithElevationTemperature(tsdb,continuous,plotID);
+							if(addition!=null) {
+								additions.add(addition);
+							}
+							sources.add(continuous);
+						} else {
+							//log.warn("no stream of "+plotID);
 						}
-						sources.add(continuous);
 					} catch (Exception e) {
+						e.printStackTrace();
 						log.warn(e);
 					}
 				}
-				
-				Averaged averaged;
-				
-				if(additions.isEmpty()) {
-					averaged = Averaged.of(tsdb, sources, 3);					
-				} else {
-					averaged = Averaged.of(tsdb, additions, 3);
+
+				final int MIN_AVERAGE = 3;
+
+				Averaged averaged = null;
+
+				if(averaged==null && additions.size()>=MIN_AVERAGE) {
+					averaged = Averaged.of(tsdb, additions, MIN_AVERAGE);
 				}
-				
-				tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));
-				//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);
+
+				if(averaged==null && sources.size()>=MIN_AVERAGE) {
+					averaged = Averaged.of(tsdb, sources, MIN_AVERAGE);
+				}
+
+				if(averaged!=null) {
+					tsdb.cacheStorage.writeNew(group, averaged.get(groupMinTimestamp, groupMaxTimestamp));
+					//averaged.writeConsole(generalMinTimestamp, generalMaxTimestamp);
+				} else {
+					log.warn("not enough sources for average: "+group);
+				}
 			}
 		}
-		
+
 		long endRunTime = System.currentTimeMillis();
 		cbPrint.println("CreateStationGroupAverageCache run time: "+(endRunTime-startRunTime)/1000+" s");
-		
+
 	}
 }

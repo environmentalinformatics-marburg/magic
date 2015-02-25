@@ -3,12 +3,14 @@ var generalstation_input;
 var plot_input;
 var sensor_input;
 var time_input;
+var time_month_input;
 var aggregation_input;
 var aggregations = ["hour","day","week","month","year"];
 var quality_input;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
+var monthText = ["[whole year]","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 var sensors = "";
 
@@ -63,6 +65,13 @@ sensor_input.on("selectmenuchange", function( event, ui ) {updateSensor();} );
 time_input = $("#time_input").selectmenu();
 $.each(timeText, function(i,text) {time_input.append(new Option(text,i));});
 time_input.selectmenu("refresh");
+getID("time_input").onchange = onUpdateTime;
+time_input.on("selectmenuchange", onUpdateTime);
+
+time_month_input = $("#time_month_input").selectmenu();
+time_month_input.selectmenu( "option", "disabled", true );
+$.each(monthText, function(i,text) {time_month_input.append(new Option(text,i));});
+time_month_input.selectmenu("refresh");
 
 aggregation_input = $("#aggregation_input").selectmenu();
 $.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
@@ -87,6 +96,15 @@ decTask();
 //update_time_range_text();
 
 });
+
+function onUpdateTime() {
+	quality_input.val(2);
+	if(time_input.val()==0) {
+		time_month_input.selectmenu( "option", "disabled", true );
+	} else {
+		time_month_input.selectmenu( "option", "disabled", false );
+	}
+}
 
 /*
 var month_text = ["err","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
@@ -212,6 +230,10 @@ var getQueryParameters = function() {
 	var timeName = timeText[time_input.val()];
 	if(timeName!="[all]") {
 		timeParameter = "&year="+timeName;
+		var month = time_month_input.val();
+		if(month!=0) {
+			timeParameter += "&month="+month;
+		}			
 	}	
 	return "plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
 }

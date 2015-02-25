@@ -2,11 +2,13 @@ var region_select;
 var generalstation_select;
 var sensor_select;
 var time_select;
+var time_month_select;
 var aggregation_select;
 var quality_select;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
+var monthText = ["[whole year]","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 
 var sensors;
@@ -19,20 +21,32 @@ $(document).ready(function(){
 	generalstation_select = $("#generalstation_select");
 	sensor_select = $("#sensor_select");
 	time_select = $("#time_select");
+	time_month_select = $("#time_month_select");
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
 	$.each(qualitiesText, function(i,text) {quality_select.append(new Option(text,i));});
 	quality_select.val(2);
-	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
+	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});	
+	time_month_select.hide();
+	$.each(monthText, function(i,text) {time_month_select.append(new Option(text,i));});
 	
 	getID("region_select").onchange = updateGeneralStations;
-	getID("generalstation_select").onchange = updateSensors;	
+	getID("generalstation_select").onchange = updateSensors;
+	getID("time_select").onchange = onUpdateTime;	
 	getID("sensor_select").onchange = updateSensor;
 	getID("query_sensor").onclick = runQuerySensor;
 	
 	updataRegions();
 	decTask();
 });
+
+function onUpdateTime() {
+	if(time_select.val()==0) {
+		time_month_select.hide();
+	} else {
+		time_month_select.show();
+	}
+}
 
 var incTask = function() {
 	runDisabled(true);
@@ -123,14 +137,24 @@ var updateSensors = function() {
 var updateSensor = function() {
 	incTask();
 	var row = sensors[sensor_select.val()];
-	getID("sensor_description").innerHTML = row[1];
-	getID("sensor_unit").innerHTML = row[2];
+	if(row === undefined) {
+		getID("sensor_description").innerHTML = "---";
+		getID("sensor_unit").innerHTML = "---";
+	} else {
+		getID("sensor_description").innerHTML = row[1];
+		getID("sensor_unit").innerHTML = row[2];
+	}
 	decTask();
 }
 
 var runQuerySensor = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
+	if(sensors[sensor_select.val()] === undefined) {
+		getID("result").innerHTML = "no sensor";
+		decTask();
+		return;
+	}
 	var sensorName = sensors[sensor_select.val()][0];
 	generalStationName = generalstation_select.val();	
 	var queryText = "";
@@ -159,6 +183,10 @@ var addDiagram = function(plotName, sensorName) {
 	var timeName = timeText[time_select.val()];
 	if(timeName!="[all]") {
 		timeParameter = "&year="+timeName;
+		var month = time_month_select.val();
+		if(month!=0) {
+			timeParameter += "&month="+month;
+		}		
 	}	
 	var image = new Image();
 	plotResult.appendChild(image);

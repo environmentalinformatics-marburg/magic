@@ -63,6 +63,9 @@ public class QueryPlan {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(tsdb, dataQuality);		
 			Base base = Base.of(tsdb, plotID, schema, stationGen);
+			if(base==null) {
+				return null;
+			}
 			Continuous continuous = Continuous.of(base);
 			if(DataQuality.EMPIRICAL==dataQuality) {
 				continuous = EmpiricalFiltered.of(tsdb, continuous, plotID);
@@ -92,7 +95,7 @@ public class QueryPlan {
 			}
 			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
 			if(virtual_P_RT_NRT) {
-				log.info("add virtual_P_RT_NRT in "+stationID);
+				//log.info("add virtual_P_RT_NRT in "+stationID);
 				rawSource = Virtual_P_RT_NRT.of(tsdb, rawSource);
 			}
 			if(station.loggerType.typeName.equals("tfi")) {
