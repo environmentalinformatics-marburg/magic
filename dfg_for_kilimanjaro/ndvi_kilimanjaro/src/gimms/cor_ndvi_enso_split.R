@@ -1,3 +1,13 @@
+# functions
+source("ttestInterQuad.R")
+source("ttestIntraQuad.R")
+
+# parallelization
+library(doParallel)
+cl <- makeCluster(4)
+registerDoParallel(cl)
+
+
 ## oni ~ ndvi
 
 # split raster
@@ -96,6 +106,27 @@ ndvi_split_sp <- foreach(h = rst_split, quadrant = list("NW", "SW", "NE", "SE"),
 ndvi_split_sp$quadrant <- factor(ndvi_split_sp$quadrant, 
                                  levels = c("NW", "NE", "SW", "SE"))
 
+tt_interquad_nino <- ttestInterQuad(ndvi_split_sp)
+sapply(tt_interquad_nino, function(x) any(x > .001, na.rm = TRUE))
+
+tt_intraquad_nino <- ttestIntraQuad(ndvi_split_sp)
+sapply(tt_intraquad_nino, function(x) {
+  bool_unsignif <- x > .001
+  bool_unsignif_any <- any(bool_unsignif, na.rm = TRUE)
+  
+  if (bool_unsignif_any) {
+    num_unsignif_id <- which(bool_unsignif, arr.ind = TRUE)
+    
+    ls_unsignif <- lapply(1:nrow(num_unsignif_id), function(i) {
+      rn <- rownames(x)[num_unsignif_id[i, 1]]
+      cl <- colnames(x)[num_unsignif_id[i, 2]]
+      c(rn, cl)
+    })
+  }
+})
+
+
+
 # ndvi_split_sp <- foreach(i = 1:4, quadrant = c("ul", "ll", "ur", "lr")) %do% {
 #   ndvi_split_sp[[i]]$quadrant <- quadrant
 #   return(ndvi_split_sp[[i]])
@@ -106,6 +137,9 @@ blue <- brewer.pal(4, "Blues")
 
 plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen")
 names(plot.colors) <- groups
+
+plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash")
+names(plot.lty) <- groups
 
 # df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
 ltm_ext <- merge(data.frame(x = 1:19), df_med_ndvi_ltm, by = "x", 
@@ -124,16 +158,19 @@ ltm_ext <- merge(data.frame(x = 1:20), df_med_ndvi_ltm, by = "x",
 ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
 # ltm_ext$x <- as.numeric(as.character(ltm_ext[, 1]))
 
-p_nino <- ggplot(aes(x, y, group = group, colour = group), data = ndvi_split_sp) + 
+p_nino <- ggplot(aes(x, y, group = group, colour = group, linetype = group), 
+                 data = ndvi_split_sp) + 
   geom_line() +
   geom_line(aes(x, y), data = num_split_ltm, colour = "grey65", linetype = 2) + 
   facet_wrap(~ quadrant, ncol = 2) + 
   scale_colour_manual("", values = plot.colors) + 
+  scale_linetype_manual("", values = plot.lty) + 
   #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
   guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
-  theme_bw()
+  theme_bw() + 
+  theme(panel.grid = element_blank())
 
 png("vis/cor_ndvi_oni/ts_nino_ndvi_split.png", width = 36, height = 15, 
     units = "cm", pointsize = 18, res = 300)
@@ -199,6 +236,26 @@ ndvi_split_sp <- foreach(h = rst_split, quadrant = list("NW", "SW", "NE", "SE"),
 ndvi_split_sp$quadrant <- factor(ndvi_split_sp$quadrant, 
                                  levels = c("NW", "NE", "SW", "SE"))
 
+# t-test
+tt_interquad_nina <- ttestInterQuad(ndvi_split_sp)
+sapply(tt_interquad_nina, function(x) any(x > .001, na.rm = TRUE))
+
+tt_intraquad_nina <- ttestIntraQuad(ndvi_split_sp)
+sapply(tt_intraquad_nina, function(x) {
+  bool_unsignif <- x > .001
+  bool_unsignif_any <- any(bool_unsignif, na.rm = TRUE)
+  
+  if (bool_unsignif_any) {
+    num_unsignif_id <- which(bool_unsignif, arr.ind = TRUE)
+    
+    ls_unsignif <- lapply(1:nrow(num_unsignif_id), function(i) {
+      rn <- rownames(x)[num_unsignif_id[i, 1]]
+      cl <- colnames(x)[num_unsignif_id[i, 2]]
+      c(rn, cl)
+    })
+  }
+})
+
 # ndvi_split_sp <- foreach(i = 1:4, quadrant = c("ul", "ll", "ur", "lr")) %do% {
 #   ndvi_split_sp[[i]]$quadrant <- quadrant
 #   return(ndvi_split_sp[[i]])
@@ -209,6 +266,9 @@ blue <- brewer.pal(4, "Blues")
 
 plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen")
 names(plot.colors) <- groups
+
+plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash")
+names(plot.lty) <- groups
 
 # df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
 ltm_ext <- merge(data.frame(x = 1:19), df_med_ndvi_ltm, by = "x", 
@@ -232,11 +292,14 @@ p_nina <- ggplot(aes(x, y, group = group, colour = group), data = ndvi_split_sp)
   geom_line(aes(x, y), data = num_split_ltm, colour = "grey65", linetype = 2) + 
   facet_wrap(~ quadrant, ncol = 2) + 
   scale_colour_manual("", values = plot.colors) + 
+  scale_linetype_manual("", values = plot.lty) + 
   #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
   guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
-  theme_bw()
+  theme_bw() + 
+  theme(panel.grid = element_blank())
+
 
 png("vis/cor_ndvi_oni/ts_nina_ndvi_split.png", width = 36, height = 15, 
     units = "cm", pointsize = 18, res = 300)
