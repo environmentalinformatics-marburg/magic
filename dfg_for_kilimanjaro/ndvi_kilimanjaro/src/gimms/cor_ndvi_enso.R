@@ -122,6 +122,14 @@ rst_ndvi_anom[id_lndvi] <- NA
 mat_ndvi_dsn <- as.matrix(rst_ndvi_dsn)
 mat_ndvi_anom <- as.matrix(rst_ndvi_anom)
 
+# remove all np pixels
+np <- readOGR("data/shp/", 
+              layer = "fdetsch-kilimanjaro-new_np-1420532792846_epsg21037")
+
+rst_ndvi_anom_rmnp <- rst_ndvi_anom
+rst_ndvi_anom_rmnp <- mask(rst_ndvi_anom_rmnp, np, inverse = TRUE)
+mat_ndvi_anom_rmnp <- as.matrix(rst_ndvi_anom_rmnp)
+
 
 ### correlation
 
@@ -335,6 +343,11 @@ ssn_cnt_nina <- foreach(nina = groups_nina, iod = groups_iod, group = groups,
 
 ## ccf
 
+# remove low-variace areas (evergreen forest)
+rst_ndvi_anom_rmf <- rst_ndvi_anom
+rst_ndvi_anom_rmf[id_lvar] <- NA
+mat_ndvi_anom_rmf <- as.matrix(rst_ndvi_anom_rmf)
+
 # lag with maximum correlation
 Find_Max_CCF <- function(a, b, lag.max = NULL) {
   d <- ccf(a, b, plot = FALSE, lag.max = lag.max)
@@ -347,14 +360,31 @@ Find_Max_CCF <- function(a, b, lag.max = NULL) {
 
 # ccf
 ls_ccf <- foreach(id = c("ONI", "DMI")) %do% {
-  dat_ccf <- foreach(i = 1:nrow(mat_ndvi_dsn), .combine = "rbind") %dopar% {
-    if (all(is.na(mat_ndvi_anom[i, ]))) {
+  dat_ccf <- foreach(i = 1:nrow(mat_ndvi_anom_rmnp), .combine = "rbind") %dopar% {
+    
+    # pixel ts
+    val <- mat_ndvi_anom_rmnp[i, ]
+
+    # skip current iteration if pixel was previously masked 
+    if (all(is.na(val))) {
       return(NA)
     }
     
-    dat <- cbind(dat_oni_dmi[, id], mat_ndvi_dsn[i, ])
+    dat <- cbind(dat_oni_dmi[, id], val)
     dat <- na.omit(dat)
-    Find_Max_CCF(dat[, 1], dat[, 2], lag.max = 8)
+    
+    cor_lag <- Find_Max_CCF(dat[, 1], dat[, 2], lag.max = 8)
+    
+    if (cor_lag$lag >= 0) {
+      mod <- lm(dat[, 1] ~ lag(dat[, 2], cor_lag$lag))
+    } else {
+      mod <- lm(lag(dat[, 1], abs(cor_lag$lag)) ~ dat[, 2])
+    }
+    
+    p <- summary(mod)$coefficients[2, 4]
+    cor_lag_p <- cbind(cor_lag, p)
+    
+    return(cor_lag_p)
   }
   
   rst_ccf <- rst_lag <- rst_ndvi[[1]]
@@ -362,17 +392,57 @@ ls_ccf <- foreach(id = c("ONI", "DMI")) %do% {
   rst_lag[] <- dat_ccf[, 2]
   rst_ccf_lag <- stack(rst_ccf, rst_lag)
   
+  rst_ccf_lag[dat_ccf$p >= .01] <- NA
+  
   return(rst_ccf_lag)
 }
 
-reds <- brewer.pal(5, "Reds")
-blues <- brewer.pal(5, "Blues")
-cols_div <- colorRampPalette(rev(brewer.pal(11, "BrBG")))
+reds <- colorRampPalette(brewer.pal(7, "OrRd"))
+blues <- brewer.pal(7, "YlGnBu")
+cols_div <- colorRampPalette(rev(brewer.pal(5, "PuOr")))
+
+# dem contours
+source("kiliContours.R")
+p_dem <- kiliContours()
 
 # oni
-spplot(ls_ccf[[1]][[2]], col.regions = cols_div(100), at = -6.5:6.5)
-spplot(ls_ccf[[1]][[1]], col.regions = c(reds[1], "white", blues), at = seq(-.15, .55, .1))
+p_ndvi_oni_lag <- spplot(ls_ccf[[1]][[2]], col.regions = cols_div(100), at = -6.5:6.5, 
+                         main = list("Lag (months)", cex = 1.5))
+p_ndvi_oni_lag_dem <- p_ndvi_oni_lag + as.layer(p_dem)
+p_ndvi_oni_lag_dem_env <- envinmrRasterPlot(p_ndvi_oni_lag_dem)
+p_ndvi_oni_r <- spplot(ls_ccf[[1]][[1]], col.regions = reds(100), at = seq(.025, .525, .05))
+p_ndvi_oni_r_dem <- p_ndvi_oni_r + as.layer(p_dem)
+p_ndvi_oni_r_dem_env <- envinmrRasterPlot(p_ndvi_oni_r_dem)
 
 # dmi
-spplot(ls_ccf[[2]][[2]], col.regions = cols_div(100), at = -6.5:6.5)
-spplot(ls_ccf[[2]][[1]], col.regions = c(reds[1], "white", blues), at = seq(-.15, .55, .1))
+p_ndvi_dmi_lag <- spplot(ls_ccf[[2]][[2]], col.regions = cols_div(100), at = -6.5:6.5)
+p_ndvi_dmi_lag_dem <- p_ndvi_dmi_lag + as.layer(p_dem)
+p_ndvi_dmi_lag_dem_env <- envinmrRasterPlot(p_ndvi_dmi_lag_dem)
+p_ndvi_dmi_r <- spplot(ls_ccf[[2]][[1]], col.regions = reds(100), at = seq(.025, .525, .05))
+p_ndvi_dmi_r_dem <- p_ndvi_dmi_r + as.layer(p_dem)
+p_ndvi_dmi_r_dem_env <- envinmrRasterPlot(p_ndvi_dmi_r_dem)
+
+p_comb <- latticeCombineGrid(list(p_ndvi_oni_lag_dem_env, p_ndvi_dmi_lag_dem_env, 
+                                  p_ndvi_oni_r_dem_env, p_ndvi_dmi_r_dem_env))
+
+library(grid)
+
+png("vis/cor_ndvi_oni/comb_ccf_lag.png", width = 30, height = 30, units = "cm", 
+    pointsize = 18, res = 600)
+plot.new()
+print(p_comb)
+
+downViewport(trellis.vpname(name = "figure"))
+vp1 <- viewport(x = 0.5, y = -.05,
+                height = 0.07, width = 1,
+                just = c("centre", "top"),
+                name = "key.vp")
+pushViewport(vp1)
+draw.colorkey(key = list(col = reds(100), width = 1, height = .5,
+                         #                          at = -1:1, labels = c("-", "0", "+"), 
+                         at = seq(.025, .525, .05), 
+                         space = "bottom"), draw = TRUE)
+grid.text("r", x = 0.5, y = -.05, just = c("centre", "top"), 
+          gp = gpar(font = "bold", cex = 1.5))
+
+dev.off()
