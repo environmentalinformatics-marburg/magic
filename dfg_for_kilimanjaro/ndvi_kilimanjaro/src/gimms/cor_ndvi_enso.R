@@ -1,5 +1,6 @@
 # packages
-lib <- c("reshape2", "raster", "remote", "lubridate", "doParallel", "RColorBrewer")
+lib <- c("reshape2", "raster", "remote", "lubridate", "doParallel", 
+         "RColorBrewer", "Rsenal")
 jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
 
 # functions
@@ -390,18 +391,22 @@ p_dem <- kiliContours()
 
 # oni
 p_ndvi_oni_lag <- spplot(ls_ccf[[1]][[2]], col.regions = cols_div(100), at = -6.5:6.5, 
-                         main = list("Lag (months)", cex = 1.5))
+                         main = list("Lag (months)", cex = 1.5), 
+                         sp.layout = list("sp.text", c(282500, 9682500), "a)", cex = 1.5, font = "bold"))
 p_ndvi_oni_lag_dem <- p_ndvi_oni_lag + as.layer(p_dem)
 p_ndvi_oni_lag_dem_env <- envinmrRasterPlot(p_ndvi_oni_lag_dem)
-p_ndvi_oni_r <- spplot(ls_ccf[[1]][[1]], col.regions = reds(100), at = seq(.025, .525, .05))
+p_ndvi_oni_r <- spplot(ls_ccf[[1]][[1]], col.regions = reds(100), at = seq(.025, .525, .05), 
+                       sp.layout = list("sp.text", c(282500, 9682500), "b)", cex = 1.5, font = "bold"))
 p_ndvi_oni_r_dem <- p_ndvi_oni_r + as.layer(p_dem)
 p_ndvi_oni_r_dem_env <- envinmrRasterPlot(p_ndvi_oni_r_dem)
 
 # dmi
-p_ndvi_dmi_lag <- spplot(ls_ccf[[2]][[2]], col.regions = cols_div(100), at = -6.5:6.5)
+p_ndvi_dmi_lag <- spplot(ls_ccf[[2]][[2]], col.regions = cols_div(100), at = -6.5:6.5, 
+                         sp.layout = list("sp.text", c(282500, 9682500), "c)", cex = 1.5, font = "bold"))
 p_ndvi_dmi_lag_dem <- p_ndvi_dmi_lag + as.layer(p_dem)
 p_ndvi_dmi_lag_dem_env <- envinmrRasterPlot(p_ndvi_dmi_lag_dem)
-p_ndvi_dmi_r <- spplot(ls_ccf[[2]][[1]], col.regions = reds(100), at = seq(.025, .525, .05))
+p_ndvi_dmi_r <- spplot(ls_ccf[[2]][[1]], col.regions = reds(100), at = seq(.025, .525, .05), 
+                       sp.layout = list("sp.text", c(282500, 9682500), "d)", cex = 1.5, font = "bold"))
 p_ndvi_dmi_r_dem <- p_ndvi_dmi_r + as.layer(p_dem)
 p_ndvi_dmi_r_dem_env <- envinmrRasterPlot(p_ndvi_dmi_r_dem)
 
