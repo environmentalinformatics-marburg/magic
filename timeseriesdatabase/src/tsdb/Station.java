@@ -16,7 +16,6 @@ import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
-import de.umr.jepc.store.Event;
 
 /**
  * This class contains metadata that is associated with a station (plotID).
@@ -136,20 +135,6 @@ public class Station {
 	@Override
 	public String toString() {
 		return stationID+"("+loggerType.typeName+")";
-	}
-
-	@Deprecated
-	public TsIterator queryRaw(String[] querySchema, Long start, Long end) {		
-		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(stationID,start,end);
-		if(rawEventIterator==null) {
-			return null;
-		}		
-		String[] inputSchema = loggerType.sensorNames;		
-		if(querySchema==null) {
-			return new EventConverterIterator(inputSchema, rawEventIterator, inputSchema);
-		} else {			
-			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
-		}
 	}
 
 	/*public String[] getValidSchemaEntries(String[] querySchema) {

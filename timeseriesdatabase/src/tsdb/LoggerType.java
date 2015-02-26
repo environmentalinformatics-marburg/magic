@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.umr.jepc.Attribute;
-import de.umr.jepc.Attribute.DataType;
 
 /**
  * This class contains metadata that associated with a logger type (station type).
@@ -53,13 +51,5 @@ public class LoggerType implements Serializable {
 		} else if (!typeName.equals(other.typeName))
 			return false;
 		return true;
-	}
-	
-	public Attribute[] getEventStoreSchema() {
-		Attribute[] schema = new Attribute[sensorNames.length];
-		for(int i=0;i<sensorNames.length;i++) {
-			schema[i] =  new Attribute(sensorNames[i],DataType.FLOAT);
-		}
-		return schema;
 	}
 }

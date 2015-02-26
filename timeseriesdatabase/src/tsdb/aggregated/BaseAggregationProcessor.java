@@ -8,12 +8,12 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.Sensor;
 import tsdb.TsDB;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
-import de.umr.jepc.store.Event;
 
 /**
  * processes raw sensor data to aggregated data in base time interval steps
@@ -183,7 +183,7 @@ public class BaseAggregationProcessor {
 	}
 
 
-	public TimestampSeries process(Iterator<Event> it) {
+	public TimestampSeries process(Iterator<DataRow> it) {
 		initAggregates();
 
 		//timestamp of aggreates of currently collected data
@@ -193,9 +193,9 @@ public class BaseAggregationProcessor {
 		List<TsEntry> entryList = new ArrayList<TsEntry>();
 
 		while(it.hasNext()) { // begin of while-loop for raw input-events
-			Event event = it.next();
-			long timestamp = event.getTimestamp();
-			Object[] payload = event.getPayload();
+			DataRow event = it.next();
+			long timestamp = event.timestamp;
+			Object[] payload = event.data;
 
 			long nextAggTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // all values for aggregation_timestamp are collected

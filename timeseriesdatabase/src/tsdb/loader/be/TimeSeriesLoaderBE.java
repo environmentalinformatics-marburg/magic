@@ -21,12 +21,12 @@ import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.catalog.SourceEntry;
 import tsdb.util.AssumptionCheck;
 import tsdb.util.Pair;
-import de.umr.jepc.store.Event;
 
 
 /**
@@ -131,19 +131,19 @@ public class TimeSeriesLoaderBE {
 	}
 
 	public void loadWithPrefixFilenameMapOfOneStation(Station station, TreeMap<String, List<Path>> prefixFilenameMap) {
-		TreeMap<Long,Event> eventMap = new TreeMap<Long,Event>();
+		TreeMap<Long,DataRow> eventMap = new TreeMap<Long,DataRow>();
 
 		for(Entry<String, List<Path>> prefixEntry:prefixFilenameMap.entrySet()) {
 			//String prefix = entry.getKey();
 			List<Path> pathList = prefixEntry.getValue();	
 
-			List<List<Event>> eventsList = new ArrayList<List<Event>>();
+			List<List<DataRow>> eventsList = new ArrayList<List<DataRow>>();
 
 			for(Path path:pathList) {
 				try {
 					UDBFTimestampSeries timeSeries = readUDBFTimeSeries(station.stationID, path);
 					if(timeSeries!=null) {
-						List<Event> eventList = translateToEvents(station, timeSeries, minTimestamp);
+						List<DataRow> eventList = translateToEvents(station, timeSeries, minTimestamp);
 						if(eventList!=null) {
 							eventsList.add(eventList);
 							tsdb.sourceCatalog.insert(new SourceEntry(path,station.stationID,timeSeries.time[0],timeSeries.time[timeSeries.time.length-1],timeSeries.time.length,timeSeries.getHeaderNames(), new String[0],(int)timeSeries.timeConverter.getTimeStep().toMinutes()));
@@ -156,13 +156,13 @@ public class TimeSeriesLoaderBE {
 			}
 
 			@SuppressWarnings("unchecked")
-			Iterator<Event>[] iterators = new Iterator[eventsList.size()];
+			Iterator<DataRow>[] iterators = new Iterator[eventsList.size()];
 
 			for(int i=0;i<eventsList.size();i++) {
 				iterators[i]=eventsList.get(i).iterator();
 			}
 
-			Event[] currentEvent = new Event[iterators.length];
+			DataRow[] currentEvent = new DataRow[iterators.length];
 
 			for(int i=0;i<iterators.length;i++) {
 				if(iterators[i].hasNext()) {
@@ -172,7 +172,7 @@ public class TimeSeriesLoaderBE {
 
 
 			long currentTimestamp = -1;
-			Event collectorEvent = null;
+			DataRow collectorEvent = null;
 
 			while(true) {
 
@@ -180,8 +180,8 @@ public class TimeSeriesLoaderBE {
 				long minTimeStamp = Long.MAX_VALUE;
 				for(int i=0;i<iterators.length;i++) {
 					if(currentEvent[i]!=null) {
-						if(currentEvent[i].getTimestamp()<minTimeStamp) {
-							minTimeStamp = currentEvent[i].getTimestamp();
+						if(currentEvent[i].timestamp<minTimeStamp) {
+							minTimeStamp = currentEvent[i].timestamp;
 							minIndex = i;
 						}
 					}
@@ -191,22 +191,22 @@ public class TimeSeriesLoaderBE {
 					break;
 				}
 
-				if(currentTimestamp<currentEvent[minIndex].getTimestamp()) {
+				if(currentTimestamp<currentEvent[minIndex].timestamp) {
 					if(collectorEvent!=null) {
-						if(eventMap.containsKey(collectorEvent.getTimestamp())) {
+						if(eventMap.containsKey(collectorEvent.timestamp)) {
 							//log.warn("event already inserted");
 						} else {
-							eventMap.put(collectorEvent.getTimestamp(), collectorEvent);
+							eventMap.put(collectorEvent.timestamp, collectorEvent);
 						}
 					}
-					currentTimestamp = currentEvent[minIndex].getTimestamp();
+					currentTimestamp = currentEvent[minIndex].timestamp;
 					collectorEvent = null;
 				}
 				if(collectorEvent==null) {
 					collectorEvent = currentEvent[minIndex];
 				} else {
-					Object[] payload = currentEvent[minIndex].getPayload();
-					Object[] collectorPayload = collectorEvent.getPayload();
+					Object[] payload = currentEvent[minIndex].data;
+					Object[] collectorPayload = collectorEvent.data;
 					for(int i=0;i<collectorPayload.length-1;i++) { // TODO
 						if(!Float.isNaN((float) payload[i])&&Float.isNaN((float) collectorPayload[i])) {
 							collectorPayload[i] = payload[i];
@@ -223,10 +223,10 @@ public class TimeSeriesLoaderBE {
 			}
 
 			if(collectorEvent!=null) {
-				if(eventMap.containsKey(collectorEvent.getTimestamp())) {
+				if(eventMap.containsKey(collectorEvent.timestamp)) {
 					//log.warn("event already inserted");
 				} else {
-					eventMap.put(collectorEvent.getTimestamp(), collectorEvent);
+					eventMap.put(collectorEvent.timestamp, collectorEvent);
 				}
 			}			
 		}	
@@ -264,8 +264,8 @@ public class TimeSeriesLoaderBE {
 	 * @param minTimestamp minimal timestamp that should be included in result
 	 * @return List of Events, time stamp ordered 
 	 */
-	public List<Event> translateToEvents(Station station, UDBFTimestampSeries udbfTimeSeries, long minTimestamp) {
-		List<Event> resultList = new ArrayList<Event>(); // result list of events	
+	public List<DataRow> translateToEvents(Station station, UDBFTimestampSeries udbfTimeSeries, long minTimestamp) {
+		List<DataRow> resultList = new ArrayList<DataRow>(); // result list of events	
 
 		//mapping: UDBFTimeSeries column index position -> Event column index position;    eventPos[i] == -1 -> no mapping		
 		int[] eventPos = new int[udbfTimeSeries.sensorHeaders.length];  
@@ -332,7 +332,7 @@ public class TimeSeriesLoaderBE {
 		}
 
 		//create events
-		Object[] payload = new Object[station.loggerType.sensorNames.length];
+		Float[] payload = new Float[station.loggerType.sensorNames.length];
 		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
 		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {			
@@ -354,7 +354,7 @@ public class TimeSeriesLoaderBE {
 				}
 			}
 
-			resultList.add(new Event(Arrays.copyOf(payload, payload.length), timestamp));		
+			resultList.add(new DataRow(Arrays.copyOf(payload, payload.length), timestamp));		
 		}
 
 		return resultList;

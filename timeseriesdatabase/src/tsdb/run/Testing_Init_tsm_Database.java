@@ -24,9 +24,6 @@ public class Testing_Init_tsm_Database {
 		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(timeSeriesDatabase, minTimestamp);
 		
-		timeSeriesDatabase.registerStreams();
-		
-		
 		//String kili_basepath = "c:/timeseriesdatabase_data_source_structure_kili_asc_variant/";
 		/*String kili_basepath_short = "c:/timeseriesdatabase_data_source_structure_kili_SHORT/";
 		timeSeriesDatabase.loadDirectoryOfAllExploratories_structure_kili(Paths.get(kili_basepath_short));*/

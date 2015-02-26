@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import tsdb.DataQuality;
 import tsdb.GeneralStation;
 import tsdb.LoggerType;
-import tsdb.QueryProcessor;
 import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.Station;
@@ -375,12 +374,6 @@ public class ServerTsDB implements RemoteTsDB {
 		return it.toTimestampSeries(streamName);		
 	}
 
-	@Override
-	public TsIterator query_raw(String plotID, String[] querySchema, Long queryStart, Long queryEnd) {
-		QueryProcessor qp = new QueryProcessor(tsdb);
-		return qp.query_raw(plotID, querySchema, queryStart, queryEnd);
-	}
-	
 	@Override
 	public TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) {
 		return tsdb.streamStorage.getTimeSeriesMask(stationName, sensorName);

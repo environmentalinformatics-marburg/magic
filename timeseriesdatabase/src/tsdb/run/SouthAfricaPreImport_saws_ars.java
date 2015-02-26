@@ -14,13 +14,13 @@ import tsdb.TsDBFactory;
 import tsdb.raw.TimestampSeries;
 import tsdb.raw.TsEntry;
 import tsdb.util.Table;
+import tsdb.util.Util;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderSlashTimestamp;
 import tsdb.util.Table.ColumnReaderString;
-import tsdb.util.Util;
 
-public class SouthAfricaPreImport_saws_acs {
-	
+public class SouthAfricaPreImport_saws_ars {
+
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {
@@ -28,17 +28,14 @@ public class SouthAfricaPreImport_saws_acs {
 		
 		try {
 			//DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/TESTING"));
-			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SAWS/ACS"));
+			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SAWS/ARS"));
 			for(Path filepath:ds) {
 				log.info("read "+filepath);
 				readOneFile(filepath);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		
-		
-		
+		}		
 	}
 	
 	public static void readOneFile(Path filepath) {
@@ -48,36 +45,18 @@ public class SouthAfricaPreImport_saws_acs {
 		Table table = Table.readCSV(filename, ',');
 		System.out.println("process...");
 		
-		ColumnReaderString cr_title = table.createColumnReader("title");	
-		ColumnReaderSlashTimestamp cr_timestamp = table.createColumnReaderSlashTimestamp("Date");		
-		ColumnReaderFloat cr_WV = table.createColumnReaderFloat("WndSpd"); //?
-		//VSpd ignore
-		ColumnReaderFloat cr_WD = table.createColumnReaderFloat("WndDir"); //?
-		//StdDev ignore
-		ColumnReaderFloat cr_WV_gust = table.createColumnReaderFloat("Gust"); //?
-		ColumnReaderFloat cr_Ta_200 = table.createColumnReaderFloat("Temp"); //?	
-		ColumnReaderFloat cr_rH_200 = table.createColumnReaderFloat("Hum"); //?
-		ColumnReaderFloat cr_p_QNH = table.createColumnReaderFloat("Pres"); //?
-		//BatVlt ignore
+		//ClimNo ignore
+		ColumnReaderString cr_title = table.createColumnReader("StasName");
+		//Latitude ignore
+		//Longitude ignore
+		ColumnReaderSlashTimestamp cr_timestamp = table.createColumnReaderSlashTimestamp("DateT");	
 		ColumnReaderFloat cr_P_RT_NRT = table.createColumnReaderFloat("Rain"); //?
-		//GlobRad ignore
-		//DifRad ignore
-		//lat ignore
-		//lon ignore
 		
 		ArrayList<TsEntry> list = new ArrayList<TsEntry>(table.rows.length);
 		
 		String[] sensorNames = new String[]{				
-				"WV",
-				"WD",
-				"WV_gust",
-				"Ta_200",
-				"rH_200",
-				"p_QNH",
 				"P_RT_NRT"
-		};
-		
-		
+		};		
 		
 		if(table.rows.length==0) {
 			log.warn("empty");
@@ -89,12 +68,6 @@ public class SouthAfricaPreImport_saws_acs {
 		
 		for(String[] row:table.rows) {			
 			list.add(TsEntry.of(cr_timestamp.get(row),
-					cr_WV.get(row, false),
-					cr_WD.get(row, false),
-					cr_WV_gust.get(row, false),
-					cr_Ta_200.get(row, false),
-					cr_rH_200.get(row, false),
-					cr_p_QNH.get(row, false),
 					cr_P_RT_NRT.get(row, false)
 					)); 
 		}
@@ -104,15 +77,13 @@ public class SouthAfricaPreImport_saws_acs {
 		
 		System.out.println("write...");
 		try {
-			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_saws_acs"+"/"+tss.name+".dat";
+			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_saws_ars"+"/"+tss.name+".dat";
 			Util.createDirectoriesOfFile(outFile);
 			TimestampSeries.writeToBinaryFile(tss, outFile);
 			System.out.println(tss);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-
-		
+		}		
 	}
 
 }

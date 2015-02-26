@@ -6,11 +6,10 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.StationProperties;
-import tsdb.loader.ki.ASCTimeSeries;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
-import de.umr.jepc.store.Event;
 
 @Deprecated
 class Loader_tfi extends AbstractLoader {
@@ -95,8 +94,8 @@ class Loader_tfi extends AbstractLoader {
 	}
 
 	@Override
-	protected List<Event> toEvents(TimestampSeries timestampSeries) {
-		List<Event> eventList = new ArrayList<Event>(timestampSeries.entryList.size());
+	protected List<DataRow> toEvents(TimestampSeries timestampSeries) {
+		List<DataRow> eventList = new ArrayList<DataRow>(timestampSeries.entryList.size());
 		for(TsEntry entry:timestampSeries.entryList) {
 			Float[] eventData = new Float[sourcePos.length];
 			for(int schemaIndex=0;schemaIndex<sourcePos.length;schemaIndex++) {
@@ -123,7 +122,7 @@ class Loader_tfi extends AbstractLoader {
 					}						
 				}
 			}
-			eventList.add(new Event(eventData, entry.timestamp));
+			eventList.add(new DataRow(eventData, entry.timestamp));
 		}
 		return eventList;
 	}

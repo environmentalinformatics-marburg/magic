@@ -9,6 +9,7 @@ var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var monthText = ["[whole year]","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+var aggregationText = ["raw","hour","day","week","month","year"];
 
 var tasks = 0;
 
@@ -49,10 +50,13 @@ $(document).ready(function(){
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	time_month_select.hide();
 	$.each(monthText, function(i,text) {time_month_select.append(new Option(text,i));});
+	$.each(aggregationText, function(i,text) {aggregation_select.append(new Option(text));});
+	aggregation_select.val("hour");
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updatePlots;
 	getID("time_select").onchange = onUpdateTime;	
+	getID("aggregation_select").onchange = onUpdateAggregation;
 	getID("query_plot").onclick = runQueryPlot;
 	
 	updataRegions();
@@ -68,6 +72,16 @@ function onUpdateTime() {
 	}
 }
 
+function onUpdateAggregation() {
+	if(aggregation_select.val()=="raw") {
+		$("#div_quality_select").hide();
+		$("#div_interpolated").hide();
+	} else {
+		$("#div_quality_select").show();
+		$("#div_interpolated").show();
+	}
+}
+
 
 var updataRegions = function() {
 	incTask();
@@ -75,7 +89,6 @@ var updataRegions = function() {
 	$.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
-		//region_select.selectmenu( "refresh" );
 		updateGeneralStations();
 		decTask();		
 	}).fail(function() {region_select.append(new Option("[error]","[error]"));decTask();});
@@ -99,7 +112,6 @@ var updateGeneralStations = function() {
 			generalstation_select.val(rows[pre][0]);
 		}
 		
-		//generalstation_select.selectmenu( "refresh" );
 		updatePlots();
 		decTask();	
 	}).fail(function() {generalstation_select.append(new Option("[error]","[error]"));decTask();});
@@ -112,7 +124,6 @@ var updatePlots = function() {
 	$.get("../tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {plot_select.append(new Option(row[0],row[0]));})
-		//plot_select.selectmenu( "refresh" );
 		decTask();
 	}).fail(function() {plot_select.append(new Option("[error]","[error]"));decTask();});
 }

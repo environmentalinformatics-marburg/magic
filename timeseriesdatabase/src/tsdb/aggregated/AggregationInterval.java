@@ -75,6 +75,8 @@ public enum AggregationInterval {
 			return null;
 		}
 		switch(text.trim().toLowerCase()) {
+		case "raw":
+			return AggregationInterval.RAW;
 		case "hour":
 			return AggregationInterval.HOUR;
 		case "day":

@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
@@ -29,7 +30,6 @@ import tsdb.util.Table.ColumnReaderTimestamp;
 import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
-import de.umr.jepc.store.Event;
 
 public class TimeSeriesLoaderKiLi_manual_tfi {
 
@@ -125,7 +125,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 				String[] targetSchema = tsdb.getLoggerType("tfi").sensorNames;
 				Loader_manual_tfi loader = new Loader_manual_tfi(timestampSeries);
 				loader.load(targetSchema);
-				List<Event> events = loader.toEvents();
+				List<DataRow> events = loader.toEvents();
 				if(events!=null) {
 					tsdb.streamStorage.insertEventList(serial, events, start, end, targetSchema);
 					tsdb.sourceCatalog.insert(new SourceEntry(path,serial,start,end,events.size(),timestampSeries.sensorNames, targetSchema, TsSchema.NO_CONSTANT_TIMESTEP));

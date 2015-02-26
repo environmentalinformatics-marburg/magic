@@ -119,20 +119,6 @@ public class TsDB {
 	}	
 
 	/**
-	 * registers streams for all containing stations (with stream name == plotID)
-	 */
-	public void registerStreams() {
-		for(Station station:getStations()) {
-			if(station.loggerType!=null) {
-				//log.info("register stream "+station.stationID+" with schema of "+station.loggerType.typeName);
-				streamStorage.registerStream(station.stationID, station.loggerType.getEventStoreSchema());
-			} else {
-				log.error("stream not registered: "+station.stationID+"   logger type not found");
-			}
-		}
-	}
-
-	/**
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {

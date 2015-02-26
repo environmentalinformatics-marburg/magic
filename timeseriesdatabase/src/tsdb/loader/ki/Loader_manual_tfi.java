@@ -7,10 +7,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
-import de.umr.jepc.store.Event;
 
 class Loader_manual_tfi {
 	
@@ -51,7 +51,7 @@ class Loader_manual_tfi {
 		return containsValidColumns;
 	}
 
-	public List<Event> load(String[] targetSchema) {
+	public List<DataRow> load(String[] targetSchema) {
 		boolean containsValidColumns = createSourcePos(targetSchema);
 		if(containsValidColumns) {
 			return toEvents();			
@@ -60,8 +60,8 @@ class Loader_manual_tfi {
 		}		
 	}
 
-	public List<Event> toEvents() {
-		List<Event> eventList = new ArrayList<Event>(timestampSeries.entryList.size());
+	public List<DataRow> toEvents() {
+		List<DataRow> eventList = new ArrayList<DataRow>(timestampSeries.entryList.size());
 		for(TsEntry entry:timestampSeries.entryList) {
 			Float[] eventData = new Float[sourcePos.length];
 			for(int schemaIndex=0;schemaIndex<sourcePos.length;schemaIndex++) {
@@ -72,7 +72,7 @@ class Loader_manual_tfi {
 					eventData[schemaIndex] = entry.data[sourceIndex];								
 				}
 			}
-			eventList.add(new Event(eventData, entry.timestamp));
+			eventList.add(new DataRow(eventData, entry.timestamp));
 		}
 		return eventList;
 	}

@@ -16,8 +16,6 @@ import tsdb.streamdb.StreamDB;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.store.Event;
 
 public class StreamStorageStreamDB implements StreamStorage {
 
@@ -27,11 +25,6 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	public StreamStorageStreamDB(String streamdbPathPrefix) {		
 		this.streamdb = new StreamDB(streamdbPathPrefix);
-	}
-
-	@Override
-	public void registerStream(String streamName, Attribute[] attributes) {
-		//no need to register streams	
 	}
 
 	@Override
@@ -45,17 +38,17 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	@Override
-	public void insertData(String streamName, TreeMap<Long, Event> eventMap, String[] sensorNames) {
+	public void insertData(String streamName, TreeMap<Long, DataRow> eventMap, String[] sensorNames) {
 		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventMap.size());
 		for(int i=0;i<sensorNames.length;i++) {
 			sensorData.clear();
-			for(Event event:eventMap.values()) {
-				float value = (float) event.getPayload()[i];
+			for(DataRow event:eventMap.values()) {
+				float value = (float) event.data[i];
 				if(!Float.isNaN(value)&&!(value==-9999f)&&(-999999f<value)&&(value<999999f)) { // NaN some files (in AET06)
 					if(value<-9999f||value>9999f) {
 						log.trace(value+"                     "+sensorNames[i]+"                "+streamName);
 					}
-					sensorData.add(new DataEntry((int) event.getTimestamp(),value));
+					sensorData.add(new DataEntry((int) event.timestamp,value));
 				}
 			}
 			if(!sensorData.isEmpty()) {
@@ -65,26 +58,20 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	@Override
-	public void insertEventList(String streamName, List<Event> eventList,long first, long last, String[] sensorNames) {
+	public void insertEventList(String streamName, List<DataRow> eventList,long first, long last, String[] sensorNames) {
 		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventList.size());
 		for(int i=0;i<sensorNames.length;i++) {
 			sensorData.clear();
-			for(Event event:eventList) {
-				float value = (float) event.getPayload()[i];
+			for(DataRow event:eventList) {
+				float value = (float) event.data[i];
 				if(!Float.isNaN(value)) {
-					sensorData.add(new DataEntry((int) event.getTimestamp(),value));
+					sensorData.add(new DataEntry((int) event.timestamp,value));
 				}
 			}
 			if(!sensorData.isEmpty()) {
 				streamdb.insertSensorData(streamName, sensorNames[i], sensorData.toArray(new DataEntry[0]));
 			}
 		}	
-	}
-
-	@Override
-	public Iterator<Event> queryRawEvents(String streamName, Long start, Long end) {
-		//TODO
-		return null;
 	}
 
 	@Override

@@ -126,13 +126,28 @@ var updateSensors = function() {
 	}).fail(function() {sensor_select.append(new Option("[error]","[error]"));decTask();});
 }
 
-var updateSensor = function() {
+/*var updateSensor = function() {
 	incTask();
 	var row = sensors[sensor_select.val()];
 	getID("sensor_description").innerHTML = row[1];
 	getID("sensor_unit").innerHTML = row[2];
 	decTask();
+}*/
+
+var updateSensor = function() {
+	incTask();
+	var row = sensors[sensor_select.val()];
+	if(row === undefined) {
+		getID("sensor_description").innerHTML = "---";
+		getID("sensor_unit").innerHTML = "---";
+	} else {
+		getID("sensor_description").innerHTML = row[1];
+		getID("sensor_unit").innerHTML = row[2];
+	}
+	decTask();
 }
+
+
 
  function updateScaleFactor() {
 	 incTask();
@@ -151,6 +166,11 @@ var updateSensor = function() {
 var runQuerySensor = function() {
 	incTask();
 	getID("result").innerHTML = "query...";
+	if(sensors[sensor_select.val()] === undefined) {
+		getID("result").innerHTML = "no sensor";
+		decTask();
+		return;
+	}
 	var sensorName = sensors[sensor_select.val()][0];
 	generalStationName = generalstation_select.val();	
 	var queryText = "";

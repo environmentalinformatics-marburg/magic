@@ -26,8 +26,6 @@ import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.Util;
 import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.Attribute.DataType;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase

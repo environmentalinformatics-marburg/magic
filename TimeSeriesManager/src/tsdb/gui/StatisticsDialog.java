@@ -120,7 +120,7 @@ public class StatisticsDialog extends Dialog {
 		
 		for(String stationName:tsdb.getStationNames()) {
 			
-			TsIterator it = tsdb.query_raw(stationName, null, null, null);
+			/*TsIterator it = tsdb.query_raw(stationName, null, null, null);
 			if(it==null) {
 				//println(null);
 			} else {
@@ -149,11 +149,11 @@ public class StatisticsDialog extends Dialog {
 				end = Util.ifnull(e, x->x.timestamp);
 				Function<Long,String> f = ((Long x)->TimeConverter.oleMinutesToLocalDateTime(x).toString());
 				Supplier<String> s = () -> "---";
-				println(stationName+": "+Util.ifnull(start, f)+" - "+Util.ifnull(end, f)+"\t\t entries:\t\t"+Util.bigNumberToString(entry_counter)+"\t"/*+timer.toString(stationName)*/);
+				println(stationName+": "+Util.ifnull(start, f)+" - "+Util.ifnull(end, f)+"\t\t entries:\t\t"+Util.bigNumberToString(entry_counter)+"\t");
 				
 				total_entry_counter += entry_counter;
 				station_counter++;
-			}
+			}*/
 		}
 		
 		

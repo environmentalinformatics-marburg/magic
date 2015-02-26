@@ -6,12 +6,11 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.StationProperties;
-import tsdb.loader.ki.ASCTimeSeries;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
-import de.umr.jepc.store.Event;
 
 public abstract class AbstractLoader {
 	
@@ -33,7 +32,7 @@ public abstract class AbstractLoader {
 
 	protected abstract void createProcessingTypes();
 	protected abstract void createResultSchema();	
-	protected abstract List<Event> toEvents(TimestampSeries timestampSeries);
+	protected abstract List<DataRow> toEvents(TimestampSeries timestampSeries);
 
 	protected boolean createSourcePos(String[] targetSchema) {
 		//sourcePos[targetIndex] => sourceIndex
@@ -60,7 +59,7 @@ public abstract class AbstractLoader {
 		return containsValidColumns;
 	}
 
-	public List<Event> load(Station station, String[] targetSchema, TimestampSeries timestampSeries) {
+	public List<DataRow> load(Station station, String[] targetSchema, TimestampSeries timestampSeries) {
 		//System.out.println("inputSchema: "+Util.arrayToString(inputSchema));
 		createResultSchema();
 		createProcessingTypes();

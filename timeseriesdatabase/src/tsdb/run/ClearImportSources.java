@@ -38,9 +38,6 @@ public class ClearImportSources {
 		TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
 		TimeSeriesLoaderKiLi_manual_tfi TimeSerieaLoaderKiLi_manual_tfi = new TimeSeriesLoaderKiLi_manual_tfi(tsdb);
 		
-		log.info("register streams");
-		tsdb.registerStreams();
-		
 		System.gc();
 		log.info("import BE tsm");
 		log.info("from "+TsDBFactory.SOURCE_BE_TSM_PATH);

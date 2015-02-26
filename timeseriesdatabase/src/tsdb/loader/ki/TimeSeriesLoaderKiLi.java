@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.spi.EscapeTool;
 
+import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
@@ -24,7 +25,6 @@ import tsdb.catalog.SourceEntry;
 import tsdb.loader.ki.type.AbstractLoader;
 import tsdb.loader.ki.type.LoaderFactory;
 import tsdb.raw.TimestampSeries;
-import de.umr.jepc.store.Event;
 
 /**
  * This class contains methods to read time series from input files in "KiLi"-Format and stores data into database.
@@ -177,7 +177,7 @@ public class TimeSeriesLoaderKiLi {
 			log.error("no loader found for  "+station.stationID);
 			return;
 		}
-		List<Event> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);
+		List<DataRow> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);
 		if(eventList==null) {
 			log.error("no entries for "+station.stationID+"   in   "+ascPath);
 			return;
@@ -187,139 +187,6 @@ public class TimeSeriesLoaderKiLi {
 
 		tsdb.sourceCatalog.insert(SourceEntry.of(timestampSeries, ascPath, resultSchema));
 	}
-
-
-	@Deprecated
-	public void loadWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
-		String currentInfoPrefix = "";
-		for(Entry<String, Path> ascMapEntry:ascCollectorMap.entrySet()) {			
-			Path ascPath = ascMapEntry.getValue();			
-
-			try {
-				//System.out.println("asc file: "+ascPath);
-				String infoKeyPrefix = ascMapEntry.getKey();
-				if(infoKeyPrefix.length()>18) {
-					infoKeyPrefix = infoKeyPrefix.substring(0, 18);
-				}
-				if(!currentInfoPrefix.equals(infoKeyPrefix)) {
-					log.info("load files of   "+infoKeyPrefix);
-					currentInfoPrefix = infoKeyPrefix;
-				}
-			} catch(Exception e) {
-				log.warn(e);
-			}
-
-			try{
-				ASCTimeSeries asctimeSeries = new ASCTimeSeries(ascPath);
-
-				TimestampSeries timestampSeries = null;
-
-				if(asctimeSeries.isASCVariant) {
-					timestampSeries = asctimeSeries.readEntriesASCVariant();
-				} else {
-					timestampSeries = asctimeSeries.readEntries();
-				}				
-
-
-				long intervalStart = asctimeSeries.timestampStart;
-				long intervalEnd = asctimeSeries.timestampEnd;
-
-				if(timestampSeries!=null) {
-
-					if(!timestampSeries.entryList.isEmpty()) {
-
-						Station station = tsdb.getStation(asctimeSeries.serialnumber);
-						if(station!=null) {									
-
-							String[] translatedInputSchema = new String[asctimeSeries.parameterNames.length];
-							for(int i=0;i<asctimeSeries.parameterNames.length;i++) {
-								translatedInputSchema[i] = station.translateInputSensorName(asctimeSeries.parameterNames[i], false);
-							}
-
-							//Map<String, Integer> schemaMap = Util.stringArrayToMap(translatedInputSchema,true);
-
-							StationProperties properties = station.getProperties(intervalStart, intervalEnd);
-
-							if(properties!=null) {
-
-								insertOneFile(asctimeSeries,station,properties,translatedInputSchema,timestampSeries);
-
-							} else {
-								log.warn("no properties found in "+asctimeSeries.serialnumber+"   "+TimeConverter.oleMinutesToText(intervalStart)+" - "+TimeConverter.oleMinutesToText(intervalEnd));
-							}									
-						} else {
-							log.error("station not found: "+asctimeSeries.serialnumber+" in "+ascPath);
-						}
-					} else {
-						log.warn("timestampseries is empty: "+asctimeSeries.filename);
-					}
-				} else {
-					log.error("no timestampseries: "+asctimeSeries.filename);
-				}
-				asctimeSeries.close();
-			} catch(Exception e) {
-				log.error(e+" in "+ascPath);
-			}
-		}		
-	}
-
-	/**
-	 * inserts data of one files to database. Schema is translated to database schema
-	 * @param csvtimeSeries
-	 * @param station
-	 * @param properties
-	 * @param translatedInputSchema
-	 * @param timestampSeries
-	 */	
-	@Deprecated
-	public void insertOneFile(ASCTimeSeries csvtimeSeries, Station station, StationProperties properties, String[] translatedInputSchema, TimestampSeries timestampSeries) {
-		if(station.loggerType.typeName.equals("tfi")) {
-			return;  // !!! tfi should not be loaded from this format !!!
-		}
-
-		AbstractLoader loader = LoaderFactory.createLoader(station.loggerType.typeName, translatedInputSchema, properties, csvtimeSeries.filename.toString());
-		if(loader!=null) {
-			List<Event> eventList = loader.load(station, station.loggerType.sensorNames, timestampSeries);			
-			if(eventList!=null) {
-				tsdb.streamStorage.insertEventList(csvtimeSeries.serialnumber, eventList, csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd, station.loggerType.sensorNames);
-				String[] resultSchema = loader.getResultSchema();				
-				tsdb.sourceCatalog.insert(new SourceEntry(csvtimeSeries.filename,csvtimeSeries.serialnumber,csvtimeSeries.timestampStart, csvtimeSeries.timestampEnd,eventList.size(),csvtimeSeries.parameterNames, resultSchema, csvtimeSeries.timeStep));
-			} else {
-				log.warn("no events inserted: "+csvtimeSeries.filename);
-			}			
-		} else {
-			log.warn("no loader found for logger type: "+station.loggerType.typeName);
-		}		
-	}
-
-
-
-	/**
-	 * specific to KiLi:
-	 * read files contained in subfolders in KiLi folder tree
-	 * @param kiliPath
-	 */
-	@Deprecated
-	public void loadDirectoryOfAllExploratories_structure_kili(Path kiliPath) {		
-		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();		
-		log.info("loadDirectoryOfAllExploratories_structure_kili:\t"+kiliPath);
-		try {
-			DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
-			for(Path path:stream) {
-				if(Files.isDirectory(path)) {
-					DirectoryStream<Path> subStream = Files.newDirectoryStream(path,"ra*");
-					for(Path subPath:subStream) {
-						readOneDirectory_structure_kili(subPath, ascCollectorMap,true);
-					}
-					subStream.close();
-				}
-			}
-			stream.close();
-		} catch (IOException e) {
-			log.error(e);
-		}
-		loadWithAscCollectorMap(ascCollectorMap);		
-	}	
 
 	public static TreeSet<String> getExcludes() {
 		TreeSet<String> excludes = new TreeSet<String>();

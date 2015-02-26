@@ -4,8 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/ini4j-0.5.2.jar"/>
 	<classpathentry kind="lib" path="C:/release-1600-x64-gdal-1-11-mapserver-6-4/bin/gdal/java/gdal.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JEPCBtreeStore"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jepc_lite"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math3-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.0.2.jar" sourcepath="lib/source/log4j-api-2.0.2-sources.jar"/>
