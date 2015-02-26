@@ -103,13 +103,36 @@ mlt_bfast_prd_ul <- melt(df_bfast_prd_ul, id.vars = "time",
 levels(mlt_bfast_prd_ul$component) <- c("Input time series", paste(c("Seasonal", 
                                         "Trend", "Remainder"), "component"))
 
-# ggplot(aes(x = time, y = value), data = mlt_bfast_prd_ul) + 
-#   geom_line() + 
-#   facet_wrap(~ component, ncol = 1, scales = "free_y") + 
-#   theme_bw()
+# enso data
+df_oni <- importOni()
+df_oni_high <- subset(df_oni, ONI >= 1)
+ls_oni_high <- split(df_oni_high, as.factor(df_oni_high$Season))
 
-# p_bfast_prd_ul <- 
+ls_oni_max <- lapply(ls_oni_high, function(i) {
+  int_id_max <- which.max(i$ONI)
+  return(i[int_id_max, ])
+})
+df_oni_max <- do.call("rbind", ls_oni_max)
+df_oni_max <- df_oni_max[c(4, 6, 7, 9), ]
 
+# set back date to july
+ls_oni_max_ssn_st <- strsplit(df_oni_max$Season, "-")
+ch_oni_max_ssn_st <- sapply(ls_oni_max_ssn_st, "[[", 1)
+ch_oni_max_ssn_st <- paste0(ch_oni_max_ssn_st, "-07-01")
+dt_oni_max_ssn_st <- as.Date(ch_oni_max_ssn_st)
+
+df_oni_max$Date <- dt_oni_max_ssn_st
+
+# labels
+ls_oni_max_lbl <- strsplit(df_oni_max$Season, "-")
+mat_oni_max_lbl <- sapply(1:2, function(i) {
+  ch_yr4 <- sapply(ls_oni_max_lbl, "[[", i)
+  ch_yr2 <- substr(ch_yr4, 3, 4)
+  return(ch_yr2)
+})
+ch_oni_max_lbl <- paste(mat_oni_max_lbl[, 1], mat_oni_max_lbl[, 2], sep = "/")
+
+# vis
 png("vis/bfast/bfast_ul.png", width = 30, height = 25, units = "cm", 
     pointsize = 15, res = 600)
 xyplot(value ~ time | component, data = mlt_bfast_prd_ul, layout = c(1, 4),
@@ -121,7 +144,7 @@ xyplot(value ~ time | component, data = mlt_bfast_prd_ul, layout = c(1, 4),
 
 trellis.focus(name = "panel", column = 1, row = 3)
 panel.abline(v = bp_months, lty = 3, col = "red", lwd = 2.5)
-panel.text(x = bp_months, y = c(.5, .5, .625), labels = paste0("\n",as.yearmon(bp_months)), 
+panel.text(x = bp_months, y = c(.5, .5, .625), labels = paste0("\n", as.yearmon(bp_months)), 
            srt = 90, col = "red")
 trellis.unfocus()
 
@@ -130,6 +153,14 @@ for (i in c(2, 4)) {
   panel.abline(h = 0, lty = 2, col = "grey50")
   trellis.unfocus()
 }
+
+# major enso events
+trellis.focus(name = "panel", column = 1, row = 1)
+panel.abline(v = df_oni_max$Date, lty = 2, col = "darkgreen", lwd = 2.5)
+panel.text(x = df_oni_max$Date, y = rep(.385, length(df_oni_max$Date)), 
+           labels = paste0("\n", ch_oni_max_lbl), srt = 90, col = "darkgreen")
+trellis.unfocus()
+
 dev.off()
 
 # precip bfast
