@@ -154,6 +154,15 @@ for (i in c(2, 4)) {
   trellis.unfocus()
 }
 
+jnk <- foreach (i = 1:4, label = c("a)", "b)", "c)", "d)")) %do%  {
+  trellis.focus(name = "panel", column = 1, row = i)
+  y_min <- current.panel.limits()$ylim[1]
+  y_max <- current.panel.limits()$ylim[2]
+  y_pos <- y_max - 0.1 * (y_max - y_min)
+  panel.text(x = as.Date("1981-01-01"), y = y_pos, labels = label, cex = 1.2)
+  trellis.unfocus()
+}
+
 # major enso events
 trellis.focus(name = "panel", column = 1, row = 1)
 panel.abline(v = df_oni_max$Date, lty = 2, col = "darkgreen", lwd = 2.5)
