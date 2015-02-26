@@ -45,21 +45,23 @@ calc(rst_ndvi, fun = function(x) {
 ## aggregated rainfall amounts per season
 # el nino
 groups_nino <- list("all El Ninos", "pure El Ninos", "pure m/s El Ninos", 
-               "El Ninos w IOD+", "m/s El Ninos w IOD+", "purest IOD+")
+               "El Ninos w IOD+", "m/s El Ninos w IOD+", "purest IOD+", "neutral")
 
 types_nino <- list(c("WE", "ME", "SE"),
                     c("WE", "ME", "SE"),
                     c("ME", "SE"), 
                     c("WE", "ME", "SE"), 
                     c("ME", "SE"), 
-                    "WE")
+                    "WE", 
+                   "")
 
 groups_iod <- list(c("M", "", "P"), 
                    "", 
                    "", 
                    "P", 
                    "P", 
-                   "P")
+                   "P", 
+                   "")
 
 nino <- types_nino[[1]]
 iod <- groups_iod[[1]]
@@ -95,3 +97,8 @@ prcp_agg_group <- foreach(nino = types_nino, iod = groups_iod,
   
   return(df_oni_prcp_aggall)
 }
+
+prcp_agg_group[, 2:4] <- round(prcp_agg_group[, 2:4])
+
+write.csv(prcp_agg_group, "data/prcp/prcp_aggyr_enso_iod.csv")
+write.csv(t(prcp_agg_group), "data/prcp/prcp_aggyr_enso_iod_t.csv")
