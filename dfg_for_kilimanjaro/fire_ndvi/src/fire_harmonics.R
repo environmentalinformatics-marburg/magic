@@ -2,11 +2,6 @@ lib <- c("raster", "zoo", "ggplot2", "doParallel", "RColorBrewer", "rgeos",
          "Rsenal")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
-switch(Sys.info()[["sysname"]], 
-       "Linux" = {path.wd <- "/media/envin/XChange/kilimanjaro/ndvi/"}, 
-       "Windows" = {path.wd <- "D:/kilimanjaro/ndvi/"})
-setwd(path.wd)
-
 source("src/multiVectorHarmonics.R")
 
 fls_agg1m <- list.files("data/md14a1/low/aggregated", pattern = "^aggsum_md14a1", 
