@@ -37,7 +37,7 @@ num_split_ltm <- foreach(i = rst_split, j = list("0_0", "0_1", "1_0", "1_1"),
   med <- apply(mat, 2, function(...) median(..., na.rm = TRUE))
   df_med <- data.frame(x = 1:12, y = med[c(7:12, 1:6)])
   
-  ltm_ext <- merge(data.frame(x = 1:19), df_med, by = "x", all = TRUE)
+  ltm_ext <- merge(data.frame(x = 1:20), df_med, by = "x", all = TRUE)
   ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
   ltm_ext$quadrant <- quadrant
   return(ltm_ext)
@@ -48,9 +48,13 @@ num_split_ltm %>%
   summarise(minimum_x = x[which.min(y)], minimum = min(y), 
             maximum_x = x[which.max(y)], maximum = max(y))
 
+num_split_ltm$group <- "long-term mean"
+num_split_ltm <- num_split_ltm[, c(4, 1:3)]
+
+
 # el nino
 groups <- list("all El Ninos", "pure El Ninos", "pure m/s El Ninos", 
-               "El Ninos w IOD+", "m/s El Ninos w IOD+", "purest IOD+")
+               "El Ninos w IOD+", "m/s El Ninos w IOD+", "pure IOD+")
 
 groups_nino <- list(c("WE", "ME", "SE"),
                     c("WE", "ME", "SE"),
@@ -135,11 +139,11 @@ sapply(tt_intraquad_nino, function(x) {
 red <- brewer.pal(4, "Reds")
 blue <- brewer.pal(4, "Blues")
 
-plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen")
-names(plot.colors) <- groups
+plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen", "grey50")
+names(plot.colors) <- append(groups, "long-term mean")
 
-plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash")
-names(plot.lty) <- groups
+plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash", "dashed")
+names(plot.lty) <- append(groups, "long-term mean")
 
 # df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
 ltm_ext <- merge(data.frame(x = 1:19), df_med_ndvi_ltm, by = "x", 
@@ -151,26 +155,22 @@ ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
 lbl <- rep(c(7:12, 1:6, 7:12, 1:2))
 names(lbl) <- 1:(12+span)
 
-# extend ltm
-# df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
-ltm_ext <- merge(data.frame(x = 1:20), df_med_ndvi_ltm, by = "x", 
-                 all = TRUE)
-ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
-# ltm_ext$x <- as.numeric(as.character(ltm_ext[, 1]))
+# merge ndvi data with long-term mean
+ndvi_split_sp_nino_ltm <- rbind(ndvi_split_sp, num_split_ltm)
 
 p_nino <- ggplot(aes(x, y, group = group, colour = group, linetype = group), 
-                 data = ndvi_split_sp) + 
+                 data = ndvi_split_sp_nino_ltm) + 
   geom_line() +
-  geom_line(aes(x, y), data = num_split_ltm, colour = "grey65", linetype = 2) + 
   facet_wrap(~ quadrant, ncol = 2) + 
   scale_colour_manual("", values = plot.colors) + 
   scale_linetype_manual("", values = plot.lty) + 
-  #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
-  guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
+  guides(colour = guide_legend(override.aes = list(size = 1.5, 
+                                                   linetype = plot.lty))) + 
   theme_bw() + 
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank(), legend.key.width = unit(2.25, "line"), 
+        legend.key = element_rect(colour = NA))
 
 png("vis/cor_ndvi_oni/ts_nino_ndvi_split.png", width = 36, height = 15, 
     units = "cm", pointsize = 18, res = 300)
@@ -180,7 +180,7 @@ dev.off()
 
 # la nina
 groups <- list("all La Ninas", "pure La Ninas", "pure m/s La Ninas", 
-               "La Ninas w IOD+", "m/s La Ninas w IOD+", "purest IOD+")
+               "La Ninas w IOD+", "m/s La Ninas w IOD+", "pure IOD+")
 
 groups_nina <- list(c("WL", "ML", "SL"),
                     c("WL", "ML", "SL"),
@@ -264,11 +264,11 @@ sapply(tt_intraquad_nina, function(x) {
 red <- brewer.pal(4, "Reds")
 blue <- brewer.pal(4, "Blues")
 
-plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen")
-names(plot.colors) <- groups
+plot.colors <- c("black", blue[3], blue[4], red[3], red[4], "darkgreen", "grey50")
+names(plot.colors) <- append(groups, "long-term mean")
 
-plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash")
-names(plot.lty) <- groups
+plot.lty <- c("solid", "solid", "solid", "solid", "solid", "longdash", "dashed")
+names(plot.lty) <- append(groups, "long-term mean")
 
 # df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
 ltm_ext <- merge(data.frame(x = 1:19), df_med_ndvi_ltm, by = "x", 
@@ -280,26 +280,22 @@ ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
 lbl <- rep(c(7:12, 1:6, 7:12, 1:2))
 names(lbl) <- 1:(12+span)
 
-# extend ltm
-# df_med_ndvi_ltm$x <- factor(df_med_ndvi_ltm$x)
-ltm_ext <- merge(data.frame(x = 1:20), df_med_ndvi_ltm, by = "x", 
-                 all = TRUE)
-ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
-# ltm_ext$x <- as.numeric(as.character(ltm_ext[, 1]))
+# merge grouped ndvi data with long-term mean
+ndvi_split_sp_nina_ltm <- rbind(ndvi_split_sp, num_split_ltm)
 
-p_nina <- ggplot(aes(x, y, group = group, colour = group), data = ndvi_split_sp) + 
+p_nina <- ggplot(aes(x, y, group = group, colour = group, linetype = group), 
+                 data = ndvi_split_sp_nina_ltm) + 
   geom_line() +
-  geom_line(aes(x, y), data = num_split_ltm, colour = "grey65", linetype = 2) + 
   facet_wrap(~ quadrant, ncol = 2) + 
   scale_colour_manual("", values = plot.colors) + 
   scale_linetype_manual("", values = plot.lty) + 
-  #   scale_x_discrete("\nMonth", labels = lbl) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
   labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
-  guides(colour = guide_legend(override.aes = list(size = 1.5))) + 
+  guides(colour = guide_legend(override.aes = list(size = 1.5, 
+                                                   linetype = plot.lty))) + 
   theme_bw() + 
-  theme(panel.grid = element_blank())
-
+  theme(panel.grid = element_blank(), legend.key.width = unit(2.25, "line"), 
+        legend.key = element_rect(colour = NA))
 
 png("vis/cor_ndvi_oni/ts_nina_ndvi_split.png", width = 36, height = 15, 
     units = "cm", pointsize = 18, res = 300)
