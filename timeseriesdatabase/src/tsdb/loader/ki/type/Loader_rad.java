@@ -1,7 +1,6 @@
 package tsdb.loader.ki.type;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -9,8 +8,8 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.DataRow;
 import tsdb.StationProperties;
-import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.raw.TsEntry;
 
 class Loader_rad extends AbstractLoader {
 	

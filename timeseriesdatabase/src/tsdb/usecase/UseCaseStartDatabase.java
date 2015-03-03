@@ -3,8 +3,6 @@ package tsdb.usecase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.util.Util;
-
 
 /**
  * UseCaseStartDatabase opens an existing database and processes some queries.

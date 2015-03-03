@@ -3,7 +3,6 @@ package tsdb.catalog;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.NavigableSet;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -11,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Fun;
 
 public class SourceCatalog {
 	

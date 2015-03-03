@@ -1,8 +1,9 @@
 package tsdb.raw;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -12,7 +13,6 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -80,6 +80,89 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 			this.entryList.add(new TsEntry(timestamp,data));
 		}		
 	}
+	
+	
+	/**
+	 * Included data: name, sensorNames, entries
+	 * NOT included data; timeInterval
+	 * 
+	 *
+	 */	
+	private static class TimeSeriesArchivSerializer implements org.mapdb.Serializer<TimestampSeries> {
+		
+		final static String TOC_START = "TimestampSeries:start";
+		final static String TOC_END = "TimestampSeries:end";
+
+		@Override
+		public void serialize(DataOutput out, TimestampSeries timestampSeries) throws IOException {
+			out.writeUTF(TOC_START);
+			
+			out.writeUTF(timestampSeries.name);
+			out.writeInt(timestampSeries.sensorNames.length);
+			for(String sensorName:timestampSeries.sensorNames) {
+				out.writeUTF(sensorName);
+			}
+			out.writeInt(timestampSeries.entryList.size());
+			int prevTimestamp = -1;
+			for(TsEntry entry:timestampSeries.entryList) {
+				int timestamp = (int) entry.timestamp;
+				if(timestamp<=prevTimestamp) {
+					throw new RuntimeException("write timestampseries format error: timestamps not ascending ordered");
+				}
+				out.writeInt(timestamp);
+				for(int i=0;i<timestampSeries.sensorNames.length;i++) {
+					out.writeFloat(entry.data[i]);
+				}
+				prevTimestamp = timestamp;
+			}	
+			
+			out.writeUTF(TOC_END);
+		}
+
+		@Override
+		public TimestampSeries deserialize(DataInput in, int available) throws IOException {
+			String start = in.readUTF();
+			if(!start.equals(TOC_START)) {
+				throw new RuntimeException("file format error");
+			}			
+			
+			String name = in.readUTF();
+			final int sensorCount = in.readInt();
+			String[] sensorNames = new String[sensorCount];
+			for(int i=0;i<sensorCount;i++) {
+				sensorNames[i] = in.readUTF();
+			}
+			final int entryCount = in.readInt();
+			ArrayList<TsEntry> entryList = new ArrayList<TsEntry>(entryCount);
+			int prevTimestamp = -1;
+			for(int r=0;r<entryCount;r++) {
+				int timestamp = in.readInt();
+				if(timestamp<=prevTimestamp) {
+					throw new RuntimeException("file format error: timestamps not ascending ordered");
+				}
+				float[] data = new float[sensorCount];
+				for(int i=0;i<sensorCount;i++) {
+					data[i] = in.readFloat();
+				}
+				entryList.add(new TsEntry(timestamp,data));
+				prevTimestamp = timestamp;
+			}			
+			
+			String end = in.readUTF();
+			if(!end.equals(TOC_START)) {
+				throw new RuntimeException("file format error");
+			}
+			return new TimestampSeries(name, sensorNames, entryList);
+		}
+
+		@Override
+		public int fixedSize() {
+			return -1;
+		}
+		
+	}
+	
+	public static final org.mapdb.Serializer<TimestampSeries> TIMESERIESARCHIV_SERIALIZER = new TimeSeriesArchivSerializer();
 	
 	/**
 	 * for Externalizable only!
@@ -217,74 +300,6 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 		sensorNames = newParameterNames;
 		entryList = newEntryList;
 	}
-
-	/*public void writeToCSV(String filename, String separator, String nanText, CSVTimeType csvTimeType) {
-		boolean time=false;
-		if(csvTimeType==CSVTimeType.TIMESTAMP||csvTimeType==CSVTimeType.DATETIME||csvTimeType==CSVTimeType.TIMESTAMP_AND_DATETIME) {
-			time=true;
-		}
-		try {
-			PrintStream printStream = new PrintStream(filename);
-			if(time) {
-				switch(csvTimeType) {
-				case TIMESTAMP:
-					printStream.print("timestamp");
-					break;
-				case DATETIME:
-					printStream.print("datetime");
-					break;
-				case TIMESTAMP_AND_DATETIME:
-					printStream.print("timestamp");
-					printStream.print(separator);
-					printStream.print("datetime");
-					break;
-				default:
-					printStream.print("???");
-				}
-			}
-			for(int i=0;i<parameterNames.length;i++) {
-				if(time||i>0) {
-					printStream.print(separator);
-				}
-				printStream.print(parameterNames[i]);				
-			}
-			printStream.println();
-			for(TimestampSeriesEntry entry:entryList) {
-				if(time) {
-					switch(csvTimeType) {
-					case TIMESTAMP:
-						printStream.print(entry.timestamp);
-						break;
-					case DATETIME:
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
-						break;
-					case TIMESTAMP_AND_DATETIME:
-						printStream.print(entry.timestamp);
-						printStream.print(separator);
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(entry.timestamp));
-						break;
-					default:
-						printStream.print("---");
-					}
-				}
-				float[] data = entry.data;
-				for(int i=0;i<entry.data.length;i++) {
-					if(time||i>0) {
-						printStream.print(separator);
-					}
-					if(Float.isNaN(data[i])) {
-						printStream.print(nanText);
-					} else {
-						printStream.format(Locale.ENGLISH,"%3.3f", entry.data[i]);
-					}
-				}
-				printStream.println();
-			}
-			printStream.close();
-		} catch (FileNotFoundException e) {
-			log.error(e);
-		}
-	}*/
 
 	public TimestampSeries getTimeInterval(long start, long end) {
 		List<TsEntry> resultList = new ArrayList<TsEntry>();

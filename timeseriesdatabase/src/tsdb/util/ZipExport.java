@@ -1,12 +1,13 @@
 package tsdb.util;
 
+import static tsdb.util.AssumptionCheck.throwNull;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -23,11 +24,10 @@ import tsdb.Region;
 import tsdb.Sensor;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.raw.TsEntry;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import static tsdb.util.AssumptionCheck.throwNull;;
 
 public class ZipExport {
 	

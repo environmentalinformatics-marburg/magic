@@ -1,7 +1,6 @@
 package tsdb.explorer;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;

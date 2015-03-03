@@ -6,18 +6,20 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
@@ -32,12 +34,6 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.custom.CLabel;
-import org.eclipse.jface.viewers.ComboViewer;
 
 public class NewSourceCatalogInfoDialog extends Dialog {
 

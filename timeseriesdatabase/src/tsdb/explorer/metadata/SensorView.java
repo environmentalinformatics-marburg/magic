@@ -17,11 +17,10 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.sun.javafx.binding.StringConstant;
-
 import tsdb.Sensor;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.StationInfo;
+
+import com.sun.javafx.binding.StringConstant;
 
 public class SensorView {	
 	private static final Logger log = LogManager.getLogger();

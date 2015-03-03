@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -19,7 +18,6 @@ import org.mapdb.DBMaker;
 
 import tsdb.TimeConverter;
 import tsdb.TimeSeriesMask;
-import tsdb.TsDBFactory;
 import tsdb.util.iterator.TsIterator;
 
 

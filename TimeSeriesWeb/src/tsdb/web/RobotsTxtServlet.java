@@ -3,7 +3,6 @@ package tsdb.web;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.Filter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;

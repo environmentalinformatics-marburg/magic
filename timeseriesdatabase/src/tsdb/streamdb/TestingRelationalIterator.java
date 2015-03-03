@@ -1,14 +1,9 @@
 package tsdb.streamdb;
 
-import java.util.ArrayList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
-import tsdb.raw.TsEntry;
-import tsdb.util.Util;
-import tsdb.util.iterator.TsIterator;
 
 public class TestingRelationalIterator {
 

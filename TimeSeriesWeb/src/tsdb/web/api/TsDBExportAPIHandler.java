@@ -463,6 +463,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}		
 	}
 
+	@Deprecated
 	private boolean handle_create_download(HttpServletResponse response, ExportModel model, long id) {
 		try {
 			response.setContentType("application/zip");

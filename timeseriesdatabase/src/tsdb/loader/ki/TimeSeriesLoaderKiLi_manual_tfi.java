@@ -26,7 +26,7 @@ import tsdb.raw.TsEntry;
 import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.Table;
 import tsdb.util.Table.ColumnReaderFloat;
-import tsdb.util.Table.ColumnReaderTimestamp;
+import tsdb.util.Table.ColumnReaderTimestampTwoCols;
 import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
@@ -143,7 +143,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 	private void loadOneFile_structure_kili_iso_tfi(Path filePath) {
 		log.warn("!!!   TODO load iso tfi file   !!!");
 		Table table = Table.readCSV(filePath.toString(), ',');
-		ColumnReaderTimestamp cr_timestamp = table.createColumnReaderTimestamp("date_sample","time");
+		ColumnReaderTimestampTwoCols cr_timestamp = table.createColumnReaderTimestamp("date_sample","time");
 		ColumnReaderString cr_plotID = table.createColumnReader("plot_id_sp1");
 		ColumnReaderString cr_type = table.createColumnReader("type");
 		ColumnReaderFloat cr_iso_d18_16 = table.createColumnReaderFloat("d18_16");

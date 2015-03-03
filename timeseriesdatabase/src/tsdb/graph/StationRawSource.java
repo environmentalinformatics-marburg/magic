@@ -1,12 +1,8 @@
 package tsdb.graph;
 
-import java.util.Iterator;
-
 import static tsdb.util.AssumptionCheck.throwNulls;
-import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 

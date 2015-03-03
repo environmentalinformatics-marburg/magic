@@ -4,11 +4,8 @@ import static tsdb.util.AssumptionCheck.throwNull;
 
 import java.util.Arrays;
 
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.raw.iterator.LowQualityToNanIterator;
-import tsdb.raw.iterator.QualityFlagIterator;
 import tsdb.raw.iterator.Virtual_P_RT_NRT_Iterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;

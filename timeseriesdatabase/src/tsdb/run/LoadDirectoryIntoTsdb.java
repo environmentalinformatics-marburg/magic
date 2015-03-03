@@ -1,15 +1,9 @@
 package tsdb.run;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.TreeMap;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 
 public class LoadDirectoryIntoTsdb {

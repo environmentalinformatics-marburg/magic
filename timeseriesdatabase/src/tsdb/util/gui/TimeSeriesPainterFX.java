@@ -1,11 +1,6 @@
 package tsdb.util.gui;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-
-import java.awt.geom.Rectangle2D;
-
-import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
-import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

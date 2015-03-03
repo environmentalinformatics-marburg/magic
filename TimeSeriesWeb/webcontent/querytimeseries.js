@@ -5,7 +5,7 @@ var sensor_input;
 var time_input;
 var time_month_input;
 var aggregation_input;
-var aggregations = ["hour","day","week","month","year"];
+var aggregations = ["raw","hour","day","week","month","year"];
 var quality_input;
 var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
@@ -65,7 +65,6 @@ sensor_input.on("selectmenuchange", function( event, ui ) {updateSensor();} );
 time_input = $("#time_input").selectmenu();
 $.each(timeText, function(i,text) {time_input.append(new Option(text,i));});
 time_input.selectmenu("refresh");
-getID("time_input").onchange = onUpdateTime;
 time_input.on("selectmenuchange", onUpdateTime);
 
 time_month_input = $("#time_month_input").selectmenu();
@@ -75,7 +74,9 @@ time_month_input.selectmenu("refresh");
 
 aggregation_input = $("#aggregation_input").selectmenu();
 $.each(aggregations, function(i,agg) {aggregation_input.append(new Option(agg,i));});
+aggregation_input.val(1);
 aggregation_input.selectmenu("refresh");
+aggregation_input.on("selectmenuchange", onUpdateAggregation);
 
 quality_input = $("#quality_input").selectmenu();
 $.each(qualitiesText, function(i,text) {quality_input.append(new Option(text,i));});
@@ -98,11 +99,20 @@ decTask();
 });
 
 function onUpdateTime() {
-	quality_input.val(2);
 	if(time_input.val()==0) {
-		time_month_input.selectmenu( "option", "disabled", true );
+		time_month_input.selectmenu("option","disabled",true);
 	} else {
-		time_month_input.selectmenu( "option", "disabled", false );
+		time_month_input.selectmenu("option","disabled",false);
+	}
+}
+
+function onUpdateAggregation() {
+	if(aggregation_input.val()==0) {
+		quality_input.selectmenu("option","disabled",true);
+		$("#div_interpolated").hide();
+	} else {
+		quality_input.selectmenu("option","disabled",false);
+		$("#div_interpolated").show();
 	}
 }
 

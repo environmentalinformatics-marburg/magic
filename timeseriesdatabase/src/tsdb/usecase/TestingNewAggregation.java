@@ -5,7 +5,6 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.aggregated.iterator.DayAggregationIterator;
 import tsdb.aggregated.iterator.MonthAggregationIterator;
-import tsdb.aggregated.iterator.WeekAggregationIterator;
 import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.graph.QueryPlan;
 import tsdb.util.iterator.TsIterator;

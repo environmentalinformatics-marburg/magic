@@ -9,6 +9,7 @@ var qualities = ["no", "physical", "step", "empirical"];
 var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var monthText = ["[whole year]","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+var aggregationText = ["raw","hour","day","week","month","year"];
 
 
 var sensors;
@@ -29,10 +30,13 @@ $(document).ready(function(){
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});	
 	time_month_select.hide();
 	$.each(monthText, function(i,text) {time_month_select.append(new Option(text,i));});
+	$.each(aggregationText, function(i,text) {aggregation_select.append(new Option(text));});
+	aggregation_select.val("hour");
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updateSensors;
-	getID("time_select").onchange = onUpdateTime;	
+	getID("time_select").onchange = onUpdateTime;
+getID("aggregation_select").onchange = onUpdateAggregation;	
 	getID("sensor_select").onchange = updateSensor;
 	getID("query_sensor").onclick = runQuerySensor;
 	
@@ -45,6 +49,16 @@ function onUpdateTime() {
 		time_month_select.hide();
 	} else {
 		time_month_select.show();
+	}
+}
+
+function onUpdateAggregation() {
+	if(aggregation_select.val()=="raw") {
+		$("#div_quality_select").hide();
+		$("#div_interpolated").hide();
+	} else {
+		$("#div_quality_select").show();
+		$("#div_interpolated").show();
 	}
 }
 

@@ -2,9 +2,7 @@ package tsdb.explorer.metadata;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.scene.Node;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -14,11 +12,10 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.sun.javafx.binding.StringConstant;
-
 import tsdb.Region;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.StationInfo;
+
+import com.sun.javafx.binding.StringConstant;
 
 public class RegionView {
 	private static final Logger log = LogManager.getLogger();

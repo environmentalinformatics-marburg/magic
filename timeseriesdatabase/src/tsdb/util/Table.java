@@ -1,10 +1,12 @@
 package tsdb.util;
 
+import static tsdb.util.AssumptionCheck.throwFalse;
+
 import java.io.FileReader;
-
-import static tsdb.util.AssumptionCheck.*;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,22 +55,50 @@ public class Table {
 				}
 				return Float.parseFloat(row[rowIndex]);
 			} catch(NumberFormatException e) {
+				if(row[rowIndex].toLowerCase().equals("na")||row[rowIndex].toLowerCase().equals("null")) {
+					return Float.NaN;
+				} else {
+					log.warn(row[rowIndex]+" not parsed");
+					e.printStackTrace();
+					return Float.NaN;
+				}
+			}
+		}
+	}
+	
+	public static class ColumnReaderInt extends ColumnReader {
+		public ColumnReaderInt(int rowIndex) {
+			super(rowIndex);
+		}
+		public int get(String[] row) {
+			return Integer.parseInt(row[rowIndex]);
+			/*try {
+				String textValue = row[rowIndex];
+				if(!warnIfEmpty&&textValue.isEmpty()) {
+					return Float.NaN;
+				}
+				return Float.parseFloat(row[rowIndex]);
+			} catch(NumberFormatException e) {
 				if(row[rowIndex].toLowerCase().equals("na")) {
 					return Float.NaN;
 				} else {
 					log.warn(row[rowIndex]+" not parsed");
 					return Float.NaN;
 				}
-			}
+			}*/
 		}
 	}
+	
+	public static interface ColumnReaderTimestamp {
+		public long get(String[] row);
+	}
 
-	public static class ColumnReaderTimestamp {
+	public static class ColumnReaderTimestampTwoCols implements ColumnReaderTimestamp {
 
 		private final int rowIndexDate;
 		private final int rowIndexTime;
 
-		public ColumnReaderTimestamp(int rowIndexDate, int rowIndexTime) {
+		public ColumnReaderTimestampTwoCols(int rowIndexDate, int rowIndexTime) {
 			this.rowIndexDate = rowIndexDate;
 			this.rowIndexTime = rowIndexTime;
 		}
@@ -82,7 +112,7 @@ public class Table {
 		}
 	}
 	
-	public static class ColumnReaderSlashTimestamp {
+	public static class ColumnReaderSlashTimestamp implements ColumnReaderTimestamp {
 		private final int rowIndexDateTime;
 		public ColumnReaderSlashTimestamp(int rowIndexDateTime) {
 			this.rowIndexDateTime = rowIndexDateTime;
@@ -91,7 +121,78 @@ public class Table {
 			try {
 				return TimeConverter.parseTimestampSlashFormat(row[rowIndexDateTime]);				
 			} catch(NumberFormatException e) {
-				log.warn(row[rowIndexDateTime]+"  "+row[rowIndexDateTime]+"not parsed");
+				log.warn(row[rowIndexDateTime]+"  not parsed");
+				return -1;
+			}
+		}
+	}
+	
+	public static class ColumnReaderMonthNameTimestamp implements ColumnReaderTimestamp {
+		private final int rowIndexDateTime;
+		public ColumnReaderMonthNameTimestamp(int rowIndexDateTime) {
+			this.rowIndexDateTime = rowIndexDateTime;
+		}
+		public long get(String[] row) {			
+			try {
+				return TimeConverter.parseTimestampMonthNameFormat(row[rowIndexDateTime]);				
+			} catch(NumberFormatException e) {
+				log.warn(row[rowIndexDateTime]+"  not parsed");
+				return -1;
+			}
+		}
+	}
+	
+	
+	public static class ColumnReaderDateFullHourTimestamp implements ColumnReaderTimestamp {
+		private final int columnIndexDate;
+		private final int columnIndexFullHour;
+		public ColumnReaderDateFullHourTimestamp(int columnIndexDate, int columnIndexTime) {
+			this.columnIndexDate = columnIndexDate;
+			this.columnIndexFullHour = columnIndexTime;
+		}
+		public long get(String[] row) {			
+			try {
+				return TimeConverter.parseTimestampDateFullHourFormat(row[columnIndexDate], Integer.parseInt(row[columnIndexFullHour]));		
+			} catch(NumberFormatException e) {
+				log.warn(row[columnIndexDate]+"  not parsed");
+				return -1;
+			}
+		}
+	}
+	
+	/**
+	 * example: "2014-04-14";"23";"45";"0"
+	 * example: "2014-04-14";"24";"0";"0"
+	 * example: "2014-04-15";"0";"30";"0"
+	 * example: "2014-04-15";"0";"15";"0"
+	 * example: "2014-04-15";"0";"45";"0" 
+	 *
+	 */
+	public static class ColumnReaderDateHourWrapMinuteTimestamp implements ColumnReaderTimestamp {
+		private final int columnIndexDate;
+		private final int columnIndexHourWrap;
+		private final int columnIndexMinute;
+		public ColumnReaderDateHourWrapMinuteTimestamp(int columnIndexDate, int columnIndexHourWrap, int columnIndexMinute) {
+			this.columnIndexDate = columnIndexDate;
+			this.columnIndexHourWrap = columnIndexHourWrap;
+			this.columnIndexMinute = columnIndexMinute;
+		}
+		public long get(String[] row) {			
+			try {
+				int hour = Integer.parseInt(row[columnIndexHourWrap]);
+				boolean wrap = false;
+				if(hour==24) {
+					wrap = true;
+					hour = 0;
+				}
+				LocalDate date = LocalDate.parse(row[columnIndexDate], DateTimeFormatter.ISO_DATE);
+				if(wrap) {
+					date = date.plusDays(1);
+				}
+				LocalTime time = LocalTime.of(hour,Integer.parseInt(row[columnIndexMinute]));
+				return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(date,time));		
+			} catch(NumberFormatException e) {
+				log.warn(row[columnIndexDate]+"  not parsed");
 				return -1;
 			}
 		}
@@ -154,6 +255,39 @@ public class Table {
 			return null;
 		}
 	}
+	
+	public static Table readCSVFirstDataRow(String filename, char separator) {
+		try {
+			Table table = new Table();
+
+			CSVReader reader = new CSVReader(new FileReader(filename),separator);
+			
+			String[] headerRow = reader.readNext();
+			String[] dataRow = reader.readNext();
+			
+			reader.close();
+
+			table.names = headerRow;
+
+			table.nameMap = new HashMap<String, Integer>();
+
+			for(int i=0;i<table.names.length;i++) {
+				if(table.nameMap.containsKey(table.names[i])) {
+					log.error("dublicate name: "+table.names[i]);
+				} else {
+					table.nameMap.put(table.names[i], i);
+				}
+			}
+
+			table.rows = new String[1][];
+			table.rows[0] = dataRow;			
+			
+			return table;
+		} catch(Exception e) {
+			log.error(e);
+			return null;
+		}
+	}
 
 	/**
 	 * get column position of one header name
@@ -184,8 +318,16 @@ public class Table {
 		}
 		return new ColumnReaderFloat(columnIndex);
 	}
+	
+	public ColumnReaderInt createColumnReaderInt(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderInt(columnIndex);
+	}
 
-	public ColumnReaderTimestamp createColumnReaderTimestamp(String colDate, String colTime) {
+	public ColumnReaderTimestampTwoCols createColumnReaderTimestamp(String colDate, String colTime) {
 		int columnIndexDate = getColumnIndex(colDate);
 		if(columnIndexDate<0) {
 			return null;
@@ -195,7 +337,7 @@ public class Table {
 			return null;
 		}
 
-		return new ColumnReaderTimestamp(columnIndexDate, columnIndexTime);	
+		return new ColumnReaderTimestampTwoCols(columnIndexDate, columnIndexTime);	
 	}
 	
 	public ColumnReaderSlashTimestamp createColumnReaderSlashTimestamp(String name) {
@@ -204,6 +346,43 @@ public class Table {
 			return null;
 		}
 		return new ColumnReaderSlashTimestamp(columnIndex);
+	}
+	
+	public ColumnReaderMonthNameTimestamp createColumnReaderMonthNameTimestamp(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderMonthNameTimestamp(columnIndex);
+	}
+	
+	//parseTimestampDateFullHourFormat(String dateText, int fullHour)
+	public ColumnReaderDateFullHourTimestamp createColumnReaderDateFullHourTimestamp(String colDate, String colFullHour) {
+		int columnIndexDate = getColumnIndex(colDate);		
+		if(columnIndexDate<0) {
+			return null;
+		}
+		int columnIndexFullHour = getColumnIndex(colFullHour);
+		if(columnIndexFullHour<0) {
+			return null;
+		}
+		return new ColumnReaderDateFullHourTimestamp(columnIndexDate,columnIndexFullHour);
+	}
+
+	public ColumnReaderDateHourWrapMinuteTimestamp createColumnReaderDateHourWrapMinuteTimestamp(String colDate, String colHourWrap, String colMinute) {
+		int columnIndexDate = getColumnIndex(colDate);		
+		if(columnIndexDate<0) {
+			return null;
+		}
+		int columnIndexHourWrap = getColumnIndex(colHourWrap);
+		if(columnIndexHourWrap<0) {
+			return null;
+		}
+		int columnIndexMinute = getColumnIndex(colMinute);
+		if(columnIndexMinute<0) {
+			return null;
+		}
+		return new ColumnReaderDateHourWrapMinuteTimestamp(columnIndexDate,columnIndexHourWrap,columnIndexMinute);
 	}
 
 

@@ -2,14 +2,10 @@ package tsdb;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;

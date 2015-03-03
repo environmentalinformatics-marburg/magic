@@ -14,7 +14,6 @@ import tsdb.catalog.SourceEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Pair;
 import tsdb.util.TimestampInterval;
-import tsdb.util.iterator.TsIterator;
 
 public interface RemoteTsDB extends Remote {
 	

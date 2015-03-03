@@ -3,9 +3,6 @@ package tsdb.web.api;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +14,6 @@ import org.eclipse.jetty.server.Request;
 import org.json.JSONWriter;
 
 import tsdb.TimeConverter;
-import tsdb.remote.GeneralStationInfo;
-import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.TimestampInterval;
 

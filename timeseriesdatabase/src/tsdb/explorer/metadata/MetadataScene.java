@@ -1,54 +1,16 @@
 package tsdb.explorer.metadata;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.function.Function;
-
-import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
-import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.sun.javafx.binding.ObjectConstant;
-import com.sun.javafx.binding.StringConstant;
-import com.sun.javafx.scene.control.behavior.TabPaneBehavior;
-
-import tsdb.LoggerType;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.explorer.TsdbScene;
-import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.StationInfo;
-import tsdb.remote.VirtualPlotInfo;
-import tsdb.util.TimestampInterval;
 
 public class MetadataScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	

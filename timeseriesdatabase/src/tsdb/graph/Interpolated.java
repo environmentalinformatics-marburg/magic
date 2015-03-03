@@ -1,14 +1,12 @@
 package tsdb.graph;
 
-import java.util.ArrayList;
-
 import static tsdb.util.AssumptionCheck.throwNulls;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import tsdb.Station;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.aggregated.Interpolator;

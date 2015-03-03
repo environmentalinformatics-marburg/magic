@@ -8,13 +8,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ini4j.spi.EscapeTool;
 
 import tsdb.DataRow;
 import tsdb.Station;

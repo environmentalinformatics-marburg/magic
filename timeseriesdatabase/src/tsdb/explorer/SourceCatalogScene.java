@@ -12,7 +12,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -26,8 +25,6 @@ import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.sun.javafx.binding.ObjectConstant;
-
 import tsdb.Region;
 import tsdb.StationProperties;
 import tsdb.TimeConverter;
@@ -37,6 +34,8 @@ import tsdb.remote.StationInfo;
 import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
+
+import com.sun.javafx.binding.ObjectConstant;
 
 public class SourceCatalogScene extends TsdbScene {
 	

@@ -8,14 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.WritableImage;
-import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
-import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 

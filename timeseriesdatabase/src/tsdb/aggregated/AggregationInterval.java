@@ -18,6 +18,8 @@ public enum AggregationInterval {
 	
 	public String getText() {
 		switch(this) {
+		case RAW:
+			return "raw";
 		case HOUR:
 			return "hour";
 		case DAY:

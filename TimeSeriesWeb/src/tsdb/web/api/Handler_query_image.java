@@ -4,12 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.rmi.RemoteException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -26,14 +21,9 @@ import tsdb.SensorCategory;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
-import tsdb.remote.GeneralStationInfo;
-import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.Util;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
-import tsdb.util.iterator.TsIterator;
 
 public class Handler_query_image extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();

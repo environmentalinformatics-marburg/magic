@@ -4,7 +4,6 @@ import static tsdb.util.AssumptionCheck.throwNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,10 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.aggregated.AggregationType;
-import tsdb.raw.iterator.EventConverterIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.TsIterator;
 
 /**
  * This class contains metadata that is associated with a station (plotID).

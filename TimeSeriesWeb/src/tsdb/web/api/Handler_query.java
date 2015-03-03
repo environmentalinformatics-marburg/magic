@@ -2,11 +2,8 @@ package tsdb.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.rmi.RemoteException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,15 +14,11 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
 import tsdb.DataQuality;
-import tsdb.Sensor;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
 import tsdb.raw.TsEntry;
-import tsdb.remote.GeneralStationInfo;
-import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class Handler_query extends MethodHandler {	

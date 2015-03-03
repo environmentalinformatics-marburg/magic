@@ -3,7 +3,6 @@ package tsdb.usecase;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.RawSource;
-import tsdb.graph.VirtualRawSource;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingVirtualRawSource {

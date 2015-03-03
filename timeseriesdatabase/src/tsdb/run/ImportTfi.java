@@ -1,16 +1,12 @@
 package tsdb.run;
 
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.loader.be.TimeSeriesLoaderBE;
-import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 
 public class ImportTfi {

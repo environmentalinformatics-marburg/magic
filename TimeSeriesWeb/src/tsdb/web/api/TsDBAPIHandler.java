@@ -1,56 +1,31 @@
 package tsdb.web.api;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.rmi.RemoteException;
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.security.DefaultUserIdentity;
-import org.eclipse.jetty.security.MappedLoginService.RolePrincipal;
-import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
-import tsdb.DataQuality;
-import tsdb.Region;
 import tsdb.Sensor;
-import tsdb.SensorCategory;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TsEntry;
-import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
-import tsdb.util.TimestampInterval;
-import tsdb.util.Util;
-import tsdb.util.gui.TimeSeriesDiagram;
-import tsdb.util.gui.TimeSeriesHeatMap;
-import tsdb.util.gui.TimeSeriesPainterGraphics2D;
-import tsdb.util.iterator.TsIterator;
 import tsdb.web.WebUtil;
 
 public class TsDBAPIHandler extends AbstractHandler {

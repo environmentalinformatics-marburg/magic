@@ -14,10 +14,10 @@ import tsdb.TsDBFactory;
 import tsdb.raw.TimestampSeries;
 import tsdb.raw.TsEntry;
 import tsdb.util.Table;
-import tsdb.util.Util;
 import tsdb.util.Table.ColumnReaderFloat;
-import tsdb.util.Table.ColumnReaderSlashTimestamp;
+import tsdb.util.Table.ColumnReaderMonthNameTimestamp;
 import tsdb.util.Table.ColumnReaderString;
+import tsdb.util.Util;
 
 public class SouthAfricaPreImport_saws_ars {
 
@@ -49,7 +49,7 @@ public class SouthAfricaPreImport_saws_ars {
 		ColumnReaderString cr_title = table.createColumnReader("StasName");
 		//Latitude ignore
 		//Longitude ignore
-		ColumnReaderSlashTimestamp cr_timestamp = table.createColumnReaderSlashTimestamp("DateT");	
+		ColumnReaderMonthNameTimestamp cr_timestamp = table.createColumnReaderMonthNameTimestamp("DateT");
 		ColumnReaderFloat cr_P_RT_NRT = table.createColumnReaderFloat("Rain"); //?
 		
 		ArrayList<TsEntry> list = new ArrayList<TsEntry>(table.rows.length);
@@ -63,15 +63,13 @@ public class SouthAfricaPreImport_saws_ars {
 			return;
 		}
 		
-		String stationID = cr_title.get(table.rows[0]);
-		
+		String stationID = cr_title.get(table.rows[0]);	
 		
 		for(String[] row:table.rows) {			
 			list.add(TsEntry.of(cr_timestamp.get(row),
 					cr_P_RT_NRT.get(row, false)
-					)); 
-		}
-		
+					));
+		}		
 		
 		TimestampSeries tss = new TimestampSeries(stationID,sensorNames,list);
 		

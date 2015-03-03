@@ -441,15 +441,15 @@ public class ConfigLoader {
 					if(generalStationName.equals("sun")) {//correct sun -> cof
 						generalStationName = "cof";
 					}
-					
+
 					if(generalStationName.equals("mcg")) {
 						generalStationName = "flm";
 					}
-					
+
 					if(generalStationName.equals("mch")) {
 						generalStationName = "fpo";
 					}
-					
+
 					if(generalStationName.equals("mwh")) {
 						generalStationName = "fpd";
 					}
@@ -596,23 +596,23 @@ public class ConfigLoader {
 						if(virtualPlot==null) {
 							if(virtualPlotID.length()==4) {
 								String generalStationName = virtualPlotID.substring(0, 3);
-								
+
 								if(generalStationName.equals("sun")) {//correct sun -> cof
 									generalStationName = "cof";
 								}
-								
+
 								if(generalStationName.equals("mcg")) {
 									generalStationName = "flm";
 								}
-								
+
 								if(generalStationName.equals("mch")) {
 									generalStationName = "fpo";
 								}
-								
+
 								if(generalStationName.equals("mwh")) {
 									generalStationName = "fpd";
 								}
-								
+
 								GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 								if(generalStation!=null) {
 									virtualPlot = new VirtualPlot(tsdb, virtualPlotID, generalStation, Float.NaN, Float.NaN, false);
@@ -1013,29 +1013,50 @@ public class ConfigLoader {
 		}
 	}
 
-	public void read_sa_stationList(String configFile) {
-		
-		GeneralStation generalStation = new GeneralStation("general", tsdb.getRegion("SA"), "general", "general");
-		tsdb.insertGeneralStation(generalStation);
-		
+	public void read_sa_station_inventory(String configFile) {
+
+		GeneralStation generalStationSAWS = new GeneralStation("SAWS", tsdb.getRegion("SA"), "SAWS", "SAWS");
+		tsdb.insertGeneralStation(generalStationSAWS);
+		GeneralStation generalStationSASSCAL = new GeneralStation("SASSCAL", tsdb.getRegion("SA"), "SASSCAL", "SASSCAL");
+		tsdb.insertGeneralStation(generalStationSASSCAL);
+
 		LoggerType loggerType = new LoggerType("sa_logger", new String[]{"Ta_200"});
 		tsdb.insertLoggerType(loggerType);
-		
-		
+
+
 		Table table = Table.readCSV(configFile,',');
-		ColumnReaderString cr_stationID = table.createColumnReader("StasName");
+		ColumnReaderString cr_stationID = table.createColumnReader("station");
+		ColumnReaderString cr_general = table.createColumnReader("general");
 		for(String[] row:table.rows) {
-			String stationID = cr_stationID.get(row);
-			
-			Map<String, String> propertyMap = new TreeMap<String, String>();
-			propertyMap.put("PLOTID", stationID);
-			propertyMap.put("DATE_START","1999-01-01");
-			propertyMap.put("DATE_END","2099-12-31");
-			StationProperties stationProperties = new StationProperties(propertyMap);			
-			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
-			propertyList.add(stationProperties);			
-			Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
-			tsdb.insertStation(station);
+			try {
+				String stationID = cr_stationID.get(row);
+
+				Map<String, String> propertyMap = new TreeMap<String, String>();
+				propertyMap.put("PLOTID", stationID);
+				propertyMap.put("DATE_START","1999-01-01");
+				propertyMap.put("DATE_END","2099-12-31");
+				StationProperties stationProperties = new StationProperties(propertyMap);			
+				ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
+				propertyList.add(stationProperties);
+
+				GeneralStation generalStation;
+				String generalName = cr_general.get(row);
+				switch(generalName) {
+				case "SAWS":
+					generalStation = generalStationSAWS;
+					break;
+				case "SASSCAL":
+					generalStation = generalStationSASSCAL;
+					break;
+				default:
+					throw new RuntimeException("unexpected general station: "+generalName);
+				}
+
+				Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
+				tsdb.insertStation(station);
+			} catch(Exception e) {
+				log.error(e);
+			}
 		}
 	}
 

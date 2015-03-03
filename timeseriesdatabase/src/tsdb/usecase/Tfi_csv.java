@@ -5,21 +5,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
-import tsdb.TsDBFactory;
 import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.graph.Aggregated;
+import tsdb.TsDBFactory;
 import tsdb.graph.Base;
 import tsdb.graph.CSVSource;
 import tsdb.graph.Continuous;
 import tsdb.graph.Node;
 import tsdb.graph.PeakSmoothed;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
-import tsdb.loader.ki.TimeSeriesLoaderKiLi;
-import tsdb.raw.TsEntry;
-import tsdb.raw.iterator.CSVIterator;
-import tsdb.util.iterator.TsIterator;
 
 public class Tfi_csv {
 

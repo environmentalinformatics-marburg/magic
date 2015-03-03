@@ -348,11 +348,11 @@ public class UniversalDataBinFile {
 				data[rowIndex][sensorIndex] = row.data[sensorIndex];
 			}
 			if(prevID!=null&&prevID==row.id) {
-				log.error("duplicate timestamps: "+row.id+"      "+time[rowIndex]+"     "+ timeConverter.oleMinutesToText(time[rowIndex]));
+				log.error("duplicate timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeConverter.oleMinutesToText(time[rowIndex]));
 				return null;
 			}
 			if(prevID!=null&&prevID>row.id) {
-				log.error("invalid timestamps: "+row.id+"      "+time[rowIndex]+"     "+ timeConverter.oleMinutesToText(time[rowIndex]));
+				log.error("invalid timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeConverter.oleMinutesToText(time[rowIndex]));
 				return null;
 			}
 			rowIndex++;

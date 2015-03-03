@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
+import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -134,7 +134,7 @@ public class TimeConverter implements Serializable {
 		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
 	}
 	
-	private static DateTimeFormatter DATE_TIME_FORMATER_SLASH = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+	private static final DateTimeFormatter DATE_TIME_FORMATER_SLASH = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
 	
 	/**
 	 * format: yyyy/MM/dd HH:mm
@@ -144,6 +144,39 @@ public class TimeConverter implements Serializable {
 	 */
 	public static long parseTimestampSlashFormat(String dateTimeText) {		
 		LocalDateTime dt = LocalDateTime.parse(dateTimeText, DATE_TIME_FORMATER_SLASH);
+		return TimeConverter.DateTimeToOleMinutes(dt);
+	}
+	
+	private static final DateTimeFormatter DATE_TIME_FORMATER_MONTH_NAME_ONE_HOUR_DIGIT =  DateTimeFormatter.ofPattern("dd-MMM-yyyy   H:mm").withLocale(Locale.ENGLISH);
+	private static final DateTimeFormatter DATE_TIME_FORMATER_MONTH_NAME_TWO_HOUR_DIGITS = DateTimeFormatter.ofPattern("dd-MMM-yyyy  HH:mm").withLocale(Locale.ENGLISH);
+	
+	/**
+	 * example: 01-Jul-2010   3:25
+	 * example: 16-Dec-2010  14:55
+	 * example: 12-Oct-2012  11:30
+	 * @param dateTimeText
+	 * @return
+	 */
+	public static long parseTimestampMonthNameFormat(String dateTimeText) {		
+		DateTimeFormatter dtf = DATE_TIME_FORMATER_MONTH_NAME_TWO_HOUR_DIGITS;
+		if(dateTimeText.charAt(13)==' ') {
+			dtf = DATE_TIME_FORMATER_MONTH_NAME_ONE_HOUR_DIGIT;
+		}		
+		LocalDateTime dt = LocalDateTime.parse(dateTimeText, dtf);
+		return TimeConverter.DateTimeToOleMinutes(dt);
+	}
+	
+	
+	/**
+	 * example: 2010-10-07,24
+	 * example: 2010-10-08,1
+	 * 
+	 * @param dateTimeText
+	 * @return
+	 */
+	public static long parseTimestampDateFullHourFormat(String dateText, int fullHour) {
+		LocalDate date = LocalDate.parse(dateText, DateTimeFormatter.ISO_DATE);
+		LocalDateTime dt = LocalDateTime.of(date, LocalTime.of(fullHour-1, 0));
 		return TimeConverter.DateTimeToOleMinutes(dt);
 	}
 

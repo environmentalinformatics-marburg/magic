@@ -3,7 +3,6 @@ package tsdb.web.api;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.servlet.ServletException;
@@ -14,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
-import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 

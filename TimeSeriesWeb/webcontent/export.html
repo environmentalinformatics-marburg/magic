@@ -116,10 +116,17 @@ $.getJSON("../export/settings").done(function( data ) {
 			timespanText = "year "+value;
 		}*/		
 		timespan_output.innerHTML = timespanText;
-		aggregation_output.innerHTML = json_settings.timestep;		
-		settings_array.push("quality check: "+json_settings.quality);		
-		if(json_settings.interpolate) {
-			settings_array.push("interpolate missing values");
+		aggregation_output.innerHTML = json_settings.timestep;
+		var raw = false;
+		if(json_settings.timestep=="raw") {
+			aggregation_output.innerHTML = "collect raw measured values:  no quality checks or interpolation can be performed";
+			raw = true;
+		}		
+		if(!raw) {
+			settings_array.push("quality check: "+json_settings.quality);		
+			if(json_settings.interpolate) {
+				settings_array.push("interpolate missing values");
+			}
 		}		
 		if(json_settings.desc_sensor) {
 			settings_array.push("include sensor description");
@@ -245,18 +252,19 @@ with time steps of &nbsp;&nbsp;
 <b><div id="aggregation_output" style="display:inline-block"></div></b>
 <br/>
 <br/>
+<div style="display:inline-block;width:300px;line-height:0;vertical-align:top">
+<h4>Settings</h4>
+<div id="settings_output" style="height:200px"></div>
+</div>
 <div style="display:inline-block;width:200px;line-height:0;vertical-align:top">
 <h4>Sensors</h4>
 <div id="sensors_output"></div>
 </div>
-<div style="display:inline-block;width:200px;line-height:0;vertical-align:top">
+<div style="display:inline-block;width:400px;line-height:0;vertical-align:top">
 <h4>Plots</h4>
 <div id="plots_output"></div>
 </div>
-<div style="display:inline-block;width:200px;line-height:0;vertical-align:top">
-<h4>Settings</h4>
-<div id="settings_output" style="height:200px"></div>
-</div>
+
 
 
 

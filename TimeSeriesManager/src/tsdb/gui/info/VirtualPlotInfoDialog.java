@@ -5,20 +5,18 @@ import java.rmi.RemoteException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
 
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
-import tsdb.util.Util;
-
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 
 public class VirtualPlotInfoDialog extends Dialog {
 	

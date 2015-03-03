@@ -1,7 +1,6 @@
 package tsdb.util.gui;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
@@ -271,7 +270,7 @@ public class TimeSeriesHeatMap {
 		case "SM_30":
 		case "SM_40":
 		case "SM_50":
-			tsp.setIndexedColorRange(20, 55);
+			tsp.setIndexedColorRange(5, 60);
 			break;
 		case "B_01":
 		case "B_02":

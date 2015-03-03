@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -21,7 +18,6 @@ import org.ini4j.Wini;
 
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
-import tsdb.run.StartServerTsDB;
 import tsdb.util.Util;
 
 /**
@@ -182,10 +178,8 @@ public class TsDBFactory {
 			configLoader.calcNearestVirtualPlots();
 			//*** Kili end
 			
-			//*** South Africa start
-			
-			configLoader.read_sa_stationList(configDirectory+"sa_stationList.csv");
-			
+			//*** South Africa start			
+			configLoader.read_sa_station_inventory(configDirectory+"sa_station_inventory.csv");			
 			//*** South Africa end
 
 			//*** sensor config	start		

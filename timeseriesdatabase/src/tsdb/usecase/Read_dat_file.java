@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 
 import tsdb.TimeConverter;
 import tsdb.TsDB;

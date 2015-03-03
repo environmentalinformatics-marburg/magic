@@ -3,7 +3,6 @@ package tsdb.web.api;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -19,9 +18,7 @@ import org.eclipse.jetty.server.Request;
 
 import tsdb.Sensor;
 import tsdb.remote.GeneralStationInfo;
-import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.Util;
 
 public class Handler_sensor_list extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();

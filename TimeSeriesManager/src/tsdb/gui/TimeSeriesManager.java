@@ -2,15 +2,11 @@ package tsdb.gui;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
@@ -22,9 +18,8 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import tsdb.TsDBFactory;
 import tsdb.TsDB;
-import tsdb.util.Util;
+import tsdb.TsDBFactory;
 import tsdb.gui.export.CollectorDialog;
 import tsdb.gui.info.LoggerTypeInfoDialog;
 import tsdb.gui.info.NewSensorInfoDialog;
@@ -35,11 +30,11 @@ import tsdb.gui.query.QueryDialog;
 import tsdb.gui.sensorquery.SensorQueryDialog;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
-import tsdb.run.StartServerTsDB;
+import tsdb.util.Util;
 
 public class TimeSeriesManager {
 
-	private static final Logger log = LogManager.getLogger();
+	//private static final Logger log = LogManager.getLogger();
 
 	public RemoteTsDB remoteTsDB;
 

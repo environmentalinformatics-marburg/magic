@@ -2,14 +2,10 @@ package tsdb.usecase;
 
 import java.util.concurrent.CompletionStage;
 
-import org.mapdb.BTreeMap;
-
 import tsdb.TsDBFactory;
 import tsdb.streamdb.ChunkMeta;
-import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.SensorMeta;
 import tsdb.streamdb.StreamDB;
-import tsdb.streamdb.StreamIterator;
 
 public class CountTsDBValues {
 
@@ -69,9 +65,6 @@ public class CountTsDBValues {
 		
 		
 		streamdb.close();
-		
-		CompletionStage c = null;
-
 	}
 
 }

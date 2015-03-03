@@ -1,13 +1,10 @@
 package tsdb.web.api;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -17,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.DataQuality;
 import tsdb.Region;
-import tsdb.TimeConverter;
 import tsdb.TsDBFactory;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.remote.RemoteTsDB;
