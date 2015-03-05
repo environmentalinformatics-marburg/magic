@@ -25,8 +25,8 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.bridge.CheckButtonBridge;
 import tsdb.gui.bridge.ComboBridge;
 
-public class DetailDialog extends TitleAreaDialog {
-	
+public class DetailDialog extends TitleAreaDialog {	
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private CollectorModel model;

@@ -36,6 +36,7 @@ public class StationView {
 		return node;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 

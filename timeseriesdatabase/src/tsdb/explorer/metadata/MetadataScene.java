@@ -13,6 +13,7 @@ import tsdb.explorer.TsdbScene;
 import tsdb.remote.RemoteTsDB;
 
 public class MetadataScene extends TsdbScene {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;
 	

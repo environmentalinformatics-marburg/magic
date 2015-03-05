@@ -6,8 +6,8 @@ import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.NewProcessingChain;
-import tsdb.util.iterator.NewProcessingChainMultiSources;
+import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 import static tsdb.util.AssumptionCheck.throwEmpty;
@@ -116,8 +116,8 @@ public class VirtualPlotIterator extends MoveIterator {
 	}
 	
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(processing_iterator, this);
+	public ProcessingChain getProcessingChain() {
+		return new ProcessingChainMultiSources(processing_iterator, this);
 	}
 }
 

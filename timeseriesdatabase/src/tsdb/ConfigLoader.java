@@ -5,6 +5,7 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -877,6 +878,32 @@ public class ConfigLoader {
 				}
 			} else {
 				log.warn("region section not found");
+			}
+			
+			section = ini.get("region_view_time_range");
+			if(section!=null) {
+				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:regionNameMap.entrySet()) {
+					String regionName = entry.getKey();
+					String range = entry.getValue();
+					Interval interval = Interval.parse(range);
+					if(interval!=null) {
+						if(interval.start>=1900&&interval.start<=2100&&interval.end>=1900&&interval.end<=2100) {
+							int startTime = (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(interval.start, 1, 1, 0, 0));
+							int endTime = (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(interval.end, 12, 31, 23, 0));
+							Region region = tsdb.getRegion(regionName);
+							if(region!=null) {
+								region.viewTimeRange = Interval.of(startTime,endTime);
+							} else {
+								log.warn("region not found: "+regionName);
+							}
+						} else {
+							log.warn("region_view_time_range section invalid year range "+range);
+						}
+					}
+				}
+			} else {
+				log.warn("region_view_time_range section not found");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

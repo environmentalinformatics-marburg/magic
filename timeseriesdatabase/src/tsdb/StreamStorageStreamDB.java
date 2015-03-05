@@ -73,7 +73,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	@Override
-	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long start, Long end, String[] eventSchema) {
+	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long start, Long end) {
 		log.info("StreamDB get "+stationName+" with "+Util.arrayToString(sensorNames)+"     at "+TimeConverter.oleMinutesToText(start)+" - "+TimeConverter.oleMinutesToText(end));
 		int minTimestamp;
 		int maxTimestamp;

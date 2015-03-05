@@ -104,9 +104,9 @@ public class UniversalDataBinFile {
 		//System.out.println(typeVendorLen+"\ttypeVendorLen");
 		byte[] typeVendorBytes = new byte[typeVendorLen]; 
 		mappedByteBuffer.get(typeVendorBytes);
-		String typeVendor = new String(typeVendorBytes);
+		/*String typeVendor =*/ new String(typeVendorBytes);
 		//System.out.println(typeVendor+"\ttypeVendor");
-		byte withCheckSum = mappedByteBuffer.get();
+		/*byte withCheckSum =*/ mappedByteBuffer.get();
 		//System.out.println(withCheckSum+"\twithCheckSum");
 		short moduleAdditionalDataLen = mappedByteBuffer.getShort();
 		//System.out.println(moduleAdditionalDataLen+"\tmoduleAdditionalDataLen");
@@ -115,7 +115,7 @@ public class UniversalDataBinFile {
 		}
 		double startTimeToDayFactor = mappedByteBuffer.getDouble();
 		//System.out.println(startTimeToDayFactor+"\tstartTimeToDayFactor");
-		short dActTimeDataType = mappedByteBuffer.getShort();
+		/*short dActTimeDataType =*/ mappedByteBuffer.getShort();
 		//System.out.println(dActTimeDataType+"\tdActTimeDataType");
 		double dActTimeToSecondFactor = mappedByteBuffer.getDouble();
 		//System.out.println(dActTimeToSecondFactor+"\tdActTimeToSecondFactor");
@@ -163,13 +163,13 @@ public class UniversalDataBinFile {
 			mappedByteBuffer.get();
 			String name = new String(nameBytes);
 			//System.out.println(name+"\tname");
-			short dataDirection = mappedByteBuffer.getShort();
+			/*short dataDirection =*/ mappedByteBuffer.getShort();
 			//System.out.println(dataDirection+"\tdataDirection");
 			short dataType = mappedByteBuffer.getShort();
 			//System.out.println(dataType+"\tdataType");
-			short fieldLen = mappedByteBuffer.getShort();
+			/*short fieldLen =*/ mappedByteBuffer.getShort();
 			//System.out.println(fieldLen+"\tfieldLen");
-			short precision = mappedByteBuffer.getShort();
+			/*short precision =*/ mappedByteBuffer.getShort();
 			//System.out.println(precision+"\tprecision");
 			short unitLen = mappedByteBuffer.getShort();
 			//System.out.println(unitLen+"\tunitLen");
@@ -182,7 +182,7 @@ public class UniversalDataBinFile {
 			if(additionalDataLen!=0) {
 				throw new RuntimeException("reading of additional optional data in element header not implemented");
 			}
-			byte b = mappedByteBuffer.get();
+			/*byte b =*/ mappedByteBuffer.get();
 			//System.out.println(b+"\t?");
 
 			sensorHeaders[i] = new SensorHeader(name,unit,dataType);			
@@ -379,23 +379,23 @@ public class UniversalDataBinFile {
 
 		DataRow[] tempRows = new DataRow[maxRowID+1];
 
-		int badRowCounter = 0;
-		int idPos = -1;
+		//int badRowCounter = 0;
+		//int idPos = -1;
 
 		for(int r=0;r<dataRows.length;r++) {
 			int id = dataRows[r].id;
 			if(id>=0&&id<=MAX_VALID_ROW_ID) {
 				tempRows[id] = dataRows[r];
 			} else {
-				badRowCounter++;
+				//badRowCounter++;
 			}
 		}
 
 		int rowCount=0;
-		int gapCount=0;
+		//int gapCount=0;
 		for(int r=0;r<tempRows.length;r++) {
 			if(tempRows[r]==null) {
-				gapCount++;
+				//gapCount++;
 			} else {
 				rowCount++;
 			}

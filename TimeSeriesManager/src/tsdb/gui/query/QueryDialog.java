@@ -10,10 +10,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -29,10 +32,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import tsdb.DataQuality;
 import tsdb.Region;
 import tsdb.Sensor;
-import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
-import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.graph.Node;
 import tsdb.gui.bridge.ComboBridge;
 import tsdb.raw.TimestampSeries;
 import tsdb.remote.PlotInfo;
@@ -41,10 +41,6 @@ import tsdb.util.CSV;
 import tsdb.util.CSVTimeType;
 import tsdb.util.Pair;
 import tsdb.util.Util;
-
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
 
 public class QueryDialog extends Dialog {
 
@@ -327,8 +323,8 @@ public class QueryDialog extends Dialog {
 		}
 
 
-		Long queryStart = Util.ifnull(beginDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
-		Long queryEnd = Util.ifnull(endDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
+		//Long queryStart = Util.ifnull(beginDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
+		//Long queryEnd = Util.ifnull(endDateTime, x->(Long) BaseAggregationTimeUtil.alignQueryTimestampToBaseAggregationTime(TimeConverter.DateTimeToOleMinutes(x)));
 		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
 		//{"hour","day","week","month","year"};
 		String aggText = comboAggregation.getText();
@@ -346,9 +342,9 @@ public class QueryDialog extends Dialog {
 			log.warn("GUI AggregationInterval not found");
 		}		
 
-		boolean checkPhysicalRange = false;
-		boolean checkStepRange = false;
-		boolean checkEmpiricalRange = false;
+		//boolean checkPhysicalRange = false;
+		//boolean checkStepRange = false;
+		//boolean checkEmpiricalRange = false;
 		boolean useInterpolation;
 		if(checkButtonInterpolated2.isEnabled()) {
 			useInterpolation = checkButtonInterpolated2.getSelection();
@@ -365,18 +361,18 @@ public class QueryDialog extends Dialog {
 			break;
 		case 1:
 			dq = DataQuality.PHYSICAL;
-			checkPhysicalRange = true;
+			//checkPhysicalRange = true;
 			break;
 		case 2:
 			dq = DataQuality.STEP;
-			checkPhysicalRange = true;
-			checkStepRange = true;
+			//checkPhysicalRange = true;
+			//checkStepRange = true;
 			break;
 		case 3:
 			dq = DataQuality.EMPIRICAL;
-			checkPhysicalRange = true;
-			checkStepRange = true;
-			checkEmpiricalRange = true;
+			//checkPhysicalRange = true;
+			//checkStepRange = true;
+			//checkEmpiricalRange = true;
 			break;
 		default:
 			log.warn("comboQuality error");
@@ -385,9 +381,9 @@ public class QueryDialog extends Dialog {
 
 
 		final AggregationInterval agg = aggregationInterval;
-		final boolean cPhysicalRange = checkPhysicalRange;
-		final boolean cStepRange = checkStepRange;
-		final boolean cEmpiricalRange = checkEmpiricalRange;		
+		//final boolean cPhysicalRange = checkPhysicalRange;
+		//final boolean cStepRange = checkStepRange;
+		//final boolean cEmpiricalRange = checkEmpiricalRange;		
 		final DataQuality dataQuality = dq;
 
 		buttonUpdate.setEnabled(false);
@@ -407,7 +403,7 @@ public class QueryDialog extends Dialog {
 					//TimeSeriesIterator result = qp.query_base_aggregated(plotID, querySchema, queryStart, queryEnd, dataQuality, agg, useInterpolation);
 
 					resultTimeSeries = Util.ifnull(result, x->TimestampSeries.create(x));*/
-					Node node;
+					//Node node;
 
 					if(useCache) {
 						resultTimeSeries = tsdb.cache(plotID, querySchema, agg);

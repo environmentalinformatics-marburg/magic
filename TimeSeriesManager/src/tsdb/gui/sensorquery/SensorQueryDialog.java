@@ -17,7 +17,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -112,7 +111,7 @@ public class SensorQueryDialog extends Dialog {
 		grpQuery.setLayoutData(gd_grpQuery);
 		grpQuery.setText("query");
 		RowLayout rl_grpQuery = new RowLayout(SWT.HORIZONTAL);
-		RowData row = new RowData();
+		//RowData row = new RowData();
 		rl_grpQuery.fill = true;
 		rl_grpQuery.center = true;
 		grpQuery.setLayout(rl_grpQuery);

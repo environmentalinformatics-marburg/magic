@@ -32,6 +32,7 @@ public class RegionView {
 		return node;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 		
@@ -55,13 +56,19 @@ public class RegionView {
 		detailPane.add(new Label("Full Name"), 0, 1);
 		detailPane.add(lblRegionLong, 1, 1);
 		
+		Label lblRegionViewTimeRange = new Label();
+		detailPane.add(new Label("View Time Range"), 0, 2);
+		detailPane.add(lblRegionViewTimeRange, 1, 2);
+		
 		tableRegion.getSelectionModel().selectedItemProperty().addListener((s,o,region)->{
 			if(region!=null) {
 				lblRegion.setText(region.name);
 				lblRegionLong.setText(region.longName);
+				lblRegionViewTimeRange.setText(region.viewTimeRange.toString());
 			} else {
 				lblRegion.setText(null);
 				lblRegionLong.setText(null);
+				lblRegionViewTimeRange.setText(null);
 			}
 		});
 		

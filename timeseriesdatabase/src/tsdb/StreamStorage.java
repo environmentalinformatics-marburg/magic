@@ -39,7 +39,7 @@ public interface StreamStorage {
 	 */
 	public void insertEventList(String streamName, List<DataRow> eventList, long first, long last, String[] sensorNames);
 
-	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp, String[] eventSchema);
+	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp);
 	
 	public void getInfo();
 

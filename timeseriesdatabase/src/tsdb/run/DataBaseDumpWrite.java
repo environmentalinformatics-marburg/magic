@@ -38,6 +38,7 @@ public class DataBaseDumpWrite {
 		Files.createDirectories(pathToFile.getParent());
 		//Files.createFile(pathToFile);
 		FileOutputStream fileOutputStream = new FileOutputStream(pathToFile.toFile());
+		@SuppressWarnings("resource")
 		DataOutputStream dataOutput = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
 
 		dataOutput.writeInt(TIME_SERIES_STREAM_HEADER_MARKER);		

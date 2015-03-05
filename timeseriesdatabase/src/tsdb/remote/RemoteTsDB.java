@@ -32,6 +32,7 @@ public interface RemoteTsDB extends Remote {
 	String[] getRegionLongNames() throws RemoteException;
 	@Deprecated
 	Region getRegionByLongName(String longName) throws RemoteException;
+	Region getRegionByPlot(String plotID) throws RemoteException;
 	
 	//general station
 	GeneralStationInfo[] getGeneralStations() throws RemoteException;
@@ -68,5 +69,5 @@ public interface RemoteTsDB extends Remote {
 	
 	//time series mask
 	TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) throws RemoteException;
-	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) throws RemoteException;	
+	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) throws RemoteException;
 }

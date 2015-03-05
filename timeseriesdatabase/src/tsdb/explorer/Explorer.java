@@ -9,7 +9,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import org.apache.logging.log4j.LogManager;
@@ -36,9 +35,9 @@ public class Explorer extends Application {
 		
 		StringProperty connectionTextProperty = new SimpleStringProperty();
 
-		//RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
+		RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
 		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local rmi connection to db");
-		RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote rmi connection to db (183er)");
+		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote rmi connection to db (183er)");
 		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote rmi connection to db (lab)");
 
 		if(tsdb==null) {
@@ -73,7 +72,7 @@ public class Explorer extends Application {
 				}
 
 				BorderPane borderPane = new BorderPane();
-				VBox vbox = new VBox(hboxMain);
+				//VBox vbox = new VBox(hboxMain);
 				borderPane.setCenter(hboxMain);
 				
 				Label labelConnection = new Label();

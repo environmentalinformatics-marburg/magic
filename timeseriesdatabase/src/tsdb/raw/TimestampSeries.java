@@ -235,8 +235,8 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 
 	@Override
 	public String toString() {
-		int n = entryList.size()>=10?10:entryList.size();
-		String s="";
+		int n = entryList.size()>=3?3:entryList.size();
+		String s=name+"\t"+TimeConverter.oleMinutesToLocalDateTime(getFirstTimestamp())+" - "+TimeConverter.oleMinutesToLocalDateTime(getLastTimestamp())+"\n";
 		s+="("+entryList.size()+")\t\t";
 		for(int i=0;i<sensorNames.length;i++) {
 			s+=sensorNames[i]+"\t";
@@ -245,7 +245,7 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 		for(int i=0;i<n;i++) {			
 			TsEntry entry = entryList.get(i);
 			float[] data = entry.data;
-			s+="["+entry.timestamp+"   "+TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"]\t";
+			s+=TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"\t";
 			for(int c=0;c<data.length;c++) {
 				s+=Util.floatToString(data[c])+"\t";
 			}
@@ -350,29 +350,37 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 
 	public static void writeToBinaryFile(TimestampSeries tss, String filename) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
+		RandomAccessFile raf = null;
 		try {
-			RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+			raf = new RandomAccessFile(filename, "rw");			
 			FileOutputStream fos = new FileOutputStream(raf.getFD());
 			objectOutputStream = new ObjectOutputStream(fos);
 			objectOutputStream.writeObject(tss);
 		} finally {
 			if (objectOutputStream != null) {
-				objectOutputStream.close();
-			} 		
+				objectOutputStream.close();				
+			}
+			if(raf!=null) {
+				raf.close();
+			}
 		}
 	}
 	
 	public static TimestampSeries readFromBinaryFile(String filename) throws IOException, ClassNotFoundException {
 		ObjectInputStream objectInputStream = null;
+		RandomAccessFile raf = null;
 		try {
-			RandomAccessFile raf = new RandomAccessFile(filename, "r");
+			raf = new RandomAccessFile(filename, "r");
 			FileInputStream fos = new FileInputStream(raf.getFD());
 			objectInputStream = new ObjectInputStream(fos);
 			return (TimestampSeries) objectInputStream.readObject();
 		} finally {
 			if (objectInputStream != null) {
 				objectInputStream.close();
-			} 		
+			}
+			if(raf!=null) {
+				raf.close();
+			}
 		}
 	}
 

@@ -23,8 +23,8 @@ import tsdb.DataQuality;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 
-public class CollectorDialog extends TitleAreaDialog {
-	
+public class CollectorDialog extends TitleAreaDialog {	
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private CollectorController controller;

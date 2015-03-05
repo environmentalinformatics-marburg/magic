@@ -2,8 +2,8 @@ package tsdb.aggregated.iterator;
 
 import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.iterator.NewProcessingChain;
-import tsdb.util.iterator.NewProcessingChainMultiSources;
+import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 public class DifferenceIterator extends TsIterator {
@@ -56,7 +56,7 @@ public class DifferenceIterator extends TsIterator {
 	}
 
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
+	public ProcessingChain getProcessingChain() {
+		return new ProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
 	}
 }

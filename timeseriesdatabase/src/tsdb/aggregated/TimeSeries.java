@@ -12,7 +12,7 @@ import tsdb.raw.TimestampSeries;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
-import tsdb.util.iterator.NewProcessingChain;
+import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.TsIterable;
 import tsdb.util.iterator.TsIterator;
 
@@ -55,7 +55,7 @@ public class TimeSeries implements TsIterable {
 	public DataQuality[][] dataQuality;
 	public boolean[][] dataInterpolated;
 
-	public TimeSeries(NewProcessingChain processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
+	public TimeSeries(ProcessingChain processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
 		//this.processingChain = new NewProcessingChainOneSource(processingChain,new ProcessingChainTitle("TimeSeries"));
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;

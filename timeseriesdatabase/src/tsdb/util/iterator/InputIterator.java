@@ -17,8 +17,8 @@ public abstract class InputIterator extends TsIterator {
 	}
 
 	@Override
-	public NewProcessingChain getProcessingChain() {		
-		return new NewProcessingChainOneSource(input_iterator,this);
+	public ProcessingChain getProcessingChain() {		
+		return new ProcessingChainOneSource(input_iterator,this);
 	}
 
 	

@@ -38,8 +38,9 @@ public class TestingStationsOfPlot {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
 		//String plotID = "cof3";
-		String plotID = "nkw1";
-		String[] querySchema = new String[]{"Ta_200"};
+		//String plotID = "nkw1";
+		String plotID = "sav0";
+		//String[] querySchema = new String[]{"Ta_200"};
 		
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		
@@ -47,7 +48,7 @@ public class TestingStationsOfPlot {
 		
 		for(TimestampInterval<StationProperties> i:virtualPlot.intervalList) {
 			
-			String stationID = i.value.get_serial();
+			//String stationID = i.value.get_serial();
 			TsIterator it = StreamTsIterator.of(tsdb.streamStorage.getRawSensorIterator(i.value.get_serial(), "Ta_200", i.start, i.end));
 			if(it!=null&&it.hasNext()) {
 				TimestampSeries ts = it.toTimestampSeries("ts");

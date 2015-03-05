@@ -24,6 +24,34 @@ public class TimestampInterval<T extends Serializable> implements Serializable {
 		throwGreater(start,end);
 		return (this.start==null?true:this.start<=start) && (this.end==null?true:end<=this.end);
 	}
+	
+	public TimestampInterval<T> filterByInterval(Long includedStart, Long includedEnd) {
+		throwGreater(includedStart,includedEnd);		
+		
+		Long filterStart = start;
+		if(includedStart!=null) {
+			if(filterStart==null) {
+				filterStart = includedStart;
+			} else if(filterStart<includedStart){
+				filterStart = includedStart;
+			}
+		}
+		Long filterEnd = end;
+		if(includedEnd!=null) {
+			if(filterEnd==null) {
+				filterEnd = includedEnd;
+			} else if(includedEnd<filterEnd) {
+				filterEnd = includedEnd;
+			}
+		}
+		
+		if(filterStart!=null&&filterEnd!=null&&filterEnd<filterStart) {
+			return null;
+		}
+		
+		return new TimestampInterval<T>(value, filterStart,filterEnd);
+		
+	}
 
 	@Override
 	public String toString() {

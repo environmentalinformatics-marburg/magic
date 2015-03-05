@@ -35,8 +35,8 @@ public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEn
 		return simpleName;
 	}
 	
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainSource(this);
+	public ProcessingChain getProcessingChain() {
+		return new ProcessingChainSource(this);
 	}
 	
 	@Override

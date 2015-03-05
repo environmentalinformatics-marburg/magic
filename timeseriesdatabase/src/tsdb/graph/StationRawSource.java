@@ -46,7 +46,7 @@ public class StationRawSource extends RawSource.Abstract {
 
 	@Override
 	public TsIterator get(Long start, Long end) {
-		return tsdb.streamStorage.getRawIterator(station.stationID, schema, start, end, station.loggerType.sensorNames);
+		return tsdb.streamStorage.getRawIterator(station.stationID, schema, start, end);
 		/*Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
 		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
 			return null;

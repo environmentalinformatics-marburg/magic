@@ -18,7 +18,7 @@ import org.mapdb.Serializer;
 
 public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
 	//private static final long serialVersionUID = -5310913775843602700L;
-
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private ArrayList<Interval> intervals;

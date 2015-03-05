@@ -19,8 +19,8 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class CSV {
-	
+public class CSV {	
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	public static void writeNoHeader(TsIterator it, String filename, String separator, String nanText, CSVTimeType csvTimeType) {

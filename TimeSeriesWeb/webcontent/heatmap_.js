@@ -9,7 +9,7 @@ var qualitiesText = ["0: no","1: physical","2: physical + step","3: physical + s
 var timeText = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var scaleFactors = [1,2,3,4];
 var testingImage = "";
-var scale_factor = 2;
+var scale_factor = 1;
 
 var sensors;
 
@@ -28,7 +28,7 @@ $(document).ready(function(){
 	$.each(timeText, function(i,text) {time_select.append(new Option(text,i));});
 	
 	$.each(scaleFactors, function(i,factor) {scale_factor_select.append(new Option("x"+factor,factor));});
-	scale_factor_select.val(2);
+	scale_factor_select.val(1);
 	
 	getID("region_select").onchange = updateGeneralStations;
 	getID("generalstation_select").onchange = updateSensors;	

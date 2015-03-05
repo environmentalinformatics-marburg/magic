@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -63,7 +62,7 @@ public class KiliCollector {
 			this.md5 = null;
 		}
 
-		public static final Comparator<CollectorEntry> LOGGER_FIRST_TIMESTAMP_COMPARATOR = new Comparator<KiliCollector.CollectorEntry>() {			
+		/*public static final Comparator<CollectorEntry> LOGGER_FIRST_TIMESTAMP_COMPARATOR = new Comparator<KiliCollector.CollectorEntry>() {			
 			@Override
 			public int compare(CollectorEntry a, CollectorEntry b) {
 				if(a.logger==null) {
@@ -88,7 +87,7 @@ public class KiliCollector {
 					return Integer.compare(a.lastTimestamp, b.lastTimestamp);
 				}				
 			}
-		};
+		};*/
 
 
 
@@ -337,13 +336,13 @@ public class KiliCollector {
 
 		String currentInfoPrefix = "";
 
-		int counter = 0;
+		//int counter = 0;
 		for(Entry<String, Path> ascMapEntry:ascCollectorMap.entrySet()) {
 
 			/*if(counter>100) {
 				break;
 			}*/
-			counter++;
+			//counter++;
 
 			String infoFilename = ascMapEntry.getKey();
 			Path ascPath = ascMapEntry.getValue();

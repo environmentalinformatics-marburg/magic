@@ -331,7 +331,7 @@ public class TimeSeriesLoaderBE {
 
 		//create events
 		Float[] payload = new Float[station.loggerType.sensorNames.length];
-		short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
+		//short sampleRate = (short) udbfTimeSeries.timeConverter.getTimeStep().toMinutes();
 		//iterate over input rows
 		for(int rowIndex=0;rowIndex<udbfTimeSeries.time.length;rowIndex++) {			
 			long timestamp = udbfTimeSeries.time[rowIndex];

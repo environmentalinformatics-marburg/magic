@@ -51,6 +51,7 @@ public class VirtualPlotView {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 

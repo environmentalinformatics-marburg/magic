@@ -56,7 +56,7 @@ public class TimeframeSlider extends Canvas {
 	private Color colorWidgetBorder;
 	private Color colorBlack;
 	private Color colorEmptyBackgroundHover;
-	private Color colorDark;
+	//private Color colorDark;
 
 	public TimeframeSlider(Composite parent, int style) {
 		super(parent, style | SWT.DOUBLE_BUFFERED);
@@ -109,7 +109,7 @@ public class TimeframeSlider extends Canvas {
 		colorWidgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 		colorWidgetBorder = display.getSystemColor(SWT.COLOR_WIDGET_BORDER);
 		colorBlack = display.getSystemColor(SWT.COLOR_BLACK);
-		colorDark = new Color(display,100,100,100);
+		//colorDark = new Color(display,100,100,100);
 		colorEmptyBackgroundHover = new Color(display,250,250,250);
 
 		hover = false;

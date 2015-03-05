@@ -10,7 +10,7 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 public class MyEchoSocket implements WebSocketListener {
 	private static final Logger log = LogManager.getLogger();
 
-	private Session session;
+	//private Session session;
 	private RemoteEndpoint remote;
 
 	public MyEchoSocket() {
@@ -31,7 +31,7 @@ public class MyEchoSocket implements WebSocketListener {
 
 	@Override
 	public void onWebSocketConnect(Session session) {
-		this.session = session;
+		//this.session = session;
 		this.remote = session.getRemote();
 		System.out.println(remote.getClass());
 		System.out.println("onWebSocketConnect: "+session.getUpgradeRequest().getRequestURI());

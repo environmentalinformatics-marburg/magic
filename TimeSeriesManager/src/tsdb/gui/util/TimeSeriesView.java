@@ -3,7 +3,6 @@ package tsdb.gui.util;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +13,11 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
-import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.util.Painter.PosHorizontal;
 import tsdb.gui.util.Painter.PosVerical;
-import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
+import tsdb.raw.TsEntry;
 import tsdb.util.Util;
 
 public class TimeSeriesView {
@@ -335,9 +333,9 @@ public class TimeSeriesView {
 		return (int) (yEnd - ((yValue - minValue)*valueFactor));
 	}
 
-	private static LocalDateTime timestampToDataTime(double timestamp) {
+	/*private static LocalDateTime timestampToDataTime(double timestamp) {
 		return TimeConverter.oleMinutesToLocalDateTime((long)timestamp);
-	}
+	}*/
 
 
 	private void drawXYAxis(GC gc) {

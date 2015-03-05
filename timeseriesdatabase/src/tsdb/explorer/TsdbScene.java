@@ -1,14 +1,12 @@
 package tsdb.explorer;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 public abstract class TsdbScene {
 
@@ -61,7 +59,7 @@ public abstract class TsdbScene {
 			}
 		});
 		
-		EventHandler<WindowEvent> value = null;
+		//EventHandler<WindowEvent> value = null;
 		stage.setOnCloseRequest(e->onClose());
 
 

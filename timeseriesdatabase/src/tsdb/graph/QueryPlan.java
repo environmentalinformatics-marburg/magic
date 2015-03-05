@@ -15,6 +15,7 @@ import tsdb.util.Util;
  *
  */
 public class QueryPlan {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	/**

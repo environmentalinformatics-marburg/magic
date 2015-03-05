@@ -221,6 +221,7 @@ public class TimeSeriesPainterFX implements TimeSeriesPainter {
 		//TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
 	}
 
+	@SuppressWarnings("unused")
 	private static Color getSpectraColor(float value) {
 		return null;
 		/*

@@ -2,7 +2,6 @@ package tsdb.usecase;
 
 import java.util.Arrays;
 
-import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
@@ -25,7 +24,7 @@ public class QueryPlot {
 				System.out.println(stationProperies);
 				String stationID = stationProperies.get_serial();
 				System.out.println("stationID "+stationID);
-				Station station = tsdb.getStation(stationID);
+				//Station station = tsdb.getStation(stationID);
 				String[] it = tsdb.streamStorage.getSensorNames(stationID);
 				System.out.println(Arrays.toString(it));
 			}

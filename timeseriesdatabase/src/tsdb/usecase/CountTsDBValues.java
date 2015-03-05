@@ -1,7 +1,5 @@
 package tsdb.usecase;
 
-import java.util.concurrent.CompletionStage;
-
 import tsdb.TsDBFactory;
 import tsdb.streamdb.ChunkMeta;
 import tsdb.streamdb.SensorMeta;

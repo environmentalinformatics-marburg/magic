@@ -20,11 +20,11 @@ import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
 
 public class TestingWebSocket {
+	@SuppressWarnings("unused")
+	private static final Logger log = LogManager.getLogger();
 
 	private static final int WEB_SERVER_PORT = 8080;
 	private static final String WEB_SERVER_BASE_URL = "/static";
-	
-	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) throws Exception {
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());

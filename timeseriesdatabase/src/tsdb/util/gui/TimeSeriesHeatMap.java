@@ -14,6 +14,7 @@ import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesHeatMap {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private final TimestampSeries ts;
@@ -52,7 +53,7 @@ public class TimeSeriesHeatMap {
 
 		tsp.setColor(150, 150, 150);
 		//tsp.setColor(0, 0, 0);
-		int start_year = TimeConverter.oleMinutesToLocalDateTime(start).getYear();
+		//int start_year = TimeConverter.oleMinutesToLocalDateTime(start).getYear();
 		//tsp.drawText(""+start_year+"", xMin, yMax, PosHorizontal.LEFT, PosVerical.BOTTOM);
 
 

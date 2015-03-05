@@ -53,6 +53,7 @@ public class SensorView {
 		return node;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 

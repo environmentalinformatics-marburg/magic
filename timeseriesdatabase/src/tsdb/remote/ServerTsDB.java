@@ -133,6 +133,29 @@ public class ServerTsDB implements RemoteTsDB {
 		return tsdb.getRegionByLongName(longName);
 	}
 
+	@Override
+	public Region getRegionByPlot(String plotID) {
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			GeneralStation general = virtualPlot.generalStation;
+			if(general!=null) {
+				return general.region;
+			} else {
+				return null;
+			}
+		}
+		Station station = tsdb.getStation(plotID); 
+		if(station!=null) {
+			GeneralStation general = station.generalStation;
+			if(general!=null) {
+				return general.region;
+			} else {
+				return null;
+			}
+		}
+		return null;
+	}
+
 	// ---------------------------- general station
 	@Override
 	public GeneralStationInfo[] getGeneralStations() {
@@ -373,9 +396,9 @@ public class ServerTsDB implements RemoteTsDB {
 	public TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) {
 		return tsdb.streamStorage.getTimeSeriesMask(stationName, sensorName);
 	}
-	
+
 	@Override
 	public void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) {
-		 tsdb.streamStorage.setTimeSeriesMask(stationName, sensorName, timeSeriesMask);
+		tsdb.streamStorage.setTimeSeriesMask(stationName, sensorName, timeSeriesMask);
 	}
 }

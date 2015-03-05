@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
 import tsdb.DataQuality;
+import tsdb.Region;
 import tsdb.TimeConverter;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TimestampSeries;
@@ -95,8 +96,14 @@ public class Handler_query_heatmap extends MethodHandler {
 				return;
 			}				
 		} else {
-			startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
-			endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
+			Region region = tsdb.getRegionByPlot(plot);
+			if(region!=null) {
+				startTime = (long) region.viewTimeRange.start;
+				endTime = (long) region.viewTimeRange.end;
+			} else {			
+				startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
+				endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
+			}
 		}
 
 		try {

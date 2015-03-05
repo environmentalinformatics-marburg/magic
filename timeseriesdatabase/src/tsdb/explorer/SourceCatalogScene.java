@@ -74,6 +74,7 @@ public class SourceCatalogScene extends TsdbScene {
 		};
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Parent createContent() {
 		

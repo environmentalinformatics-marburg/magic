@@ -9,6 +9,7 @@ import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamIterator;
 
 public class TestingSouthAfricaQuery {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {

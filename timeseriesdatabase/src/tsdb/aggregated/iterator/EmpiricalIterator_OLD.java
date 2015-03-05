@@ -6,8 +6,8 @@ import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.NewProcessingChain;
-import tsdb.util.iterator.NewProcessingChainMultiSources;
+import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 @Deprecated
@@ -111,7 +111,7 @@ public class EmpiricalIterator_OLD extends MoveIterator {
 	}
 	
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(input_iterator,compareIterators, this);
+	public ProcessingChain getProcessingChain() {
+		return new ProcessingChainMultiSources(input_iterator,compareIterators, this);
 	}
 }

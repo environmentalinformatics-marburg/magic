@@ -9,8 +9,8 @@ import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.NewProcessingChain;
-import tsdb.util.iterator.NewProcessingChainMultiSources;
+import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -85,7 +85,7 @@ public class AverageIterator extends MoveIterator {
 	}
 	
 	@Override
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainMultiSources(input_iterators, this);
+	public ProcessingChain getProcessingChain() {
+		return new ProcessingChainMultiSources(input_iterators, this);
 	}
 }

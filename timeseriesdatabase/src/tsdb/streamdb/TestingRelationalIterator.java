@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TsDBFactory;
 
 public class TestingRelationalIterator {
-
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {

@@ -20,7 +20,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
@@ -345,7 +344,6 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 						try {
 							Platform.runLater(()->{log.info("RUN_LATER imageProperty.set");queryEntry.imageProperty.set(image);});
-							Task a;
 						} catch(Exception e) {
 							log.error(e);
 						}

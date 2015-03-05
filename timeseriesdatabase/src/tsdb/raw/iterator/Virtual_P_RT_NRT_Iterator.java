@@ -11,6 +11,10 @@ import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
 public class Virtual_P_RT_NRT_Iterator extends InputIterator {
+	
+	private static float MAX_DELTA = 15;
+	
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private final int pos_P_container_RT;
@@ -45,7 +49,7 @@ public class Virtual_P_RT_NRT_Iterator extends InputIterator {
 				prevDelta = 0f;
 			} else {
 				float delta = v-prevV;
-				if(prevDelta>-0.5f && delta>=0f && delta<=50f) {
+				if(prevDelta>-0.5f && delta>=0f && delta<=MAX_DELTA) {
 					result[pos_P_RT_NRT] = delta;
 				} else {
 					result[pos_P_RT_NRT] = 0f;

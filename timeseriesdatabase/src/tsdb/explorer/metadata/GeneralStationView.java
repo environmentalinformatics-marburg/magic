@@ -32,6 +32,7 @@ public class GeneralStationView {
 		return node;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 				

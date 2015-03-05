@@ -31,7 +31,7 @@ public class GritBotDataCreation {
 
 	}
 	
-	private static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
+	public static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
 		PrintStream printStream = new PrintStream(filename);
 		
 		while(it.hasNext()) {

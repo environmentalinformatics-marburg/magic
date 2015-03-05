@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.util.iterator.TsIterator;
 
 public class Statistics {
-	
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 	
 	public static class StatisticsData {

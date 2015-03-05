@@ -85,7 +85,7 @@ public class ZipExportProxy {
 			@Override
 			public void run() {
 				try {
-					boolean ret = zipexport.writeToStream(outputstream);
+					/*boolean ret =*/ zipexport.writeToStream(outputstream);
 					outputstream.close();
 					finished = true;
 				} catch(Exception e) {

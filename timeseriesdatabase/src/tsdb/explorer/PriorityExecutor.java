@@ -23,7 +23,6 @@ public class PriorityExecutor {
 		final int seqNum;
 		final int priority;
 		public PriorityRunnable(Runnable entry,int seqNum,int priority) {
-			seqNum = seqNum;
 			this.entry = entry;
 			this.seqNum = seqNum;
 			this.priority = priority;

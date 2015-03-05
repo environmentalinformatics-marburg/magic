@@ -30,12 +30,16 @@ public class TimeSeriesDiagram {
 
 	private float dataMinValue;
 	private float dataMaxValue;
+	@SuppressWarnings("unused")
 	private float dataValueRange;
+	@SuppressWarnings("unused")
 	private float dataCount;
+	@SuppressWarnings("unused")
 	private float dataSum;
 
 	private long dataMinTimestamp;
 	private long dataMaxTimestamp;
+	@SuppressWarnings("unused")
 	private long dataTimestampRange;
 
 	private static final float borderTop = 5;
