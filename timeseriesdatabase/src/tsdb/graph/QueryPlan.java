@@ -8,6 +8,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.util.Util;
+import tsdb.util.iterator.TsIterator;
 
 /**
  * With QueryPlan query graphs for specific queries a are build
@@ -30,17 +31,70 @@ public class QueryPlan {
 	 */
 	public static Node plot(TsDB tsdb, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		String[] schema = columnNames;
-		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
-		Continuous continuous;
-		if(interpolated) {
-			continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
-		} else {
-			continuous = continuousGen.get(plotID, schema);
+
+		if(plotID.indexOf(':')<0) { //plotID without sub station
+			if(aggregationInterval!=AggregationInterval.RAW) { // aggregated
+				ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
+				Continuous continuous;
+				if(interpolated) {
+					continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
+				} else {
+					continuous = continuousGen.get(plotID, schema);
+				}
+				return Aggregated.of(tsdb, continuous, aggregationInterval);
+			} else { // raw
+				if(dataQuality!=DataQuality.NO&&dataQuality!=DataQuality.Na) {
+					dataQuality = DataQuality.NO;
+					log.warn("raw query quality check not supported");
+				}
+				if(interpolated) {
+					interpolated = false;
+					log.warn("raw query interpolation not supported");
+				}
+				return RawSource.of(tsdb, plotID, schema);
+			}			
+		} else { // plotID of structure plotID:stationID
+			if(aggregationInterval!=AggregationInterval.RAW) { // aggregated
+				if(dataQuality==DataQuality.EMPIRICAL) {
+					dataQuality = DataQuality.STEP;
+					log.warn("query of plotID:stationID: DataQuality.EMPIRICAL not supported");
+				}
+				if(interpolated) {
+					interpolated = false;
+					log.warn("query of plotID:stationID: interpolation not supported");
+				}
+				String[] parts = plotID.split(":");
+				if(parts.length!=2) {
+					log.error("not valid name: "+plotID);
+					return null;
+				}
+				NodeGen stationGen = getStationGen(tsdb, dataQuality);
+				Base base = VirtualPlotStationBase.of(tsdb, parts[0], parts[1], schema, stationGen);
+				if(base==null) {
+					return null;
+				}
+				Continuous continuous = Continuous.of(base);
+				return Aggregated.of(tsdb, continuous, aggregationInterval);
+			} else { // raw
+				if(dataQuality!=DataQuality.NO&&dataQuality!=DataQuality.Na) {
+					dataQuality = DataQuality.NO;
+					log.warn("raw query quality check not supported");
+				}
+				if(interpolated) {
+					interpolated = false;
+					log.warn("raw query interpolation not supported");
+				}
+				String[] parts = plotID.split(":");
+				if(parts.length!=2) {
+					log.error("not valid name: "+plotID);
+					return null;
+				}
+				return VirtualPlotStationRawSource.of(tsdb, parts[0], parts[1], schema);
+			}	
 		}
-		return Aggregated.of(tsdb, continuous, aggregationInterval);
-		
+
 	}
-	
+
 	public static Node plotDifference(TsDB tsdb, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		String[] schema = columnNames;
 		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);

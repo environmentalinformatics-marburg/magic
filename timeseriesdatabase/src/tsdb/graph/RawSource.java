@@ -26,7 +26,17 @@ public interface RawSource extends Node {
 		Abstract(TsDB tsdb) {
 			throwNull(tsdb);
 			this.tsdb = tsdb;
-		}		
+		}
+		
+		@Override
+		public final boolean isContinuous() {
+			return false;
+		}
+
+		@Override
+		public final boolean isConstantTimestep() {
+			return false;
+		}
 	}
 
 }

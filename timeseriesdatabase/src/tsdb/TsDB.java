@@ -15,6 +15,11 @@ import org.apache.logging.log4j.Logger;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.catalog.SourceCatalog;
+import tsdb.graph.Aggregated;
+import tsdb.graph.Base;
+import tsdb.graph.Continuous;
+import tsdb.graph.NodeGen;
+import tsdb.graph.VirtualPlotStationBase;
 
 /**
  * This is the main class of the timeseries database.
@@ -75,9 +80,9 @@ public class TsDB {
 	//*** begin persistent information ***
 
 	/**
-	 * EventStore is the storage of all time series
+	 * storage of all time series
 	 */
-	public StreamStorage streamStorage;
+	public StreamStorageStreamDB streamStorage;
 
 	public CacheStorage cacheStorage;
 
@@ -494,7 +499,7 @@ public class TsDB {
 				sensorNames.add(name);
 			}
 		}
-		if(sensorNames.size()==0) {
+		if(sensorNames.isEmpty()) {
 			return null;
 		}
 		return sensorNames.toArray(new String[0]);
@@ -503,11 +508,19 @@ public class TsDB {
 	public Set<String> getBaseAggregationSensorNames() {
 		return baseAggregationSensorNameSet;
 	}
+	
+	public boolean isBaseSchema(String[] schema) {
+		for(String sensorName:schema) {
+			if(!baseAggregationSensorNameSet.contains(sensorName)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	//*********************************************** end base aggregation *************************************************************************
 
 	public String[] getValidSchema(String plotID, String[] schema) {
-		log.info(" ---------  "+Arrays.toString(schema)+"  "+plotID);
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return virtualPlot.getValidSchemaEntries(schema);
@@ -515,7 +528,16 @@ public class TsDB {
 		Station station = getStation(plotID);
 		if(station!=null) {
 			return station.getValidSchemaEntries(schema);
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
 		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getValidSchemaEntries(schema);
+		}
+		
 		throw new RuntimeException("plotID not found: "+plotID);
 	}
 

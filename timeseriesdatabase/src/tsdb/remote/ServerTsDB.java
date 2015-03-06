@@ -187,6 +187,15 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
+	public String[] getPlotStations(String plotID) {
+		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+		if(virtualPlot==null) {
+			return null;
+		}
+		return virtualPlot.getStationIDs();
+	}
+
+	@Override
 	public VirtualPlotInfo[] getVirtualPlots() {
 		return tsdb.getVirtualPlots().stream().map(v->new VirtualPlotInfo(v)).toArray(VirtualPlotInfo[]::new);
 	}
@@ -340,26 +349,6 @@ public class ServerTsDB implements RemoteTsDB {
 
 	@Override
 	public TimestampSeries plot(String queryType, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
-		if(AggregationInterval.RAW==aggregationInterval) {
-			try {
-				RawSource rawSource = RawSource.of(tsdb, plotID, columnNames);
-				if(rawSource!=null) {
-					TsIterator it = rawSource.get(start, end);
-					if(it==null||!it.hasNext()) {
-						return null;
-					}
-					return it.toTimestampSeries(plotID);
-				}
-			} catch (Exception e) {
-				log.error(e);
-				return null;
-			}
-
-		}
-
-
-
-
 		Node node = null;
 		if(queryType==null||queryType.equals("standard")) {		
 			node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);

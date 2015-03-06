@@ -43,6 +43,7 @@ public interface RemoteTsDB extends Remote {
 	//plot station virtualPlot
 	PlotInfo[] getPlots() throws RemoteException;
 	StationInfo[] getStations() throws RemoteException;
+	String[] getPlotStations(String plotID) throws RemoteException;	
 	VirtualPlotInfo[] getVirtualPlots() throws RemoteException;
 	VirtualPlotInfo getVirtualPlot(String plotID) throws RemoteException;
 	String[] getStationNames() throws RemoteException;

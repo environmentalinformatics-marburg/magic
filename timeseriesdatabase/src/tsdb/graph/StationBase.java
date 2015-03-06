@@ -58,11 +58,6 @@ public class StationBase extends Base.Abstract {
 	}
 
 	@Override
-	public boolean isContinuous() {
-		return false; // maybe todo
-	}
-
-	@Override
 	public String[] getSchema() {
 		return tsdb.getBaseSchema(source.getSchema());
 	}

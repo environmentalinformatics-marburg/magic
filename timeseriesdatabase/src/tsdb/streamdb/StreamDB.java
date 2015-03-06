@@ -431,7 +431,7 @@ public class StreamDB {
 				streamIteratorList.add(it);
 			}
 		}
-		return new RelationalIterator(streamIteratorList.toArray(new StreamIterator[0]),sensorNames);
+		return new RelationalIterator(streamIteratorList,sensorNames);
 	}
 
 	public BTreeMap<String, SensorMeta> getSensorMap(StationMeta stationMeta) {

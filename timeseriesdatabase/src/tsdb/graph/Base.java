@@ -35,6 +35,16 @@ public interface Base extends Node {
 		Abstract(TsDB tsdb) {
 			throwNull(tsdb);
 			this.tsdb = tsdb;
-		}		
+		}
+		
+		@Override
+		public final boolean isConstantTimestep() {
+			return true;
+		}
+		
+		@Override
+		public boolean isContinuous() {
+			return false;
+		}
 	}
 }

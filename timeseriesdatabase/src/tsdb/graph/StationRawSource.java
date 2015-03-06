@@ -47,15 +47,6 @@ public class StationRawSource extends RawSource.Abstract {
 	@Override
 	public TsIterator get(Long start, Long end) {
 		return tsdb.streamStorage.getRawIterator(station.stationID, schema, start, end);
-		/*Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(station.stationID, start, end);
-		if(rawEventIterator==null||!rawEventIterator.hasNext()) {
-			return null;
-		}
-		EventConverterIterator raw_iterator = new EventConverterIterator(station.loggerType.sensorNames, rawEventIterator, schema);
-		if(!raw_iterator.hasNext()) {
-			return null;
-		}
-		return raw_iterator;*/
 	}
 
 	@Override
@@ -66,15 +57,5 @@ public class StationRawSource extends RawSource.Abstract {
 	@Override
 	public String[] getSchema() {
 		return schema;
-	}
-
-	@Override
-	public boolean isConstantTimestep() {
-		return false;
-	}
-	
-	@Override
-	public boolean isContinuous() {
-		return false;
 	}	
 }

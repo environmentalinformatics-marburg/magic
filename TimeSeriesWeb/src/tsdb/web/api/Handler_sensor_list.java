@@ -34,7 +34,12 @@ public class Handler_sensor_list extends MethodHandler {
 		String plot = request.getParameter("plot");
 		String general_station = request.getParameter("general_station");
 		String region = request.getParameter("region");
-		if(!((plot!=null&&general_station==null&&region==null)||(plot==null&&general_station!=null&&region==null)||(plot==null&&general_station==null&&region!=null))) {
+		String station = request.getParameter("station");
+		if(!(     (plot!=null&&general_station==null&&region==null&&station==null)
+				||(plot==null&&general_station!=null&&region==null&&station==null)
+				||(plot==null&&general_station==null&&region!=null&&station==null)
+				||(plot==null&&general_station==null&&region==null&&station!=null)
+			)) {
 			log.warn("wrong call");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
@@ -55,6 +60,8 @@ public class Handler_sensor_list extends MethodHandler {
 					}
 				}
 				sensorNames = sensorNameSet.toArray(new String[0]);
+			} else if(station!=null) {
+				sensorNames = tsdb.getSensorNamesOfPlot(station); //TODO change to just query stations
 			}
 			if(sensorNames==null) {
 				log.error("sensorNames null: "+plot);

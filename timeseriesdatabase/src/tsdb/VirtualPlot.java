@@ -193,7 +193,6 @@ public class VirtualPlot {
 				Station station = tsdb.getStation(stationID);
 				if(station!=null) {
 					String[] stationSchema = station.getSchema();
-					log.info("in     *********************"+Arrays.toString(stationSchema));
 					if(schemaOverlaps(stationSchema,schema)) {
 						if(overlaps(queryStart, queryEnd, interval.start, interval.end)) {
 							resultIntervalList.add(interval);
@@ -333,5 +332,13 @@ public class VirtualPlot {
 		} else {
 			elevationTemperature = Float.NaN;
 		}
+	}
+	
+	public String[] getStationIDs() {
+		TreeSet<String> set = new TreeSet<String>();
+		for(TimestampInterval<StationProperties> interval:intervalList) {
+			set.add(interval.value.get_serial());
+		}
+		return set.toArray(new String[0]);
 	}
 }

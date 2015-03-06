@@ -79,6 +79,7 @@ public class Aggregated extends Continuous.Abstract {
 			}
 			return year_iterator;
 		}
+		new RuntimeException().printStackTrace();
 		log.warn("unknown aggregation: "+aggregationInterval);
 		return null;		
 		/*AggregationIterator aggregation_iterator = new AggregationIterator(tsdb, continuous_iterator, aggregationInterval);

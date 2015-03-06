@@ -1,5 +1,7 @@
 package tsdb.aggregated.iterator;
 
+import java.util.Collection;
+
 import tsdb.DataQuality;
 import tsdb.raw.TsEntry;
 import tsdb.util.TsSchema;
@@ -9,10 +11,9 @@ import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
-
 import static tsdb.util.AssumptionCheck.throwEmpty;
 
-public class VirtualPlotIterator extends MoveIterator {
+public class MergeIterator extends MoveIterator {
 
 	public static TsSchema createSchema(String[] result_names, TsIterator[] input_iterator) {
 		throwEmpty(input_iterator);
@@ -36,8 +37,12 @@ public class VirtualPlotIterator extends MoveIterator {
 	private int[][] processing_position_index;
 
 	private boolean processQualityFlags;
+	
+	public MergeIterator(String[] result_schema, Collection<TsIterator> input_iterator, String debugTextplotID) {
+		this(result_schema,input_iterator.toArray(new TsIterator[0]),debugTextplotID);
+	}
 
-	public VirtualPlotIterator(String[] result_schema, TsIterator[] input_iterator, String debugTextplotID) {
+	public MergeIterator(String[] result_schema, TsIterator[] input_iterator, String debugTextplotID) {
 		super(createSchema(result_schema, input_iterator));
 
 		this.result_schema = result_schema;

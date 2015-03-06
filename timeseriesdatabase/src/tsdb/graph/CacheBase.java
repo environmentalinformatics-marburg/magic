@@ -66,11 +66,6 @@ public class CacheBase extends Base.Abstract {
 	}
 
 	@Override
-	public boolean isContinuous() {
-		return false; //TODO
-	}
-
-	@Override
 	public String[] getSchema() {
 		return schema;
 	}

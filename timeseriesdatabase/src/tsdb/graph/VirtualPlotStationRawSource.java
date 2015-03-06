@@ -2,6 +2,9 @@ package tsdb.graph;
 
 import static tsdb.util.AssumptionCheck.throwNulls;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,6 +12,9 @@ import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.streamdb.RelationalIterator;
+import tsdb.streamdb.StreamIterator;
+import tsdb.streamdb.StreamTsIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -60,44 +66,34 @@ public class VirtualPlotStationRawSource extends RawSource.Abstract {
 
 	@Override
 	public TsIterator get(Long start, Long end) {
-		TimestampInterval<StationProperties> interval = null;
-		for(TimestampInterval<StationProperties> i:virtualPlot.intervalList) {
-			if(station.stationID.equals(i.value.get_serial())) {
-				if(interval==null) {
-					interval = i.filterByInterval(start, end);
-				} else {
-					new RuntimeException("multiple intervals for virtualPlot at station not supported: "+virtualPlot+"  "+station);
+		List<StreamIterator> processing_iteratorList = new ArrayList<StreamIterator>();	
+		for(TimestampInterval<StationProperties> interval:virtualPlot.intervalList) {
+			if(station.stationID.equals(interval.value.get_serial())) {				
+				String[] stationSchema = tsdb.getValidSchema(station.stationID, sensorNames);
+				TimestampInterval<StationProperties> filteredInterval = interval.filterByInterval(start, end);
+				if(filteredInterval!=null) {
+					for(String sensorName:stationSchema) {
+						StreamIterator it = tsdb.streamStorage.getRawSensorIterator(station.stationID, sensorName, filteredInterval.start, filteredInterval.end);
+						if(it!=null&&it.hasNext()) {
+							processing_iteratorList.add(it);
+						}
+					}
 				}
 			}
 		}
 
-		if(interval==null) {
+		if(processing_iteratorList.isEmpty()) {
 			return null;
 		}
-
-		log.info("add interval "+interval);
-
-		TsIterator it = tsdb.streamStorage.getRawIterator(station.stationID, sensorNames, interval.start, interval.end);
-
-		if(it==null||!it.hasNext()) {		
-			return null;
+		if(processing_iteratorList.size()==1) {
+			return new StreamTsIterator(processing_iteratorList.get(0));
 		}
-		return it;
+		return new RelationalIterator(processing_iteratorList, sensorNames);
 	}
 
 	@Override
 	public Station getSourceStation() {
 		return station;
-	}
-
-	@Override
-	public boolean isContinuous() {
-		return false;
-	}
-
-	@Override
-	public boolean isConstantTimestep() {
-		return false;
 	}
 
 	@Override

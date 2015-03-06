@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Visualisation of one station of one plot</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<script src="jquery-2.1.1.min.js"></script>
+<script src="visual_plotstation.js"></script>
+<link rel="icon" type="image/png" href="favicon.png" />
+
+<script type="text/javascript">
+$(document).ready(document_ready);
+</script>
+
+<style type="text/css">
+body {background-color:#f6f6f6}
+.input_entity {display:inline-block}
+.input_entity label {display:block;text-align:center}
+</style>
+
+</head>
+
+status: <div id="status" style="display:inline-block"></div>
+<hr/>
+<div class="input_bar">
+
+<div class="input_entity">
+<label>Region</label>
+<select id="region_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<label>General</label>
+<select id="generalstation_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<label>Plot</label>
+<select id="plot_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<label>Station</label>
+<select id="station_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<label>Time</label>
+<select id="time_year_select" class="blockable"></select>
+<select id="time_month_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<label>Aggregation</label>
+<select id="aggregation_select" class="blockable"></select>
+</div>
+
+<div class="input_entity" id="div_quality_select">
+<label>Quality Check</label>
+<select id="quality_select" class="blockable"></select>
+</div>
+
+<div class="input_entity">
+<button id="button_visualise" class="blockable">visualise sensors</button>
+</div>
+
+
+</div> <!-- input_bar -->
+<hr/>
+<div id="div_result"></div>
+
+
+</body>
+
+</html>

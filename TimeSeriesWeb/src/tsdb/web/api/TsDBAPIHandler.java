@@ -48,6 +48,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 		addMethodHandler(new Handler_query_heatmap(tsdb));
 		addMethodHandler(new Handler_timespan(tsdb));
 		addMethodHandler(new Handler_heatmap_scale(tsdb));
+		addMethodHandler(new Handler_plotstation_list(tsdb));
 	}
 	
 	private void addMethodHandler(MethodHandler methodHandler) {
