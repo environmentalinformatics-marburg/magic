@@ -6,7 +6,7 @@ resultpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
 library(Rainfall)
 
 datasetTime<-"day"
-samplesize=0.1 # number of scenes for training
+samplesize=0.05 # number of scenes for training
 
 
 
@@ -74,7 +74,7 @@ for (i in months){
       
       ### calculate predictors #################################################
       pred<-calculatePredictors(scenerasters,sunzenith=sunzenith,spectral=spectral,texture=texture,
-                          shape=shape,further=further,pptext=pptext,zonstat=zonstat,
+                          shape=shape,further=further,pptext=pptext,zonstat=zonstat,filterstat=filterstat,
                           date=date)
       pred<-stack(pred,radardata)
       names(pred)[nlayers(pred)]="Radar"
