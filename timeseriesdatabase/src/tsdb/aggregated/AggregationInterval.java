@@ -38,6 +38,8 @@ public enum AggregationInterval {
 	
 	public Aggregation toAggregation() {
 		switch(this) {
+		case RAW:
+			return Aggregation.NO;
 		case HOUR:
 			return Aggregation.CONSTANT_STEP;
 		case DAY:
@@ -56,6 +58,8 @@ public enum AggregationInterval {
 	
 	public int toTimeStep() {
 		switch(this) {
+		case RAW:
+			return TsSchema.NO_CONSTANT_TIMESTEP;
 		case HOUR:
 			return 60;
 		case DAY:
@@ -74,6 +78,7 @@ public enum AggregationInterval {
 	
 	public static AggregationInterval parse(String text) {
 		if(text==null) {
+			log.warn("aggregation text null");
 			return null;
 		}
 		switch(text.trim().toLowerCase()) {
@@ -94,6 +99,4 @@ public enum AggregationInterval {
 			return null;
 		}		
 	}
-
-
 }

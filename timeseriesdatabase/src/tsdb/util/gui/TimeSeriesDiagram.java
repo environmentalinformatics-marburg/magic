@@ -15,12 +15,15 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.raw.TsEntry;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.Util;
+import tsdb.util.gui.TimeScale.TimeGranularity;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeSeriesDiagram {
 
 	private static final Logger log = LogManager.getLogger();
+	
+	private static final float MIN_VALUE_RANGE = 0.01f;
 
 	private final TimestampSeries timestampseries;
 	private final AggregationInterval aggregationInterval;
@@ -30,7 +33,6 @@ public class TimeSeriesDiagram {
 
 	private float dataMinValue;
 	private float dataMaxValue;
-	@SuppressWarnings("unused")
 	private float dataValueRange;
 	@SuppressWarnings("unused")
 	private float dataCount;
@@ -90,7 +92,7 @@ public class TimeSeriesDiagram {
 			aggregationTimeInterval=365*24*60;
 			break;
 		default:
-			System.out.println("error in agg");
+			log.warn("error in agg");
 		}
 		
 		dataMinValue = Float.MAX_VALUE;
@@ -119,9 +121,16 @@ public class TimeSeriesDiagram {
 		}
 
 		dataValueRange = dataMaxValue-dataMinValue;
+		
+		if(dataValueRange>MIN_VALUE_RANGE) {
+			diagramMinValue = dataMinValue;
+			diagramMaxValue = dataMaxValue;			
+		} else {
+			diagramMinValue = dataMinValue-(dataMinValue%MIN_VALUE_RANGE)-MIN_VALUE_RANGE;
+			diagramMaxValue = diagramMinValue + 3*MIN_VALUE_RANGE;
+		}
 
-		diagramMinValue = dataMinValue;
-		diagramMaxValue = dataMaxValue;
+
 		diagramValueRange = diagramMaxValue-diagramMinValue;
 
 		dataMinTimestamp = timestampseries.getFirstTimestamp();
@@ -131,7 +140,11 @@ public class TimeSeriesDiagram {
 
 		diagramMinTimestamp = dataMinTimestamp;
 		diagramMaxTimestamp = dataMaxTimestamp;
-		diagramTimestampRange = dataMaxTimestamp-dataMinTimestamp;
+		if(aggregationTimeInterval>0) {
+			diagramMaxTimestamp += aggregationTimeInterval-1;
+		}
+		log.info(TimeConverter.oleMinutesToText(dataMaxTimestamp)+"  "+TimeConverter.oleMinutesToText((long) diagramMaxTimestamp));
+		diagramTimestampRange = diagramMaxTimestamp-diagramMinTimestamp;
 	}
 
 	public TimestampSeries getTimeStampSeries() {
@@ -220,10 +233,39 @@ public class TimeSeriesDiagram {
 
 		diagramTimestampFactor = ((double)diagramWidth)/((double)diagramTimestampRange);
 		diagramValueFactor = ((double)diagramHeigh)/((double)diagramValueRange);
+		
+		tsp.setLineStyleDotted();
 
 		drawYScale(tsp);
-		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp);
+		
+		TimeGranularity lowestGranularity = TimeGranularity.MAX;
+		switch(aggregationInterval) {
+		case RAW:
+			lowestGranularity = TimeGranularity.MAX;
+			break;
+		case HOUR:
+			lowestGranularity = TimeGranularity.HOUR;
+			break;
+		case DAY:
+			lowestGranularity = TimeGranularity.DAY;
+			break;
+		case WEEK:
+			lowestGranularity = TimeGranularity.DAY;
+			break;
+		case MONTH:
+			lowestGranularity = TimeGranularity.MONTH;
+			break;
+		case YEAR:
+			lowestGranularity = TimeGranularity.YEAR;
+			break;
+		default:
+			log.warn("error in agg");
+		}
+		
+		
+		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp, lowestGranularity);		
 		timescale.draw(tsp, diagramMinX, diagramMaxX, diagramMaxY+1, diagramTimestampFactor,diagramMinY,diagramMaxY+3);
+		tsp.setLineStyleSolid();
 		drawAxis(tsp);
 		if(compareTs!=null) {
 			drawGraph(tsp,compareTs,false);
@@ -496,8 +538,10 @@ public class TimeSeriesDiagram {
 
 		int zeroY = calcDiagramY(0f);
 		if(diagramMinY<=zeroY&&zeroY<=diagramMaxY) {
+			tsp.setLineStyleDotted();
 			tsp.setColorZeroLine();
 			tsp.drawLine(diagramMinX , zeroY, diagramMaxX, zeroY);
+			tsp.setLineStyleSolid();
 		}		
 	}
 

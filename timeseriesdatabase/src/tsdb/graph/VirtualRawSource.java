@@ -3,7 +3,6 @@ package tsdb.graph;
 import static tsdb.util.AssumptionCheck.throwNulls;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +13,6 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.streamdb.RelationalIterator;
-import tsdb.streamdb.StreamChainIterator;
 import tsdb.streamdb.StreamIterator;
 import tsdb.streamdb.StreamTsIterator;
 import tsdb.util.TimestampInterval;
@@ -22,6 +20,7 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class VirtualRawSource extends RawSource.Abstract {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private final VirtualPlot virtualPlot;

@@ -7,7 +7,8 @@ package tsdb.aggregated;
  */
 public class BaseAggregationTimeUtil {
 	
-	public final static int AGGREGATION_TIME_INTERVAL = 60; // time interval of aggregation in minutes 
+	public final static int AGGREGATION_TIME_INTERVAL = 60; // time interval of aggregation in minutes: 1 hour
+	//public final static int AGGREGATION_TIME_INTERVAL = 15; // time interval of aggregation in minutes:  15 Minutes !!!
 	
 	public static long calcBaseAggregationTimestamp(long timestamp) {
 		/*

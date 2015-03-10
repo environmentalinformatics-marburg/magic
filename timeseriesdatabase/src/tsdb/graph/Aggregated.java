@@ -81,12 +81,7 @@ public class Aggregated extends Continuous.Abstract {
 		}
 		new RuntimeException().printStackTrace();
 		log.warn("unknown aggregation: "+aggregationInterval);
-		return null;		
-		/*AggregationIterator aggregation_iterator = new AggregationIterator(tsdb, continuous_iterator, aggregationInterval);
-		if(aggregation_iterator==null||!aggregation_iterator.hasNext()) {
-			return null;
-		}
-		return aggregation_iterator;*/
+		return null;
 	}
 
 	@Override

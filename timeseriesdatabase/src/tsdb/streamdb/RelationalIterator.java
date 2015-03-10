@@ -8,12 +8,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.raw.TsEntry;
-import tsdb.util.AssumptionCheck;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class RelationalIterator extends TsIterator {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private StreamIterator[] iterators;

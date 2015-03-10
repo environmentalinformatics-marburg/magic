@@ -29,6 +29,8 @@ import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 public class Handler_query_image extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();
 
+	private static final boolean USE_COMPARE_TIMESERIES = false;
+
 	public Handler_query_image(RemoteTsDB tsdb) {
 		super(tsdb, "query_image");
 	}
@@ -162,11 +164,13 @@ public class Handler_query_image extends MethodHandler {
 				return;
 			}
 			TimestampSeries compareTs = null;
-			try {
-				compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false, startTime, endTime);
-			} catch(Exception e) {
-				e.printStackTrace();
-				log.warn(e,e);
+			if(USE_COMPARE_TIMESERIES) {
+				try {
+					compareTs = tsdb.plot(null, plot, new String[]{sensorName}, agg, DataQuality.NO, false, startTime, endTime);
+				} catch(Exception e) {
+					e.printStackTrace();
+					log.warn(e,e);
+				}
 			}
 
 			BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
@@ -189,7 +193,11 @@ public class Handler_query_image extends MethodHandler {
 				log.warn(e);
 			}
 
-			new TimeSeriesDiagram(ts, agg, diagramType).draw(new TimeSeriesPainterGraphics2D(bufferedImage),compareTs);
+			TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts, agg, diagramType);
+			if(agg!=null&&startTime!=null&&endTime!=null&&agg==AggregationInterval.RAW) {
+				tsd.setDiagramTimestampRange(startTime, endTime);
+			}
+			tsd.draw(new TimeSeriesPainterGraphics2D(bufferedImage),compareTs);
 
 			try {
 				ImageIO.write(bufferedImage, "png", response.getOutputStream());

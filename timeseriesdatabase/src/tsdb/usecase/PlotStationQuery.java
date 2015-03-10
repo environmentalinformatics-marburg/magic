@@ -9,8 +9,6 @@ import tsdb.VirtualPlot;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.graph.VirtualPlotStationBase;
-import tsdb.graph.VirtualPlotStationRawSource;
 import tsdb.raw.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 

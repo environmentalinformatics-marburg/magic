@@ -27,7 +27,6 @@ import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.graph.RawSource;
 import tsdb.raw.TimestampSeries;
 import tsdb.run.ConsoleRunner;
 import tsdb.util.Pair;
@@ -136,6 +135,17 @@ public class ServerTsDB implements RemoteTsDB {
 	@Override
 	public Region getRegionByPlot(String plotID) {
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+		if(virtualPlot==null) {
+			try {
+				int index = plotID.indexOf(':');
+				if(index>0) {
+					String mainPlotID = plotID.substring(0, index);
+					virtualPlot = tsdb.getVirtualPlot(mainPlotID);
+				}
+			} catch (Exception e) {
+				log.warn(e);
+			}
+		}
 		if(virtualPlot!=null) {
 			GeneralStation general = virtualPlot.generalStation;
 			if(general!=null) {

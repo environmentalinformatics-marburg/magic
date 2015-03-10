@@ -44,7 +44,7 @@ public class EmpiricalFiltered extends Continuous.Abstract {
 		if(compareSource!=null) {
 			return new EmpiricalFiltered(tsdb,continuous,compareSource, plotID);
 		} else {
-			log.warn("no compare stream");
+			log.warn("no compare average source");
 			return continuous;
 		}
 	}

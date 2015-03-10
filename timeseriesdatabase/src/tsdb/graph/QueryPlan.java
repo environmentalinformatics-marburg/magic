@@ -8,7 +8,6 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.aggregated.AggregationInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.TsIterator;
 
 /**
  * With QueryPlan query graphs for specific queries a are build
@@ -16,7 +15,6 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class QueryPlan {
-	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	/**

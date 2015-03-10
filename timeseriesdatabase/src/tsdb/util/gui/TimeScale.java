@@ -14,6 +14,14 @@ import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
 public class TimeScale {
 
+	public static enum TimeGranularity {
+		MAX,
+		HOUR,
+		DAY,
+		MONTH,
+		YEAR
+	}
+
 	//private final static int minGap = 25;
 	private final static int minGap = 10;
 	private final static int minGapText = 25;
@@ -33,9 +41,12 @@ public class TimeScale {
 
 	private int yearStep;
 
-	public TimeScale(double minTimestamp, double maxTimestamp) {
+	private final TimeGranularity lowestGranularity;
+
+	public TimeScale(double minTimestamp, double maxTimestamp, TimeGranularity lowestGranularity) {
 		this.minTimestamp = minTimestamp;
-		this.maxTimestamp = maxTimestamp;		
+		this.maxTimestamp = maxTimestamp;
+		this.lowestGranularity = lowestGranularity;
 		this.minYear = TimeConverter.oleMinutesToLocalDateTime((long)minTimestamp).getYear();
 		this.maxYear = TimeConverter.oleMinutesToLocalDateTime((long)maxTimestamp).getYear();		
 	}
@@ -60,10 +71,18 @@ public class TimeScale {
 		/*if(yearStep/2>=minGap) {
 			drawHalfYearScale(tsp);
 		}*/
-		drawHourScale(tsp);
-		drawDayScale(tsp);		
-		drawMonthScale(tsp);
-		drawYearScale(tsp);
+		if(lowestGranularity==TimeGranularity.MAX||lowestGranularity==TimeGranularity.HOUR) {
+			drawHourScale(tsp);
+		}
+		if(lowestGranularity==TimeGranularity.MAX||lowestGranularity==TimeGranularity.HOUR||lowestGranularity==TimeGranularity.DAY) {
+			drawDayScale(tsp);
+		}
+		if(lowestGranularity==TimeGranularity.MAX||lowestGranularity==TimeGranularity.HOUR||lowestGranularity==TimeGranularity.DAY||lowestGranularity==TimeGranularity.MONTH) {
+			drawMonthScale(tsp);
+		}
+		if(lowestGranularity==TimeGranularity.MAX||lowestGranularity==TimeGranularity.HOUR||lowestGranularity==TimeGranularity.DAY||lowestGranularity==TimeGranularity.MONTH||lowestGranularity==TimeGranularity.YEAR) {
+			drawYearScale(tsp);
+		}
 	}
 
 	public void drawYearScale(TimeSeriesPainter tsp) {
@@ -214,7 +233,7 @@ public class TimeScale {
 		default:
 			step = yearStep/12/31/24;
 		}
-		
+
 		if(step>=minGap) {
 			int mark = calcTimeMark(year,month,day,hour,0);
 			if(isInRange(mark)) {				

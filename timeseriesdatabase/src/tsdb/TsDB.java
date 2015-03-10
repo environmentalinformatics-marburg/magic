@@ -1,7 +1,6 @@
 package tsdb;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -15,11 +14,6 @@ import org.apache.logging.log4j.Logger;
 import tsdb.aggregated.AggregationType;
 import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.catalog.SourceCatalog;
-import tsdb.graph.Aggregated;
-import tsdb.graph.Base;
-import tsdb.graph.Continuous;
-import tsdb.graph.NodeGen;
-import tsdb.graph.VirtualPlotStationBase;
 
 /**
  * This is the main class of the timeseries database.

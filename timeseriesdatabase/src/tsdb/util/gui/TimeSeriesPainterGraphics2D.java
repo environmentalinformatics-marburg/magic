@@ -2,6 +2,7 @@ package tsdb.util.gui;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -91,6 +92,19 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		gc.setColor(new Color(255,255,255,255));
 		
 	}
+	
+	@Override
+	public void setLineStyleDotted() {
+		final float pattern[] = { 2.0f,2.0f };
+		BasicStroke stroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, pattern, 0.0f);
+		gc.setStroke(stroke);
+	}
+	
+	@Override
+	public void setLineStyleSolid() {
+		BasicStroke stroke = new BasicStroke(1.0f);
+		gc.setStroke(stroke);
+	}
 
 	@Override
 	public void drawLine(float x0, float y0, float x1, float y1) {
@@ -165,13 +179,13 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	@Override
 	public void setColorZeroLine() {
-		gc.setColor(color_black);		
+		gc.setColor(new Color(120,120,120));		
 	}
 
 	@Override
 	public void setColorYScaleLine() {
 		//gc.setColor(color_light_blue);
-		gc.setColor(new Color(230,230,255));
+		gc.setColor(new Color(220,220,255));
 	}
 
 	@Override
@@ -239,22 +253,26 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	
 	@Override
 	public void setColorXScaleYearLine() {
-		gc.setColor(new Color(120,120,170));	
+		//gc.setColor(new Color(120,120,170));
+		gc.setColor(new Color(100,100,220));
 	}	
 
 	@Override
 	public void setColorXScaleMonthLine() {
-		gc.setColor(new Color(190,190,220));		
+		//gc.setColor(new Color(190,190,220));
+		gc.setColor(new Color(190,190,255));
 	}
 	
 	@Override
 	public void setColorXScaleDayLine() {
+		//gc.setColor(new Color(220,220,255));
 		gc.setColor(new Color(220,220,255));
 	}	
 	
 	@Override
 	public void setColorXScaleHourLine() {
-		gc.setColor(new Color(240,240,255));		
+		//gc.setColor(new Color(240,240,255));
+		gc.setColor(new Color(235,235,255));
 	}
 	
 	

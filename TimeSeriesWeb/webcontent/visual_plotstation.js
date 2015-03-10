@@ -143,6 +143,9 @@ function updateStations() {
 	station_select.empty();	
 	$.get(url_plotstation_list+"?plot="+plotName).done(function(data) {
 		var rows = splitData(data);
+		if(rows.length>0) {
+			station_select.append(new Option("[unified]","[unified]"));
+		}
 		$.each(rows, function(i,row) {station_select.append(new Option(row[0],row[0]));})
 		onStationChange();
 		decTask();
@@ -151,9 +154,11 @@ function updateStations() {
 
 function onStationChange() {
 	if(station_select.val()!=undefined) {
-		getID("button_visualise").disabled = false;
+		//getID("button_visualise").disabled = false;
+		$("#div_station_select").show();
 	} else {
-		getID("button_visualise").disabled = true;
+		//getID("button_visualise").disabled = true;
+		$("#div_station_select").hide();
 	}
 }
 
@@ -161,11 +166,16 @@ function onVisualiseClick() {
 	incTask();
 	getID("div_result").innerHTML = "query...";
 	var plotName = plot_select.val();
-	var stationName = station_select.val();
-	$.get(url_sensor_list+"?station="+stationName).done(function(data) {
+	var sensorQuery = "plot="+plotName;
+	if(station_select.val()!=undefined && station_select.val()!="[unified]") {
+		var stationName = station_select.val();
+		sensorQuery = "station="+stationName;
+		plotName += ":"+stationName;
+	}
+	$.get(url_sensor_list+"?"+sensorQuery).done(function(data) {
 		getID("div_result").innerHTML = "";
 		sensors = splitData(data);
-		$.each(sensors, function(i,row) {addDiagram(plotName+":"+stationName,row[0],row[1],row[2]);})
+		$.each(sensors, function(i,row) {addDiagram(plotName,row[0],row[1],row[2]);})
 		decTask();
 	}).fail(function() {getID("div_result").innerHTML = "error";decTask();});
 }

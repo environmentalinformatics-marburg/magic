@@ -19,6 +19,7 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class VirtualPlotStationBase extends Base.Abstract  {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private final VirtualPlot virtualPlot; // not null

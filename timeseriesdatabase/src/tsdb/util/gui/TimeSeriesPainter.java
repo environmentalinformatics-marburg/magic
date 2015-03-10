@@ -44,4 +44,6 @@ public interface TimeSeriesPainter {
 	float[] getIndexColorRange();
 	void setFontDefault();
 	void setFontSmall();
+	void setLineStyleDotted();
+	void setLineStyleSolid();
 }
