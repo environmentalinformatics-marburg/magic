@@ -103,6 +103,8 @@ public class StreamDB {
 			}
 			//sensorMap.clear();
 			db.delete(stationMeta.db_name_sensor_map);
+			
+			db.delete(stationMeta.db_name_sensor_time_series_mask_map);			
 		}
 		stationMetaMap.clear();		
 		commit();

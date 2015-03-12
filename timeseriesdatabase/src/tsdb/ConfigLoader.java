@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
@@ -239,10 +240,90 @@ public class ConfigLoader {
 		}
 	}
 
+	public void readSensorTranslation(String iniFile) {
+		try {
+			Wini ini = new Wini(new File(iniFile));
+			for(Section section:ini.values()) {
+				String sectionName = section.getName();
+				int index = sectionName.indexOf("_logger_type_sensor_translation");
+				if(index>-1) {
+					readLoggerTypeSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				index = sectionName.indexOf("_generalstation_sensor_translation");
+				if(index>-1) {
+					readGeneralStationSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				index = sectionName.indexOf("_station_sensor_translation");
+				if(index>-1) {
+					readStationSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				log.warn("section unknown: "+sectionName);
+			}
+		} catch (Exception e) {
+			log.error(e);
+		}
+	}
+	
+	private void readLoggerTypeSensorTranslation(String loggerTypeName, Section section) {
+		LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
+		if(loggerType==null) {
+			log.error("logger not found: "+loggerTypeName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(loggerType.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			if(entry.getKey().equals(entry.getValue())) {
+				log.info("redundant entry "+entry+" in "+section.getName());
+			}
+			loggerType.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+	
+	private void readGeneralStationSensorTranslation(String generalStationName, Section section) {
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+		if(generalStation==null) {
+			log.error("generalStation not found: "+generalStationName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(generalStation.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			if(entry.getKey().equals(entry.getValue())) {
+				log.info("redundant entry "+entry+" in "+section.getName());
+			}
+			generalStation.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+	
+	private void readStationSensorTranslation(String stationName, Section section) {
+		Station station = tsdb.getStation(stationName);
+		if(station==null) {
+			log.error("station not found: "+stationName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(station.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			station.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+	
+
 	/**
 	 * reads config for translation of input sensor names to database sensor names
 	 * @param configFile
 	 */
+	@Deprecated
 	public void readSensorNameTranslationConfig(String configFile) {		
 		final String SENSOR_NAME_CONVERSION_HEADER_SUFFIX = "_header_0000";		
 		try {
@@ -330,8 +411,14 @@ public class ConfigLoader {
 	public void calcNearestStations() {
 		tsdb.updateGeneralStations();
 		for(Station station:tsdb.getStations()) {
+
+			if(!station.isPlot) {
+				continue;
+			}
+
 			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
+
 			List<Station> stationList = station.generalStation.stationList;
 			//System.out.println(station.plotID+" --> "+stationList);
 			for(Station targetStation:stationList) {
@@ -879,7 +966,7 @@ public class ConfigLoader {
 			} else {
 				log.warn("region section not found");
 			}
-			
+
 			section = ini.get("region_view_time_range");
 			if(section!=null) {
 				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
@@ -1054,6 +1141,10 @@ public class ConfigLoader {
 		Table table = Table.readCSV(configFile,',');
 		ColumnReaderString cr_stationID = table.createColumnReader("station");
 		ColumnReaderString cr_general = table.createColumnReader("general");
+
+		ColumnReaderFloat cr_lat = table.createColumnReaderFloat("lat");
+		ColumnReaderFloat cr_lon = table.createColumnReaderFloat("lon");
+
 		for(String[] row:table.rows) {
 			try {
 				String stationID = cr_stationID.get(row);
@@ -1081,10 +1172,23 @@ public class ConfigLoader {
 
 				Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
 				tsdb.insertStation(station);
+
+				try {
+					float lat = cr_lat.get(row,true);
+					float lon = cr_lon.get(row,true);
+					station.geoPosLatitude = lat;
+					station.geoPoslongitude = lon;
+				} catch(Exception e) {
+					log.error(e);
+				} 
+
+				//station.geoPosLatitude
 			} catch(Exception e) {
 				log.error(e);
 			}
 		}
+
+		calcNearestStations();
 	}
 
 	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO

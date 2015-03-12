@@ -283,6 +283,9 @@ public class TimeSeriesLoaderBE {
 			if(!tsdb.containsIgnoreSensorName(rawSensorName)) {
 				String sensorName = station.translateInputSensorName(rawSensorName,true);
 				//System.out.println(sensorHeader.name+"->"+sensorName);
+				if(sensorName!=null&&sensorName.equals("NaN")) { // ignore sensor
+					continue;
+				}
 				if(sensorName != null) {
 					for(int schemaIndex=0;schemaIndex<sensorNames.length;schemaIndex++) {
 						String schemaSensorName = sensorNames[schemaIndex];
@@ -304,11 +307,11 @@ public class TimeSeriesLoaderBE {
 		}
 
 		if(!infoListNoMapping.isEmpty()) {
-			log.info("sensor names not in translation map: "+infoListNoMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
+			log.warn("sensor names not in translation map: "+infoListNoMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
 		}
 
 		if(!infoListNoSchemaMapping.isEmpty()) {
-			log.info("sensor names not in schema: "+infoListNoSchemaMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
+			log.warn("sensor names not in schema: "+infoListNoSchemaMapping+"\t"+station.stationID+"\t"+udbfTimeSeries.filename+"\t"+station.loggerType);
 		}
 
 		//mapping event index position -> sensor index position 

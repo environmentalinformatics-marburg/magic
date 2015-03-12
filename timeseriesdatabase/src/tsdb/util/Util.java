@@ -414,7 +414,12 @@ public class Util {
 		Map<String,String> sectionMap = new HashMap<String, String>();
 		for(String key:section.keySet()) {
 			if(!key.equals("NaN")) {
+				if(section.getAll(key).size()>1) { // TODO always == 1 ???
+					log.warn("multiple entries: "+key+" from "+section.getName());
+				}
 				sectionMap.put(key, section.get(key));
+			} else {
+				log.warn("NaN key");
 			}
 		}
 		return sectionMap;
