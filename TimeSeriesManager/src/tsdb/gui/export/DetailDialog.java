@@ -20,10 +20,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import tsdb.DataQuality;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.bridge.CheckButtonBridge;
 import tsdb.gui.bridge.ComboBridge;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 
 public class DetailDialog extends TitleAreaDialog {	
 	@SuppressWarnings("unused")

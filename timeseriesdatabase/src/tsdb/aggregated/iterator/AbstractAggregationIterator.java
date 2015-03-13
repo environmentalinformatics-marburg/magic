@@ -3,12 +3,12 @@ package tsdb.aggregated.iterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
-import tsdb.Sensor;
 import tsdb.TsDB;
-import tsdb.aggregated.AggregationType;
-import tsdb.raw.TsEntry;
+import tsdb.component.Sensor;
+import tsdb.util.AggregationType;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;

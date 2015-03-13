@@ -13,12 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
-import tsdb.DataQuality;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 public class Handler_query extends MethodHandler {	

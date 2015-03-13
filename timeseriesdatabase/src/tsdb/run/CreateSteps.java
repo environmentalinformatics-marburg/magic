@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import tsdb.DataQuality;
 import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.Station;
@@ -17,7 +16,8 @@ import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.Differential;
 import tsdb.graph.QueryPlan;
-import tsdb.raw.TsEntry;
+import tsdb.util.DataQuality;
+import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.iterator.TsIteratorIterator;
 

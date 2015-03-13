@@ -29,18 +29,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.aggregated.AggregationInterval;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
 import tsdb.gui.bridge.ComboBridge;
-import tsdb.raw.TimestampSeries;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
 import tsdb.util.Util;
+import tsdb.util.iterator.CSV;
+import tsdb.util.iterator.CSVTimeType;
+import tsdb.util.iterator.TimestampSeries;
 
 public class QueryDialog extends Dialog {
 

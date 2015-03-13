@@ -3,8 +3,8 @@ package tsdb;
 import java.io.DataInput;
 import java.io.IOException;
 
-import tsdb.raw.TimestampSeries;
-import tsdb.streamdb.DataEntry;
+import tsdb.util.DataEntry;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesArchivReader {
 

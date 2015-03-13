@@ -3,9 +3,9 @@ package tsdb.catalog;
 import java.io.Serializable;
 import java.nio.file.Path;
 
-import tsdb.TimeConverter;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.TimeConverter;
 import tsdb.util.TsSchema;
+import tsdb.util.iterator.TimestampSeries;
 
 public class SourceEntry implements Serializable {
 

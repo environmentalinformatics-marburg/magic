@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
 public class TsIteratorIterator extends MoveIterator {

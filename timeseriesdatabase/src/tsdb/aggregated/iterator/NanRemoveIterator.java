@@ -1,6 +1,6 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;

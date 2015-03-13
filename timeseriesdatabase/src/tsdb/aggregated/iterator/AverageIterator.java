@@ -4,10 +4,10 @@ import static tsdb.util.AssumptionCheck.throwEmpty;
 
 import java.util.Map;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.ProcessingChainMultiSources;

@@ -9,15 +9,15 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.SensorCategory;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TsEntry;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.SensorCategory;
+import tsdb.util.AggregationInterval;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.gui.TimeScale.TimeGranularity;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesDiagram {
 

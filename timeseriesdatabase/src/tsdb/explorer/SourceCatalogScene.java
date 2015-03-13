@@ -25,13 +25,13 @@ import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.Region;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.catalog.SourceEntry;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
 import tsdb.remote.VirtualPlotInfo;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
 

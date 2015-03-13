@@ -2,7 +2,7 @@ package tsdb.aggregated.iterator;
 
 import java.util.function.Function;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 

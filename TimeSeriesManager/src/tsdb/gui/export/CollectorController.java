@@ -17,16 +17,16 @@ import java.util.zip.ZipOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
-import tsdb.Sensor;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TsEntry;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.Sensor;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
 import tsdb.util.Util;
+import tsdb.util.iterator.TimestampSeries;
 
 public class CollectorController {
 	

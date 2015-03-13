@@ -4,7 +4,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.Node;
 import tsdb.graph.StationRawSource;
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;

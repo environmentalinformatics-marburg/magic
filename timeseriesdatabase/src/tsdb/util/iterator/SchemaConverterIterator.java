@@ -1,6 +1,6 @@
 package tsdb.util.iterator;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 

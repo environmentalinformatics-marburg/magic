@@ -14,23 +14,23 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
 import tsdb.GeneralStation;
 import tsdb.LoggerType;
-import tsdb.Region;
-import tsdb.Sensor;
 import tsdb.Station;
-import tsdb.TimeSeriesMask;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.raw.TimestampSeries;
 import tsdb.run.ConsoleRunner;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
+import tsdb.util.TimeSeriesMask;
 import tsdb.util.TimestampInterval;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 public class ServerTsDB implements RemoteTsDB {

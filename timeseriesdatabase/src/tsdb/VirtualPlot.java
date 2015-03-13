@@ -11,8 +11,8 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.aggregated.AggregationType;
-import tsdb.aggregated.BaseAggregationTimeUtil;
+import tsdb.util.AggregationType;
+import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 

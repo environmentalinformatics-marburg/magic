@@ -11,9 +11,13 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.aggregated.AggregationType;
-import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.catalog.SourceCatalog;
+import tsdb.component.CacheStorage;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
+import tsdb.streamdb.StreamStorageStreamDB;
+import tsdb.util.AggregationType;
+import tsdb.util.BaseAggregationTimeUtil;
 
 /**
  * This is the main class of the timeseries database.
@@ -67,10 +71,6 @@ public class TsDB {
 
 	private Map<String,VirtualPlot> virtualplotMap;
 
-	//Map PlotID -> Plot Object
-	private Map<String,Plot> plotMap;
-
-
 	//*** begin persistent information ***
 
 	/**
@@ -93,13 +93,11 @@ public class TsDB {
 	 * @param evenstoreConfigFile
 	 * @param streamdbPathPrefix 
 	 */
-	public TsDB(String databasePath, String evenstoreConfigFile, String cachePath, String streamdbPathPrefix) {		
+	public TsDB(String databasePath, String cachePath, String streamdbPathPrefix) {		
 		log.info("open tsdb...");		
 
 		this.regionMap = new TreeMap<String,Region>();
 
-		//this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
-		//this.streamStorage = new StreamStorageMapDB(databasePath);
 		this.streamStorage = new StreamStorageStreamDB(streamdbPathPrefix);
 		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
@@ -111,8 +109,6 @@ public class TsDB {
 		this.cacheStorage = new CacheStorage(cachePath);
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
-
-		this.plotMap = new TreeMap<String,Plot>();
 
 		this.sourceCatalog = new SourceCatalog(databasePath);
 	}	
@@ -546,25 +542,6 @@ public class TsDB {
 			return station.isValidSchema(schema);
 		}
 		throw new RuntimeException("plotID not found: "+plotID);
-	}
-
-	public void createPlotMap() {
-		for(VirtualPlot virtualPlot:getVirtualPlots()) {
-			if(!plotMap.containsKey(virtualPlot.plotID)) {
-				plotMap.put(virtualPlot.plotID, new Plot(virtualPlot.plotID));
-			} else {
-				log.warn("plot exists already: "+virtualPlot.plotID);
-			}
-		}
-		for(Station station:getStations()) {
-			if(station.isPlot) {
-				if(!plotMap.containsKey(station.stationID)) {
-					plotMap.put(station.stationID, new Plot(station.stationID));
-				} else {
-					log.warn("plot exists already: "+station.stationID);
-				}
-			}
-		}
 	}
 
 	/**

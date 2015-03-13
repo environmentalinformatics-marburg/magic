@@ -4,16 +4,16 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import tsdb.DataQuality;
 import tsdb.LoggerType;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.TimeSeriesMask;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.catalog.SourceEntry;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
+import tsdb.util.TimeSeriesMask;
 import tsdb.util.TimestampInterval;
+import tsdb.util.iterator.TimestampSeries;
 
 public interface RemoteTsDB extends Remote {
 	

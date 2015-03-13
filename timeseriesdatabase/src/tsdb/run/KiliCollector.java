@@ -24,13 +24,13 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.ki.AscParser;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.TimeConverter;
 import tsdb.util.Util;
+import tsdb.util.iterator.TimestampSeries;
 
 public class KiliCollector {
 

@@ -302,12 +302,11 @@ public class Main {
 	private static void createRainbowScale() {
 		
 		try{
-			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"round_rainbow.png"));
+			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"global_scale_round_rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
 			for(int i=0;i<indexedColors.length;i++) {
 				int c = rainbow.getRGB(i, 0);
 				Color color = new Color(c);
-				//System.out.println(c+"  "+color);
 				indexedColors[i] = color;
 			}
 			TimeSeriesPainterGraphics2D.setIndexedColors("round_rainbow",indexedColors);
@@ -317,12 +316,12 @@ public class Main {
 		
 		
 		try{
-			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"rainbow.png"));
+			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"global_scale_rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
 			for(int i=0;i<indexedColors.length;i++) {
 				int c = rainbow.getRGB(i, 0);
 				Color color = new Color(c);
-				//System.out.println(c+"  "+color);
+
 				indexedColors[i] = color;
 			}
 			TimeSeriesPainterGraphics2D.setIndexedColors("rainbow",indexedColors);

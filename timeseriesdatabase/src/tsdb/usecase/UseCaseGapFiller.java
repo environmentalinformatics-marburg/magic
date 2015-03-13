@@ -2,11 +2,11 @@ package tsdb.usecase;
 
 import java.time.LocalDateTime;
 
-import tsdb.TimeConverter;
-import tsdb.aggregated.Interpolator;
-import tsdb.aggregated.TimeSeries;
-import tsdb.util.CSV;
-import tsdb.util.CSVTimeType;
+import tsdb.util.TimeConverter;
+import tsdb.util.iterator.CSV;
+import tsdb.util.iterator.CSVTimeType;
+import tsdb.util.iterator.Interpolator;
+import tsdb.util.iterator.TimeSeries;
 
 /**
  * use case of gap filler with synthetic data

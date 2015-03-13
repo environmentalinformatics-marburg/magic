@@ -1,7 +1,7 @@
 package tsdb.aggregated.iterator;
 
 import tsdb.TsDB;
-import tsdb.aggregated.AggregationType;
+import tsdb.util.AggregationType;
 import tsdb.util.iterator.TsIterator;
 
 public class DayAggregationIterator extends AbstractAggregationIterator {	

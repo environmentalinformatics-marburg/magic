@@ -15,15 +15,15 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.catalog.SourceEntry;
 import tsdb.loader.ki.type.AbstractLoader;
 import tsdb.loader.ki.type.LoaderFactory;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.DataRow;
+import tsdb.util.TimeConverter;
+import tsdb.util.iterator.TimestampSeries;
 
 /**
  * This class contains methods to read time series from input files in "KiLi"-Format and stores data into database.

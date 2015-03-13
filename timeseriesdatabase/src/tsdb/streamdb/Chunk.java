@@ -8,6 +8,8 @@ import java.io.Serializable;
 import org.mapdb.Serializer;
 import org.xerial.snappy.Snappy;
 
+import tsdb.util.DataEntry;
+
 public class Chunk {
 	public final DataEntry[] data;
 

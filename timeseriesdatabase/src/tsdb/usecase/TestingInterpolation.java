@@ -1,12 +1,12 @@
 package tsdb.usecase;
 
 
-import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingInterpolation {

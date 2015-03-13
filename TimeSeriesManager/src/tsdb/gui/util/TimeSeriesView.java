@@ -13,12 +13,12 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
-import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.util.Painter.PosHorizontal;
 import tsdb.gui.util.Painter.PosVerical;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
+import tsdb.util.AggregationInterval;
+import tsdb.util.TsEntry;
 import tsdb.util.Util;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesView {
 	

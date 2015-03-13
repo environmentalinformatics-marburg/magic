@@ -3,10 +3,10 @@ package tsdb.graph;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.AggregationInterval;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Util;
 
 /**

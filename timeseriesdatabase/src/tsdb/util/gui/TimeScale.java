@@ -8,7 +8,8 @@ import java.util.GregorianCalendar;
 
 
 
-import tsdb.TimeConverter;
+
+import tsdb.util.TimeConverter;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 

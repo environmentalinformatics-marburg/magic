@@ -19,9 +19,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import tsdb.DataQuality;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.DataQuality;
 
 public class CollectorDialog extends TitleAreaDialog {	
 	@SuppressWarnings("unused")

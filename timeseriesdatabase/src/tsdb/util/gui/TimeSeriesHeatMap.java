@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TimeConverter;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
 import tsdb.util.Pair;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesHeatMap {
 	@SuppressWarnings("unused")
@@ -266,9 +266,12 @@ public class TimeSeriesHeatMap {
 			tsp.setIndexedColorRange(0, 100);
 			break;
 		case "SM_10":
+		case "SM_10_2":
 		case "SM_15":
 		case "SM_20":
+		case "SM_20_2":
 		case "SM_30":
+		case "SM_35":
 		case "SM_40":
 		case "SM_50":
 			tsp.setIndexedColorRange(5, 60);

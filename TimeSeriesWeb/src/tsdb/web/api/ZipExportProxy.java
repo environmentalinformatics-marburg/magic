@@ -12,13 +12,13 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
-import tsdb.Region;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.AggregationInterval;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ZipExport;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
-import tsdb.util.ZipExport;
 
 public class ZipExportProxy {
 	

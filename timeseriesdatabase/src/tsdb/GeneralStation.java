@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import tsdb.component.Region;
+
 /**
  * This class contains metadata that is associated with a group of stations like HEG or HEW.
  * @author woellauer

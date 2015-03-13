@@ -27,16 +27,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.aggregated.AggregationInterval;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
 import tsdb.gui.bridge.ComboBridge;
 import tsdb.gui.sensorquery.QuerySensorModel.ViewType;
-import tsdb.raw.TimestampSeries;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Util;
+import tsdb.util.iterator.TimestampSeries;
 
 public class SensorQueryDialog extends Dialog {
 

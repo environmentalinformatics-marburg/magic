@@ -3,10 +3,10 @@ package tsdb.usecase;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import tsdb.TimeConverter;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.UDBFTimestampSeries;
 import tsdb.loader.be.UniversalDataBinFile;
+import tsdb.util.TimeConverter;
 
 public class DatFileReading {
 

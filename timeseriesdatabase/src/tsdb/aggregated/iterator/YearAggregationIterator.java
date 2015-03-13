@@ -3,9 +3,9 @@ package tsdb.aggregated.iterator;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.aggregated.AggregationType;
+import tsdb.util.AggregationType;
+import tsdb.util.TimeConverter;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.TsIterator;
 

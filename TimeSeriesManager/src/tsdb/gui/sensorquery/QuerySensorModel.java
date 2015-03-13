@@ -1,6 +1,6 @@
 package tsdb.gui.sensorquery;
 
-import tsdb.Region;
+import tsdb.component.Region;
 import tsdb.gui.util.AbstractModel;
 import tsdb.remote.GeneralStationInfo;
 

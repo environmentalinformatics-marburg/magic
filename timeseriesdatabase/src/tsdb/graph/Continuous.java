@@ -5,10 +5,10 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import org.apache.logging.log4j.LogManager;
 
 import tsdb.Station;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
-import tsdb.aggregated.BaseAggregationTimeUtil;
 import tsdb.aggregated.iterator.NanGapIterator;
+import tsdb.util.BaseAggregationTimeUtil;
+import tsdb.util.TimeConverter;
 import tsdb.util.iterator.TsIterator;
 
 

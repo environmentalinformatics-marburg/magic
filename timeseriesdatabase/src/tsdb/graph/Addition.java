@@ -4,7 +4,7 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 

@@ -8,9 +8,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Display;
 
-import tsdb.TimeConverter;
 import tsdb.gui.util.Painter.PosHorizontal;
 import tsdb.gui.util.Painter.PosVerical;
+import tsdb.util.TimeConverter;
 
 public class TimeScalePainter {	
 	Color color_light_blue;

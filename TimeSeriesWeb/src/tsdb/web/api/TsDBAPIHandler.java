@@ -21,12 +21,12 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
-import tsdb.Sensor;
+import tsdb.component.Sensor;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Pair;
-import tsdb.web.WebUtil;
+import tsdb.web.util.WebUtil;
 
 public class TsDBAPIHandler extends AbstractHandler {
 

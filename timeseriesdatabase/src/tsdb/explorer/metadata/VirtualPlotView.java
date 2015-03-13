@@ -13,9 +13,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 import com.sun.javafx.binding.ObjectConstant;

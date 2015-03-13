@@ -2,7 +2,7 @@ package tsdb.loader.be;
 
 import java.nio.file.Path;
 
-import tsdb.TimeConverter;
+import tsdb.util.TimeConverter;
 
 /**
  * contains relevant data of a UDBF-File.

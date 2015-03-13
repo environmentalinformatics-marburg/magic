@@ -22,15 +22,15 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 
-import tsdb.DataQuality;
-import tsdb.Region;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.AggregationInterval;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.ZipExport;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.Pair;
-import tsdb.util.ZipExport;
-import tsdb.web.WebUtil;
 import tsdb.web.api.ExportModel.TimespanType;
+import tsdb.web.util.WebUtil;
 
 public class TsDBExportAPIHandler extends AbstractHandler {
 

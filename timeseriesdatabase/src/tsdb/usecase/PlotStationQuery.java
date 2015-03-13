@@ -2,14 +2,14 @@ package tsdb.usecase;
 
 import java.util.Arrays;
 
-import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 public class PlotStationQuery {

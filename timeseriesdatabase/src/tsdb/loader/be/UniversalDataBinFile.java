@@ -12,7 +12,7 @@ import java.util.Comparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TimeConverter;
+import tsdb.util.TimeConverter;
 
 /**
  * UniversalDataBinFile reads, cleans and structures data of a UDBF-File.
@@ -31,7 +31,7 @@ public class UniversalDataBinFile {
 	private FileChannel fileChannel;
 	private FileInputStream fileInputStream;
 	private short variableCount;
-	private tsdb.TimeConverter timeConverter;
+	private tsdb.util.TimeConverter timeConverter;
 	private int dataSectionStartFilePosition;
 	private SensorHeader[] sensorHeaders;
 	private boolean empty = false;

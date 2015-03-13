@@ -1,11 +1,12 @@
 package tsdb.graph;
 
 import static tsdb.util.AssumptionCheck.throwNulls;
-import tsdb.DataQuality;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.raw.iterator.LowQualityToNanIterator;
-import tsdb.raw.iterator.QualityFlagIterator;
+import tsdb.component.Sensor;
+import tsdb.component.iterator.QualityFlagIterator;
+import tsdb.util.DataQuality;
+import tsdb.util.iterator.LowQualityToNanIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
@@ -38,7 +39,8 @@ public class RangeStepFiltered extends Node.Abstract{ // just range and step
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}
-		QualityFlagIterator qf = new QualityFlagIterator(tsdb,input_iterator);
+		Sensor[] sensors = tsdb.getSensors(input_iterator.getNames());
+		QualityFlagIterator qf = new QualityFlagIterator(sensors,input_iterator);
 		if(qf==null||!qf.hasNext()) {
 			return null;
 		}

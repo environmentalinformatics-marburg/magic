@@ -3,11 +3,8 @@ package tsdb.util.iterator;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TsEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.util.CSV;
 import tsdb.util.ProcessingChainEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
 public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry {

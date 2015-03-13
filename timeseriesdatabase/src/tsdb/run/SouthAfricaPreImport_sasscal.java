@@ -13,12 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
 import tsdb.util.Table;
+import tsdb.util.TsEntry;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.Table.ColumnReaderTimestamp;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.Util;
 
 public class SouthAfricaPreImport_sasscal {

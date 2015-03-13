@@ -1,12 +1,12 @@
 package tsdb.run;
 
-import tsdb.DataQuality;
 import tsdb.TsDBFactory;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.graph.Base;
 import tsdb.graph.NodeGen;
 import tsdb.graph.QueryPlan;
+import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
 public class CreateStationCache {

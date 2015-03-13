@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TimeConverter;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
+import tsdb.util.iterator.TimestampSeries;
 
 public class AscParser {
 

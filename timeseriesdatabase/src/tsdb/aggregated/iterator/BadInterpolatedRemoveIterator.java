@@ -2,9 +2,9 @@ package tsdb.aggregated.iterator;
 
 import java.util.Arrays;
 
-import tsdb.Sensor;
 import tsdb.TsDB;
-import tsdb.raw.TsEntry;
+import tsdb.component.Sensor;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;

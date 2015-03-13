@@ -3,7 +3,8 @@ package tsdb.streamdb;
 import java.util.Iterator;
 import java.util.List;
 
-import tsdb.TimeConverter;
+import tsdb.util.DataEntry;
+import tsdb.util.TimeConverter;
 
 public class StreamChainIterator implements Iterator<DataEntry>{
 	

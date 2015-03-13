@@ -4,8 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import tsdb.TimeConverter;
-import tsdb.raw.TsEntry;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
 @Deprecated

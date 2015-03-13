@@ -15,21 +15,21 @@ import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataRow;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.catalog.SourceEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.raw.TsEntry;
-import tsdb.raw.iterator.CSVIterator;
+import tsdb.util.DataRow;
 import tsdb.util.Table;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
+import tsdb.util.TsSchema;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderTimestampTwoCols;
 import tsdb.util.Table.ColumnReaderString;
+import tsdb.util.iterator.CSVIterator;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.TimestampInterval;
-import tsdb.util.TsSchema;
 
 public class TimeSeriesLoaderKiLi_manual_tfi {
 

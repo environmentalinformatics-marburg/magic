@@ -17,11 +17,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.util.TimeSeriesView;
 import tsdb.gui.util.TimeframeSlider;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.AggregationInterval;
 import tsdb.util.Pair;
+import tsdb.util.iterator.TimestampSeries;
 
 public class MultiTimeSeriesExplorer extends Composite {
 

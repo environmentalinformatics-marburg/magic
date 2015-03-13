@@ -2,11 +2,11 @@ package tsdb.aggregated.iterator;
 
 import java.util.Collection;
 
-import tsdb.DataQuality;
-import tsdb.raw.TsEntry;
+import tsdb.util.DataQuality;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.Util;
+import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.ProcessingChainMultiSources;

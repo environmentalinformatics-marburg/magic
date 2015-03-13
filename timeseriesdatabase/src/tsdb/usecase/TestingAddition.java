@@ -1,11 +1,11 @@
 package tsdb.usecase;
 
-import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.Addition;
 import tsdb.graph.Continuous;
 import tsdb.graph.QueryPlan;
+import tsdb.util.DataQuality;
 
 public class TestingAddition {
 	

@@ -1,6 +1,6 @@
 package tsdb.testing;
 
-import tsdb.CacheStorage;
+import tsdb.component.CacheStorage;
 
 public class TestingCacheStorage {
 

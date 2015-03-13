@@ -13,14 +13,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
 import tsdb.util.gui.TimeSeriesHeatMap;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import tsdb.util.iterator.TimestampSeries;
 
 public class Handler_query_heatmap extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();

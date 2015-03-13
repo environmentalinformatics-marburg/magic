@@ -7,14 +7,14 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import tsdb.DataQuality;
-import tsdb.SensorCategory;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.SensorCategory;
 import tsdb.remote.ServerTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import tsdb.util.iterator.TimestampSeries;
 
 public class ImageCreation {
 

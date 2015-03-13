@@ -2,7 +2,8 @@ package tsdb.streamdb;
 
 import java.util.Iterator;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.DataEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 

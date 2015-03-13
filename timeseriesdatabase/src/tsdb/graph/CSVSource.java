@@ -1,12 +1,12 @@
 package tsdb.graph;
 
 import java.util.Arrays;
-import static tsdb.util.AssumptionCheck.throwNull;
 
+import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
-import tsdb.raw.iterator.CSVIterator;
 import tsdb.util.Table;
 import tsdb.util.Util;
+import tsdb.util.iterator.CSVIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**

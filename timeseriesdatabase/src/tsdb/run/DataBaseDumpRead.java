@@ -11,8 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
-import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamDB;
+import tsdb.util.DataEntry;
 
 public class DataBaseDumpRead {
 

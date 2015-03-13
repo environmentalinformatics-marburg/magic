@@ -2,7 +2,7 @@ package tsdb.util.iterator;
 
 import java.util.Iterator;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 
 public interface TsIterable extends Iterable<TsEntry> {
 

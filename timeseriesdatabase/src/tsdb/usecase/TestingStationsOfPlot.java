@@ -3,13 +3,13 @@ package tsdb.usecase;
 import java.util.ArrayList;
 
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.raw.TimestampSeries;
 import tsdb.streamdb.StreamTsIterator;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
+import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingStationsOfPlot {

@@ -43,18 +43,18 @@ import javafx.util.StringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesHeatMap;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesMultiViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	

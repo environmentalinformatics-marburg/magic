@@ -2,13 +2,13 @@ package tsdb.run;
 
 import java.io.IOException;
 
-import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.graph.Statistics.StatisticsData;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 import tsdb.util.MiniCSV;
 import tsdb.util.Util;
 

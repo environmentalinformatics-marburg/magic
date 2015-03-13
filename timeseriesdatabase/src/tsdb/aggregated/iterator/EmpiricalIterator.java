@@ -1,9 +1,9 @@
 package tsdb.aggregated.iterator;
 
-import tsdb.DataQuality;
-import tsdb.TimeConverter;
-import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.raw.TsEntry;
+import tsdb.util.BaseAggregationTimeUtil;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.ProcessingChain;

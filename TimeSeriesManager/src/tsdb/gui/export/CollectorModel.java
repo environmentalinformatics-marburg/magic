@@ -1,9 +1,9 @@
 package tsdb.gui.export;
 
-import tsdb.DataQuality;
-import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.util.AbstractModel;
 import tsdb.remote.PlotInfo;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
 
 public class CollectorModel extends AbstractModel {
 	

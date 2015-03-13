@@ -5,8 +5,8 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.StreamIterator;
+import tsdb.util.DataEntry;
 
 public class TestingSouthAfricaQuery {
 	@SuppressWarnings("unused")

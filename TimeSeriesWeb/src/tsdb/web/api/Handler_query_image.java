@@ -15,16 +15,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
-import tsdb.DataQuality;
-import tsdb.Region;
-import tsdb.Sensor;
-import tsdb.SensorCategory;
-import tsdb.TimeConverter;
-import tsdb.aggregated.AggregationInterval;
-import tsdb.raw.TimestampSeries;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
+import tsdb.component.SensorCategory;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationInterval;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import tsdb.util.iterator.TimestampSeries;
 
 public class Handler_query_image extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();
@@ -172,8 +172,28 @@ public class Handler_query_image extends MethodHandler {
 					log.warn(e,e);
 				}
 			}
+			
+			int imageWidth = 1500;
+			int imageHeight = 400;
+			
+			String imageWidthText = request.getParameter("width");
+			String imageHeightText = request.getParameter("height");
+			if(imageWidthText!=null&&imageHeightText!=null) {
+				try {
+					int w = Integer.parseInt(imageWidthText);
+					int h = Integer.parseInt(imageHeightText);
+					if(w>=32&&h>=32&&w<100000&&h<100000) {
+						imageWidth = w;
+						imageHeight = h;
+					}
+				} catch(Exception e) {
+					log.warn(e);
+				}
+			}
+			
+			
 
-			BufferedImage bufferedImage = new BufferedImage(1500, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
+			BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, java.awt.image.BufferedImage.TYPE_INT_RGB);
 			Graphics2D gc = bufferedImage.createGraphics();
 			gc.setBackground(new Color(255, 255, 255));
 			gc.setColor(new Color(0, 0, 0));

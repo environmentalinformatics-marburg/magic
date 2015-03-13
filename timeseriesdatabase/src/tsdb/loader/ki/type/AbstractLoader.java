@@ -6,11 +6,11 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataRow;
 import tsdb.Station;
 import tsdb.StationProperties;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.DataRow;
 import tsdb.util.Util;
+import tsdb.util.iterator.TimestampSeries;
 
 public abstract class AbstractLoader {
 	

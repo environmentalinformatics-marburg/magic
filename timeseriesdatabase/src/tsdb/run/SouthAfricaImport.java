@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.iterator.TimestampSeries;
 
 public class SouthAfricaImport {
 

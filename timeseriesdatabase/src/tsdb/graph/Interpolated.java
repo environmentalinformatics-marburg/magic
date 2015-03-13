@@ -9,10 +9,10 @@ import java.util.List;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.Interpolator;
-import tsdb.aggregated.TimeSeries;
 import tsdb.aggregated.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
+import tsdb.util.iterator.Interpolator;
+import tsdb.util.iterator.TimeSeries;
 import tsdb.util.iterator.TsIterator;
 
 /**

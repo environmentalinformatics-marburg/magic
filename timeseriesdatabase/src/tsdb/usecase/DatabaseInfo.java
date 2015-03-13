@@ -2,9 +2,9 @@ package tsdb.usecase;
 
 import tsdb.TsDBFactory;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 /**

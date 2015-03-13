@@ -12,8 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
-import tsdb.Region;
 import tsdb.TsDBFactory;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
 
 public class Handler_region_list extends MethodHandler {	

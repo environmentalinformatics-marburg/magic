@@ -13,8 +13,8 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.json.JSONWriter;
 
-import tsdb.TimeConverter;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 public class Handler_timespan extends MethodHandler {	

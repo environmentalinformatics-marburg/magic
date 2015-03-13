@@ -12,7 +12,7 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.Region;
+import tsdb.component.Region;
 import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;

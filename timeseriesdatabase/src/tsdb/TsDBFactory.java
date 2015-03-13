@@ -45,14 +45,15 @@ public class TsDBFactory {
 	public static String WEBDOWNLOAD_PATH = "webDownload";
 
 	public static String OUTPUT_PATH = "output";
-	
+
 	public static String WEB_SERVER_PREFIX_BASE_URL = ""; //no prefix
 	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix
-	
+
 	public static String JUST_ONE_REGION = null;
 	//public static String JUST_ONE_REGION = "BE";
 	//public static String JUST_ONE_REGION = "KI";
-	
+	//public static String JUST_ONE_REGION = "SA";
+
 	public static boolean WEB_SERVER_LOGIN = false;
 
 	static {
@@ -113,7 +114,7 @@ public class TsDBFactory {
 				JUST_ONE_REGION = pathMap.get("JUST_ONE_REGION");
 			}
 			if(pathMap.containsKey("WEB_SERVER_LOGIN")) {
-				
+
 				if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("true")) {
 					WEB_SERVER_LOGIN = true;
 				} else if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("false")) {
@@ -122,9 +123,9 @@ public class TsDBFactory {
 					log.warn("ini config value for WEB_SERVER_LOGIN unknown: "+pathMap.get("WEB_SERVER_LOGIN"));
 					WEB_SERVER_LOGIN = false;
 				}
-				
-				
-				
+
+
+
 			}			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -144,67 +145,59 @@ public class TsDBFactory {
 	}
 
 	public static TsDB createDefault() {
-		//initPaths();		
 		return createDefault(STORAGE_PATH+"/",CONFIG_PATH,STORAGE_PATH+"/",STORAGE_PATH+"/streamdb");
 	}
 
 	public static TsDB createDefault(String databaseDirectory,String configPath, String cacheDirectory, String streamdbPathPrefix) {
 		String configDirectory = configPath+"/";
 		try {
-			TsDB tsdb = new TsDB(databaseDirectory,configDirectory+"eventstore_config.properties", cacheDirectory, streamdbPathPrefix);
+			TsDB tsdb = new TsDB(databaseDirectory, cacheDirectory, streamdbPathPrefix);
 			ConfigLoader configLoader = new ConfigLoader(tsdb);
 
-			//*** global config start			
-			configLoader.readRegionConfig(configDirectory+"region.ini");
-			//*** global config end
+			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("BE")) { //*** BE
+				configLoader.readRegion(configDirectory+"be/be_region.ini");
+				configLoader.readLoggerTypeSchema(configDirectory+"be/be_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
+				configLoader.readGeneralStation(configDirectory+"be/be_general_station.ini"); // [create GENERAL_STATION]
+				configLoader.readStation(configDirectory+"be/be_station_inventory.csv"); // [create STATION] read station list, generate general station name and properties and create station objects
+				configLoader.readStationGeoPosition(configDirectory+"be/be_station_master.csv"); // read geo position of stations and insert into existing stations
+				configLoader.readSensorTranslation(configDirectory+"be/be_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations
+			}
 
-			//*** BE start
-			configLoader.readLoggerSchemaConfig(configDirectory+"be_logger_type_schema.ini"); // BE 2. read schema of logger types and create: logger type objects, sensor objects
-			configLoader.readGeneralStationConfig(configDirectory+"be_general_stations.ini"); // BE 1. read list of general stations and create: general station objects
-			configLoader.readStationConfig(configDirectory+"be_config_station_inventory.cnf"); // BE 3. read station list, generate general station name and properties and create station objects
-			configLoader.readSensorTranslation(configDirectory+"be_sensor_translation.ini");
-			//configLoader.readSensorNameTranslationConfig(configDirectory+"be_config_level0050_standards.cnf"); // BE 4. read read input name sensor translation and insert it in existing logger type objects
-			configLoader.readStationGeoPositionConfig(configDirectory+"be_station_master.csv"); // BE read and insert geo position and station serial to station objects, add nearest station list to station object
-			//*** BE end
+			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("KI")) { //*** KI
+				configLoader.readRegion(configDirectory+"ki/ki_region.ini");
+				configLoader.readLoggerTypeSchema(configDirectory+"ki/ki_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
+				configLoader.readGeneralStation(configDirectory+"ki/ki_general_stations.ini"); // [create GENERAL_STATION]
+				configLoader.readVirtualPlot(configDirectory+"ki/ki_station_master.csv"); // [create VIRTUAL_PLOT]
+				configLoader.readVirtualPlotGeoPosition(configDirectory+"ki/ki_plot_position.csv"); // read geo position of virtual plots and insert into existing virtual plots
+				configLoader.readVirtualPlotElevation(configDirectory+"ki/ki_plot_elevation.csv"); // read elevation of virtual plots and insert into existing virtual plots
+				configLoader.readKiStation(configDirectory+"ki/ki_station_inventory.csv"); // [create STATION] read time interval of stations and insert it in existing virtual plots			
+				configLoader.readSensorTranslation(configDirectory+"ki/ki_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations
+			}
 
-
-			//*** KiLi start
-			configLoader.readLoggerSchemaConfig(configDirectory+"ki_logger_type_schema.ini"); // KiLi 2. read schema of logger types and create: logger type objects, sensor objects
-			configLoader.readGeneralStationConfig(configDirectory+"ki_general_stations.ini"); // KiLi 1. read list of general stations and create: general station objects
-			configLoader.readLoggerTypeSensorTranslationConfig(configDirectory+"logger_type_sensor_translation_kili.ini"); // KiLi 3. read read input name sensor translation and insert it in existing logger type objects
-			configLoader.readVirtualPlotConfig(configDirectory+"station_master.csv"); // KiLi 4. read plotids and create virtualplot objects
-			configLoader.readVirtualPlotElevationConfig(configDirectory+"ki_elevation.csv");
-			configLoader.readKiLiStationConfig(configDirectory+"ki_config_station_inventory.cnf"); // KiLi 5. read time interval of stations and insert it in virtualplot objects
-			configLoader.readUpdatedPlotGeoPosConfig(configDirectory+"kili_plots_correct_xy.csv");
-			configLoader.calcNearestVirtualPlots();
-			//*** Kili end
-			
-			//*** South Africa start			
-			configLoader.read_sa_station_inventory(configDirectory+"sa_station_inventory.csv");
-			configLoader.calcNearestStations();
-			//*** South Africa end
-
-			//*** sensor config	start		
-			configLoader.readIgnoreSensorNameConfig(configDirectory+"global_sensor_ignore.ini"); // read and insert sensor names that should be not inserted in database
-			configLoader.readSensorPhysicalRangeConfig(configDirectory+"parameter_physical_range.ini"); // read and insert physical range to sensor objects
-			configLoader.readSensorStepRangeConfig(configDirectory+"parameter_step_range.ini"); // read and insert step range to sensor objects
-			configLoader.readBaseAggregationConfig(configDirectory+"global_sensor_aggregation.ini"); // read and insert type of aggregation to sensor objects
-			configLoader.readInterpolationSensorNameConfig(configDirectory+"interpolation_sensors.ini"); // read list of sensor names for interpolation and mark sensor objects
-			configLoader.readEmpiricalDiffConfig(configDirectory+"parameter_empirical_diff.ini"); // (TODO change) read empirical max diff and insert it in sensor objects
-			//*** sensor config end
+			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("SA")) {  //*** SA
+				configLoader.readRegion(configDirectory+"sa/sa_region.ini");
+				configLoader.readLoggerTypeSchema(configDirectory+"sa/sa_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
+				configLoader.readGeneralStation(configDirectory+"sa/sa_general_stations.ini"); // [create GENERAL_STATION]
+				configLoader.readSaStation(configDirectory+"sa/sa_station_inventory.csv"); //[create STATION] read station with geo position
+			}
 
 			//*** global config start
-			configLoader.readSensorDescriptionConfig(configDirectory+"sensor_description.ini");
-			configLoader.readSensorUnitConfig(configDirectory+"sensor_unit.ini");
-			configLoader.readSensorCategoryConfig(configDirectory+"sensor_category.ini");
+			configLoader.readBaseAggregationConfig(configDirectory+"global_sensor_aggregation.ini"); // read and insert type of aggregation to sensor objects
+			configLoader.readIgnoreSensorName(configDirectory+"global_sensor_ignore.ini"); // read and insert sensor names that should be not inserted in database
+			configLoader.readSensorPhysicalRangeConfig(configDirectory+"global_sensor_physical_range.ini"); // read and insert physical range to sensor objects
+			configLoader.readSensorStepRangeConfig(configDirectory+"global_sensor_step_range.ini"); // read and insert step range to sensor objects			
+			configLoader.readInterpolationSensorNameConfig(configDirectory+"global_sensor_interpolation.ini"); // read list of sensor names for interpolation and mark sensor objects
+			configLoader.readEmpiricalDiffConfig(configDirectory+"global_sensor_empirical_diff.ini"); // read empirical max diff and insert it in sensor objects
+			configLoader.readSensorDescriptionConfig(configDirectory+"global_sensor_description.ini");
+			configLoader.readSensorUnitConfig(configDirectory+"global_sensor_unit.ini");
+			configLoader.readSensorCategoryConfig(configDirectory+"global_sensor_category.ini");
 			//*** global config end
 
-			tsdb.createPlotMap();
-
-			//timeSeriesDatabase.readKiLiStationGeoPositionConfig(configDirectory+"station_master.csv");
-
-			tsdb.updateGeneralStations(); //TODO later remove!
-
+			//*** calc additional data start
+			tsdb.updateGeneralStations();
+			configLoader.calcNearestStations();
+			configLoader.calcNearestVirtualPlots();
+			//*** calc additional data end
 
 			return tsdb;		
 		} catch (Exception e) {
@@ -252,7 +245,7 @@ public class TsDBFactory {
 					log.warn(e);
 				}
 
-				
+
 				for(String entry:registry.list()) {
 					//if(entry.endsWith(RMI_SERVER_NAME)) {
 					if(entry.equals(RMI_SERVER_NAME)) {

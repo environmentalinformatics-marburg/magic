@@ -11,9 +11,9 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import tsdb.aggregated.AggregationInterval;
 import tsdb.gui.util.TimeSeriesView;
-import tsdb.raw.TimestampSeries;
+import tsdb.util.AggregationInterval;
+import tsdb.util.iterator.TimestampSeries;
 
 public class DataExplorer extends Composite {
 

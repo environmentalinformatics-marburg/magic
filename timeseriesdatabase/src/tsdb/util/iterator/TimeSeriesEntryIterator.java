@@ -2,7 +2,7 @@ package tsdb.util.iterator;
 
 import java.util.Iterator;
 
-import tsdb.raw.TsEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
 public class TimeSeriesEntryIterator extends TsIterator {

@@ -2,12 +2,12 @@ package tsdb.run;
 
 import java.util.ArrayList;
 
-import tsdb.Sensor;
 import tsdb.Station;
 import tsdb.StationProperties;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.component.Sensor;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 public class ConsoleRunner implements Runnable {

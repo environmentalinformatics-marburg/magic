@@ -1,12 +1,12 @@
 package tsdb.usecase;
 
-import tsdb.DataQuality;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.aggregated.iterator.DayAggregationIterator;
 import tsdb.aggregated.iterator.MonthAggregationIterator;
 import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.graph.QueryPlan;
+import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingNewAggregation {

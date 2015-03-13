@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.DataQuality;
 import tsdb.TsDBFactory;
-import tsdb.TimeConverter;
 import tsdb.TsDB;
 import tsdb.graph.Addition;
 import tsdb.graph.Averaged;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
+import tsdb.util.DataQuality;
+import tsdb.util.TimeConverter;
 import static tsdb.util.AssumptionCheck.*;
 /**
  * Generates time series for general stations with average of contained station values

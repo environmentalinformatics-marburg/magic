@@ -18,10 +18,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
-import tsdb.Sensor;
-import tsdb.aggregated.AggregationType;
+import tsdb.component.Sensor;
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;
+import tsdb.util.AggregationType;
 
 public class NewSensorInfoDialog extends Dialog {
 	

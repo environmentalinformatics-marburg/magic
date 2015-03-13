@@ -16,8 +16,9 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
-import tsdb.TimeConverter;
-import tsdb.TimeSeriesMask;
+import tsdb.util.DataEntry;
+import tsdb.util.TimeConverter;
+import tsdb.util.TimeSeriesMask;
 import tsdb.util.iterator.TsIterator;
 
 

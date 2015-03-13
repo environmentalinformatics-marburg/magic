@@ -10,7 +10,8 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.aggregated.AggregationType;
+import tsdb.util.AggregationType;
+import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 

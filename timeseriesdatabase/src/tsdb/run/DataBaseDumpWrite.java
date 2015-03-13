@@ -15,10 +15,10 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
 import tsdb.streamdb.ChunkMeta;
-import tsdb.streamdb.DataEntry;
 import tsdb.streamdb.SensorMeta;
 import tsdb.streamdb.StreamDB;
 import tsdb.streamdb.StreamIterator;
+import tsdb.util.DataEntry;
 
 public class DataBaseDumpWrite {
 

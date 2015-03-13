@@ -17,7 +17,7 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.Sensor;
+import tsdb.component.Sensor;
 import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;
