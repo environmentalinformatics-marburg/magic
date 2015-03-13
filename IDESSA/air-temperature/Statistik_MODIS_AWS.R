@@ -1,8 +1,11 @@
 #Statistische Auswertungen
-full <- read.csv("E:/IDESSA/data/stichprobe/gesamt/gesamt.csv")
+full <- read.csv("D:/IDESSA/data/stichprobe/gesamt/gesamt.csv")
 
 #NA entfernen
 full <- na.omit(full)
+
+full <- full[full$QC == 0,]
+View(full)
 
 # Korrelation
 cor(full$TempMD, full$TempAWS, use = "pairwise.complete.obs")
@@ -17,7 +20,9 @@ cor(full$TempMD9x, full$TempAWS, use = "pairwise.complete.obs")
 cor(full$TempMD15, full$TempAWS, use = "pairwise.complete.obs")
 
 
-xyplot(TempAWS ~ TempMD7x, data = full)
+xyplot(TempAWS ~ TempMD, data = full,
+       xlab = "MODIS - Landoberflaechentemperatur (°C)",
+       ylab = "SAWS - Lufttemperatur (°C)")
 
 min(full$TempAWS)
 min(full$TempMD)

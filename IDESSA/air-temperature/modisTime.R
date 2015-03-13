@@ -1,5 +1,3 @@
-
-
 modisTime <- function(inpath, clim, LT = T){
   # liest aus einem Eingabeordner alle Dateien mit Zeitangaben, ordnet diese den
   # Klimastationen zu
@@ -21,6 +19,7 @@ modisTime <- function(inpath, clim, LT = T){
   
   # Uhrzeit in stacks schieben
   time <- stack(c(list.files(pattern = "view_time.tif$")))
+  time <- cleanModisData(time, "VT")
   
   ## daten rausziehen aus zeit-stack tag
   etime <- extract(time, clim)
@@ -34,15 +33,14 @@ modisTime <- function(inpath, clim, LT = T){
   etime$lon <- cli$x
   etimelong <- melt(etime, id.vars = c("station", "lat", "lon"))
   
-  #Spalte für Produkt (MOD11A1/MYD11A1) anlegen
+  #Spalte fuer Produkt (MOD11A1/MYD11A1) anlegen
   etimelong$product <- substr(etimelong$variable, 1, 7)
   
   #Spalte mit Datum anlegen
   etimelong$date <- substr(etimelong$variable, 9, 18)
   etimelong$date <- as.POSIXct(etimelong$date, format = "%Y.%m.%d")
   
-  #Spalte für Uhrzeit anlegen
-  etimelong$value[etimelong$value == 255] <- NA
+  #Spalte fuer Uhrzeit anlegen
   etimelong$solartime <- etimelong$value/10
   etimelong$variable <- NULL
   etimelong$value <- NULL
