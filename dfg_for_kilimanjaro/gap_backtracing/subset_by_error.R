@@ -1,5 +1,6 @@
 # packages
 library(XLConnect)
+library(gdata)
 library(plyr)
 
 # functions
@@ -23,5 +24,7 @@ ls_dk <- lapply(plt_dk, function(i) {
 df_dk <- do.call("rbind.fill", ls_dk)
 
 # error selection
-codeMatches(df_dk, 6)
-codeMatches(ls_dk, 6, single_obs = FALSE)
+cm1 <- codeMatches(df_dk, 1)[, 1:6]
+cm2 <- codeMatches(df_dk, 2)
+
+codeMatches(ls_dk, 6, single_obs = FALSE, return_comments = TRUE)
