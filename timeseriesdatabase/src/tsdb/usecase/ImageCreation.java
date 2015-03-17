@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 
 import tsdb.TsDBFactory;
 import tsdb.component.SensorCategory;
+import tsdb.remote.RemoteTsDBFactory;
 import tsdb.remote.ServerTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
@@ -20,7 +21,7 @@ public class ImageCreation {
 
 	public static void main(String[] args) throws IOException {
 		
-		ServerTsDB tsdb = TsDBFactory.createDefaultServer();
+		ServerTsDB tsdb = RemoteTsDBFactory.createDefaultServer();
 		
 		String queryType = null;
 		String plotID = "HEG01";

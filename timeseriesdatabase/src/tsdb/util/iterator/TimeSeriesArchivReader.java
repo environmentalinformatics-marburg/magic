@@ -1,10 +1,9 @@
-package tsdb;
+package tsdb.util.iterator;
 
 import java.io.DataInput;
 import java.io.IOException;
 
 import tsdb.util.DataEntry;
-import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesArchivReader {
 

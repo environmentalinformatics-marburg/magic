@@ -44,37 +44,17 @@
 			</Policies>
 		</RollingRandomAccessFile>
 
-    	<RollingRandomAccessFile name="file_jepc" fileName="log/jepc.log" filePattern="log/old/jepc_%i.log">
-			<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
-			<PatternLayout pattern="[%p] %m%n"/>
-			<Policies>
-				<OnStartupTriggeringPolicy />
-				<SizeBasedTriggeringPolicy size="1024 MB" />
-			</Policies>
-		</RollingRandomAccessFile>
-		
-		<RollingRandomAccessFile name="file_jepc_warn" fileName="log/jepc_warn.log" filePattern="log/old/jepc_warn_%i.log">
-			<ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
-			<PatternLayout pattern="[%p] %m%n"/>
-			<Policies>
-				<OnStartupTriggeringPolicy />
-				<SizeBasedTriggeringPolicy size="1024 MB" />
-			</Policies>
-		</RollingRandomAccessFile>
-		
  		<Async name="Async">
 			<AppenderRef ref="stdout"/>
 			<AppenderRef ref="file_tsdb"/>
 			<AppenderRef ref="file_tsdb_info"/>
 			<AppenderRef ref="file_tsdb_warn"/>
-			<AppenderRef ref="file_jepc"/>
-			<AppenderRef ref="file_jepc_warn"/>
 		</Async>		
     
 	</Appenders>
 	
 	<Loggers>
-	
+		
 		<Logger name="tsdb" level="trace">
 			<AppenderRef ref="file_tsdb"/>
 			<AppenderRef ref="file_tsdb_info"/>
@@ -82,14 +62,10 @@
 			<AppenderRef ref="file_tsdb_web_request"/>					
 		</Logger>		
 		
-		<Logger name="de.umr.jepc" level="trace">
-			<AppenderRef ref="file_jepc"/>
-			<AppenderRef ref="file_jepc_warn"/>		
-		</Logger>
-    
 		<Root level="info">
 			<AppenderRef ref="stdout"/>			
 		</Root>
+		
 	</Loggers>
 	
 </Configuration>

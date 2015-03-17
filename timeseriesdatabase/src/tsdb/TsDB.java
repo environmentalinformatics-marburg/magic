@@ -79,6 +79,8 @@ public class TsDB {
 	public StreamStorageStreamDB streamStorage;
 
 	public CacheStorage cacheStorage;
+	
+	public StreamStorageStreamDB streamCache;
 
 	public SourceCatalog sourceCatalog; 
 
@@ -107,6 +109,7 @@ public class TsDB {
 		baseAggregationSensorNameSet = new TreeSet<String>();
 
 		this.cacheStorage = new CacheStorage(cachePath);
+		this.streamCache = new StreamStorageStreamDB(streamdbPathPrefix+"__cache");
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
 
@@ -118,6 +121,7 @@ public class TsDB {
 	 */
 	public void clear() {
 		cacheStorage.clear();
+		streamCache.clear();
 		sourceCatalog.clear();		
 		streamStorage.clear();
 	}
@@ -135,6 +139,11 @@ public class TsDB {
 			cacheStorage.close();
 		}  catch(Exception e) {
 			log.error("error in cacheStorage.close: "+e);
+		}
+		try {
+			streamCache.close();
+		}  catch(Exception e) {
+			log.error("error in streamCache.close: "+e);
 		}
 		try {
 			sourceCatalog.close();
@@ -510,6 +519,28 @@ public class TsDB {
 
 	//*********************************************** end base aggregation *************************************************************************
 
+	public String[] getSensorNamesOfPlot(String plotID) {
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.getSchema();
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.getSchema();
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
+		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getSchema();
+		}
+		
+		return null;
+	}
+	
+	
 	public String[] getValidSchema(String plotID, String[] schema) {
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {

@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.remote;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,8 +13,6 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 
 public class StartServerTsDB {
 
@@ -63,8 +61,8 @@ public class StartServerTsDB {
 		//if(hostname.equals("127.0.1.1")) {
 		final String localhost_prefix = "127";
 		if(hostname.startsWith(localhost_prefix)) {
-			String ip = TsDBFactory.getLocalIP();
-			hostname = TsDBFactory.RMI_DEFAULT_SERVER_IP;
+			String ip = RemoteTsDBFactory.getLocalIP();
+			hostname = RemoteTsDBFactory.RMI_DEFAULT_SERVER_IP;
 			if(ip!=null) {
 				hostname = ip;
 			}
@@ -72,7 +70,7 @@ public class StartServerTsDB {
 			System.setProperty("java.rmi.server.hostname", hostname);
 		}		
 
-		String server_url = "rmi://"+hostname+":"+TsDBFactory.RMI_SERVER_PORT+"/"+TsDBFactory.RMI_SERVER_NAME;
+		String server_url = "rmi://"+hostname+":"+RemoteTsDBFactory.RMI_SERVER_PORT+"/"+RemoteTsDBFactory.RMI_SERVER_NAME;
 		log.info("server url: "+server_url);
 
 		RemoteServer.setLog(System.out);
@@ -80,11 +78,11 @@ public class StartServerTsDB {
 
 
 		log.info("create registry...");
-		Registry registry = LocateRegistry.createRegistry(TsDBFactory.RMI_REGISTRY_PORT);
+		Registry registry = LocateRegistry.createRegistry(RemoteTsDBFactory.RMI_REGISTRY_PORT);
 		log.info("bind remote...");
 		RemoteTsDB stub = (RemoteTsDB) UnicastRemoteObject.exportObject( remoteTsDB, 0 ); 
 		//registry.rebind(server_url, stub);
-		registry.rebind(TsDBFactory.RMI_SERVER_NAME, stub);
+		registry.rebind(RemoteTsDBFactory.RMI_SERVER_NAME, stub);
 		log.info("ready...");
 
 

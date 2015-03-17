@@ -17,7 +17,7 @@ import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
+//import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 /**
@@ -26,7 +26,6 @@ import tsdb.util.Util;
  *
  */
 public class TsDBFactory {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private static final String PATH_CONFIG_FILENAME = "tsdb_paths.ini";
@@ -132,18 +131,6 @@ public class TsDBFactory {
 		}		
 	}
 
-	public static ServerTsDB createDefaultServer() {
-		TsDB tsdb = createDefault();
-		ServerTsDB serverTsDB;
-		try {
-			serverTsDB = new ServerTsDB(tsdb);
-			return serverTsDB;
-		} catch (RemoteException e) {
-			log.error(e);
-			return null;
-		}
-	}
-
 	public static TsDB createDefault() {
 		return createDefault(STORAGE_PATH+"/",CONFIG_PATH,STORAGE_PATH+"/",STORAGE_PATH+"/streamdb");
 	}
@@ -210,79 +197,4 @@ public class TsDBFactory {
 	public static String get_CSV_output_directory() {		
 		return OUTPUT_PATH+"/";
 	}
-
-	public static final String RMI_SERVER_NAME = "ServerTsDB";
-	public static final int RMI_REGISTRY_PORT = 16825;
-	public static final int RMI_SERVER_PORT = 16826;
-	public static String RMI_DEFAULT_SERVER_IP = "192.168.191.183";
-
-	public static String get_rmi_server_url() {
-		return get_rmi_server_url(RMI_DEFAULT_SERVER_IP);
-	}
-
-	public static String get_rmi_server_url(String server_ip) {
-		return "rmi://"+server_ip+':'+RMI_SERVER_PORT+'/'+RMI_SERVER_NAME;
-	}
-
-	public static RemoteTsDB createRemoteConnection() {
-		return createRemoteConnection(RMI_DEFAULT_SERVER_IP);
-	}
-
-	public static RemoteTsDB createRemoteConnection(String server_ip) {
-		try {
-			System.out.println("get registry from: "+server_ip+":"+RMI_REGISTRY_PORT);
-			Registry registry = LocateRegistry.getRegistry(server_ip,RMI_REGISTRY_PORT);
-			System.out.println(registry.getClass());
-			String serverUrl = null;
-			try {
-				try{
-
-					log.info("available RMI servers: "+Util.arrayToString(registry.list()));
-
-					String hostname = InetAddress.getLocalHost().getHostAddress();
-					log.info("IP of this client: " + hostname);
-				} catch(Exception e) {
-					log.warn(e);
-				}
-
-
-				for(String entry:registry.list()) {
-					//if(entry.endsWith(RMI_SERVER_NAME)) {
-					if(entry.equals(RMI_SERVER_NAME)) {
-						if(serverUrl != null) {
-							log.warn("multiple server entries: "+serverUrl+"   "+entry);
-						}
-						serverUrl = entry;
-					}
-				}
-
-
-			} catch (Exception e) {
-				log.warn(e);
-			}
-			if(serverUrl==null) {
-				serverUrl = get_rmi_server_url(server_ip);
-			}
-			log.info("conntect to "+serverUrl+ " with registry at "+server_ip+":"+RMI_REGISTRY_PORT);
-			RemoteTsDB remoteTsDB = (RemoteTsDB) registry.lookup(serverUrl);
-			log.info("connected remoteTsDB: "+remoteTsDB.toString());
-			return remoteTsDB;
-		} catch (Exception e) {
-			log.error(e);
-			return null;
-		}	
-	}
-
-	public static String getLocalIP() {
-		try {
-			Socket socket = new Socket("uni-marburg.de", 80, null, 0);
-			String ip = socket.getLocalAddress().getCanonicalHostName();
-			socket.close();
-			return ip;			
-		} catch (IOException e) {
-			log.error(e);
-			return null;
-		}
-	}
-
 }

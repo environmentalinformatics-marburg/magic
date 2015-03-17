@@ -6,7 +6,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
-import tsdb.run.StartServerTsDB;
+import tsdb.remote.StartServerTsDB;
 
 public class Run {
 	public static void main(String[] args) throws RemoteException, InterruptedException {

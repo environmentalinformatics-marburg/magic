@@ -56,9 +56,9 @@ public class EmpiricalIterator extends TsIterator {
 	@Override
 	public TsEntry next() {
 		TsEntry element = input_iterator.next();
-		TsEntry genElement = compare_iterator.next();
+		TsEntry compareElement = compare_iterator.next();
 		long timestamp = element.timestamp;
-		if(timestamp!= genElement.timestamp) {
+		if(timestamp!= compareElement.timestamp) {
 			throw new RuntimeException("iterator error");
 		}
 
@@ -66,8 +66,8 @@ public class EmpiricalIterator extends TsIterator {
 		DataQuality[] resultQf = new DataQuality[schema.length];
 		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			if(element.qualityFlag[colIndex]==DataQuality.STEP) {
-				if(maxDiff[colIndex]!=null&&!Float.isNaN(genElement.data[colIndex])) {
-					if(Math.abs((element.data[colIndex]-refValues[colIndex])-genElement.data[colIndex])<=maxDiff[colIndex]) { // check successful
+				if(maxDiff[colIndex]!=null&&!Float.isNaN(compareElement.data[colIndex])) {
+					if(Math.abs((element.data[colIndex]-refValues[colIndex])-compareElement.data[colIndex])<=maxDiff[colIndex]) { // check successful
 						resultQf[colIndex] = DataQuality.EMPIRICAL;
 						result[colIndex] = element.data[colIndex];
 					} else { // remains STEP

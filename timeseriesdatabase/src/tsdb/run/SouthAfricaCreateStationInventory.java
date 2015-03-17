@@ -39,9 +39,9 @@ public class SouthAfricaCreateStationInventory {
 	private TreeMap<String,Info> stationMap = new TreeMap<String,Info>();
 
 	private void run() throws IOException {
-		
+
 		System.out.println("read ACS");
-		
+
 		try {
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SAWS/ACS"));
 			for(Path filepath:ds) {
@@ -50,9 +50,9 @@ public class SouthAfricaCreateStationInventory {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("read ARS");
-		
+
 		try {
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SAWS/ARS"));
 			for(Path filepath:ds) {
@@ -61,9 +61,9 @@ public class SouthAfricaCreateStationInventory {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("read SASSCAL");
-		
+
 		try {
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SASSCAL"));
 			for(Path filepath:ds) {
@@ -72,17 +72,28 @@ public class SouthAfricaCreateStationInventory {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
+		System.out.println("read SASSCAL type 2");
+
+		try {
+			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SASSCAL_type_2"));
+			for(Path filepath:ds) {
+				readOneFileSASSCAL_type_2(filepath);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		System.out.println("create inventory");
-		
+
 		CSVWriter csvwriter = new CSVWriter(new FileWriter(TsDBFactory.OUTPUT_PATH+"/"+"sa_station_inventory.csv"));
-		
+
 		csvwriter.writeNext(new String[]{"station","general","lat","lon"});
 		for(Info info:stationMap.values()) {
 			//System.out.println(info.stationID);
 			csvwriter.writeNext(new String[]{info.stationID,info.generalStation,info.lat,info.lon});
 		}
-		
+
 		csvwriter.close();
 		System.out.println("end");
 	}
@@ -109,7 +120,7 @@ public class SouthAfricaCreateStationInventory {
 			stationMap.put(stationID, new Info(stationID, "SAWS", lat, lon));
 		}
 	}
-	
+
 	private void readOneFileARS(Path filepath) {
 		String filename = filepath.toString();
 		Table table = Table.readCSVFirstDataRow(filename, ',');
@@ -132,21 +143,39 @@ public class SouthAfricaCreateStationInventory {
 			stationMap.put(stationID, new Info(stationID, "SAWS", lat, lon));
 		}
 	}
-	
+
 	private void readOneFileSASSCAL(Path filepath) {
 		String filename = filepath.toString();
 		Table table = Table.readCSV(filename, ';');
-		
+
 		ColumnReaderString cr_stationID = table.createColumnReader("Station Name");
-		
+
 		String lat = "NA";
 		String lon = "NA";
-		
+
 		for(String[] row:table.rows) {
 			String stationID = cr_stationID.get(row);
 			if(!stationMap.containsKey(stationID)) {
 				stationMap.put(stationID, new Info(stationID, "SASSCAL", lat, lon));
 			}			
+		}		
+	}
+
+	private void readOneFileSASSCAL_type_2(Path filepath) {
+
+		String prefix = filepath.getName(filepath.getNameCount()-1).toString();
+
+		if(!prefix.endsWith(".csv")) {
+			throw new RuntimeException("no csv: "+prefix);
+		}
+
+		String stationID = prefix.substring(0,prefix.length()-4);
+
+		String lat = "NA";
+		String lon = "NA";
+		
+		if(!stationMap.containsKey(stationID)) {
+			stationMap.put(stationID, new Info(stationID, "SASSCAL", lat, lon));
 		}		
 	}
 

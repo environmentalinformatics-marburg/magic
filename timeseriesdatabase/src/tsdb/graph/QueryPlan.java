@@ -122,6 +122,7 @@ public class QueryPlan {
 			Continuous continuous = Continuous.of(base);
 			if(DataQuality.EMPIRICAL==dataQuality) {
 				continuous = EmpiricalFiltered.of(tsdb, continuous, plotID);
+				//continuous = EmpiricalFiltered_NEW.of(tsdb, continuous, plotID);
 			}
 			return continuous;
 		};

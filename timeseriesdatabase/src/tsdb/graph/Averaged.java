@@ -22,9 +22,9 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class Averaged extends Continuous.Abstract {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final List<Continuous> sources; //not null
 	private final String[] schema; //not null
 	private final int minCount;
@@ -54,9 +54,12 @@ public class Averaged extends Continuous.Abstract {
 	}
 
 	public static Averaged of(TsDB tsdb, List<Continuous> sources, int minCount) {		
-		Set<String> schemaSet = new LinkedHashSet<String>();		
+		Set<String> schemaSet = new LinkedHashSet<String>();
 		for(Continuous continuous:sources) {
-			schemaSet.addAll(Arrays.asList(continuous.getSchema()));
+			String[] schema = continuous.getSchema();
+			if(schema!=null&&schema.length>0) {
+				schemaSet.addAll(Arrays.asList(schema));
+			}
 		}
 		return new Averaged(tsdb, sources, schemaSet.toArray(new String[0]), minCount);
 	}
@@ -65,7 +68,7 @@ public class Averaged extends Continuous.Abstract {
 	public TsIterator get(Long start, Long end) {
 		return getExactly(start,end);
 	}
-	
+
 	public TsIterator getExactly(long start, long end) {		
 		List<TsIterator> iteratorList = new ArrayList<>();		
 		for(Continuous source:sources) {
@@ -73,6 +76,9 @@ public class Averaged extends Continuous.Abstract {
 			if(it!=null&&it.hasNext()) {
 				iteratorList.add(it);				
 			}
+		}
+		if(iteratorList.size()<minCount) {
+			return null;
 		}
 		return new AverageIterator(schema, iteratorList.toArray(new TsIterator[0]), minCount);		
 	}

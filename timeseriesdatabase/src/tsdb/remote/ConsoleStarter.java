@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.remote;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,8 +9,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import tsdb.TsDBFactory;
-import tsdb.remote.RemoteTsDB;
-import tsdb.remote.ServerTsDB;
 import tsdb.util.Pair;
 import tsdb.util.Util;
 
@@ -25,7 +23,7 @@ public class ConsoleStarter {
 			System.out.println("start RemoteTsDB...");
 			Registry registry;
 
-			registry = LocateRegistry.getRegistry("192.168.191.183",TsDBFactory.RMI_REGISTRY_PORT);
+			registry = LocateRegistry.getRegistry("192.168.191.183",RemoteTsDBFactory.RMI_REGISTRY_PORT);
 
 			System.out.println("list: "+Util.arrayToString(registry.list()));
 

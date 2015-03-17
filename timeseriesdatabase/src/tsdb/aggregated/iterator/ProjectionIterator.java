@@ -56,6 +56,5 @@ public class ProjectionIterator extends InputIterator {
 		}
 		int[][] qualityCounter = null; //TODO		
 		return new TsEntry(element.timestamp, data, qualityFlag, qualityCounter, interpolated);
-		//return new TsEntry(element.timestamp,data);
 	}
 }

@@ -29,6 +29,7 @@ import tsdb.gui.info.VirtualPlotInfoDialog;
 import tsdb.gui.query.QueryDialog;
 import tsdb.gui.sensorquery.SensorQueryDialog;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.RemoteTsDBFactory;
 import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
@@ -84,7 +85,7 @@ public class TimeSeriesManager {
 
 			System.out.println("start RemoteTsDB...");
 			//Registry registry = LocateRegistry.getRegistry("localhost",StartServerTsDB.REGISTRY_PORT);
-			Registry registry = LocateRegistry.getRegistry(TsDBFactory.RMI_DEFAULT_SERVER_IP,TsDBFactory.RMI_REGISTRY_PORT);
+			Registry registry = LocateRegistry.getRegistry(RemoteTsDBFactory.RMI_DEFAULT_SERVER_IP,RemoteTsDBFactory.RMI_REGISTRY_PORT);
 			System.out.println("list: "+Util.arrayToString(registry.list()));
 
 
@@ -98,7 +99,7 @@ public class TimeSeriesManager {
 
 
 
-			remoteTsDB = (RemoteTsDB) registry.lookup(TsDBFactory.get_rmi_server_url());
+			remoteTsDB = (RemoteTsDB) registry.lookup(RemoteTsDBFactory.get_rmi_server_url());
 
 			System.out.println("remoteTsDB: "+remoteTsDB.toString()+"  "+remoteTsDB.getClass());
 
@@ -108,7 +109,7 @@ public class TimeSeriesManager {
 		if(remoteTsDB.getClass().equals(ServerTsDB.class)) {
 			connectionText = "internal local connection";
 		} else {
-			connectionText = "remote connection "+TsDBFactory.get_rmi_server_url();
+			connectionText = "remote connection "+RemoteTsDBFactory.get_rmi_server_url();
 		}
 
 		shell.setText("Time Series Database Manager ["+connectionText+"]");

@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TsDBFactory;
 import tsdb.explorer.metadata.MetadataScene;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.RemoteTsDBFactory;
 
 public class Explorer extends Application {
 
@@ -35,10 +36,10 @@ public class Explorer extends Application {
 		
 		StringProperty connectionTextProperty = new SimpleStringProperty();
 
-		RemoteTsDB tsdb = TsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local rmi connection to db");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote rmi connection to db (183er)");
-		//RemoteTsDB tsdb = TsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote rmi connection to db (lab)");
+		RemoteTsDB tsdb = RemoteTsDBFactory.createDefaultServer(); connectionTextProperty.set("local direct connection to db");
+		//RemoteTsDB tsdb = RemoteTsDBFactory.createRemoteConnection("137.248.191.180"); connectionTextProperty.set("local rmi connection to db");
+		//RemoteTsDB tsdb = RemoteTsDBFactory.createRemoteConnection(); connectionTextProperty.set("remote rmi connection to db (183er)");
+		//RemoteTsDB tsdb = RemoteTsDBFactory.createRemoteConnection("137.248.191.241"); connectionTextProperty.set("remote rmi connection to db (lab)");
 
 		if(tsdb==null) {
 			log.error("no connection");
