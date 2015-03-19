@@ -150,4 +150,11 @@ public class StreamIterator implements Iterator<DataEntry> {
 			return chunk[currentPos++];
 		}		
 	}
+
+	@Override
+	public String toString() {
+		return "streamIterator("+stationName+"/"+sensorName+")";
+	}
+	
+	
 }

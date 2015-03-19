@@ -3,6 +3,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.mapdb.DataInput2;
+import org.mapdb.DataOutput2;
+
 public class DataEntry {
 	public final int timestamp;
 	public final float value;
@@ -25,8 +28,7 @@ public class DataEntry {
 		@Override
 		public void serialize(DataOutput out, DataEntry[] dataEntries) throws IOException {
 			out.writeUTF(TOC_START);
-			
-			out.writeInt(dataEntries.length);
+			DataOutput2.packInt(out, dataEntries.length);
 			
 			int prevTimestamp = -1;
 			for(DataEntry entry:dataEntries) {
@@ -43,7 +45,27 @@ public class DataEntry {
 
 		@Override
 		public DataEntry[] deserialize(DataInput in, int available) throws IOException {
-			return null;
+			String toc_start = in.readUTF();
+			if(!toc_start.equals(TOC_START)) {
+				throw new RuntimeException("file format error found not "+TOC_START+" but "+toc_start);
+			}
+			final int dataEntrySize = DataInput2.unpackInt(in);
+			DataEntry[] dataEntries = new DataEntry[dataEntrySize];
+			int prevTimestamp = -1;
+			for(int i=0;i<dataEntries.length;i++) {
+				int timestamp = in.readInt();
+				float value = in.readFloat();
+				if(timestamp<=prevTimestamp) {
+					throw new RuntimeException("read timestampseries format error: timestamps not ascending ordered");
+				}
+				dataEntries[i] = new DataEntry(timestamp,value);
+				prevTimestamp = timestamp;
+			}
+			String toc_end = in.readUTF();
+			if(!toc_end.equals(TOC_END)) {
+				throw new RuntimeException("file format error");
+			}
+			return dataEntries;
 		}
 
 		@Override

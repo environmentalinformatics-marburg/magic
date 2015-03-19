@@ -26,8 +26,10 @@ public class DataBaseDumpRead {
 	public static void main(String[] args) throws IOException {
 		
 		//Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump.tss");
-		Path pathToFile = null;
-		if(args.length==0) {
+		Path pathToFile = Paths.get(TsDBFactory.OUTPUT_PATH+"/dump/"+"dump_2015_03_19_10_50.tss");
+		
+		//Path pathToFile = null;
+		/*if(args.length==0) {
 			printHelp();
 			return;
 		} else if(args.length==1) {
@@ -41,7 +43,7 @@ public class DataBaseDumpRead {
 			System.out.println("file not found: "+pathToFile);
 			printHelp();
 			return;
-		}
+		}*/
 		
 
 		System.out.println("open streamDB...");

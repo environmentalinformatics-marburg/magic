@@ -62,35 +62,6 @@ public class KiliCollector {
 			this.md5 = null;
 		}
 
-		/*public static final Comparator<CollectorEntry> LOGGER_FIRST_TIMESTAMP_COMPARATOR = new Comparator<KiliCollector.CollectorEntry>() {			
-			@Override
-			public int compare(CollectorEntry a, CollectorEntry b) {
-				if(a.logger==null) {
-					if(b.logger!=null) {
-						return -1;
-					}
-				} else {
-					if(b.logger==null) {
-						return 1;
-					} else {
-						int c = a.logger.compareTo(b.logger);
-						if(c!=0) {
-							return c;
-						}
-					}
-				}				
-
-				int c = Integer.compare(a.firstTimestamp, b.firstTimestamp);
-				if(c!=0) {
-					return c;
-				} else {
-					return Integer.compare(a.lastTimestamp, b.lastTimestamp);
-				}				
-			}
-		};*/
-
-
-
 		public String toCSVRow() {
 			return plot+","+logger+","+station+","+TimeConverter.oleMinutesToText((long) firstTimestamp)+","+TimeConverter.oleMinutesToText((long) lastTimestamp)+","+status+","+md5+","+filesize+","+filename;
 		}
@@ -115,8 +86,6 @@ public class KiliCollector {
 		this.timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);		
 	}
 
-
-
 	public static void main(String[] args) throws FileNotFoundException {
 
 		final  String PREPROCESS_PATH = "c:/timeseriesdatabase_preprocess";
@@ -128,8 +97,8 @@ public class KiliCollector {
 		TsDB tsdb = TsDBFactory.createDefault();
 		KiliCollector kiliCollector = new KiliCollector(tsdb);
 
+		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/empty"));
 		HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));
-		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/empty"));	
 		TreeMap<String, List<CollectorEntry>> md5MapBasis = createMD5Map(collectorMapBasis);
 
 		HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/source"));

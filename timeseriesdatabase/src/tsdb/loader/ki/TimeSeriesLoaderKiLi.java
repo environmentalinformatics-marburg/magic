@@ -97,7 +97,10 @@ public class TimeSeriesLoaderKiLi {
 							}
 						}
 						if(!excluded) {
-							String fileKey = filename.substring(0, ascIndex);						
+							String fileKey = filename.substring(0, ascIndex);
+							if(ascCollectorMap.containsKey(fileKey)) {
+								log.warn("file already inserted in map "+fileKey);
+							}
 							ascCollectorMap.putIfAbsent(fileKey, path);
 						}
 					} else {

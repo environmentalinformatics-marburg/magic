@@ -17,6 +17,8 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.mapdb.DataInput2;
+import org.mapdb.DataOutput2;
 
 import tsdb.util.DataEntry;
 import tsdb.util.TimeConverter;
@@ -29,7 +31,6 @@ import tsdb.util.Util;
  *
  */
 public class TimestampSeries implements TsIterable, Serializable, Externalizable {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private static final long serialVersionUID = 6078067255995220349L;
@@ -96,11 +97,11 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 			out.writeUTF(TOC_START);
 			
 			out.writeUTF(timestampSeries.name);
-			out.writeInt(timestampSeries.sensorNames.length);
+			DataOutput2.packInt(out,timestampSeries.sensorNames.length);
 			for(String sensorName:timestampSeries.sensorNames) {
 				out.writeUTF(sensorName);
 			}
-			out.writeInt(timestampSeries.entryList.size());
+			DataOutput2.packInt(out,timestampSeries.entryList.size());
 			int prevTimestamp = -1;
 			for(TsEntry entry:timestampSeries.entryList) {
 				int timestamp = (int) entry.timestamp;
@@ -113,7 +114,6 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 				}
 				prevTimestamp = timestamp;
 			}	
-			
 			out.writeUTF(TOC_END);
 		}
 
@@ -124,13 +124,13 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 				throw new RuntimeException("file format error");
 			}			
 			
-			String name = in.readUTF();
-			final int sensorCount = in.readInt();
+			String name = in.readUTF(); 
+			final int sensorCount = DataInput2.unpackInt(in);
 			String[] sensorNames = new String[sensorCount];
 			for(int i=0;i<sensorCount;i++) {
 				sensorNames[i] = in.readUTF();
 			}
-			final int entryCount = in.readInt();
+			final int entryCount = DataInput2.unpackInt(in);
 			ArrayList<TsEntry> entryList = new ArrayList<TsEntry>(entryCount);
 			int prevTimestamp = -1;
 			for(int r=0;r<entryCount;r++) {
@@ -147,8 +147,8 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 			}			
 			
 			String end = in.readUTF();
-			if(!end.equals(TOC_START)) {
-				throw new RuntimeException("file format error");
+			if(!end.equals(TOC_END)) {
+				throw new RuntimeException("file format error: \""+end+"\"");
 			}
 			return new TimestampSeries(name, sensorNames, entryList);
 		}

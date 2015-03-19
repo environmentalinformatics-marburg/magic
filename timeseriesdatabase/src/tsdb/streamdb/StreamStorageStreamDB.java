@@ -145,7 +145,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public void insertTimestampSeries(TimestampSeries timestampSeries) {
-		log.warn("streamDB insert TimestampSeries "+timestampSeries.name);
+		log.info("streamDB insert TimestampSeries "+timestampSeries.name);
 		String stationName = timestampSeries.name;
 		for(String sensorName:timestampSeries.sensorNames) {
 			DataEntry[] data = timestampSeries.toDataEntyArray(sensorName);
@@ -155,6 +155,17 @@ public class StreamStorageStreamDB implements StreamStorage {
 			}
 		}
 
+	}
+
+	public void insertDataEntyArray(String stationName, String sensorName, DataEntry[] dataEntries) {
+		log.info("streamDB insert DataEntyArray "+stationName+"/"+sensorName);
+		if(dataEntries!=null&&dataEntries.length>0) {
+			streamdb.insertSensorData(stationName, sensorName, dataEntries);
+		}
+	}
+
+	public NavigableSet<String> getStationNames() {
+		return streamdb.getStationNames();		
 	}
 
 }

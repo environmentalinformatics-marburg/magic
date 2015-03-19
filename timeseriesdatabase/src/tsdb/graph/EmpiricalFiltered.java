@@ -17,7 +17,6 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class EmpiricalFiltered extends Continuous.Abstract {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private final Continuous source; //not null
