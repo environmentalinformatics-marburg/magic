@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 import tsdb.util.AssumptionCheck;
 import tsdb.util.DataRow;
 import tsdb.util.Pair;

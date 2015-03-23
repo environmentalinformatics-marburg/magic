@@ -89,6 +89,10 @@ public class TimeConverter implements Serializable {
 		return oleMinutesToLocalDateTime(oleTimeMinutes).toString();
 	}
 	
+	public static String oleMinutesToText(Integer oleTimeMinutes) {
+		return oleMinutesToText((Long.valueOf(oleTimeMinutes)));
+	}
+	
 	public static String oleMinutesToDateTimeFileText(long oleTimeMinutes) {
 		return oleMinutesToDateTimeFileText(Long.valueOf(oleTimeMinutes));
 	}

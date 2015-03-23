@@ -17,11 +17,11 @@ public class StationInfo implements Serializable {
 	public final String alternativeID;
 
 	public StationInfo(Station station) {
-		stationID= station.stationID;
-		loggerType=station.loggerType;
-		geoPoslongitude= station.geoPoslongitude;
-		geoPosLatitude= station.geoPosLatitude;
-		generalStationInfo= Util.ifnull(station.generalStation, gs->new GeneralStationInfo(gs));
-		alternativeID=station.alternativeID;
+		stationID = station.stationID;
+		loggerType = station.loggerType;
+		geoPoslongitude = station.geoPoslongitude;
+		geoPosLatitude = station.geoPosLatitude;
+		generalStationInfo = Util.ifnull(station.generalStation, gs->new GeneralStationInfo(gs));
+		alternativeID = station.alternativeID;
 	}		
 }

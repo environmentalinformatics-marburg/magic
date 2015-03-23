@@ -1,4 +1,4 @@
-package tsdb.aggregated.iterator;
+package tsdb.iterator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

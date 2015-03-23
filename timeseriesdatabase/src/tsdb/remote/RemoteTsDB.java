@@ -5,9 +5,9 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import tsdb.LoggerType;
-import tsdb.catalog.SourceEntry;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
+import tsdb.component.SourceEntry;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.Pair;
@@ -43,6 +43,7 @@ public interface RemoteTsDB extends Remote {
 	//plot station virtualPlot
 	PlotInfo[] getPlots() throws RemoteException;
 	StationInfo[] getStations() throws RemoteException;
+	String getStationLoggerTypeName(String stationName)  throws RemoteException;
 	String[] getPlotStations(String plotID) throws RemoteException;	
 	VirtualPlotInfo[] getVirtualPlots() throws RemoteException;
 	VirtualPlotInfo getVirtualPlot(String plotID) throws RemoteException;

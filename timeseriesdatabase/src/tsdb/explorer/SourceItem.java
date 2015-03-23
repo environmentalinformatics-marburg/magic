@@ -1,6 +1,6 @@
 package tsdb.explorer;
 
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 
 public class SourceItem {
 	

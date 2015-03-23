@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.catalog.SourceCatalog;
 import tsdb.component.CacheStorage;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
+import tsdb.component.SourceCatalog;
 import tsdb.streamdb.StreamStorageStreamDB;
 import tsdb.util.AggregationType;
 import tsdb.util.BaseAggregationTimeUtil;

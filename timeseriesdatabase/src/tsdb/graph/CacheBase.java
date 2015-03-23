@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.ProjectionIterator;
+import tsdb.iterator.ProjectionIterator;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 

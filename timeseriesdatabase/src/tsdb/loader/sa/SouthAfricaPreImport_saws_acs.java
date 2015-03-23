@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.loader.sa;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TimeSeriesArchivWriter;
 import tsdb.TsDBFactory;
 import tsdb.util.Table;
 import tsdb.util.TsEntry;
@@ -27,12 +28,17 @@ public class SouthAfricaPreImport_saws_acs {
 		System.out.println("start...");
 		
 		try {
+			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"sa_tsa"+"/"+"south_africa_saws_acs.tsa";
+			Util.createDirectoriesOfFile(outFile);
+			TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+			tsaWriter.open();
 			//DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/TESTING"));
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SAWS/ACS"));
 			for(Path filepath:ds) {
 				log.info("read "+filepath);
-				readOneFile(filepath);
+				readOneFile(filepath, tsaWriter);
 			}
+			tsaWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -41,7 +47,7 @@ public class SouthAfricaPreImport_saws_acs {
 		
 	}
 	
-	public static void readOneFile(Path filepath) {
+	public static void readOneFile(Path filepath, TimeSeriesArchivWriter tsaWriter) {
 		//String filename = "C:/timeseriesdatabase_source/sa/SAWS/ACS/ALIWAL-NORTH PLAATKOP.csv";
 		String filename = filepath.toString();
 		System.out.println("read file...");
@@ -104,10 +110,17 @@ public class SouthAfricaPreImport_saws_acs {
 		
 		System.out.println("write...");
 		try {
-			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_saws_acs"+"/"+tss.name+".dat";
+			/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_saws_acs"+"/"+tss.name+".dat";
 			Util.createDirectoriesOfFile(outFile);
-			TimestampSeries.writeToBinaryFile(tss, outFile);
+			TimestampSeries.writeToBinaryFile(tss, outFile);*/
+			/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_saws_acs"+"/"+tss.name+".tsa";
+			Util.createDirectoriesOfFile(outFile);
+			TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+			tsaWriter.open();
+			tsaWriter.writeTimestampSeries(tss);
+			tsaWriter.close();*/
 			System.out.println(tss);
+			tsaWriter.writeTimestampSeries(tss);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

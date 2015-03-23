@@ -18,6 +18,7 @@ public class PlotInfo implements Serializable {
 	public final boolean isStation;
 	public final boolean isVIP;
 	public final double[] geoPos;
+	public final String loggerTypeName;
 	
 	public PlotInfo(VirtualPlot virtualPlot) {
 		this.name = virtualPlot.plotID;
@@ -25,6 +26,7 @@ public class PlotInfo implements Serializable {
 		this.isStation = false;
 		this.isVIP = virtualPlot.isFocalPlot;
 		this.geoPos = new double[]{virtualPlot.geoPosEasting,virtualPlot.geoPosNorthing,virtualPlot.elevation};
+		this.loggerTypeName = "virtual";
 	}
 	
 	public PlotInfo(Station station) {
@@ -34,6 +36,11 @@ public class PlotInfo implements Serializable {
 		this.isStation = true;
 		this.isVIP = station.isVIP();
 		this.geoPos = new double[]{station.geoPoslongitude,station.geoPosLatitude};
+		if(station.loggerType!=null) {
+			this.loggerTypeName = station.loggerType.typeName;
+		} else {
+			this.loggerTypeName = "unknown";
+		}
 	}
 	
 	public PlotInfo(String name, String generalName, String regionName) {
@@ -42,7 +49,8 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(generalName, regionName);
 		this.isStation = false;
 		this.isVIP = false;
-		this.geoPos = new double[]{};
+		this.geoPos = new double[]{Double.NaN,Double.NaN};
+		this.loggerTypeName = "unknown";
 	}
 
 	@Override

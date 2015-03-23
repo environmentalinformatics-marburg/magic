@@ -16,6 +16,15 @@ $(document).ready(document_ready);
 body {background-color:#f6f6f6}
 .input_entity {display:inline-block}
 .input_entity label {display:block;text-align:center}
+
+#plot_select {font-family: monospace}
+#station_select {font-family: monospace}
+#sensor_select {font-family: monospace}
+
+table th {background-color:#d6d6d6}
+table tr:nth-child(odd)    { background-color:#e6e6e6; }
+table tr:nth-child(even)    { background-color:#f2f2f2; }
+
 </style>
 
 </head>
@@ -24,7 +33,7 @@ status: <div id="status" style="display:inline-block"></div>
 <hr/>
 <div class="input_bar">
 
-<div class="input_entity">
+<div class="input_entity" id="div_region_select">
 <label>Region</label>
 <select id="region_select" class="blockable"></select>
 </div>
@@ -34,7 +43,7 @@ status: <div id="status" style="display:inline-block"></div>
 <select id="generalstation_select" class="blockable"></select>
 </div>
 
-<div class="input_entity">
+<div class="input_entity" id="div_plot_select">
 <label>Plot</label>
 <select id="plot_select" class="blockable"></select>
 </div>
@@ -42,6 +51,11 @@ status: <div id="status" style="display:inline-block"></div>
 <div class="input_entity" id="div_station_select">
 <label>Station</label>
 <select id="station_select" class="blockable"></select>
+</div>
+
+<div class="input_entity" id="div_sensor_select" title="sensor info">
+<label>Sensor</label>
+<select id="sensor_select" class="blockable"></select>
 </div>
 
 <div class="input_entity">
@@ -60,16 +74,18 @@ status: <div id="status" style="display:inline-block"></div>
 <select id="quality_select" class="blockable"></select>
 </div>
 
-<div class="input_entity">
-<button id="button_visualise" class="blockable">visualise sensors</button>
+<div class="input_entity" id="div_type_select">
+<label>Type</label>
+<select id="type_select" class="blockable"></select>
 </div>
 
+<div class="input_entity">
+<button id="button_visualise" class="blockable">visualise</button>
+</div>
 
-</div> <!-- input_bar -->
+</div>
 <hr/>
 <div id="div_result"></div>
 
-
 </body>
-
 </html>

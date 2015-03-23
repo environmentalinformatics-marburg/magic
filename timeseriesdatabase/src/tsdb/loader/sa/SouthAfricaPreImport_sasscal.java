@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.loader.sa;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TimeSeriesArchivWriter;
 import tsdb.TsDBFactory;
 import tsdb.util.Table;
 import tsdb.util.TsEntry;
@@ -28,11 +29,16 @@ public class SouthAfricaPreImport_sasscal {
 		System.out.println("start...");
 
 		try {
+			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"s_tsa"+"/"+"south_africa_sasscal.tsa";
+			Util.createDirectoriesOfFile(outFile);
+			TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+			tsaWriter.open();
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SASSCAL"));
 			for(Path filepath:ds) {
 				log.info("read "+filepath);
-				readOneFile(filepath);
+				readOneFile(filepath,tsaWriter);
 			}
+			tsaWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
@@ -40,7 +46,7 @@ public class SouthAfricaPreImport_sasscal {
 		System.out.println("...end");
 	}
 
-	public static void readOneFile(Path filepath) {
+	public static void readOneFile(Path filepath, TimeSeriesArchivWriter tsaWriter) {
 
 		String prefix = filepath.getName(filepath.getNameCount()-1).toString();
 
@@ -77,6 +83,7 @@ public class SouthAfricaPreImport_sasscal {
 		String currentStationID = null;
 		ArrayList<TsEntry> currentList = new ArrayList<TsEntry>(table.rows.length);
 
+		long prevTimestamp = -1;
 		for(String[] row:table.rows) {
 			String stationID = cr_station.get(row);
 
@@ -93,10 +100,19 @@ public class SouthAfricaPreImport_sasscal {
 			}
 
 			long timestamp = cr_timestamp.get(row);
+			if(timestamp<=prevTimestamp) {
+				if(timestamp==prevTimestamp) {
+					log.warn("duplicate timestamp: ignore second: "+prevTimestamp+" "+timestamp+" in "+stationID+" of "+filepath);
+					continue;
+				} else {
+					//throw new RuntimeException("timestamps not ordered"+prevTimestamp+" "+timestamp+" in "+stationID+" of "+filepath);
+				}
+			}
 
 			//System.out.println(Arrays.toString(row)+"  "+TimeConverter.oleMinutesToText(timestamp));
 
 			currentList.add(TsEntry.of(timestamp, cr_P_RT_NRT.get(row, false) ));
+			prevTimestamp = timestamp;
 		}
 
 		if(currentStationID!=null&&!currentList.isEmpty()) {
@@ -112,10 +128,17 @@ public class SouthAfricaPreImport_sasscal {
 			entry.getValue().sort((a,b)->Long.compare(a.timestamp, b.timestamp)); // sort rows with timestamps
 			TimestampSeries tss = new TimestampSeries(entry.getKey(),sensorNames,entry.getValue());		
 			try {
-				String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal"+"/"+tss.name+"_"+prefix+".dat";
+				/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal"+"/"+tss.name+"_"+prefix+".dat";
 				Util.createDirectoriesOfFile(outFile);
-				TimestampSeries.writeToBinaryFile(tss, outFile);
+				TimestampSeries.writeToBinaryFile(tss, outFile);*/
+				/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal"+"/"+tss.name+".tsa";
+				Util.createDirectoriesOfFile(outFile);
+				TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+				tsaWriter.open();
+				tsaWriter.writeTimestampSeries(tss);
+				tsaWriter.close();*/
 				System.out.println(tss);
+				tsaWriter.writeTimestampSeries(tss);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	

@@ -3,7 +3,7 @@ package tsdb.graph;
 import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.DifferentialIterator;
+import tsdb.iterator.DifferentialIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**

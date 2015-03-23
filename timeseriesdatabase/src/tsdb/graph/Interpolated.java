@@ -9,7 +9,7 @@ import java.util.List;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.iterator.BadInterpolatedRemoveIterator;
+import tsdb.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.Interpolator;
 import tsdb.util.iterator.TimeSeries;

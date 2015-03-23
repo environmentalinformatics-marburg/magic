@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 import tsdb.gui.info.SourceViewComparator.SortType;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.TimeConverter;

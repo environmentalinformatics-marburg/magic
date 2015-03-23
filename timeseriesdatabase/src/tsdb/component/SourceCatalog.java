@@ -1,4 +1,4 @@
-package tsdb.catalog;
+package tsdb.component;
 
 import java.io.File;
 import java.util.Collection;

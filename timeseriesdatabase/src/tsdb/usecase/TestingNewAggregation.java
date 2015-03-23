@@ -2,10 +2,10 @@ package tsdb.usecase;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.aggregated.iterator.DayAggregationIterator;
-import tsdb.aggregated.iterator.MonthAggregationIterator;
-import tsdb.aggregated.iterator.YearAggregationIterator;
 import tsdb.graph.QueryPlan;
+import tsdb.iterator.DayAggregationIterator;
+import tsdb.iterator.MonthAggregationIterator;
+import tsdb.iterator.YearAggregationIterator;
 import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 

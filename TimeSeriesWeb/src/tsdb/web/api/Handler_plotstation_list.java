@@ -35,6 +35,17 @@ public class Handler_plotstation_list extends MethodHandler {
 			if(webList==null) {
 				webList = new String[0];
 			}
+
+			for(int i=0;i<webList.length;i++) {
+				String loggerTypeName = tsdb.getStationLoggerTypeName(webList[i]);
+				if(loggerTypeName!=null) {
+					webList[i] += ";"+loggerTypeName;
+				} else {
+					webList[i] += ";"+"unknown";
+				}
+			}
+
+
 			PrintWriter writer = response.getWriter();
 			writeStringArray(writer, webList);
 			response.setStatus(HttpServletResponse.SC_OK);

@@ -37,9 +37,7 @@ public class CreateStationGroupAverageCache_NEW {
 	public static void main(String[] args) {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-
 		new CreateStationGroupAverageCache_NEW(tsdb).run();
-
 		tsdb.close();
 		System.out.println("...end");
 	}

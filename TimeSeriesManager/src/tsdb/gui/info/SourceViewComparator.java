@@ -3,7 +3,7 @@ package tsdb.gui.info;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 
 public class SourceViewComparator extends ViewerComparator {
 	

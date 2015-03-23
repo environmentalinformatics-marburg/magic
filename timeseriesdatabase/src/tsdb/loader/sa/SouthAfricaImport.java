@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.loader.sa;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -9,8 +9,11 @@ import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TimeSeriesArchivReader;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
+import tsdb.TimeSeriesArchivReader.TimeSeriesArchivVisitor;
+import tsdb.util.DataEntry;
 import tsdb.util.iterator.TimestampSeries;
 
 public class SouthAfricaImport {
@@ -71,9 +74,10 @@ public class SouthAfricaImport {
 
 	public static void readOneFile(TsDB tsdb, Path filepath) {
 		try {
-			TimestampSeries tss = TimestampSeries.readFromBinaryFile(filepath.toString());
-			tsdb.streamStorage.insertTimestampSeries(tss);
-		} catch (ClassNotFoundException | IOException e) {
+			/*TimestampSeries tss = TimestampSeries.readFromBinaryFile(filepath.toString());
+			tsdb.streamStorage.insertTimestampSeries(tss);*/
+			TimeSeriesArchivReader.importStationsFromFile(tsdb, filepath.toString());
+		} catch (Exception e) {
 			log.error(e);
 		}
 	}

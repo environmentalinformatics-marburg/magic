@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.AverageIterator;
+import tsdb.iterator.AverageIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**

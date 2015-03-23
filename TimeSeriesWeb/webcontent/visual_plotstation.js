@@ -6,12 +6,16 @@ var url_plot_list = url_base+"tsdb/plot_list";
 var url_plotstation_list = url_base+"tsdb/plotstation_list";
 var url_sensor_list = url_base+"tsdb/sensor_list";
 var url_query_diagram = url_base+"tsdb/query_image";
+var url_query_csv = url_base+"tsdb/query_csv";
 
 var time_year_text = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var time_month_text = ["year","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 var aggregation_text = ["raw","hour","day","week","month","year"];
 var quality_name = ["no", "physical", "step", "empirical"];
 var quality_text = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
+var type_text = ["diagram","table","csv file"];
+
+var sensor_rows = [];
 
 var tasks = 0;
 
@@ -19,10 +23,12 @@ var region_select;
 var generalstation_select;
 var plot_select;
 var station_select;
+var sensor_select;
 var time_year_select;
 var time_month_select;
 var aggregation_select;
 var quality_select;
+var type_select;
 
 function getID(id) {
 	return document.getElementById(id);
@@ -39,9 +45,20 @@ function splitData(data) {
 	return rows;
 }
 
+function splitCsv(data) {
+	var lines = data.split(/\n/);
+	var rows = [];
+	for (var i in lines) {
+		if(lines[i].length>0) {
+			rows.push(lines[i].split(','));
+		}
+	}
+	return rows;
+}
+
 function ready_to_run(ready) {
 	$(".blockable").prop( "disabled",!ready);
-	onStationChange();
+	updateStationVisibility();
 }
 
 function incTask() {
@@ -67,10 +84,12 @@ function document_ready() {
 	generalstation_select = $("#generalstation_select");
 	plot_select = $("#plot_select");
 	station_select = $("#station_select");
+	sensor_select = $("#sensor_select");
 	time_year_select = $("#time_year_select");
 	time_month_select = $("#time_month_select");
 	aggregation_select = $("#aggregation_select");
 	quality_select = $("#quality_select");
+	type_select = $("#type_select");
 	
 	getID("region_select").onchange = onRegionChange;
 	getID("generalstation_select").onchange = onGeneralstationChange;
@@ -85,6 +104,7 @@ function document_ready() {
 	updateTimeYears();
 	updateAggregations();
 	updateQualities();
+	updateTypes();
 	decTask();
 }
 
@@ -95,7 +115,12 @@ function updateRegions() {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		onRegionChange();
-		decTask();		
+		decTask();
+		if(rows.length==1) {
+			$("#div_region_select").hide();
+		} else {
+			$("#div_region_select").show();
+		}			
 	}).fail(function() {region_select.append(new Option("[error]","[error]"));decTask();});
 }
 
@@ -109,6 +134,7 @@ function updateGeneralStations() {
 	generalstation_select.empty();	
 	$.get(url_generalstation_list+"?region="+regionName).done(function(data) {
 		var rows = splitData(data);
+		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {
 			generalstation_select.append(new Option(row[1],row[0]));
 		})		
@@ -124,10 +150,15 @@ function onGeneralstationChange() {
 function updatePlots() {
 	incTask();
 	var generalstationName = generalstation_select.val();
-	plot_select.empty();	
-	$.get(url_plot_list+"?generalstation="+generalstationName).done(function(data) {
+	plot_select.empty();
+	var query = "?generalstation="+generalstationName;
+	if(generalstationName=="[all]") {
+		var regionName = region_select.val();
+		query = "?region="+regionName;
+	}
+	$.get(url_plot_list+query).done(function(data) {
 		var rows = splitData(data);
-		$.each(rows, function(i,row) {plot_select.append(new Option(row[0],row[0]));})
+		$.each(rows, function(i,row) {plot_select.append(new Option(row[0]+(row[2]!="virtual"&&row[2]!="unknown"?" <"+row[2]+">":"")+(row[1]=="vip"?" (vip)":""),row[0]));})
 		onPlotChange();
 		decTask();
 	}).fail(function() {plot_select.append(new Option("[error]","[error]"));decTask();});
@@ -143,28 +174,32 @@ function updateStations() {
 	station_select.empty();	
 	$.get(url_plotstation_list+"?plot="+plotName).done(function(data) {
 		var rows = splitData(data);
-		if(rows.length>0) {
+		if(rows.length>1) {
 			station_select.append(new Option("[unified]","[unified]"));
 		}
-		$.each(rows, function(i,row) {station_select.append(new Option(row[0],row[0]));})
+		$.each(rows, function(i,row) {station_select.append(new Option(row[0]+" <"+row[1]+">",row[0]));})
 		onStationChange();
 		decTask();
 	}).fail(function() {station_select.append(new Option("[error]","[error]"));decTask();});
 }
 
 function onStationChange() {
+	updateStationVisibility();
+	updateSensors();
+}
+
+function updateStationVisibility() {
 	if(station_select.val()!=undefined) {
 		//getID("button_visualise").disabled = false;
 		$("#div_station_select").show();
 	} else {
 		//getID("button_visualise").disabled = true;
 		$("#div_station_select").hide();
-	}
+	}	
 }
 
-function onVisualiseClick() {
+function updateSensors() {
 	incTask();
-	getID("div_result").innerHTML = "query...";
 	var plotName = plot_select.val();
 	var sensorQuery = "plot="+plotName;
 	if(station_select.val()!=undefined && station_select.val()!="[unified]") {
@@ -172,12 +207,55 @@ function onVisualiseClick() {
 		sensorQuery = "station="+stationName;
 		plotName += ":"+stationName;
 	}
+	sensor_select.empty();	
 	$.get(url_sensor_list+"?"+sensorQuery).done(function(data) {
-		getID("div_result").innerHTML = "";
-		sensors = splitData(data);
-		$.each(sensors, function(i,row) {addDiagram(plotName,row[0],row[1],row[2]);})
+		var rows = splitData(data);
+		if(rows.length>1) {
+			sensor_select.append(new Option("[all]",-1));
+		}
+		$.each(rows, function(i,row) {sensor_select.append(new Option(row[0],i));})
+		sensor_rows = rows;
 		decTask();
-	}).fail(function() {getID("div_result").innerHTML = "error";decTask();});
+	}).fail(function() {sensor_select.append(new Option("[error]","[error]"));decTask();});
+}
+
+function getStationOrPlotName() {
+	var name = station_select.val();
+	if(name == undefined || name == "[unified]") {
+		name = plot_select.val()
+	}
+	return name;
+}
+
+function onVisualiseClick() {
+	incTask();
+	getID("div_result").innerHTML = "query...";
+
+	var plotName = plot_select.val();
+	var sensorQuery = "plot="+plotName;
+	if(station_select.val()!=undefined && station_select.val()!="[unified]") {
+		var stationName = station_select.val();
+		sensorQuery = "station="+stationName;
+		plotName += ":"+stationName;
+	}
+	
+	var sensorIndex = sensor_select.val();
+	if(sensorIndex == -1) {		
+		getID("div_result").innerHTML = "";
+		$.each(sensor_rows, function(i,row) {addDiagram(plotName,row[0],row[1],row[2]);})
+		//addTable(plotName,sensor_rows);
+		decTask();
+	} else if(sensorIndex != undefined){
+		getID("div_result").innerHTML = "";
+		row = sensor_rows[sensorIndex];
+		addDiagram(plotName,row[0],row[1],row[2]);
+		//var sensors = [row];
+		//addTable(plotName,sensors);
+		decTask();
+	} else {
+		getID("div_result").innerHTML = "no query";
+		decTask();
+	}
 }
 
 function addDiagram(plotName, sensorName, sensorDesc, sensorUnit) {
@@ -215,6 +293,63 @@ function addDiagram(plotName, sensorName, sensorDesc, sensorUnit) {
 	decTask();	
 }
 
+function createTag(tag) {
+	return document.createElement(tag);
+}
+
+function createText(text) {
+	return document.createTextNode(text);
+}
+
+function addTag(root,tag) {
+	return root.appendChild(document.createElement(tag));
+}
+
+function addText(root,text) {
+	return root.appendChild(document.createTextNode(text));
+}
+
+function addTagText(root,tag,text) {
+	root.appendChild(document.createElement(tag)).appendChild(document.createTextNode(text));
+}
+
+function addTable(plotName, sensors) {
+	incTask();
+	getID("div_result").innerHTML = "query...";
+	console.log("query");
+	var query = "plot="+plotName;
+	
+	for (var i = 0; i < sensors.length; i++) {
+		query += "&sensor="+sensors[i][0];
+	}
+	
+	$.get(url_query_csv+"?"+query).done(function(data) {
+		console.log("parse");
+		
+		var info = "<table><tr><th>Sensor</th><th>Description</th><th>Unit</th></tr>";
+		for (var i = 0; i < sensors.length; i++) {
+			info += "<tr><td>"+sensors[i][0]+"</td><td>"+sensors[i][1]+"</td><td>"+sensors[i][2]+"</td></tr>";
+		}
+		info += "</table><br>";
+		getID("div_result").innerHTML = info;
+		var rows = splitCsv(data);
+		console.log("now");
+		var table = addTag(getID("div_result"),"table");
+		$.each(rows, function(i,row) {
+			if(i==0) {
+				var tableRow = addTag(table,"tr");
+				$.each(row, function(i,col) {addTagText(tableRow,"th",col);});
+			} else {
+				var tableRow = addTag(table,"tr");
+				$.each(row, function(i,col) {addTagText(tableRow,"td",col);});
+			}
+		});
+		console.log("ready");
+		decTask();
+	}).fail(function() {getID("div_result").innerHTML = "no data";decTask();});
+	
+}
+
 function updateTimeYears() {
 	$.each(time_year_text, function(i,text) {time_year_select.append(new Option(text,i));});
 	$.each(time_month_text, function(i,text) {time_month_select.append(new Option(text,i));});
@@ -246,4 +381,8 @@ function onAggregationChange() {
 function updateQualities() {
 	$.each(quality_text, function(i,text) {quality_select.append(new Option(text,i));});
 	quality_select.val(2);
+}
+
+function updateTypes() {
+	$.each(type_text, function(i,text) {type_select.append(new Option(text,i));});
 }

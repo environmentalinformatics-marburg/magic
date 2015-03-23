@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 import tsdb.loader.ki.type.AbstractLoader;
 import tsdb.loader.ki.type.LoaderFactory;
 import tsdb.util.DataRow;

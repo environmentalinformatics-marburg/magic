@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
 import tsdb.StationProperties;
-import tsdb.catalog.SourceEntry;
 import tsdb.component.Region;
+import tsdb.component.SourceEntry;
 import tsdb.gui.bridge.ComboBridge;
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;

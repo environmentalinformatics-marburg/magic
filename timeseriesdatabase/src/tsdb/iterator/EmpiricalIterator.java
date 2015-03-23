@@ -1,4 +1,4 @@
-package tsdb.aggregated.iterator;
+package tsdb.iterator;
 
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.DataQuality;

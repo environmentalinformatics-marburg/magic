@@ -14,7 +14,7 @@ import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.iterator.MergeIterator;
+import tsdb.iterator.MergeIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;

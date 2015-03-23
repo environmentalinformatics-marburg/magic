@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.NanGapIterator;
+import tsdb.iterator.NanGapIterator;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.TimeConverter;
 import tsdb.util.iterator.TsIterator;

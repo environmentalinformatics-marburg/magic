@@ -106,7 +106,7 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 			for(TsEntry entry:timestampSeries.entryList) {
 				int timestamp = (int) entry.timestamp;
 				if(timestamp<=prevTimestamp) {
-					throw new RuntimeException("write timestampseries format error: timestamps not ascending ordered");
+					throw new RuntimeException("write timestampseries format error: timestamps not ascending ordered "+prevTimestamp+"  "+timestamp+"   "+TimeConverter.oleMinutesToText((long) prevTimestamp)+"  "+TimeConverter.oleMinutesToText((long) timestamp));
 				}
 				out.writeInt(timestamp);
 				for(int i=0;i<timestampSeries.sensorNames.length;i++) {

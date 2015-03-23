@@ -7,8 +7,8 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.EmpiricalIterator;
-import tsdb.aggregated.iterator.ProjectionIterator;
+import tsdb.iterator.EmpiricalIterator;
+import tsdb.iterator.ProjectionIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**

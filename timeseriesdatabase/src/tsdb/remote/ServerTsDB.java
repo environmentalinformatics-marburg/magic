@@ -19,9 +19,9 @@ import tsdb.LoggerType;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.catalog.SourceEntry;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
+import tsdb.component.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.run.ConsoleRunner;
@@ -194,6 +194,21 @@ public class ServerTsDB implements RemoteTsDB {
 	@Override
 	public StationInfo[] getStations() {
 		return tsdb.getStations().stream().map(s->new StationInfo(s)).toArray(StationInfo[]::new);
+	}
+	
+	@Override
+	public String getStationLoggerTypeName(String stationName) throws RemoteException {
+		if(stationName==null) {
+			return null;
+		}
+		Station station = tsdb.getStation(stationName);
+		if(station==null) {
+			return null;
+		}
+		if(station.loggerType==null) {
+			return null;
+		}
+		return station.loggerType.typeName;
 	}
 
 	@Override

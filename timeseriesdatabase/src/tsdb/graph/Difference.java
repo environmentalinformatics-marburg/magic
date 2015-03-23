@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.Station;
 import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.DifferenceIterator;
+import tsdb.iterator.DifferenceIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 

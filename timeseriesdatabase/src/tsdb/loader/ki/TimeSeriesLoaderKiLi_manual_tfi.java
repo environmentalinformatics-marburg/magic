@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 import tsdb.util.DataRow;
 import tsdb.util.Table;
 import tsdb.util.TimeConverter;
@@ -141,7 +141,6 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 	}
 
 	private void loadOneFile_structure_kili_iso_tfi(Path filePath) {
-		log.warn("!!!   TODO load iso tfi file   !!!");
 		Table table = Table.readCSV(filePath.toString(), ',');
 		ColumnReaderTimestampTwoCols cr_timestamp = table.createColumnReaderTimestamp("date_sample","time");
 		ColumnReaderString cr_plotID = table.createColumnReader("plot_id_sp1");
@@ -164,7 +163,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 
 			if(!Float.isNaN(iso_d18_16) || !Float.isNaN(iso_dD_H) || !Float.isNaN(iso_d_excess)) {
 
-				System.out.println(TimeConverter.oleMinutesToLocalDateTime(timestamp)+"  "+plotID+"  "+type+" "+iso_d18_16+" "+iso_dD_H+" "+iso_d_excess);
+				//System.out.println(TimeConverter.oleMinutesToLocalDateTime(timestamp)+"  "+plotID+"  "+type+" "+iso_d18_16+" "+iso_dD_H+" "+iso_d_excess);
 
 
 				HashMap<String,List<TsEntry>> map = null;

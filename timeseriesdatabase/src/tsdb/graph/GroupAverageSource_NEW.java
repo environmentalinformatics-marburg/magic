@@ -11,7 +11,7 @@ import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
-import tsdb.aggregated.iterator.NanGapIterator;
+import tsdb.iterator.NanGapIterator;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;

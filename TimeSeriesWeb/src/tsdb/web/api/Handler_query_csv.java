@@ -1,11 +1,11 @@
 package tsdb.web.api;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import java.util.Locale;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,15 +17,16 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.TimeConverter;
-import tsdb.util.TsEntry;
+import tsdb.util.Util;
+import tsdb.util.iterator.CSV;
+import tsdb.util.iterator.CSVTimeType;
 import tsdb.util.iterator.TimestampSeries;
-import tsdb.util.iterator.TsIterator;
 
-public class Handler_query extends MethodHandler {	
+public class Handler_query_csv extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();
 
-	public Handler_query(RemoteTsDB tsdb) {
-		super(tsdb, "query");
+	public Handler_query_csv(RemoteTsDB tsdb) {
+		super(tsdb, "query_csv");
 	}
 
 	@Override
@@ -39,10 +40,12 @@ public class Handler_query extends MethodHandler {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
-		String sensorName = request.getParameter("sensor");
+		//String sensorName = request.getParameter("sensor");
+		String[] sensorNames = request.getParameterValues("sensor");
 
-		if(sensorName==null) {
+		if(sensorNames==null) {
 			log.warn("wrong call no sensor");
+			response.getWriter().println("wrong call no sensor");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
@@ -129,43 +132,36 @@ public class Handler_query extends MethodHandler {
 		}		
 
 		try {
-			String[] sensorNames;
-			if(sensorName.equals("WD")) {
-				sensorNames = new String[]{sensorName,"WV"};
-			} else {
-				sensorNames = new String[]{sensorName};
+			
+			if(Util.containsString(sensorNames, "WD") && !Util.containsString(sensorNames, "WV")) {
+				sensorNames = Util.concat(sensorNames, "WV");
 			}
+			
 			String[] validSchema =  tsdb.getValidSchema(plot, sensorNames);
 			if(sensorNames.length!=validSchema.length) {
-				log.info("sensorName not in plot: "+plot+"  "+sensorName);
+				String error = "some sensors not in plot: "+plot+"  "+Arrays.toString(sensorNames);
+				log.info(error);
+				response.getWriter().println(error);
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);				
 				return;
 			}
 			TimestampSeries ts = tsdb.plot(null, plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
 			if(ts==null) {
-				log.error("TimestampSeries null: "+plot);
+				String error = "TimestampSeries null: "+plot;
+				log.info(error);
+				response.getWriter().println(error);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
 			}
 			
-			PrintWriter writer = response.getWriter();
-			TsIterator it = ts.tsIterator();
-			while(it.hasNext()) {
-				TsEntry e = it.next(); 
-				writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
-				float value = e.data[0];
-				if(Float.isNaN(value)) {
-					writer.print("NA");
-				} else {
-					writer.format(Locale.ENGLISH,"%.2f", value);
-				}						
-				if(it.hasNext()) {
-					writer.print('\n');
-				}
-			}
+			ServletOutputStream out = response.getOutputStream();
+			
+			CSV.write(ts.tsIterator(), true, out, ",", "Na", CSVTimeType.DATETIME, false, false);
+
 			response.setStatus(HttpServletResponse.SC_OK);
 		} catch (Exception e) {
 			log.error(e);
+			response.getWriter().println(e);
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}

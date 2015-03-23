@@ -255,7 +255,11 @@ public class StreamDB {
 
 		int timestamp_next_year = Integer.MIN_VALUE;
 		ArrayList<DataEntry> entryList = new ArrayList<DataEntry>(data.length);
+		int prevTimestamp = -1;
 		for(DataEntry entry:data) {
+			if(entry.timestamp<=prevTimestamp) {
+				throw new RuntimeException("not ordered timestamps "+TimeConverter.oleMinutesToText(prevTimestamp)+"  "+TimeConverter.oleMinutesToText(entry.timestamp)+"   "+entry.value+"  "+stationName+"/"+sensorName);
+			}
 			if(entry.timestamp<timestamp_next_year) {
 				entryList.add(entry);				
 			} else {
@@ -266,6 +270,7 @@ public class StreamDB {
 				entryList.clear();
 				entryList.add(entry);
 			}
+			prevTimestamp = entry.timestamp;
 		}
 		if(!entryList.isEmpty()) {
 			insertIntoOneChunk(chunkMetaMap,chunkMap,entryList);

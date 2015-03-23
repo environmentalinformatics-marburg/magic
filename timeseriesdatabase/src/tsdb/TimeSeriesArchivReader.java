@@ -1,4 +1,4 @@
-package tsdb.util.iterator;
+package tsdb;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,14 +10,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.DataInput2;
 
-import tsdb.TsDB;
-import tsdb.TsDBFactory;
 import tsdb.util.AssumptionCheck;
 import tsdb.util.DataEntry;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesArchivReader {
 	private static final Logger log = LogManager.getLogger();
-	
+
 	public static interface TimeSeriesArchivVisitor {
 		public default void readDataEntries(String stationName, String sensorName, DataEntry[] dataEntries) {}
 		public default void readTimestampSeries(TimestampSeries timestampSeries) {}
@@ -32,46 +31,52 @@ public class TimeSeriesArchivReader {
 	private DataInput2 in;
 
 	private boolean open = false;
-	
+
 	private EntryType currentEntryType = null;
 
 	private FileChannel filechannel;
 	private final long filechannelSize;
 	private long byteBufferPos;
 	private long byteBufferMaxSize = 200*1024*1024;//Integer.MAX_VALUE;
-	private final long minReadCapacity = 100*1024*1024; 
+	private long minReadCapacity = 100*1024*1024; 
 
 	private ByteBuffer mappedByteBuffer;
 
 	private long byteBufferSize;
-	
+
 	public TimeSeriesArchivReader(String filename) throws IOException {
 		this.filechannel = FileChannel.open(Paths.get(filename), StandardOpenOption.READ);
 		this.filechannelSize = filechannel.size();
+		this.byteBufferMaxSize = 200*1024*1024;//Integer.MAX_VALUE;
+		this.minReadCapacity = 100*1024*1024;
+		if(filechannelSize<byteBufferMaxSize) {
+			byteBufferMaxSize = filechannelSize;
+			minReadCapacity = byteBufferMaxSize;
+		}
 		this.byteBufferPos = 0;
 		mappedByteBuffer = ByteBuffer.allocateDirect((int) byteBufferMaxSize);
 		mapBuffer();		
 	}
-	
+
 	private void mapBuffer() throws IOException {
 		byteBufferSize = filechannelSize-byteBufferPos;
 		if(byteBufferSize>byteBufferMaxSize) {
 			byteBufferSize = byteBufferMaxSize;
 		}
-		log.info("remap buffer "+byteBufferPos+" size "+byteBufferSize);
+		//log.info("remap buffer "+byteBufferPos+" size "+byteBufferSize);
 		//mappedByteBuffer = filechannel.map(MapMode.READ_ONLY, byteBufferPos, byteBufferSize);
 		mappedByteBuffer.clear();
 		int readBytes = filechannel.read(mappedByteBuffer, byteBufferPos);
 		if(readBytes!=byteBufferSize) {
 			throw new RuntimeException(readBytes+"  "+byteBufferSize);
 		}
-		
-		
+
+
 		byteBufferPos += byteBufferSize;		
 		this.in = new DataInput2(mappedByteBuffer,0);
 		//System.gc();
 	}
-	
+
 	private void ensureBufferCapacity() throws IOException {
 		if(byteBufferPos<filechannelSize) {
 			final int localPos = in.pos;
@@ -133,7 +138,7 @@ public class TimeSeriesArchivReader {
 			throw new RuntimeException("file format error");
 		}
 	}
-	
+
 	public EntryType getNextEntryType() throws IOException {
 		if(currentEntryType!=null) {
 			in = null;
@@ -144,7 +149,7 @@ public class TimeSeriesArchivReader {
 		currentEntryType = e;
 		return e;
 	}
-	
+
 	public TimestampSeries getTimestampSeries() throws IOException {
 		if(!open) {
 			in = null;
@@ -157,7 +162,7 @@ public class TimeSeriesArchivReader {
 		currentEntryType = null;
 		return tss;
 	}
-	
+
 	public static class DataEntriesTriple {
 		public final String stationName;
 		public final String sensorName;
@@ -168,7 +173,7 @@ public class TimeSeriesArchivReader {
 			this.dataEntries = dataEntries;
 		}
 	}
-	
+
 	public DataEntriesTriple getDataEntryArray() throws IOException {
 		if(!open) {
 			in = null;
@@ -192,7 +197,7 @@ public class TimeSeriesArchivReader {
 		in = null;
 		open = false;
 	}
-	
+
 	public void readFully(TimeSeriesArchivVisitor timeSeriesArchivVisitor) throws IOException {
 		AssumptionCheck.throwNull(timeSeriesArchivVisitor);
 		this.open();
@@ -219,10 +224,8 @@ public class TimeSeriesArchivReader {
 		}
 		this.close();		
 	}
-	
-	public static void readStationsFromFile(String filename) {
-		TsDB tsdb = TsDBFactory.createDefault();
-		long timeStartImport = System.currentTimeMillis();
+
+	public static void importStationsFromFile(TsDB tsdb, String filename) {
 		try {
 			TimeSeriesArchivReader tsaReader = new TimeSeriesArchivReader(filename);
 			tsaReader.readFully(new TimeSeriesArchivVisitor(){
@@ -238,15 +241,16 @@ public class TimeSeriesArchivReader {
 				}});
 		} catch (IOException e) {
 			log.error(e);
-		}
+		}		
+	}
+
+	public static void main(String[] args) {
+		TsDB tsdb = TsDBFactory.createDefault();
+		long timeStartImport = System.currentTimeMillis();
+		importStationsFromFile(tsdb, TsDBFactory.OUTPUT_PATH+"/full.tsa");
 		tsdb.close();
-		
 		long timeEndImport = System.currentTimeMillis();
 		log.info((timeEndImport-timeStartImport)/1000+" s Import");
-	}
-	
-	public static void main(String[] args) {
-		readStationsFromFile(TsDBFactory.OUTPUT_PATH+"/full.tsa");
 	}
 
 }

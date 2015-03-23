@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.loader.sa;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.TimeSeriesArchivWriter;
 import tsdb.TsDBFactory;
 import tsdb.util.Table;
 import tsdb.util.Table.ColumnReaderFloat;
@@ -25,11 +26,17 @@ public class SouthAfricaPreImport_sasscal_type_2 {
 		System.out.println("start...");
 
 		try {
+			
+			String outFile = TsDBFactory.OUTPUT_PATH+"/"+"sa_tsa"+"/"+"south_africa_sasscal_type_2.tsa";
+			Util.createDirectoriesOfFile(outFile);
+			TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+			tsaWriter.open();
 			DirectoryStream<Path> ds = Files.newDirectoryStream(Paths.get("C:/timeseriesdatabase_source/sa/SASSCAL_Type_2"));
 			for(Path filepath:ds) {
 				log.info("read "+filepath);
-				readOneFile(filepath);
-			}
+				readOneFile(filepath,tsaWriter);
+			}			
+			tsaWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
@@ -37,7 +44,7 @@ public class SouthAfricaPreImport_sasscal_type_2 {
 		System.out.println("...end");
 	}
 
-	public static void readOneFile(Path filepath) {
+	public static void readOneFile(Path filepath, TimeSeriesArchivWriter tsaWriter) {
 
 		String prefix = filepath.getName(filepath.getNameCount()-1).toString();
 		
@@ -82,10 +89,17 @@ public class SouthAfricaPreImport_sasscal_type_2 {
 			resultList.sort((a,b)->Long.compare(a.timestamp, b.timestamp)); // sort rows with timestamps
 			TimestampSeries tss = new TimestampSeries(stationID,sensorNames,resultList);		
 			try {
-				String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal_type_2"+"/"+tss.name+".dat";
+				/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal_type_2"+"/"+tss.name+".dat";
 				Util.createDirectoriesOfFile(outFile);
-				TimestampSeries.writeToBinaryFile(tss, outFile);
+				TimestampSeries.writeToBinaryFile(tss, outFile);*/
+				/*String outFile = TsDBFactory.OUTPUT_PATH+"/"+"south_africa_sasscal_type_2"+"/"+tss.name+".tsa";
+				Util.createDirectoriesOfFile(outFile);
+				TimeSeriesArchivWriter tsaWriter = new TimeSeriesArchivWriter(outFile);
+				tsaWriter.open();
+				tsaWriter.writeTimestampSeries(tss);
+				tsaWriter.close();*/
 				System.out.println(tss);
+				tsaWriter.writeTimestampSeries(tss);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}	

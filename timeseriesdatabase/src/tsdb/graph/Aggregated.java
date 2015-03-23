@@ -7,10 +7,10 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.aggregated.iterator.DayAggregationIterator;
-import tsdb.aggregated.iterator.MonthAggregationIterator;
-import tsdb.aggregated.iterator.WeekAggregationIterator;
-import tsdb.aggregated.iterator.YearAggregationIterator;
+import tsdb.iterator.DayAggregationIterator;
+import tsdb.iterator.MonthAggregationIterator;
+import tsdb.iterator.WeekAggregationIterator;
+import tsdb.iterator.YearAggregationIterator;
 import tsdb.util.AggregationInterval;
 import tsdb.util.iterator.TsIterator;
 

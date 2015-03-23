@@ -1,4 +1,4 @@
-package tsdb.aggregated.iterator;
+package tsdb.iterator;
 
 import tsdb.TsDB;
 import tsdb.util.AggregationType;

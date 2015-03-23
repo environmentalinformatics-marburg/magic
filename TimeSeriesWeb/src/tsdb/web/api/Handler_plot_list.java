@@ -49,7 +49,12 @@ public class Handler_plot_list extends MethodHandler {
 			}
 			String[] webList = Arrays.stream(plotInfos)
 					.filter(plotFilter)
-					.map(p->p.name)
+					.map(p->{
+						String s = p.name;
+						s += p.isVIP?";vip":";normal";
+						s += ";"+p.loggerTypeName;
+						return s;
+					})
 					.toArray(String[]::new);
 			PrintWriter writer = response.getWriter();
 			writeStringArray(writer, webList);

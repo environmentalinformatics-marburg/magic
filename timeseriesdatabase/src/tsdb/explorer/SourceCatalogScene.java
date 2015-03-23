@@ -26,8 +26,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.StationProperties;
-import tsdb.catalog.SourceEntry;
 import tsdb.component.Region;
+import tsdb.component.SourceEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
 import tsdb.remote.VirtualPlotInfo;

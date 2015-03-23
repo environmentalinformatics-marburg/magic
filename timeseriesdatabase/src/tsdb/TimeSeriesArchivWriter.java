@@ -1,4 +1,4 @@
-package tsdb.util.iterator;
+package tsdb;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutput;
@@ -13,10 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.DataOutput2;
 
-import tsdb.TsDB;
-import tsdb.TsDBFactory;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.DataEntry;
+import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesArchivWriter {
 	private static final Logger log = LogManager.getLogger();
@@ -30,7 +29,7 @@ public class TimeSeriesArchivWriter {
 
 	final static String TOC_TYPE_TIMESTAMPSERIES = "TimestampSeries";
 	final static String TOC_TYPE_DATAENTRYARRAY = "DataEntryArray";
-	
+
 	final static int MAX_ATOMIC_WRITE_SIZE = 100*1024*1024;
 
 	private final OutputStream outputStream;
@@ -91,12 +90,22 @@ public class TimeSeriesArchivWriter {
 	}
 
 	public void writeTimestampSeries(TimestampSeries timestampSeries) throws IOException {
-		if(!open) {
-			throw new RuntimeException("not open");
+		if(timestampSeries.sensorNames.length>1) {
+			if(!open) {
+				throw new RuntimeException("not open");
+			}
+			writeEntry(TOC_TYPE_TIMESTAMPSERIES);
+			TimestampSeries.TIMESERIESARCHIV_SERIALIZER.serialize(out, timestampSeries);
+			writeToStream();
+		} else if(timestampSeries.sensorNames.length==1) {
+			String sensorName = timestampSeries.sensorNames[0];
+			DataEntry[] dataEntries = timestampSeries.toDataEntyArray(timestampSeries.sensorNames[0]);
+			if(dataEntries!=null) {
+				writeDataEntryArray(timestampSeries.name, sensorName, dataEntries);
+			}
+		} else {
+			throw new RuntimeException();
 		}
-		writeEntry(TOC_TYPE_TIMESTAMPSERIES);
-		TimestampSeries.TIMESERIESARCHIV_SERIALIZER.serialize(out, timestampSeries);
-		writeToStream();
 	}
 
 	public void writeDataEntryArray(String stationName, String sensorName, DataEntry[] dataEntries) throws IOException {
@@ -131,14 +140,14 @@ public class TimeSeriesArchivWriter {
 			tsaWriter.open();
 			for(String stationName:stationNames) {
 				try {
-				String[] sensorNames = tsdb.streamStorage.getSensorNames(stationName);
-				for(String sensorName:sensorNames) {
-					StreamIterator it = tsdb.streamStorage.getRawSensorIterator(stationName, sensorName, null, null);
-					if(it!=null&&it.hasNext()) {
-						//log.info(it);
-						tsaWriter.writeStreamIterator(it);
+					String[] sensorNames = tsdb.streamStorage.getSensorNames(stationName);
+					for(String sensorName:sensorNames) {
+						StreamIterator it = tsdb.streamStorage.getRawSensorIterator(stationName, sensorName, null, null);
+						if(it!=null&&it.hasNext()) {
+							//log.info(it);
+							tsaWriter.writeStreamIterator(it);
+						}
 					}
-				}
 				} catch(Exception e) {
 					log.error(e);
 				}

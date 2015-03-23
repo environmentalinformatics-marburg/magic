@@ -11,6 +11,7 @@ import tsdb.TsDBFactory;
 import tsdb.loader.be.TimeSeriesLoaderBE;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
+import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.util.TimeConverter;
 
 public class ClearImportSources {
@@ -88,7 +89,7 @@ public class ClearImportSources {
 		log.info("end import");
 
 		long timeStartAvg = System.currentTimeMillis();
-		CreateStationGroupAverageCache.main(null);
+		CreateStationGroupAverageCache_NEW.main(null);
 		long timeEndAvg = System.currentTimeMillis();
 
 		long timeStartCompact = System.currentTimeMillis();
