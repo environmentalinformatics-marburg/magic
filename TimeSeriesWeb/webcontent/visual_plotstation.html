@@ -16,6 +16,7 @@ $(document).ready(document_ready);
 body {background-color:#f6f6f6}
 .input_entity {display:inline-block}
 .input_entity label {display:block;text-align:center}
+.input_element {text-align:center}
 
 #plot_select {font-family: monospace}
 #station_select {font-family: monospace}
@@ -35,48 +36,73 @@ status: <div id="status" style="display:inline-block"></div>
 
 <div class="input_entity" id="div_region_select">
 <label>Region</label>
+<div class="input_element">
 <select id="region_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity">
 <label>General</label>
+<div class="input_element">
 <select id="generalstation_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity" id="div_plot_select">
 <label>Plot</label>
+<div class="input_element">
 <select id="plot_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity" id="div_station_select">
 <label>Station</label>
+<div class="input_element">
 <select id="station_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity" id="div_sensor_select" title="sensor info">
 <label>Sensor</label>
+<div class="input_element">
 <select id="sensor_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity">
 <label>Time</label>
+<div class="input_element">
 <select id="time_year_select" class="blockable"></select>
 <select id="time_month_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity">
 <label>Aggregation</label>
+<div class="input_element">
 <select id="aggregation_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity" id="div_quality_select">
 <label>Quality Check</label>
+<div class="input_element">
 <select id="quality_select" class="blockable"></select>
+</div>
+</div>
+
+<div class="input_entity" id="div_interpolation">
+<label>Interpolation</label>
+<div class="input_element">
+<input type="checkbox" id="interpolation_checkbox" class="blockable" />
+</div>
 </div>
 
 <div class="input_entity" id="div_type_select">
 <label>Type</label>
+<div class="input_element">
 <select id="type_select" class="blockable"></select>
+</div>
 </div>
 
 <div class="input_entity">

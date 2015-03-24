@@ -68,6 +68,7 @@ public class Handler_sensor_list extends MethodHandler {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
 			}
+			boolean isRaw = Boolean.parseBoolean(request.getParameter("raw"));
 			//Map<String, Integer> sensorMap = Util.stringArrayToMap(sensorNames);
 			Sensor[] sensors = tsdb.getSensors();
 			if(sensors==null) {
@@ -86,7 +87,9 @@ public class Handler_sensor_list extends MethodHandler {
 			ArrayList<String> webList = new ArrayList<String>();
 			for(String sensorName:sensorNames) {
 				Sensor s = sensorMap.get(sensorName);
-				if(s.isAggregable()) {
+				//if(true/*s.isAggregable()*/) {
+				//if(/*true*/s.isAggregable()) {
+				if(isRaw||s.isAggregable()) {
 					webList.add(s.name+";"+s.description+";"+s.unitDescription);
 				}
 			}

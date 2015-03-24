@@ -15,10 +15,38 @@ import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.util.TimeConverter;
 
 public class ClearImportSources {
-
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {
+		boolean import_BE = true;
+		boolean import_KI = true;
+		boolean import_KI_tfi = true;
+		boolean import_SA = true;
+		if(TsDBFactory.JUST_ONE_REGION==null){
+			//all
+		} else {
+			import_BE = false;
+			import_KI = false;
+			import_KI_tfi = false;
+			import_SA = false;
+			String oneRegion = TsDBFactory.JUST_ONE_REGION.toUpperCase();
+			switch(oneRegion) {
+			case "BE":
+				import_BE = true;
+				break;
+			case "KI":
+				import_KI = true;
+				import_KI_tfi = true;
+				break;
+			case "SA":
+				import_SA = true;
+				break;
+			default:
+				log.error("unknown region "+oneRegion);
+				return;
+			}
+		}
+
 		long timeStart = System.currentTimeMillis();
 		log.info("begin import");
 
@@ -34,7 +62,7 @@ public class ClearImportSources {
 		long timeStartOpen = System.currentTimeMillis();
 		tsdb = TsDBFactory.createDefault();
 		long timeEndOpen = System.currentTimeMillis();		
-		
+
 		long timeStartBE = 0;
 		long timeEndBE = 0;
 		long timeStartKI = 0;
@@ -45,7 +73,7 @@ public class ClearImportSources {
 		long timeEndSA = 0;
 
 		System.gc();
-		if(TsDBFactory.JUST_ONE_REGION==null||TsDBFactory.JUST_ONE_REGION.toUpperCase().equals("BE")) { //*** BE
+		if(import_BE) { //*** BE
 			log.info("import BE tsm");
 			log.info("from "+TsDBFactory.SOURCE_BE_TSM_PATH);
 			timeStartBE = System.currentTimeMillis();
@@ -55,7 +83,7 @@ public class ClearImportSources {
 			timeEndBE = System.currentTimeMillis();
 			System.gc();
 		}
-		if(TsDBFactory.JUST_ONE_REGION==null||TsDBFactory.JUST_ONE_REGION.toUpperCase().equals("KI")) { //*** KI
+		if(import_KI) { //*** KI
 			log.info("import KI tsm");
 			log.info("from "+TsDBFactory.SOURCE_KI_TSM_PATH);
 			timeStartKI = System.currentTimeMillis();
@@ -63,6 +91,8 @@ public class ClearImportSources {
 			timeseriesloaderKiLi.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_KI_TSM_PATH),true);
 			timeEndKI = System.currentTimeMillis();
 			System.gc();
+		}
+		if(import_KI_tfi) { //*** KI tfi			
 			log.info("import KI tfi");
 			log.info("from "+TsDBFactory.SOURCE_KI_TFI_PATH);
 			timeStartKItfi = System.currentTimeMillis();
@@ -71,7 +101,7 @@ public class ClearImportSources {
 			timeEndKItfi = System.currentTimeMillis();
 			System.gc();
 		}
-		if(TsDBFactory.JUST_ONE_REGION==null||TsDBFactory.JUST_ONE_REGION.toUpperCase().equals("SA")) { //*** SA
+		if(import_SA) { //*** SA
 			log.info("import SA dat");
 			log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
 			timeStartSA = System.currentTimeMillis();
@@ -83,6 +113,8 @@ public class ClearImportSources {
 
 		long timeStartClose = System.currentTimeMillis();
 		tsdb.close();
+		tsdb = null;
+		System.gc();
 		long timeEndClose = System.currentTimeMillis();
 		long timeEnd = System.currentTimeMillis();
 
@@ -91,7 +123,7 @@ public class ClearImportSources {
 		long timeStartAvg = System.currentTimeMillis();
 		CreateStationGroupAverageCache_NEW.main(null);
 		long timeEndAvg = System.currentTimeMillis();
-
+		System.gc();
 		long timeStartCompact = System.currentTimeMillis();
 		RunCompact.main(null);
 		long timeEndCompact = System.currentTimeMillis();
@@ -108,7 +140,7 @@ public class ClearImportSources {
 		log.info(msToText(timeStartAvg,timeEndAvg)+" create averages");
 		log.info(msToText(timeStartCompact,timeEndCompact)+" compact streamDB");
 	}
-	
+
 	private static String msToText(long start, long end) {
 		long diff = end-start;
 		long h = diff%1000/100;
