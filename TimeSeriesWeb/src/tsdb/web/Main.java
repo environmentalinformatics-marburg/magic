@@ -187,11 +187,12 @@ public class Main {
         constraint.setName("auth1");
         constraint.setAuthenticate(true);
         constraint.setRoles(new String[] { "user", "admin" });
+        
 		
 		ConstraintMapping mapping = new ConstraintMapping();
         mapping.setPathSpec("/*");
         mapping.setConstraint(constraint);
-		
+       
 		security.setConstraintMappings(Collections.singletonList(mapping));
 		security.setAuthenticator(new DigestAuthenticator());
 		HashLoginService loginService = new HashLoginService("Web Server Login", "realm.properties");

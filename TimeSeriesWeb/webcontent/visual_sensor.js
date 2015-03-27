@@ -7,7 +7,7 @@ var url_plotstation_list = url_base + "tsdb/plotstation_list";
 var url_sensor_list = url_base + "tsdb/sensor_list";
 var url_query_diagram = url_base + "tsdb/query_image";
 var url_query_heatmap = url_base + "tsdb/query_heatmap";
-var url_heatmap_scale = url_base + "tsdb/heatmap_scale"; 
+var url_heatmap_scale = url_base + "tsdb/heatmap_scale";
 var url_query_csv = url_base + "tsdb/query_csv";
 
 var time_year_text = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
@@ -15,7 +15,7 @@ var time_month_text = ["year","jan","feb","mar","apr","may","jun","jul","aug","s
 var aggregation_text = ["raw","hour","day","week","month","year"];
 var quality_name = ["no", "physical", "step", "empirical"];
 var quality_text = ["0: no","1: physical","2: physical + step","3: physical + step + empirical"];
-var type_text = ["graph","heatmap","table","csv file"];
+var type_text = ["graph","heatmap"];
 var magnification_factors = [1,2,3,4];
 
 var sensor_rows = [];
@@ -24,8 +24,6 @@ var tasks = 0;
 
 var region_select;
 var generalstation_select;
-var plot_select;
-var station_select;
 var sensor_select;
 var time_year_select;
 var time_month_select;
@@ -33,7 +31,6 @@ var aggregation_select;
 var quality_select;
 var interpolation_checkbox;
 var type_select;
-var scale_checkbox;
 var magnification_select;
 
 function getID(id) {
@@ -64,7 +61,6 @@ function splitCsv(data) {
 
 function ready_to_run(ready) {
 	$(".blockable").prop( "disabled",!ready);
-	updateStationVisibility();
 }
 
 function incTask() {
@@ -88,8 +84,6 @@ function decTask() {
 function document_ready() {
 	region_select = $("#region_select");
 	generalstation_select = $("#generalstation_select");
-	plot_select = $("#plot_select");
-	station_select = $("#station_select");
 	sensor_select = $("#sensor_select");
 	time_year_select = $("#time_year_select");
 	time_month_select = $("#time_month_select");
@@ -97,13 +91,10 @@ function document_ready() {
 	quality_select = $("#quality_select");
 	interpolation_checkbox = $("#interpolation_checkbox");
 	type_select = $("#type_select");
-	scale_checkbox = $("#scale_checkbox");
 	magnification_select = $("#magnification_select");
 	
 	region_select[0].onchange = onRegionChange;
 	generalstation_select[0].onchange = onGeneralstationChange;
-	plot_select[0].onchange = onPlotChange;
-	station_select[0].onchange = onStationChange;
 	time_year_select[0].onchange = onTimeYearChange;
 	aggregation_select[0].onchange = onAggregationChange;
 	type_select[0].onchange = onTypeChange;
@@ -159,90 +150,43 @@ function updateGeneralStations() {
 }
 
 function onGeneralstationChange() {
-	updatePlots();
-}
-
-function updatePlots() {
-	incTask();
-	var generalstationName = generalstation_select.val();
-	plot_select.empty();
-	var query = "?generalstation="+generalstationName;
-	if(generalstationName=="[all]") {
-		var regionName = region_select.val();
-		query = "?region="+regionName;
-	}
-	$.get(url_plot_list+query).done(function(data) {
-		var rows = splitData(data);
-		$.each(rows, function(i,row) {plot_select.append(new Option(row[0]+(row[2]!="virtual"&&row[2]!="unknown"?" <"+row[2]+">":"")+(row[1]=="vip"?" (vip)":""),row[0]));})
-		onPlotChange();
-		decTask();
-	}).fail(function() {plot_select.append(new Option("[error]","[error]"));decTask();});
-}
-
-function onPlotChange() {
-	updateStations();
-}
-
-function updateStations() {
-	incTask();
-	var plotName = plot_select.val();
-	station_select.empty();	
-	$.get(url_plotstation_list+"?plot="+plotName).done(function(data) {
-		var rows = splitData(data);
-		if(rows.length>1) {
-			station_select.append(new Option("[unified]","[unified]"));
-		}
-		$.each(rows, function(i,row) {station_select.append(new Option(row[0]+" <"+row[1]+">",row[0]));})
-		onStationChange();
-		decTask();
-	}).fail(function() {station_select.append(new Option("[error]","[error]"));decTask();});
-}
-
-function onStationChange() {
-	updateStationVisibility();
-	updateSensors();
-}
-
-function updateStationVisibility() {
-	if(station_select.val()!=undefined) {
-		//getID("button_visualise").disabled = false;
-		$("#div_station_select").show();
-	} else {
-		//getID("button_visualise").disabled = true;
-		$("#div_station_select").hide();
-	}	
+	updateSensors()
 }
 
 function updateSensors() {
 	incTask();
+	
 	var prevSensorName = "";
 	if(sensor_select.val() != undefined && sensor_select.val() != -1) {
 		prevSensorName = sensor_rows[sensor_select.val()][0];
 	}
-	var plotName = plot_select.val();
-	if(plotName == undefined) {
-		sensor_select.empty();
+	
+	sensor_select.empty();
+	
+	var sensorQuery = "";
+	var generalName = generalstation_select.val();
+	if(generalName==undefined) {
 		decTask();
 		return;
+	} else if(generalName=="[all]") {
+		console.log();
+		var regionName = region_select.val();
+		if(regionName==undefined) {
+			decTask();
+			return;
+		}
+		sensorQuery = "region="+regionName;
+	} else {
+		sensorQuery = "general_station="+generalName;
 	}
-	var sensorQuery = "plot="+plotName;
-	if(station_select.val()!=undefined && station_select.val()!="[unified]") {
-		var stationName = station_select.val();
-		sensorQuery = "station="+stationName;
-		plotName += ":"+stationName;
-	}
+	
 	if(aggregation_select.val()=="raw" && type_text[type_select.val()]!="heatmap") {
 		sensorQuery += "&raw=true";
 	}
-	sensor_select.empty();	
+	
 	$.get(url_sensor_list+"?"+sensorQuery).done(function(data) {
 		var rows = splitData(data);
 		var curIndex = 0;
-		if(rows.length>1) {
-			sensor_select.append(new Option("[all]",-1));
-			curIndex = -1;
-		}
-		
 		$.each(rows, function(i,row) {
 			sensor_select.append(new Option(row[0],i));
 			if(row[0]==prevSensorName) {
@@ -255,16 +199,65 @@ function updateSensors() {
 	}).fail(function() {sensor_select.append(new Option("[error]","[error]"));decTask();});
 }
 
-function getStationOrPlotName() {
-	var name = station_select.val();
-	if(name == undefined || name == "[unified]") {
-		name = plot_select.val()
+function getPlotList(func) {
+	incTask();
+	var plotQuery = "";
+	var generalName = generalstation_select.val();
+	if(generalName==undefined) {
+		decTask();
+		return;
+	} else if(generalName=="[all]") {
+		var regionName = region_select.val();
+		if(regionName==undefined) {
+			decTask();
+			return;
+		}
+		plotQuery = "region="+regionName;
+	} else {
+		plotQuery = "generalstation="+generalName;
 	}
-	return name;
+	
+	$.get(url_plot_list+"?"+plotQuery).done(function(data) {
+		var rows = splitData(data);
+		func(rows);
+		decTask();		
+	}).fail(function() {getID("div_result").innerHTML = "error";decTask();})	
 }
 
+function visualise(plots) {
+	var sensorIndex = sensor_select.val();
+	if(sensorIndex == undefined) {
+		return;
+	}
+	var sensor_row = sensor_rows[sensorIndex];
+	
+	switch(type_text[type_select.val()]) {
+		case "graph":
+			getID("div_result").innerHTML = getSensorTable([sensor_row]);
+			$.each(plots, function(i,plot) {addDiagram(plot[0],sensor_row[0]);})
+			break;
+		case "heatmap":
+			getID("div_result").innerHTML = getSensorTable([sensor_row]);
+			addScale(getID("div_result"),sensor_row[0]);
+			var tableHeatmap = addTag(getID("div_result"),"table");
+			tableHeatmap.setAttribute("id", "heatmap_table");
+			$.each(plots, function(i,plot) {
+				var tableRow = addTag(tableHeatmap,"tr");
+				addTagText(tableRow,"td",plot[0]);
+				var tableContent = addTag(tableRow,"td");
+				addHeatmap(tableRow, tableContent, plot[0],sensor_row[0]);
+			});
+			break;
+		default:
+			getID("div_result").innerHTML = "unknown query type";
+			break;
+	}
+}	
+
 function onVisualiseClick() {
-	incTask();
+	getID("div_result").innerHTML = "";
+	getPlotList(visualise);
+	/*incTask();
 	getID("div_result").innerHTML = "query...";
 
 	var plotName = plot_select.val();
@@ -321,10 +314,10 @@ function onVisualiseClick() {
 	} else {
 		getID("div_result").innerHTML = "no query";
 		decTask();
-	}
+	}*/
 }
 
-function addDiagram(plotName, sensorName, sensorDesc, sensorUnit) {
+function addDiagram(plotName, sensorName) {
 	incTask();
 	var sensorResult = getID("div_result").appendChild(document.createElement("div"));
 	var sensorResultTitle = sensorResult.appendChild(document.createElement("div"));
@@ -345,12 +338,12 @@ function addDiagram(plotName, sensorName, sensorDesc, sensorUnit) {
 	var image = new Image();
 	sensorResult.appendChild(image);
 	image.onload = function() {
-		sensorResultTitle.innerHTML = sensorName+": "+sensorDesc+" - "+sensorUnit;
+		sensorResultTitle.innerHTML = plotName;
 		decTask();
 	}
 	image.onerror = function() {	
-		sensorResultTitle.innerHTML = sensorName+": no data";
-		sensorResultTitle.style.color = "grey";
+		sensorResultTitle.innerHTML = "";
+		//sensorResultTitle.style.color = "grey";
 		sensorResult.removeChild(image);
 		decTask();
 	}
@@ -358,12 +351,13 @@ function addDiagram(plotName, sensorName, sensorDesc, sensorUnit) {
 	decTask();	
 }
 
-function addHeatmap(plotName, sensorName, sensorDesc, sensorUnit) {
+function addHeatmap(anchor, root, plotName, sensorName) {
 	incTask();
-	var sensorResult = getID("div_result").appendChild(document.createElement("div"));
-	var sensorResultTitle = sensorResult.appendChild(document.createElement("div"));
-	var sensorResultScale = sensorResult.appendChild(document.createElement("div"));
-	sensorResultTitle.innerHTML += "query "+sensorName+"...";
+	var sensorResult = root.appendChild(document.createElement("div"));
+	sensorResult.style.display = "inline-block";
+	var sensorResultTitle = root.appendChild(document.createElement("div"));
+	sensorResultTitle.style.display = "inline-block";
+	sensorResultTitle.innerHTML = "query "+sensorName+"...";
 	var aggregationName = aggregation_select.val();
 	var qualityName = "step";
 	var qualityName = quality_name[quality_select.val()];
@@ -376,7 +370,6 @@ function addHeatmap(plotName, sensorName, sensorDesc, sensorUnit) {
 			timeParameter += "&month="+month;
 		}
 	}
-	var withScale = scale_checkbox[0].checked
 	var magnificationFactor = magnification_select.val();
 	incTask();
 	var image = new Image();
@@ -384,32 +377,29 @@ function addHeatmap(plotName, sensorName, sensorDesc, sensorUnit) {
 	image.onload = function() {
 		image.width = image.naturalWidth*magnificationFactor;
 		image.height = image.naturalHeight*magnificationFactor;
-		sensorResultTitle.innerHTML = sensorName+": "+sensorDesc+" - "+sensorUnit;
-		if(withScale) {
-			incTask();
-			var imageScale = new Image();
-			sensorResultScale.appendChild(imageScale);
-			imageScale.onload = function() {
-				decTask();
-			}
-			imageScale.onerror = function() {	
-				sensorResultScale.innerHTML = "no scale";
-				sensorResultScale.style.color = "grey";
-				sensorResultScale.removeChild(imageScale);
-				decTask();
-			}
-			imageScale.src = url_heatmap_scale+"?sensor="+sensorName;
-		}
+		sensorResultTitle.innerHTML = "";		
 		decTask();
 	}
 	image.onerror = function() {	
-		sensorResultTitle.innerHTML = sensorName+": no data";
-		sensorResultTitle.style.color = "grey";
-		sensorResult.removeChild(image);
+		anchor.parentNode.removeChild(anchor);
 		decTask();
 	}
 	image.src = url_query_heatmap+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
 	decTask();	
+}
+
+function addScale(root, sensorName) {
+	incTask();
+	var imageScale = new Image();
+	root.appendChild(imageScale);
+	imageScale.onload = function() {
+		decTask();
+	}
+	imageScale.onerror = function() {	
+		root.removeChild(imageScale);
+		decTask();
+	}
+	imageScale.src = url_heatmap_scale+"?sensor="+sensorName;	
 }
 
 function createTag(tag) {
@@ -456,7 +446,7 @@ function getSensorTable(sensors)  {
 		for (var i = 0; i < sensors.length; i++) {
 			info += "<tr><td>"+sensors[i][0]+"</td><td>"+sensors[i][1]+"</td><td>"+sensors[i][2]+"</td></tr>";
 		}
-		info += "</table><br>";
+		info += "</table>";
 		return info;
 }
 
@@ -585,11 +575,9 @@ function updateTypes() {
 function onTypeChange() {
 	if(type_text[type_select.val()]=="heatmap") {
 		$("#div_aggregation_select").hide();
-		$("#div_scale").show();
 		$("#div_magnification_select").show();
 	} else {
 		$("#div_aggregation_select").show();
-		$("#div_scale").hide();
 		$("#div_magnification_select").hide();
 	}
 	updateSensors();

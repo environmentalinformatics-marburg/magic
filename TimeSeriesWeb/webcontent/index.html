@@ -75,16 +75,19 @@ This is the central start page of Time Series Web Interface. You can navigate to
 <div id="center">
 <table>
 <colgroup>
-    <col width="200px" height="50px"/>
+    <col width="100px" height="50px"/>
+	<col width="100px" height="50px"/>
     <col width="400px" height="50px"/>
 </colgroup>
-<tr><td><button class="linkbutton" onclick="window.location = 'querytimeseries.html';">query time series</button></td><td>view a time series of one plot and one sensor</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'queryplots.html';">query plots</button></td><td>view all time series of one plot</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'querysensors.html';">query sensors</button></td><td>view all time series of one sensor within in a set of plots</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'heatmap.html';">heat map</button></td><td>compare heat maps of some sensor in a set of plots</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'export.html';">export time series</button></td><td>download a set of time series</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'status.html';">status</button></td><td>get the "up to date"-status of plots</td></tr>
-<tr><td><button class="linkbutton" onclick="window.location = 'visual_plotstation.html';">query plot:station</button></td><td>view at one plot one station</td></tr>
+<tr><td>(new)</td><td><button class="linkbutton" onclick="window.location = 'visual_plotstation.html';">plot</button></td><td> view sensors of one plot (and station)</td></tr>
+<tr><td>(new)</td><td><button class="linkbutton" onclick="window.location = 'visual_sensor.html';">sensor</button></td><td>view sensor of a group of plots</td></tr>
+<tr><td></td><td><button class="linkbutton" onclick="window.location = 'export.html';">export</button></td><td>download time series data</td></tr>
+<tr><td>(deprecated)</td><td><button class="linkbutton" onclick="window.location = 'querytimeseries.html';">query time series</button></td><td>view one sensor plot</td></tr>
+<tr><td>(deprecated)</td><td><button class="linkbutton" onclick="window.location = 'queryplots.html';">query plots</button></td><td>view sensors of one plot</td></tr>
+<tr><td>(deprecated)</td><td><button class="linkbutton" onclick="window.location = 'querysensors.html';">sensor</button></td><td>view one sensor at a group of plots</td></tr>
+<tr><td>(deprecated)</td><td><button class="linkbutton" onclick="window.location = 'heatmap.html';">heat map</button></td><td>view heatmaps of one sensor at a group of plots</td></tr>
+<tr><td>(deprecated)</td><td><button class="linkbutton" onclick="window.location = 'status.html';">status</button></td><td>get the "up to date"-status of plots</td></tr>
+
 <!-- <tr><td><button class="linkbutton" onclick="window.location = 'info.html';">info</button></td><td>metadata of tsdb</td></tr> -->
 <!-- <tr><td><button class="linkbutton" onclick="window.location = 'console.html';">console</button></td><td>get access to internals time series database</td></tr> -->
 </table>

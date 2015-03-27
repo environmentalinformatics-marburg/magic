@@ -150,9 +150,9 @@ public class TimeSeriesHeatMap {
 		ArrayList<double[]> scaleList = new ArrayList<double[]>(5);
 
 		scaleList.add(new double[]{min,scaleMin});
-		scaleList.add(new double[]{(min+max)/4,(scaleMin+scaleMax)/4});
+		scaleList.add(new double[]{(3*min+max)/4,(3*scaleMin+scaleMax)/4});
 		scaleList.add(new double[]{(min+max)/2,(scaleMin+scaleMax)/2});
-		scaleList.add(new double[]{(min+max)*3/4,(scaleMin+scaleMax)*3/4});
+		scaleList.add(new double[]{(min+3*max)/4,(scaleMin+3*scaleMax)/4});
 		scaleList.add(new double[]{max, scaleMax});
 
 
@@ -166,7 +166,7 @@ public class TimeSeriesHeatMap {
 		}
 
 		for(double[] value:scaleList) {
-			tsp.drawText(""+value[0],(float) value[1], 10, PosHorizontal.CENTER, PosVerical.TOP);
+			tsp.drawText(""+(float)value[0],(float) value[1], 10, PosHorizontal.CENTER, PosVerical.TOP);
 		}
 
 
@@ -249,20 +249,31 @@ public class TimeSeriesHeatMap {
 		switch(sensorName) {
 		case "Ta_200":
 		case "Ta_10":
-		case "Ts_5":
-		case "Ts_10":
-		case "Ts_20":
-		case "Ts_50":
-		case "Tsky":
 		case "Tgnd":
 		case "Trad":
 			//tsp.setIndexedColorRange(-10, 30);
 			tsp.setIndexedColorRange(-20, 45);
 			break;
+		case "Tsky":			
+			tsp.setIndexedColorRange(-25, 25);
+			break;
+		case "Ts_5":
+		case "Ts_10":
+		case "Ts_20":
+			tsp.setIndexedColorRange(-5, 25);
+			break;			
+		case "Ts_50":
+			tsp.setIndexedColorRange(0, 20);
+			break;
 		case "Albedo":
 			tsp.setIndexedColorRange(0.1f, 0.3f);
 			break;
 		case "rH_200":
+		case "rh_1000":
+		case "rh_2000":
+		case "rh_3000":
+		case "rh_3700":
+		case "rh_4400":
 			tsp.setIndexedColorRange(0, 100);
 			break;
 		case "SM_10":
@@ -323,13 +334,26 @@ public class TimeSeriesHeatMap {
 			break;
 		case "LWUR_300":
 			tsp.setIndexedColorRange(300, 520);
+			break;			
+		case "LWDR_3700":
+		case "LWDR_4400":
+			tsp.setIndexedColorRange(200, 450);
+			break;
+		case "LWUR_3700":
+		case "LWUR_4400":			
+			tsp.setIndexedColorRange(280, 500);
 			break;
 		case "PAR_200": //no data
 		case "PAR_300":
 			tsp.setIndexedColorRange(0, 2000);
 			break;
+		case "PAR_1000":
+		case "PAR_2000":
+			tsp.setIndexedColorRange(0, 500);
+			break;			
 		case "P_RT_NRT":
-			tsp.setIndexedColorRange(0, 0.2f);
+			//tsp.setIndexedColorRange(0, 0.2f);
+			tsp.setIndexedColorRange(0, 1);
 			break;
 		case "P_container_RT":
 		case "P_container_NRT":
@@ -365,11 +389,16 @@ public class TimeSeriesHeatMap {
 		case "swdr_02": //range?
 			tsp.setIndexedColorRange(0, 30);
 			break;
-
 		case "par_01": //few data?
-		case "par_02": //few data?
-		case "p_200": // not in schema?
-		case "T_CNR": // not in schema?						
+		case "par_02": //few data?			
+			tsp.setIndexedColorRange(0, 2000);
+			break;
+		case "T_CNR":
+			tsp.setIndexedColorRange(0, 35);
+			break;
+		case "p_200":
+			tsp.setIndexedColorRange(820, 920);
+			break;			
 		default:
 			tsp.setIndexedColorRange(-10, 30);
 		}		
