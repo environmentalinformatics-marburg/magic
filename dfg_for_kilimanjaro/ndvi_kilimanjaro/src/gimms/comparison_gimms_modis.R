@@ -1,8 +1,5 @@
 ### Environmental stuff
 
-# Working directory
-setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/")
-
 # Packages
 lib <- c("raster", "doParallel", "reshape2", "plyr", "dplyr", "ggplot2", 
          "Rsenal", "scales", "RColorBrewer", "latticeExtra")
@@ -138,6 +135,7 @@ beanplot(df_ioa_mean$ioa, df_ioa$ioa, horizontal = TRUE, what = c(1, 1, 1, 0),
          names = c("Mean", "Median"), col = c("grey65", "black"), xlab = "IOA", 
          cutmax = 1)
 
+# ioa gimms vs. mean and median modis ndvi
 c(mean(df_ioa_mean[, 2]), mean(df_ioa[, 2]))
 
 
