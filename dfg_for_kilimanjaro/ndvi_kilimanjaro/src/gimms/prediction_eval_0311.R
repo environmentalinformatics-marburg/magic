@@ -9,7 +9,7 @@ source("sortByElevation.R")
 source("kendallStats.R")
 source("downscaleEvaluation.R")
 
-registerDoParallel(cl <- makeCluster(4))
+registerDoParallel(cl <- makeCluster(3))
 
 # Temporal range
 st <- "200301"
@@ -36,8 +36,8 @@ rst_modis_myd13 <- stack(fls_modis_myd13)
 # rst_modis_myd13 <- deseason(rst_modis_myd13)
 
 ls_scores_niter20 <- lapply(1:20, function(n_iter) {
-  cat("No. of iteration:", n_iter, "\n")
-# ls_scores_niter20 <- foreach(n_iter = 1:20) %do% {
+  cat("\nNo. of iteration:", n_iter, "\n")
+ls_scores_niter20 <- foreach(n_iter = 1:20, .packages = lib) %dopar% {
   
   indices <- foreach(i = 1:12, .combine = "c") %do% {
     month_id <- seq(i, nlayers(rst_modis_myd13), 12)
@@ -71,36 +71,27 @@ ls_scores_niter20 <- lapply(1:20, function(n_iter) {
   dsn <- FALSE
   i <- paste("0311_pureeval", "noreduceboth", formatC(n_iter, width = 2, flag = "0"), sep = "_")
 
-#   ls_scores <- 
-#   foreach(i = paste("0311_pureeval", c("noreduceboth", "reduceboth", "dsn_noreduceboth", "dsn_reduceboth"), sep = "_"), 
-#                        j = c("REDUCE.BOTH = FALSE, DESEASON = FALSE", "REDUCE.BOTH = TRUE, DESEASON = FALSE", 
-#                              "REDUCE.BOTH = FALSE, DESEASON = TRUE", "REDUCE.BOTH = TRUE, DESEASON = TRUE"), 
-#                        dsn = c(FALSE, FALSE, TRUE, TRUE), .packages = lib) %dopar% {
-                         obs_val <- rst_modis_myd13[[(1:nlayers(rst_modis_myd13))[-indices]]]
-                         if (dsn) obs_val <- deseason(obs_val)
-                         
-                         tmp_fls <- list.files("data/rst/dwnscl_agg1km", pattern = i, full.names = TRUE)
-                         tmp_rst <- stack(tmp_fls)
-                         
-                         tmp_val_obs <- getValues(obs_val)
-                         tmp_val_prd <- getValues(tmp_rst)
-                         
-                         tmp_me <- colMeans(tmp_val_prd - tmp_val_obs, na.rm = TRUE)
-                         tmp_mae <- colMeans(abs(tmp_val_prd - tmp_val_obs), na.rm = TRUE)
-                         tmp_rmse <- sqrt(colMeans((tmp_val_prd - tmp_val_obs)^2, na.rm = TRUE))
-                         tmp_r <- diag(cor(tmp_val_prd, tmp_val_obs, use = "complete.obs"))
-                         tmp_rsq <- tmp_r^2
-                         
-                         tmp_scores <- data.frame(type = "REDUCE.BOTH = FALSE", ME = tmp_me, MAE = tmp_mae, 
-                                                  RMSE = tmp_rmse, R = tmp_r, Rsq = tmp_rsq)
-#                          return(tmp_scores)
-#                        }
-#   
-#   df_scores <- do.call("rbind", ls_scores)
-#   return(df_scores)
+  obs_val <- rst_modis_myd13[[(1:nlayers(rst_modis_myd13))[-indices]]]
+  if (dsn) obs_val <- deseason(obs_val)
+
+  tmp_fls <- list.files("data/rst/dwnscl_agg1km", pattern = i, full.names = TRUE)
+  tmp_rst <- stack(tmp_fls)
+  
+  tmp_val_obs <- getValues(obs_val)
+  tmp_val_prd <- getValues(tmp_rst)
+  
+  tmp_me <- colMeans(tmp_val_prd - tmp_val_obs, na.rm = TRUE)
+  tmp_mae <- colMeans(abs(tmp_val_prd - tmp_val_obs), na.rm = TRUE)
+  tmp_rmse <- sqrt(colMeans((tmp_val_prd - tmp_val_obs)^2, na.rm = TRUE))
+  tmp_r <- diag(cor(tmp_val_prd, tmp_val_obs, use = "complete.obs"))
+  tmp_rsq <- tmp_r^2
+  
+  tmp_scores <- data.frame(type = "REDUCE.BOTH = FALSE", ME = tmp_me, MAE = tmp_mae, 
+                           RMSE = tmp_rmse, R = tmp_r, Rsq = tmp_rsq)
 
   return(tmp_scores)
-})
+}
+
 df_scores_niter20 <- do.call("rbind", ls_scores_niter20)
 write.table(df_scores_niter20, "data/eot_eval_agg1km/scores_niter20.csv", 
           row.names = FALSE, col.names = TRUE, dec = ".", sep = ",")

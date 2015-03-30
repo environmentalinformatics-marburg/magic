@@ -10,6 +10,7 @@ downscaleEvaluation <- function(rst_pred,
                                 ...) {
   
   if (dsn) {
+    stopifnot(require(remote))
     rst_pred <- deseason(rst_pred)
     rst_resp <- deseason(rst_resp)
   }
