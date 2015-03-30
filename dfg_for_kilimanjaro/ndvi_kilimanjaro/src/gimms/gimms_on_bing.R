@@ -28,6 +28,19 @@ kili.map <- openproj(openmap(upperLeft = c(ymax(ext_gimms), xmin(ext_gimms)),
                              type = "bing", minNumTiles = 40L), 
                              projection = "+init=epsg:21037")
 
+# sub-tile margins
+fls_splt <- list.files("data/rst/whittaker/ul", pattern = "mk001.*.tif$", 
+                       full.names = TRUE)
+ls_spy_splt <- lapply(fls_splt, function(i) {
+  tmp_rst <- raster(i)
+  tmp_rst_agg <- aggregate(tmp_rst, fun = function(...) return(0), 
+                           fact = c(ncol(tmp_rst), nrow(tmp_rst)))
+  tmp_spy_agg <- rasterToPolygons(tmp_rst_agg)
+  tmp_spy_agg@data$id <- rownames(tmp_spy_agg@data)
+  tmp_spy_agg_points <- fortify(tmp_spy_agg, region = "id")
+  return(tmp_spy_agg_points)
+})
+
 # # visualization of split bing image
 # library(Rsenal)
 # rst_kili <- raster(kili.map)
@@ -75,12 +88,20 @@ autoplot(kili.map) +
                lwd = 1.2, fill = "transparent") + 
   geom_polygon(aes(long, lat), data = np_old_utm_df, colour = "grey75", 
                lwd = 1.2, lty = 2, fill = "transparent") + 
-  geom_polygon(aes(long, lat, group = group), template_points, 
+  geom_polygon(aes(long, lat, group = group), template_points, lwd = .4, 
                fill = "transparent", colour = "black") + 
-  geom_polygon(aes(long, lat, group = group), template_1km_crp_points, 
+  geom_polygon(aes(long, lat, group = group), template_1km_crp_points, lwd = .4,
                fill = "transparent", colour = "black") + 
-#   geom_polygon(aes(long, lat), data = tz_utm_sl_df, colour = "grey75",
-#                fill = "transparent") + 
+  geom_polygon(aes(long, lat, group = group), ls_spy_splt[[1]], lwd = 1.2,
+               fill = "transparent", colour = "black", linetype = "dashed") + 
+  geom_polygon(aes(long, lat, group = group), ls_spy_splt[[2]], lwd = 1.2,
+               fill = "transparent", colour = "black", linetype = "dashed") + 
+  geom_polygon(aes(long, lat, group = group), ls_spy_splt[[3]], lwd = 1.2,
+               fill = "transparent", colour = "black", linetype = "dashed") + 
+  geom_polygon(aes(long, lat, group = group), ls_spy_splt[[4]], lwd = 1.2,
+               fill = "transparent", colour = "black", linetype = "dashed") + 
+  #   geom_polygon(aes(long, lat), data = tz_utm_sl_df, colour = "grey75",
+  #                fill = "transparent") + 
   theme_bw() + 
   theme(axis.title.x = element_text(size = rel(1.4)), 
         axis.text.x = element_text(size = rel(1.1)), 
