@@ -2,13 +2,8 @@ package tsdb;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,8 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
-import tsdb.remote.RemoteTsDB;
-//import tsdb.remote.ServerTsDB;
 import tsdb.util.Util;
 
 /**
@@ -39,6 +32,7 @@ public class TsDBFactory {
 	public static String SOURCE_KI_TSM_PATH = "source/ki_tsm";
 	public static String SOURCE_KI_TFI_PATH = "source/ki_tfi";
 	public static String SOURCE_SA_DAT_PATH = "source/sa_dat";
+	public static String SOURCE_SA_OWN_PATH = "source/sa_own";
 
 	public static String WEBCONTENT_PATH = "webcontent";
 	public static String WEBDOWNLOAD_PATH = "webDownload";
@@ -96,6 +90,9 @@ public class TsDBFactory {
 			if(pathMap.containsKey("SOURCE_SA_DAT_PATH")) {
 				SOURCE_SA_DAT_PATH = pathMap.get("SOURCE_SA_DAT_PATH");
 			}
+			if(pathMap.containsKey("SOURCE_SA_OWN_PATH")) {
+				SOURCE_SA_OWN_PATH = pathMap.get("SOURCE_SA_OWN_PATH");
+			}			
 			if(pathMap.containsKey("WEBCONTENT_PATH")) {
 				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
 			}
@@ -166,6 +163,17 @@ public class TsDBFactory {
 				configLoader.readLoggerTypeSchema(configDirectory+"sa/sa_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
 				configLoader.readGeneralStation(configDirectory+"sa/sa_general_stations.ini"); // [create GENERAL_STATION]
 				configLoader.readSaStation(configDirectory+"sa/sa_station_inventory.csv"); //[create STATION] read station with geo position
+			}
+			
+			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("SA_OWN")) {  //*** SA_OWN
+				String prefix = configDirectory+"sa_own/";
+				
+				configLoader.readRegion(prefix+"sa_own_region.ini");
+				configLoader.readLoggerTypeSchema(prefix+"sa_own_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
+				configLoader.readGeneralStation(prefix+"sa_own_general_stations.ini"); // [create GENERAL_STATION]
+				configLoader.readSaOwnPlotInventory(prefix+"sa_own_plot_inventory.csv");
+				configLoader.readSaOwnStationInventory(prefix+"sa_own_station_inventory.csv");
+				configLoader.readSensorTranslation(prefix+"sa_own_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations				
 			}
 
 			//*** global config start

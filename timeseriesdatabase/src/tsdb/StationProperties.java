@@ -16,10 +16,10 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 public class StationProperties implements Serializable{
-	
+	private static final long serialVersionUID = -4558930650676952510L;
 	private static final Logger log = LogManager.getLogger();
 
-	private static final long serialVersionUID = -4558930650676952510L;
+
 	public final static String PROPERTY_START = "DATE_START";
 	public final static String PROPERTY_END = "DATE_END";
 	public final static String PROPERTY_LOGGER = "LOGGER";
@@ -78,23 +78,21 @@ public class StationProperties implements Serializable{
 	}
 
 	private static Long parseConfigDateStart(String startText) {
-		Long timestampStart = null;					
-		if(!startText.equals("1999-01-01")) {
-			LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
-			LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
-			timestampStart = TimeConverter.DateTimeToOleMinutes(startDateTime);
+		if(startText==null || startText.equals("*") || startText.equals("1999-01-01")) {
+			return null;
 		}
-		return timestampStart;
+		LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
+		LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
+		return TimeConverter.DateTimeToOleMinutes(startDateTime);
 	}
 
 	private static Long parseConfigDateEnd(String endText) {
-		Long timestampEnd = null;
-		if(!endText.equals("2099-12-31")) {
-			LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
-			LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
-			timestampEnd = TimeConverter.DateTimeToOleMinutes(endDateTime);
-		}	
-		return timestampEnd;
+		if(endText==null || endText.equals("*") || endText.equals("2099-12-31")) {
+			return null;
+		}
+		LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
+		LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
+		return TimeConverter.DateTimeToOleMinutes(endDateTime);
 	}
 
 	public Long get_date_start() {
@@ -137,7 +135,4 @@ public class StationProperties implements Serializable{
 	public String toString() {
 		return propertyMap.toString();
 	}
-
-
-
 }

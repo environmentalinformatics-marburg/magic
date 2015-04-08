@@ -1,4 +1,4 @@
-package tsdb;
+package tsdb.component;
 
 import java.io.Serializable;
 import java.util.HashMap;

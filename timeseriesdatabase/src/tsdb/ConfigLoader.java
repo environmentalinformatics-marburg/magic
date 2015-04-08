@@ -21,6 +21,7 @@ import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
+import tsdb.component.LoggerType;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
 import tsdb.component.SensorCategory;
@@ -1146,6 +1147,73 @@ public class ConfigLoader {
 			}
 			
 			tsdb.insertStation(station);
+		}
+	}
+
+	public void readSaOwnPlotInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_general = table.createColumnReader("general");
+		
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String generalStationName = cr_general.get(row);			
+			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+			if(generalStation==null) {
+				log.error("GeneralStation not found "+generalStationName);
+				continue;
+			}
+			
+			float geoPosEasting = Float.NaN;
+			float geoPosNorthing = Float.NaN;
+			boolean isFocalPlot = false;
+			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing, isFocalPlot);
+			tsdb.insertVirtualPlot(virtualPlot);
+		}
+		
+	}
+
+	public void readSaOwnStationInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_logger = table.createColumnReader("logger");
+		ColumnReaderString cr_serial = table.createColumnReader("serial");
+		ColumnReaderString cr_start = table.createColumnReader("start");
+		ColumnReaderString cr_end = table.createColumnReader("end");
+		
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String loggerTypeName = cr_logger.get(row);
+			String serial = cr_serial.get(row);
+			String startText = cr_start.get(row);
+			String endText = cr_start.get(row);
+			
+			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+			if(virtualPlot==null) {
+				log.error("virtualPlot not found "+plotID);
+				continue;
+			}
+			
+			LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
+			if(loggerType==null) {
+				log.error("logger not found "+loggerTypeName);
+				continue;
+			}
+			
+			Map<String, String> propertyMap = new TreeMap<String, String>();
+			propertyMap.put(StationProperties.PROPERTY_PLOTID, plotID);
+			propertyMap.put(StationProperties.PROPERTY_LOGGER, loggerTypeName);
+			propertyMap.put(StationProperties.PROPERTY_SERIAL, serial);
+			propertyMap.put(StationProperties.PROPERTY_START,startText);
+			propertyMap.put(StationProperties.PROPERTY_END,endText);
+			StationProperties stationProperties = new StationProperties(propertyMap);			
+			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
+			propertyList.add(stationProperties);
+			
+			//new Station(tsdb, generalStation, stationID, loggerType, propertyMapList, false);
+			Station station = new Station(tsdb,null,serial,loggerType,propertyList, false);
+			tsdb.insertStation(station);
+			virtualPlot.addStationEntry(station, stationProperties);
 		}
 	}
 }

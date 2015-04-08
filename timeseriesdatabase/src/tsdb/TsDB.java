@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.component.CacheStorage;
+import tsdb.component.LoggerType;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
 import tsdb.component.SourceCatalog;
@@ -24,7 +25,7 @@ import tsdb.util.BaseAggregationTimeUtil;
  * @author woellauer
  *
  */
-public class TsDB {
+public class TsDB implements AutoCloseable {
 
 	private static final Logger log = LogManager.getLogger();
 
@@ -129,6 +130,7 @@ public class TsDB {
 	/**
 	 * close EventStore, all pending stream data is written to disk
 	 */
+	@Override
 	public void close() {
 		try {
 			streamStorage.close();

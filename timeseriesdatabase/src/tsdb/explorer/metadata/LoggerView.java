@@ -15,7 +15,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import tsdb.LoggerType;
+import tsdb.component.LoggerType;
 import tsdb.remote.RemoteTsDB;
 
 public class LoggerView {

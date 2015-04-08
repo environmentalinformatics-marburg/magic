@@ -149,7 +149,9 @@ function updateGeneralStations() {
 	generalstation_select.empty();	
 	$.get(url_generalstation_list+"?region="+regionName).done(function(data) {
 		var rows = splitData(data);
-		generalstation_select.append(new Option("[all]","[all]"));
+		if(rows.length>1) {
+			generalstation_select.append(new Option("[all]","[all]"));
+		}
 		$.each(rows, function(i,row) {
 			generalstation_select.append(new Option(row[1],row[0]));
 		})		

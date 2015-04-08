@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 
-import tsdb.LoggerType;
+import tsdb.component.LoggerType;
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.Util;

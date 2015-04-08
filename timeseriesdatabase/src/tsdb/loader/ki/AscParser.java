@@ -160,7 +160,7 @@ public class AscParser {
 
 				long timestamp = TimeConverter.DateTimeToOleMinutes(datetime);
 				if(timestamp<=prevTimestamp) {
-					log.warn("timestamp<=prevTimestamp  "+filename+"  "+datetime);
+					log.warn("skip row: timestamp<=prevTimestamp  "+filename+"  "+TimeConverter.oleMinutesToText(prevTimestamp, timestamp));
 				} else {
 					resultList.add(new TsEntry(timestamp, data));
 					prevTimestamp = timestamp;

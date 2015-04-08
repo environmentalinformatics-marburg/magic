@@ -2,8 +2,8 @@ package tsdb.remote;
 
 import java.io.Serializable;
 
-import tsdb.LoggerType;
 import tsdb.Station;
+import tsdb.component.LoggerType;
 import tsdb.util.Util;
 
 public class StationInfo implements Serializable {

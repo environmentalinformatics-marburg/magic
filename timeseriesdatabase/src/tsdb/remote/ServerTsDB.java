@@ -15,10 +15,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.GeneralStation;
-import tsdb.LoggerType;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.component.LoggerType;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
 import tsdb.component.SourceEntry;

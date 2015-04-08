@@ -4,7 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import tsdb.LoggerType;
+import tsdb.component.LoggerType;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
 import tsdb.component.SourceEntry;
