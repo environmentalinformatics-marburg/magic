@@ -1,11 +1,8 @@
-switch(Sys.info()[["sysname"]], 
-       "Linux" = setwd("/media/envin/XChange/kilimanjaro/gimms3g/gimms3g/"), 
-       "Windows" = setwd("D:/kilimanjaro/gimms3g/gimms3g/"))
-
 source("../../ndvi/src/panel.smoothconts.R")
 
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
-         "ggplot2", "dplyr", "Kendall", "RColorBrewer", "rgeos", "Rsenal")
+         "ggplot2", "dplyr", "Kendall", "RColorBrewer", "rgeos", "Rsenal", 
+         "lattice")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 registerDoParallel(cl <- makeCluster(3))
@@ -77,19 +74,32 @@ mod_predicted <- writeRaster(mod_predicted, filename = file_out,
 
 mod_predicted <- stack("data/rst/whittaker/gimms_ndvi3g_dwnscl_8211.tif")
 
-### mann-kendall trend statistics
-file_out <- paste0(file_out, "_mk")
-mod_predicted_mk <- 
-  foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
-  calc(mod_predicted, fun = function(...) {
-    mk <- MannKendall(...)
-    sl <- mk$sl
-    tau <- mk$tau
-    tau[abs(sl) >= i] <- NA
-    return(tau)
-  }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
 
-mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "mk.*.tif$", 
+### trend statistics
+
+## linear trend (slope)
+
+rst_slp <- calc(mod_predicted, fun = function(x) {
+  mod <- lm(x ~ seq(length(x)))
+  slp <- coef(mod)[2]
+  return(slp)
+}, filename = "data/eot_eval_agg1km/lm_slp", format = "GTiff", overwrite = TRUE)
+
+
+## mann-kendall
+
+# file_out <- paste0(file_out, "_mk")
+# mod_predicted_mk <- 
+#   foreach(i = c(1, .05, .01, .001), j = c("", "05", "01", "001")) %do%
+#   calc(mod_predicted, fun = function(...) {
+#     mk <- MannKendall(...)
+#     sl <- mk$sl
+#     tau <- mk$tau
+#     tau[abs(sl) >= i] <- NA
+#     return(tau)
+#   }, filename = paste0(file_out, j), format = "GTiff", overwrite = TRUE)
+
+mod_predicted_mk <- list.files("data/rst/whittaker", pattern = "8211_mk.*.tif$", 
                                full.names = TRUE)[4:1]
 mod_predicted_mk <- lapply(mod_predicted_mk, raster)
 

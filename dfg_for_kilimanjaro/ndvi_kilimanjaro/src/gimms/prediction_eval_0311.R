@@ -2,7 +2,7 @@ rm(list = ls(all = TRUE))
 
 lib <- c("raster", "rgdal", "MODIS", "remote", "doParallel", "reshape2", 
          "ggplot2", "dplyr", "scales", "Rsenal", "Kendall", "RColorBrewer", 
-         "latticeExtra", "zoo")
+         "latticeExtra", "zoo", "plotrix")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 source("sortByElevation.R")
@@ -35,10 +35,9 @@ fls_modis_myd13 <- fls_modis_myd13[grep(st, fls_modis_myd13):grep(nd, fls_modis_
 rst_modis_myd13 <- stack(fls_modis_myd13)
 # rst_modis_myd13 <- deseason(rst_modis_myd13)
 
-ls_scores_niter20 <- lapply(1:20, function(n_iter) {
-  cat("\nNo. of iteration:", n_iter, "\n")
-ls_scores_niter20 <- foreach(n_iter = 1:20, .packages = lib) %dopar% {
+ls_scores_rmse_niter20 <- foreach(n_iter = 1:20, .packages = lib) %dopar% {
   
+  # indices of training and test dataset
   indices <- foreach(i = 1:12, .combine = "c") %do% {
     month_id <- seq(i, nlayers(rst_modis_myd13), 12)
     
@@ -47,39 +46,35 @@ ls_scores_niter20 <- foreach(n_iter = 1:20, .packages = lib) %dopar% {
     return(train_id)
   }
   
-  fls_out <- c(paste("data/rst/dwnscl_agg1km/gimms_ndvi3g_dwnscl_0311_pureeval", 
-                      c("noreduceboth", "reduceboth", "dsn_noreduceboth", "dsn_reduceboth"), 
-                      formatC(n_iter, width = 2, flag = "0"), sep = "_"))
-#   results_eot <- foreach(i = c(rep(FALSE, 2), rep(TRUE, 2)), j = c(FALSE, TRUE, FALSE, TRUE), 
-#                          filename = fls_out, .packages = lib, .export = "downscaleEvaluation") %dopar%
-    downscaleEvaluation(rst_pred = rst_modis_myd13, 
-                        rst_resp = rst_gimms_crp, 
-                        indices_train = indices, 
-                        indices_test = (1:nlayers(rst_modis_myd13))[-indices],
-                        n_eot = 25,
-                        var = .95, 
-                        dsn = FALSE, 
-                        reduce.both = FALSE, 
-                        filename = fls_out[1], overwrite = TRUE,
-                        format = "GTiff", bylayer = FALSE)
+  # path: output storage
+  fls_out <- paste("data/rst/dwnscl_agg1km/gimms_ndvi3g_dwnscl_0311_pureeval", 
+                   "noreduceboth", formatC(n_iter, width = 2, flag = "0"), 
+                   sep = "_")
+
+  downscaleEvaluation(rst_pred = rst_modis_myd13, 
+                      rst_resp = rst_gimms_crp, 
+                      indices_train = indices, 
+                      indices_test = (1:nlayers(rst_modis_myd13))[-indices],
+                      n_eot = 25,
+                      var = .95, 
+                      dsn = FALSE, 
+                      reduce.both = FALSE, 
+                      filename = fls_out, overwrite = TRUE,
+                      format = "GTiff", bylayer = FALSE)
   
   
   ################################################################################
   ### Model validation ###
   ################################################################################
   
-  dsn <- FALSE
-  i <- paste("0311_pureeval", "noreduceboth", formatC(n_iter, width = 2, flag = "0"), sep = "_")
-
   obs_val <- rst_modis_myd13[[(1:nlayers(rst_modis_myd13))[-indices]]]
-  if (dsn) obs_val <- deseason(obs_val)
 
-  tmp_fls <- list.files("data/rst/dwnscl_agg1km", pattern = i, full.names = TRUE)
-  tmp_rst <- stack(tmp_fls)
+  tmp_rst <- stack(paste0(fls_out, ".tif"))
   
   tmp_val_obs <- getValues(obs_val)
   tmp_val_prd <- getValues(tmp_rst)
   
+  # spatial error scores
   tmp_me <- colMeans(tmp_val_prd - tmp_val_obs, na.rm = TRUE)
   tmp_mae <- colMeans(abs(tmp_val_prd - tmp_val_obs), na.rm = TRUE)
   tmp_rmse <- sqrt(colMeans((tmp_val_prd - tmp_val_obs)^2, na.rm = TRUE))
@@ -89,9 +84,40 @@ ls_scores_niter20 <- foreach(n_iter = 1:20, .packages = lib) %dopar% {
   tmp_scores <- data.frame(type = "REDUCE.BOTH = FALSE", ME = tmp_me, MAE = tmp_mae, 
                            RMSE = tmp_rmse, R = tmp_r, Rsq = tmp_rsq)
 
-  return(tmp_scores)
+  # temporal rmse
+  tmp_mat_obs <- as.matrix(obs_val)
+  tmp_mat_prd <- as.matrix(tmp_rst)
+
+  num_rmse <- sapply(1:nrow(tmp_mat_obs), function(i) {
+    num_obs <- tmp_mat_obs[i, ]
+    num_prd <- tmp_mat_prd[i, ]
+    sqrt(mean((num_prd-num_obs)^2, na.rm = TRUE))
+  })
+  
+  rst_rmse <- obs_val[[1]]
+  rst_rmse[] <- num_rmse
+  rst_rmse <- writeRaster(rst_rmse, filename = paste0(fls_out, "_rmse"), 
+                          format = "GTiff", overwrite = TRUE)
+  
+  return(list(tmp_scores, rst_rmse))
 }
 
+
+## temporal rmse
+
+ch_fls_rmse <- list.files("data/rst/dwnscl_agg1km/", pattern = "rmse", 
+                          full.names = TRUE)
+rst_rmse <- stack(ch_fls_rmse)
+rst_rmse_mu <- calc(rst_rmse, fun = mean, format = "GTiff", overwrite = TRUE,
+                    filename = "data/eot_eval_agg1km/rmse_niter20")
+rst_rmse_se <- calc(rst_rmse, fun = std.error, format = "GTiff", 
+                    overwrite = TRUE, filename = "data/eot_eval_agg1km/rmse_se_niter20")
+
+
+## spatial rmse
+ls_scores_niter20 <- lapply(1:length(ls_scores_rmse_niter20), function(i) {
+  ls_scores_rmse_niter20[[i]][[1]]
+})
 df_scores_niter20 <- do.call("rbind", ls_scores_niter20)
 write.table(df_scores_niter20, "data/eot_eval_agg1km/scores_niter20.csv", 
           row.names = FALSE, col.names = TRUE, dec = ".", sep = ",")
