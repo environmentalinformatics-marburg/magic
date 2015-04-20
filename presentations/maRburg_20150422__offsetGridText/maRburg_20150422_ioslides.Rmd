@@ -1,0 +1,301 @@
+---
+title: "offsetGridText"
+subtitle: ... the name says it all!
+author: "Florian Detsch, detsch@staff.uni-marburg.de"
+date: "April 22, 2015"
+output:
+  ioslides_presentation:
+    logo: figures/ui_logo.jpg
+---
+
+## Outline
+
+* Why the effort?
+
+* `offsetGridText` 
+    + Data preparation
+    + Specifying `pos` manually
+    + Automated label positioning via `thigmophobe`
+    + Shadow text functionality via `grid.stext`
+
+* Summary
+
+
+# Why the effort?
+
+<!--
+
+## Why the effort? | R base `text`
+ 
+```{r text, echo = FALSE}
+data(cars)
+
+set.seed(10)
+cars_sub <- cars[sample(1:nrow(cars), 20), ]
+
+par(mar = c(5, 4, .5, .5))
+plot(cars_sub[, 1], cars_sub[, 2], xlab = "Speed (mph)", ylab = "Distance (ft)", 
+     col = "grey30")
+text(cars_sub[, 1], cars_sub[, 2], labels = rownames(cars_sub), adj = 1.5)
+```
+
+
+## Why the effort? | `grid.text`
+ 
+```{r grid.text, echo = FALSE}
+library(lattice, quietly = TRUE)
+library(grid, quietly = TRUE)
+
+xyplot(cars_sub[, 2] ~ cars_sub[, 1], 
+       xlab = list(label = "Speed (mph)", cex = 1.2), 
+       ylab = list(label = "Distance (ft)", cex = 1.2), 
+       scales = list(cex = 1),
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, pch = 1, col = "grey30", cex = 1.1)
+         grid.text(rownames(cars_sub), x, y, default.units = "native", 
+                   gp = gpar(cex = 1.2),
+                   hjust = rep(1.5, nrow(cars_sub)), 
+                   vjust = rep(0.5, nrow(cars_sub)))
+         })
+```
+
+-->
+
+## Why the effort? | Position specifiers
+
+**`text`**
+
+* `adj`
+* `pos` and `offset` (overrides `adj`)
+  
+  
+**`grid.text`**
+
+* `just`
+* `hjust` and `vjust` (overrides `just`)
+
+
+## Why the effort? | Related problems
+
+**`text`**
+
+* shadow text not available
+
+**`grid.text`** 
+
+* position specifiers not split into 
+    + `pos` (1 = bottom, 2 = left, 3 = top, 4 = right) and 
+    + `offset`
+    
+* no interoperability with `thigmophobe`
+
+
+# `offsetGridText` code snippets
+
+## `offsetGridText` | Case study
+
+```{r case_study, echo = FALSE, message = FALSE, out.height = 450}
+library(Rsenal)
+library(OpenStreetMap)
+library(ggplot2)
+
+# osm_kili <- kiliAerial(type = "bing")
+# save(osm_kili, file = "data/osm_kili.RData")
+load("data/osm_kili.RData")
+autoplot(osm_kili)
+```
+
+
+## `offsetGridText` | Case study (incl. research sites)
+
+```{r case_study_pt, echo = FALSE, message = FALSE, out.height = 450}
+# packages
+library(rgdal, quietly = TRUE)
+library(latticeExtra)
+
+# sp.layout
+rst_kili <- raster(osm_kili)
+slo_kili <- rgb2spLayout(rst_kili)
+
+# research sites
+ch_plt_sls <- c("sav5", "sav4", 
+                "mai4", "mai1", 
+                "cof3", "cof2", 
+                "gra1", "gra2", 
+                "fer0", "fed1", 
+                "hel1")
+
+# import shapefile
+shp_kili <- readOGR(dsn = "data/", verbose = FALSE,
+                    layer = "PlotPoles_ARC1960_mod_20140807_final_sub")
+
+shp_kili_sls <- shp_kili[shp_kili$PlotID %in% ch_plt_sls, ]
+
+# extent expansion
+ext_plt_amp_sls <- extent(shp_kili_sls)
+
+num_xmin <- xmin(ext_plt_amp_sls) - 10000
+num_xmax <- xmax(ext_plt_amp_sls) + 5000
+num_xlim <- c(num_xmin, num_xmax)
+
+num_ymin <- ymin(ext_plt_amp_sls) - 5000
+num_ymax <- ymax(ext_plt_amp_sls) + 10000
+num_ylim <- c(num_ymin, num_ymax)
+
+# vis
+p <- spplot(shp_kili_sls, zcol = "PlotID", 
+            xlim = num_xlim, ylim = num_ylim, 
+            scales = list(draw = TRUE, cex = .8), 
+            col.regions = "white", cex = 1.75, pch = 20,
+            auto.key = FALSE, 
+            sp.layout = slo_kili) + 
+  latticeExtra::layer(sp.points(shp_kili_sls, cex = 1.25, pch = 20, col = "black"))
+print(p)
+```
+
+
+## `offsetGridText` | Data preparation
+
+```{r offsetGridText, eval = FALSE}
+# # install 'Rsenal' package
+# library(devtools, quietly = TRUE)
+# install_github("environmentalinformatics-marburg/Rsenal")
+
+# load package
+library(Rsenal)
+
+# spatial data
+load("data/osm_kili.RData")
+
+# print trellis object
+print(p)
+```
+
+## `offsetGridText` | Specifying `pos` manually
+
+```{r offsetGridText_w/pos, eval = FALSE}
+# enter viewport
+downViewport(trellis.vpname(name = "figure"))
+
+# labels
+ch_lbl <- shp_kili_sls$PlotID
+
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, 
+               xlim = num_xlim, ylim = num_ylim,
+               pos = rep(1, length(ch_lbl)), offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+## `offsetGridText` | Specifying `pos` manually
+
+```{r offsetGridText_w/pos_2, echo = FALSE, message = FALSE}
+print(p)
+
+# enter viewport
+downViewport(trellis.vpname(name = "figure"))
+
+# labels
+ch_lbl <- shp_kili_sls$PlotID
+
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, 
+               xlim = num_xlim, ylim = num_ylim,
+               pos = rep(1, length(ch_lbl)), offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+## `offsetGridText` | Automated label positioning via `thigmophobe`
+
+```{r offsetGridText_wo/pos, eval = FALSE}
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, 
+               xlim = num_xlim, ylim = num_ylim,
+               offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+## `offsetGridText` | Automated label positioning via `thigmophobe`
+
+```{r offsetGridText_wo/pos_2, echo = FALSE, message = FALSE}
+print(p)
+
+# enter viewport
+downViewport(trellis.vpname(name = "figure"))
+
+# labels
+ch_lbl <- shp_kili_sls$PlotID
+
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, 
+               xlim = num_xlim, ylim = num_ylim,
+               offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+## `offsetGridText` | Shadow text functionality via `grid.stext`
+
+```{r offsetGridText_w/stext, eval = FALSE}
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, stext = TRUE, 
+               xlim = num_xlim, ylim = num_ylim,
+               offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+## `offsetGridText` | Shadow text functionality via `grid.stext`
+```{r offsetGridText_w/stext_2, echo = FALSE, message = FALSE}
+print(p)
+
+# enter viewport
+downViewport(trellis.vpname(name = "figure"))
+
+# insert text
+offsetGridText(x = coordinates(shp_kili_sls), 
+               labels = ch_lbl, stext = TRUE, 
+               xlim = num_xlim, ylim = num_ylim,
+               offset = .0225, 
+               gp = gpar(fontsize = 20))
+```
+
+
+# Summary
+
+## Summary 
+
+`offsetGridText`
+
+- included in **Rsenal** package (hosted on [GitHub](https://github.com/environmentalinformatics-marburg/Rsenal))
+- combines `text` and `grid.text` positioning arguments
+- compatible with `thigmophobe`
+- features shadow text
+
+
+## Side note
+
+This `ioslides` presentation was entirely created from R Markdown v2. <br>
+<br>
+For further information, check out <br>
+http://blog.rstudio.org/2014/06/18/r-markdown-v2/. 
+
+<center>
+  <img src="figures/keep-calm-and-markdown.png" alt="markdown" height="250">
+</center>
+
+----
+
+```{r thank_you, echo = FALSE}
+grid.newpage()
+grid.rect(gp = gpar(fill = "grey"))
+offsetGridText(x = .5, y = .5, labels = "Questions?", stext = TRUE, pos = 3, 
+               xlim = c(0, 1), ylim = c(0, 1), gp = gpar(cex = 5))
