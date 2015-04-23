@@ -1,13 +1,21 @@
-lib <- c("raster", "rgdal", "Kendall", "doParallel", "OpenStreetMap", "ggplot2")
-sapply(lib, function(x) library(x, character.only = TRUE))
+### environmental stuff
 
+# packages
+lib <- c("raster", "rgdal", "Kendall", "doParallel", "OpenStreetMap", "ggplot2")
+sapply(lib, function(x) library(x, character.only = TRUE, quietly = TRUE))
+
+# functions
 source("src/uniqueFires.R")
 source("src/uniqueFiresKendall.R")
 
-registerDoParallel(cl <- makeCluster(4))
+# parallelization
+registerDoParallel(cl <- makeCluster(3))
 
-# osm data
-bng <- kiliAerial(minNumTiles = 20)
+
+### data
+
+# # osm data
+# bng <- kiliAerial(minNumTiles = 20)
 
 # modis ndvi mk data
 fls_ndvi_mk <- "out/mk/myd13q1_mk001_0313.tif"
