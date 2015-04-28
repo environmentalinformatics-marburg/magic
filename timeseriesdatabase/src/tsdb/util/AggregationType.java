@@ -31,6 +31,8 @@ public enum AggregationType {
 			return AVERAGE_ZERO;
 		case "average_albedo":
 			return AVERAGE_ALBEDO;
+		case "none":
+			return NONE;			
 		default:
 			return null;
 		}

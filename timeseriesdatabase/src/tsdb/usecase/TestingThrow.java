@@ -1,5 +1,6 @@
 package tsdb.usecase;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class TestingThrow {
@@ -27,7 +28,9 @@ public class TestingThrow {
 
 				System.err.println(getClass(entry.getClassName(),entry.getFileName())+"::"+entry.getMethodName()+"   "+entry.getLineNumber());
 
-
+				Integer[] x = {1,2,3};
+				Arrays.asList(x).contains(1);
+				Arrays.stream(x).anyMatch(y->y==1);
 
 
 			}

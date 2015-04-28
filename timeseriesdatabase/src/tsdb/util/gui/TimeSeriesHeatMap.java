@@ -353,7 +353,8 @@ public class TimeSeriesHeatMap {
 			break;			
 		case "P_RT_NRT":
 			//tsp.setIndexedColorRange(0, 0.2f);
-			tsp.setIndexedColorRange(0, 1);
+			//tsp.setIndexedColorRange(0, 1);
+			tsp.setIndexedColorRange(0, 3);
 			break;
 		case "P_container_RT":
 		case "P_container_NRT":
@@ -398,7 +399,10 @@ public class TimeSeriesHeatMap {
 			break;
 		case "p_200":
 			tsp.setIndexedColorRange(820, 920);
-			break;			
+			break;
+		case "DecagonECH2O":
+			tsp.setIndexedColorRange(300, 1000);
+			break;
 		default:
 			tsp.setIndexedColorRange(-10, 30);
 		}		

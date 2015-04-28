@@ -105,11 +105,35 @@ public class ImportSaOwn {
 					String targetName = translationMap.get(sensorName);
 					if(targetName!=null) {
 						DataEntry[] data = timestampseries.toDataEntyArray(sensorName);
+						
+						if(targetName=="P_RT_NRT") {
+							log.info("P_RT_NRT corrected");
+							DataEntry[] corrected_data =  new DataEntry[data.length];
+							for(int i=0;i<data.length;i++) {
+								corrected_data[i] = new DataEntry(data[i].timestamp,data[i].value*0.2f);
+							}
+							data = corrected_data;
+						}
+						
+						
+						
 						if(data!=null&&data.length>0) {
 							//System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
 							//streamdb.insertSensorData(stationName, sensorName, data);
 							//log.info("insert in station "+timestampseries.name+" sensor "+targetName+"  elements "+data.length);
 							tsdb.streamStorage.insertDataEntyArray(timestampseries.name, targetName, data);
+							
+							if(targetName.equals("DecagonECH2O")) {
+								log.info("DecagonECH2O translated");
+								DataEntry[] transformed_data =  new DataEntry[data.length];
+								for(int i=0;i<data.length;i++) {
+									final float x = data[i].value / 1000f; // mV to V
+									float y = ((56.8366f*(x-0.81f)-7.58579f)*(x-0.28f)+52.6316f)*(x-0.09f);
+									//log.info(y);
+									transformed_data[i] = new DataEntry(data[i].timestamp,y);
+								}
+								tsdb.streamStorage.insertDataEntyArray(timestampseries.name, "SM_10", transformed_data);
+							}
 						}
 					}
 

@@ -89,8 +89,12 @@ public class Handler_sensor_list extends MethodHandler {
 				Sensor s = sensorMap.get(sensorName);
 				//if(true/*s.isAggregable()*/) {
 				//if(/*true*/s.isAggregable()) {
-				if(isRaw||s.isAggregable()) {
-					webList.add(s.name+";"+s.description+";"+s.unitDescription);
+				if(isRaw||((s!=null)&&s.isAggregable())) {
+					if(s!=null) {
+						webList.add(s.name+";"+s.description+";"+s.unitDescription);
+					} else {
+						webList.add(sensorName+";"+"unknown"+";"+"unknown");	
+					}
 				}
 			}
 			
@@ -99,6 +103,7 @@ public class Handler_sensor_list extends MethodHandler {
 			writeStringArray(writer, webList);
 			response.setStatus(HttpServletResponse.SC_OK);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
