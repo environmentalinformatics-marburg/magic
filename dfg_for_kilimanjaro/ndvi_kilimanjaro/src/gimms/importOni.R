@@ -1,4 +1,5 @@
-importOni <- function(file = "data/oni/enso_and_iod.csv") {
+importOni <- function(file = "data/oni/enso_and_iod.csv", 
+                      st = "1982-01", nd = "2011-12") {
   stopifnot(require(reshape2))
   
   oni <- read.csv(file, skip = 1, stringsAsFactors = FALSE)

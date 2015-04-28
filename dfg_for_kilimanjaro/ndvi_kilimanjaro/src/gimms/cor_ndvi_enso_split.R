@@ -1,17 +1,25 @@
+# packages
+lib <- c("reshape2", "raster", "remote", "lubridate", "doParallel", 
+         "RColorBrewer", "Rsenal")
+jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
+
 # functions
+source("importOni.R")
+source("extentEnsoSeason.R")
 source("ttestInterQuad.R")
 source("ttestIntraQuad.R")
 
 # parallelization
-library(doParallel)
-cl <- makeCluster(4)
+cl <- makeCluster(3)
 registerDoParallel(cl)
 
 
 ## oni ~ ndvi
 
+# oni
+oni_mlt <- importOni()
+
 # split raster
-library(Rsenal)
 fls_ndvi_wolndvi <- "data/rst/whittaker/gimms_ndvi3g_dwnscl_8211_wolndvi.tif"
 fls_ndvi_wolndvi_split <- paste0(dirname(fls_ndvi_wolndvi), "/ul/", 
                                  substr(basename(fls_ndvi_wolndvi), 1, nchar(basename(fls_ndvi_wolndvi))-4))
@@ -22,6 +30,8 @@ fls_split <- list.files("data/rst/whittaker/ul", pattern = "dwnscl_8211.*.tif$",
                         full.names = TRUE)
 fls_split <- fls_split[-grep("mk001", fls_split)]
 rst_split <- lapply(fls_split, stack)
+
+ndvi_date <- seq(as.Date("1982-01-01"), as.Date("2011-12-01"), "month")
 
 # average monthly ndvi
 indices <- rep(1:12, nlayers(rst_split[[1]])/12)
