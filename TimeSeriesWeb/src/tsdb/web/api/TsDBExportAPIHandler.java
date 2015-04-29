@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
@@ -24,6 +28,7 @@ import org.json.JSONWriter;
 
 import tsdb.TsDBFactory;
 import tsdb.component.Region;
+import tsdb.component.Sensor;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ZipExport;
 import tsdb.util.AggregationInterval;
@@ -56,8 +61,10 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		if(session.isNew()) {
 			ExportModel model = new ExportModel();
 			session.setAttribute("ExportModel", model);
-			model.plots = new String[]{"HEG01"};
-			model.sensors = new String[]{"Ta_200"};
+			//model.plots = new String[]{"HEG01"};
+			//model.sensors = new String[]{"Ta_200"};
+			model.plots = new String[]{};
+			model.sensors = new String[]{};
 			model.aggregationInterval = AggregationInterval.HOUR;
 			model.timespanYear = 2014;
 			model.timespanYearsFrom = 2008;
@@ -206,9 +213,31 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		return true;
 	}
 
-	private boolean apply_sensors(PrintWriter writer, ExportModel model, ArrayList<String> lines) {
-		model.sensors = lines.toArray(new String[0]);
-		System.out.println(lines);
+	private boolean apply_sensors(PrintWriter writer, ExportModel model, ArrayList<String> lines) {		
+		if(model.aggregationInterval == AggregationInterval.RAW) {
+			model.sensors = lines.toArray(new String[0]);
+		} else {
+			ArrayList<String> sensorNameList = new ArrayList<String>();
+			try {
+				Sensor[] allSensors = tsdb.getSensors();
+				if(allSensors!=null) {
+					Map<String, Sensor> allSensorsMap = Arrays.stream(allSensors).collect(Collectors.toMap(Sensor::getName, Function.identity()));
+					for(String sensorName:lines) {
+						if(allSensorsMap.containsKey(sensorName)) {
+							if(allSensorsMap.get(sensorName).isAggregable()) {
+								sensorNameList.add(sensorName);
+							}
+						}
+					}
+					model.sensors = sensorNameList.toArray(new String[0]);
+				} else {
+					model.sensors = lines.toArray(new String[0]);
+				}
+			} catch (RemoteException e) {
+				log.warn(e);
+				model.sensors = lines.toArray(new String[0]);
+			}
+		}
 		return true;
 	}
 

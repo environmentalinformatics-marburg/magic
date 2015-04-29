@@ -268,7 +268,7 @@ public class ConfigLoader {
 			log.error(e);
 		}
 	}
-	
+
 	private void readLoggerTypeSensorTranslation(String loggerTypeName, Section section) {
 		LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
 		if(loggerType==null) {
@@ -286,7 +286,7 @@ public class ConfigLoader {
 			loggerType.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
 		}
 	}
-	
+
 	private void readGeneralStationSensorTranslation(String generalStationName, Section section) {
 		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 		if(generalStation==null) {
@@ -304,7 +304,7 @@ public class ConfigLoader {
 			generalStation.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
 		}
 	}
-	
+
 	private void readStationSensorTranslation(String stationName, Section section) {
 		Station station = tsdb.getStation(stationName);
 		if(station==null) {
@@ -319,7 +319,7 @@ public class ConfigLoader {
 			station.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
 		}
 	}
-	
+
 
 	/**
 	 * reads config for translation of input sensor names to database sensor names
@@ -876,10 +876,14 @@ public class ConfigLoader {
 				for(String sensorName:section.keySet()) {
 					String aggregateTypeText = section.get(sensorName);					
 					AggregationType aggregateType = AggregationType.getAggregationType(aggregateTypeText);
-					if(aggregateType!=null) {
+					if(aggregateType!=null&&aggregateType!=AggregationType.NONE) {
 						tsdb.insertBaseAggregation(sensorName, aggregateType);
 					} else {
-						log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
+						if(aggregateType!=null&&aggregateType==AggregationType.NONE) {
+							tsdb.insertRawSensor(sensorName);
+						} else {
+							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
+						}
 					}
 				}
 			}
@@ -1110,8 +1114,8 @@ public class ConfigLoader {
 
 		ColumnReaderFloat cr_lat = table.createColumnReaderFloat("lat");
 		ColumnReaderFloat cr_lon = table.createColumnReaderFloat("lon");
-		
-		
+
+
 		for(String[] row:table.rows) {
 			String stationID = cr_stationID.get(row);
 			String generalStationName = cr_general.get(row);
@@ -1126,7 +1130,7 @@ public class ConfigLoader {
 				log.error("logger type not found: "+loggerTypeName+"  at "+stationID);
 				continue;
 			}
-			
+
 			Map<String, String> propertyMap = new TreeMap<String, String>();
 			propertyMap.put("PLOTID", stationID);
 			propertyMap.put("DATE_START","1999-01-01");
@@ -1134,9 +1138,9 @@ public class ConfigLoader {
 			StationProperties stationProperties = new StationProperties(propertyMap);			
 			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
 			propertyList.add(stationProperties);
-			
+
 			Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
-			
+
 			try {
 				float lat = cr_lat.get(row,true);
 				float lon = cr_lon.get(row,true);
@@ -1145,7 +1149,7 @@ public class ConfigLoader {
 			} catch(Exception e) {
 				log.error(e);
 			}
-			
+
 			tsdb.insertStation(station);
 		}
 	}
@@ -1154,7 +1158,7 @@ public class ConfigLoader {
 		Table table = Table.readCSV(configFile,',');
 		ColumnReaderString cr_plot = table.createColumnReader("plot");
 		ColumnReaderString cr_general = table.createColumnReader("general");
-		
+
 		for(String[] row:table.rows) {
 			String plotID = cr_plot.get(row);
 			String generalStationName = cr_general.get(row);			
@@ -1163,14 +1167,14 @@ public class ConfigLoader {
 				log.error("GeneralStation not found "+generalStationName);
 				continue;
 			}
-			
+
 			float geoPosEasting = Float.NaN;
 			float geoPosNorthing = Float.NaN;
 			boolean isFocalPlot = false;
 			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing, isFocalPlot);
 			tsdb.insertVirtualPlot(virtualPlot);
 		}
-		
+
 	}
 
 	public void readSaOwnStationInventory(String configFile) {
@@ -1180,26 +1184,26 @@ public class ConfigLoader {
 		ColumnReaderString cr_serial = table.createColumnReader("serial");
 		ColumnReaderString cr_start = table.createColumnReader("start");
 		ColumnReaderString cr_end = table.createColumnReader("end");
-		
+
 		for(String[] row:table.rows) {
 			String plotID = cr_plot.get(row);
 			String loggerTypeName = cr_logger.get(row);
 			String serial = cr_serial.get(row);
 			String startText = cr_start.get(row);
 			String endText = cr_start.get(row);
-			
+
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
 				log.error("virtualPlot not found "+plotID);
 				continue;
 			}
-			
+
 			LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
 			if(loggerType==null) {
 				log.error("logger not found "+loggerTypeName);
 				continue;
 			}
-			
+
 			Map<String, String> propertyMap = new TreeMap<String, String>();
 			propertyMap.put(StationProperties.PROPERTY_PLOTID, plotID);
 			propertyMap.put(StationProperties.PROPERTY_LOGGER, loggerTypeName);
@@ -1209,7 +1213,7 @@ public class ConfigLoader {
 			StationProperties stationProperties = new StationProperties(propertyMap);			
 			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
 			propertyList.add(stationProperties);
-			
+
 			//new Station(tsdb, generalStation, stationID, loggerType, propertyMapList, false);
 			Station station = new Station(tsdb,null,serial,loggerType,propertyList, false);
 			tsdb.insertStation(station);

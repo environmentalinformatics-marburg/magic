@@ -492,6 +492,19 @@ public class TsDB implements AutoCloseable {
 		}
 		sensor.baseAggregationType = aggregateType;
 	}
+	
+	public void insertRawSensor(String sensorName) {
+		Sensor sensor = getSensor(sensorName);
+		if(sensor==null) {
+			log.trace("created new sensor "+sensorName);
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+		}			
+		if(baseAggregationExists(sensorName)) {
+			log.error("base aggregation for raw exists: "+sensorName);
+		}
+		sensor.baseAggregationType = AggregationType.NONE;		
+	}
 
 	public String[] getBaseSchema(String[] rawSchema) {
 		ArrayList<String> sensorNames = new ArrayList<String>();
@@ -597,5 +610,5 @@ public class TsDB implements AutoCloseable {
 			}
 		}
 		return result;
-	}
+	}	
 }

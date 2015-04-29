@@ -8,11 +8,16 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -29,7 +34,7 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
 public class ZipExport {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private final RemoteTsDB tsdb;
@@ -37,7 +42,7 @@ public class ZipExport {
 	private Consumer<String> cbPrintLine = null;
 
 	private final Region region;
-	private final String[] sensorNames;
+	private String[] sensorNames;
 	private final String[] plotIDs;
 	private final AggregationInterval aggregationInterval;
 	private final DataQuality dataQuality;
@@ -52,7 +57,7 @@ public class ZipExport {
 	private final boolean write_header;
 	private final Long startTimestamp;
 	private final Long endTimestamp;
-	
+
 	private int processedPlots = 0;
 
 	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header, Long startTimestamp, Long endTimestamp) {
@@ -60,7 +65,32 @@ public class ZipExport {
 		this.tsdb = tsdb;
 
 		this.region = region;
-		this.sensorNames = sensorNames;
+
+		if(aggregationInterval == AggregationInterval.RAW) {
+			this.sensorNames = sensorNames;
+		} else {
+			ArrayList<String> sensorNameList = new ArrayList<String>();
+			try {
+				Sensor[] allSensors = tsdb.getSensors();
+				if(allSensors!=null) {
+					Map<String, Sensor> allSensorsMap = Arrays.stream(allSensors).collect(Collectors.toMap(Sensor::getName, Function.identity()));
+					for(String sensorName:sensorNames) {
+						if(allSensorsMap.containsKey(sensorName)) {
+							if(allSensorsMap.get(sensorName).isAggregable()) {
+								sensorNameList.add(sensorName);
+							}
+						}
+					}
+					this.sensorNames = sensorNameList.toArray(new String[0]);
+				} else {
+					this.sensorNames = sensorNames;
+				}
+			} catch (RemoteException e) {
+				log.warn(e);
+				this.sensorNames = sensorNames;
+			}
+		}
+
 		this.plotIDs = plotIDs;
 		this.aggregationInterval = aggregationInterval;
 		this.dataQuality = dataQuality;
@@ -76,7 +106,7 @@ public class ZipExport {
 		this.startTimestamp = startTimestamp;
 		this.endTimestamp = endTimestamp;
 	}
-	
+
 	public boolean createZipFile(String filename) {
 		FileOutputStream fileOutputStream;
 		try {
@@ -384,7 +414,7 @@ public class ZipExport {
 			formater.close();															
 		}		
 	}
-	
+
 	public int getProcessedPlots() {
 		return processedPlots;
 	}
