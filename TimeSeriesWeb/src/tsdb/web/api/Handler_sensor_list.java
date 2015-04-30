@@ -91,7 +91,9 @@ public class Handler_sensor_list extends MethodHandler {
 				//if(/*true*/s.isAggregable()) {
 				if(isRaw||((s!=null)&&s.isAggregable())) {
 					if(s!=null) {
-						webList.add(s.name+";"+s.description+";"+s.unitDescription+";"+s.baseAggregationType);
+						String desc = s.description==null?"---":s.description;
+						String unit = s.unitDescription==null?"---":s.unitDescription;
+						webList.add(s.name+";"+desc+";"+unit+";"+s.baseAggregationType);
 					} else {
 						webList.add(sensorName+";"+"unknown"+";"+"unknown"+";"+"NONE");	
 					}
