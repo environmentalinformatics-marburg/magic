@@ -36,6 +36,7 @@ public class TsDBFactory {
 
 	public static String WEBCONTENT_PATH = "webcontent";
 	public static String WEBDOWNLOAD_PATH = "webDownload";
+	public static String WEBFILES_PATH = "webFiles";
 
 	public static String OUTPUT_PATH = "output";
 
@@ -98,6 +99,9 @@ public class TsDBFactory {
 			}
 			if(pathMap.containsKey("WEBDOWNLOAD_PATH")) {
 				WEBDOWNLOAD_PATH = pathMap.get("WEBDOWNLOAD_PATH");
+			}
+			if(pathMap.containsKey("WEBFILES_PATH")) {
+				WEBFILES_PATH = pathMap.get("WEBFILES_PATH");
 			}
 			if(pathMap.containsKey("OUTPUT_PATH")) {
 				OUTPUT_PATH = pathMap.get("OUTPUT_PATH");
