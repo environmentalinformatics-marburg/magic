@@ -14,10 +14,9 @@ library(raster)
 
 # Paths and files
 path.wd <- switch(Sys.info()[["sysname"]], 
-                  "Linux" = "/media/XChange/kilimanjaro/landcover/", 
-                  "Windows" = "D:/kilimanjaro/landcover/")
+                  "Linux" = "/media/permanent/kilimanjaro/landcover/", 
+                  "Windows" = "C:/Permanent/kilimanjaro/landcover/")
 setwd(path.wd)
-
 
 
 ### Data import
@@ -25,17 +24,16 @@ setwd(path.wd)
 ## Plot data
 
 # Import plot coordinates and select middle poles only
-shp <- readOGR(dsn = "shp/", layer = "PlotPoles_ARC1960_mod_20140424_final")
+shp <- readOGR(dsn = "../coordinates/coords/", 
+               layer = "PlotPoles_ARC1960_mod_20140807_final")
 shp <- subset(shp, PoleType == "AMP")
 shp <- spTransform(shp, CRS("+init=epsg:32737"))
 
 
 ## Classified images
 
-# List classified images
-fls.lcp <- list.files("final/", pattern = ".rst$", full.names = TRUE)
-
-# Import classified images
+# List and import classified images
+fls.lcp <- list.files("final/plots/", pattern = ".rst$", full.names = TRUE)
 rst.lcp <- lapply(fls.lcp, raster)
 
 # Extract class ids (column 'Value' in each raster's attribute table) and 
