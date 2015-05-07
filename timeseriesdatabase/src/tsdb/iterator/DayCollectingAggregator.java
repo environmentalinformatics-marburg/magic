@@ -1,0 +1,89 @@
+package tsdb.iterator;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import tsdb.util.AggregationType;
+import tsdb.util.TsEntry;
+import tsdb.util.iterator.TsIterator;
+
+public class DayCollectingAggregator {
+
+	private final TsIterator input_iterator;
+	private TsEntry nextInputEntry;
+	private long nextInputAggregationTimestamp;
+
+	public final ArrayList<Float>[] outputs;
+	public long outputTimestamp;
+
+	public DayCollectingAggregator(TsIterator input_iterator) {
+		this.input_iterator = input_iterator;
+		this.outputs = new ArrayList[input_iterator.getSchema().length];
+		this.outputTimestamp = -1;
+		for(int i=0;i<outputs.length;i++) {
+			outputs[i] = new ArrayList<Float>(24);
+		}
+		calcNextInput();
+	}
+
+	private void calcNextInput() {
+		if(input_iterator.hasNext()) {
+			nextInputEntry = input_iterator.next();
+			nextInputAggregationTimestamp = calcAggregationTimestamp(nextInputEntry.timestamp);
+		} else {
+			nextInputEntry = null;
+			nextInputAggregationTimestamp = -1;
+		}
+	}
+
+	public void calcNextOutput() {
+		int validAttributesCount = 0;
+		while(validAttributesCount==0) {
+			for(ArrayList<Float> list:outputs) {
+				list.clear();
+			}
+			long currentAggregationTimestamp = nextInputAggregationTimestamp;
+			if(currentAggregationTimestamp<0) {
+				outputTimestamp=-1;
+				return;
+			}
+			for(int i=0;i<nextInputEntry.data.length;i++) {
+				if(!Float.isNaN(nextInputEntry.data[i])) {
+					outputs[i].add(nextInputEntry.data[i]);
+				}
+			}
+			calcNextInput();
+			while(currentAggregationTimestamp==nextInputAggregationTimestamp) {
+				for(int i=0;i<nextInputEntry.data.length;i++) {
+					if(!Float.isNaN(nextInputEntry.data[i])) {
+						outputs[i].add(nextInputEntry.data[i]);
+					}
+				}
+				calcNextInput();
+			}
+			for(int i=0;i<outputs.length;i++) {
+				if(outputs[i].size()>=22) { // change per attribute type
+					validAttributesCount++;
+				} else {
+					outputs[i].clear();
+				}
+			}
+			if(validAttributesCount>0) {
+				outputTimestamp = currentAggregationTimestamp;
+			} else {
+				outputTimestamp = -1;
+			}
+		}
+	}
+
+	private long calcAggregationTimestamp(long timestamp) {
+		return timestamp - timestamp%(24*60);
+	}
+
+	private boolean isValidAggregate(int collectorCount, AggregationType aggregationType) {
+		if(aggregationType == AggregationType.AVERAGE_ALBEDO) {
+			return 5<=collectorCount;
+		}
+		return 22<=collectorCount;				
+	}	
+}

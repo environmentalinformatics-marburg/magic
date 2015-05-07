@@ -42,7 +42,16 @@ public class TimeSeriesHeatMap {
 		}
 	}
 
-	public void drawTimescale(TimeSeriesPainterGraphics2D tsp, float xMin, float yMin, float xMax, float yMax) {
+	/**
+	 * 
+	 * @param tsp
+	 * @param xMin
+	 * @param yMin
+	 * @param xMax
+	 * @param yMax
+	 * @param yearMark  write year instead of January
+	 */
+	public void drawTimescale(TimeSeriesPainterGraphics2D tsp, float xMin, float yMin, float xMax, float yMax, boolean yearMark) {
 		tsp.setColor(255, 255, 255);
 		tsp.fillRect(xMin, yMin, xMax, yMax+1);
 
@@ -76,12 +85,20 @@ public class TimeSeriesHeatMap {
 					tsp.drawLine(dayDiff+xMin, yMin, dayDiff+xMin, yMax);
 					if(prevDayDiff>-1) {
 						int month = prevDate.getMonthValue();
-						if(month==1) {
+						if(yearMark&&month==1) {
 							if(first) {
 								tsp.drawText(TimeScale.getMonthText(month), (prevDayDiff+dayDiff)/2+xMin, yMin, PosHorizontal.CENTER, PosVerical.TOP);
 							} else {
+								//tsp.setColor(95, 81, 3);
+								tsp.setColor(0, 0, 0);
+								//tsp.drawLine(prevDayDiff+xMin, yMin+2, prevDayDiff+xMin, yMax);
+								tsp.drawLine(prevDayDiff+1+xMin, yMin+1, prevDayDiff+1+xMin, yMax);
 								tsp.drawText(""+prevDate.getYear(), (prevDayDiff+dayDiff)/2+xMin, yMin, PosHorizontal.CENTER, PosVerical.TOP);
-								
+								/*tsp.setColor(255, 255, 255);
+								tsp.drawLine(prevDayDiff+xMin, yMin, prevDayDiff+1+xMin, yMin);
+								tsp.drawLine(prevDayDiff+xMin, yMin+1, prevDayDiff+1+xMin, yMin+1);
+								tsp.drawLine(prevDayDiff+xMin, yMin+2, prevDayDiff+1+xMin, yMin+2);*/	
+								tsp.setColor(150, 150, 150);
 							}
 						} else {
 							tsp.drawText(TimeScale.getMonthText(month), (prevDayDiff+dayDiff)/2+xMin, yMin, PosHorizontal.CENTER, PosVerical.TOP);
