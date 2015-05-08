@@ -326,7 +326,7 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 						TimeSeriesPainterGraphics2D tsp = new TimeSeriesPainterGraphics2D(bufferedImage);
 
 						if(queryEntry.diagramType==DiagramType.STANDARD) {						
-							TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category);						
+							TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts,AggregationInterval.HOUR,queryEntry.sensor.category, false);						
 							tsd.draw(tsp);
 						}
 

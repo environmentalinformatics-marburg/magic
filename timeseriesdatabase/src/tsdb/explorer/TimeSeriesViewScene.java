@@ -586,7 +586,7 @@ public class TimeSeriesViewScene extends TsdbScene {
 			TimestampSeries ts = tsdb.plot(null, plot.name, sensorNames, agg, quality, false, startTimestamp, endTimestamp);
 			log.info(plot.name+"    update sensor "+sensor.name+"  "+ts);
 			if(ts!=null) {
-				tsd = new TimeSeriesDiagram(ts,agg,sensor.category);
+				tsd = new TimeSeriesDiagram(ts,agg,sensor.category,false);
 				try {
 					timeSeriesMask = tsdb.getTimeSeriesMask(plot.name, sensorNames[0]);
 					if(timeSeriesMask==null) {

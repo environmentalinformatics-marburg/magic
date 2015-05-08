@@ -464,7 +464,7 @@ public class Util {
 		return resultSet;
 	}
 
-	public String ifNaN(float value, String text) {
+	public static String ifNaN(float value, String text) {
 		if(Float.isNaN(value)) {
 			return text;
 		} else {

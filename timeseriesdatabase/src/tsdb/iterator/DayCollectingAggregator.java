@@ -5,16 +5,18 @@ import java.util.Iterator;
 
 import tsdb.util.AggregationType;
 import tsdb.util.TsEntry;
+import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.iterator.ProcessingChainOneSource;
 import tsdb.util.iterator.TsIterator;
 
-public class DayCollectingAggregator {
+public class DayCollectingAggregator implements CollectingAggregator {
 
 	private final TsIterator input_iterator;
 	private TsEntry nextInputEntry;
 	private long nextInputAggregationTimestamp;
 
-	public final ArrayList<Float>[] outputs;
-	public long outputTimestamp;
+	private final ArrayList<Float>[] outputs; //No NaNs
+	private long outputTimestamp;
 
 	public DayCollectingAggregator(TsIterator input_iterator) {
 		this.input_iterator = input_iterator;
@@ -25,6 +27,11 @@ public class DayCollectingAggregator {
 		}
 		calcNextInput();
 	}
+	
+	@Override
+	public int getAttributeCount() {
+		return input_iterator.getSchema().length;
+	}
 
 	private void calcNextInput() {
 		if(input_iterator.hasNext()) {
@@ -33,19 +40,20 @@ public class DayCollectingAggregator {
 		} else {
 			nextInputEntry = null;
 			nextInputAggregationTimestamp = -1;
-		}
+		}		
 	}
 
-	public void calcNextOutput() {
-		int validAttributesCount = 0;
-		while(validAttributesCount==0) {
+	@Override
+	public long calcNextOutput() {
+		//int validAttributesCount = 0;
+		//while(validAttributesCount==0) {
 			for(ArrayList<Float> list:outputs) {
 				list.clear();
 			}
 			long currentAggregationTimestamp = nextInputAggregationTimestamp;
 			if(currentAggregationTimestamp<0) {
 				outputTimestamp=-1;
-				return;
+				return -1;
 			}
 			for(int i=0;i<nextInputEntry.data.length;i++) {
 				if(!Float.isNaN(nextInputEntry.data[i])) {
@@ -62,18 +70,19 @@ public class DayCollectingAggregator {
 				calcNextInput();
 			}
 			for(int i=0;i<outputs.length;i++) {
-				if(outputs[i].size()>=22) { // change per attribute type
-					validAttributesCount++;
+				if(/*outputs[i].size()>=22*/isValidAggregate(outputs[i].size(),null)) { // change per attribute type
+					//validAttributesCount++;
 				} else {
 					outputs[i].clear();
 				}
 			}
-			if(validAttributesCount>0) {
+			//if(validAttributesCount>0) {
 				outputTimestamp = currentAggregationTimestamp;
-			} else {
-				outputTimestamp = -1;
-			}
-		}
+			//} else {
+			//	outputTimestamp = -1;
+			//}
+		//}
+		return outputTimestamp;
 	}
 
 	private long calcAggregationTimestamp(long timestamp) {
@@ -85,5 +94,20 @@ public class DayCollectingAggregator {
 			return 5<=collectorCount;
 		}
 		return 22<=collectorCount;				
-	}	
+	}
+
+	@Override
+	public ArrayList<Float>[] getOutputs() {
+		return outputs;
+	}
+
+	@Override
+	public String getProcessingTitle() {
+		return "DayCollectingAggregator";
+	}
+
+	@Override
+	public ProcessingChain getProcessingChain() {		
+		return ProcessingChain.of(input_iterator,this);
+	}
 }

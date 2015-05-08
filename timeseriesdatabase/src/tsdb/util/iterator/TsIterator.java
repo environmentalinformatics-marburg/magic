@@ -4,10 +4,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import tsdb.util.ProcessingChainEntry;
+import tsdb.util.ProcessingChainSupplier;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
-public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry {
+public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry, ProcessingChainSupplier {
 
 	protected final TsSchema schema;
 	
@@ -32,8 +33,9 @@ public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEn
 		return simpleName;
 	}
 	
+	@Override
 	public ProcessingChain getProcessingChain() {
-		return new ProcessingChainSource(this);
+		return ProcessingChain.of(this);
 	}
 	
 	@Override

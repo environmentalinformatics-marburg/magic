@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
+import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeConverter;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
@@ -33,7 +34,7 @@ public class GritBotDataCreation {
 	
 	public static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
 		PrintStream printStream = new PrintStream(filename);
-		
+
 		while(it.hasNext()) {
 			TsEntry e = it.next();
 			

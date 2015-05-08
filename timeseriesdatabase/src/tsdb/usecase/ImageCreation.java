@@ -37,7 +37,7 @@ public class ImageCreation {
 		System.out.println("size: "+timestampseries.entryList.size());
 		
 		SensorCategory diagramType = SensorCategory.TEMPERATURE;
-		TimeSeriesDiagram tsd = new TimeSeriesDiagram(timestampseries, aggregationInterval, diagramType);
+		TimeSeriesDiagram tsd = new TimeSeriesDiagram(timestampseries, aggregationInterval, diagramType, false);
 		
 		
 		//BufferedImage bufferedImage = new BufferedImage(6000,600,java.awt.image.BufferedImage.TYPE_INT_RGB);

@@ -12,6 +12,7 @@ import tsdb.VirtualPlot;
 import tsdb.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.Interpolator;
+import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.TimeSeries;
 import tsdb.util.iterator.TsIterator;
 
@@ -131,6 +132,7 @@ public class Interpolated extends Continuous.Abstract {
 		}
 		TimeSeries sourceTimeSeries = source_iterator.toTimeSeries();		
 		int linearInterpolatedCount = Interpolator.processOneValueGaps(sourceTimeSeries);
+		sourceTimeSeries.addToProcessingChain("InterpolateOneValueGaps");
 		long interpolationStart = sourceTimeSeries.getFirstTimestamp();
 		long interpolationEnd = sourceTimeSeries.getLastTimestamp();
 		
@@ -144,6 +146,9 @@ public class Interpolated extends Continuous.Abstract {
 				interpolationTimeSeriesTemp.add(timeSeries);
 			}
 		}
+		
+		
+		
 		TimeSeries[] interpolationTimeSeries = interpolationTimeSeriesTemp.toArray(new TimeSeries[0]);
 		
 
@@ -152,7 +157,8 @@ public class Interpolated extends Continuous.Abstract {
 			interpolatedCount += Interpolator.process(interpolationTimeSeries, sourceTimeSeries, interpolationName);
 		}
 		System.out.println("interpolated: linear: "+linearInterpolatedCount+"   multi linear: "+interpolatedCount+"   sources linear: "+sourcesLinearInterpolationCount);
-
+		sourceTimeSeries.addToProcessingChain("InterpolateMultiLinear");
+		
 		sourceTimeSeries.hasDataInterpolatedFlag = true;		
 		TsIterator clipIterator = sourceTimeSeries.timeSeriesIteratorCLIP(queryStart, queryEnd);
 		TsIterator resultIterator = clipIterator;
