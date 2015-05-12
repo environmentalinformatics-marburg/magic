@@ -9,5 +9,15 @@ public class Css {
 	public void addLine(String text) {
 		tag.element.setTextContent(tag.element.getTextContent()+text+"\n");
 	}
+	public void addLine(String selector, String ... entries) {
+		String s = selector;
+		s += "{";
+		for(String entry:entries) {
+			s+=entry+";";
+		}
+		s += "}";
+		
+		tag.element.setTextContent(tag.element.getTextContent()+s);
+	}
 }
 

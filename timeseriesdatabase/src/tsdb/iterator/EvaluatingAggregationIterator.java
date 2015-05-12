@@ -82,9 +82,19 @@ public class EvaluatingAggregationIterator extends MoveIterator {
 		} else {
 			q3 = values.get((size*3)/4);
 		}
+		
+		float iqr_1_5 = 1.5f*(q3-q1);
+		float dmin = q1-iqr_1_5;
+		float dmax = q3+iqr_1_5;
+		if(dmin<min) {
+			dmin = min;
+		}
+		if(max<dmax) {
+			dmax = max;
+		}
 
 
-		return TsEntry.of(timestamp, min, q1, med, q3, max);
+		return TsEntry.of(timestamp, min, dmin, q1, med, q3, dmax, max);
 	}
 	
 	@Override

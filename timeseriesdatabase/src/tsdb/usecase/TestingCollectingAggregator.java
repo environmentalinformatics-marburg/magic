@@ -28,7 +28,7 @@ public class TestingCollectingAggregator {
 		TsIterator it = node.get(null, null);
 
 		//DayCollectingAggregator mca = new DayCollectingAggregator(it);
-		MonthCollectingAggregator mca = new MonthCollectingAggregator(new DayCollectingAggregator(it));
+		MonthCollectingAggregator mca = new MonthCollectingAggregator(new DayCollectingAggregator(tsdb, it));
 		EvaluatingAggregationIterator eai = new EvaluatingAggregationIterator(it.getSchema(),mca);
 		
 		while(eai.hasNext()) {

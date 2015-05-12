@@ -3,6 +3,8 @@ package tsdb.iterator;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import tsdb.TsDB;
+import tsdb.component.Sensor;
 import tsdb.util.AggregationType;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.ProcessingChain;
@@ -12,14 +14,17 @@ import tsdb.util.iterator.TsIterator;
 public class DayCollectingAggregator implements CollectingAggregator {
 
 	private final TsIterator input_iterator;
+	private final Sensor[] sensors;
+	
 	private TsEntry nextInputEntry;
 	private long nextInputAggregationTimestamp;
 
 	private final ArrayList<Float>[] outputs; //No NaNs
 	private long outputTimestamp;
 
-	public DayCollectingAggregator(TsIterator input_iterator) {
+	public DayCollectingAggregator(TsDB tsdb, TsIterator input_iterator) {
 		this.input_iterator = input_iterator;
+		this.sensors = tsdb.getSensors(input_iterator.getSchema().names);
 		this.outputs = new ArrayList[input_iterator.getSchema().length];
 		this.outputTimestamp = -1;
 		for(int i=0;i<outputs.length;i++) {
@@ -70,7 +75,7 @@ public class DayCollectingAggregator implements CollectingAggregator {
 				calcNextInput();
 			}
 			for(int i=0;i<outputs.length;i++) {
-				if(/*outputs[i].size()>=22*/isValidAggregate(outputs[i].size(),null)) { // change per attribute type
+				if(/*outputs[i].size()>=22*/isValidAggregate(outputs[i].size(),sensors[i].baseAggregationType)) { // change per attribute type
 					//validAttributesCount++;
 				} else {
 					outputs[i].clear();

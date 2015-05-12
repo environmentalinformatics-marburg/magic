@@ -42,7 +42,7 @@ public class Html {
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.INDENT, "no");
 			transformer.transform(new DOMSource(document), new StreamResult(writer));
 		} catch (Exception e) {
 			log.error(e);

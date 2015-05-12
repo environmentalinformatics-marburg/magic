@@ -67,10 +67,30 @@ public class Handler_query_image extends MethodHandler {
 			}
 		}
 
-		boolean boxplot = false;
-		if(agg==AggregationInterval.DAY||agg==AggregationInterval.WEEK||agg==AggregationInterval.MONTH||agg==AggregationInterval.YEAR) {
-			boxplot = true;
+		boolean boxplot = false;		
+
+		String boxplotText = request.getParameter("boxplot");
+		if(boxplotText!=null) {
+			switch(boxplotText) {
+			case "true":
+				if(agg==AggregationInterval.DAY||agg==AggregationInterval.WEEK||agg==AggregationInterval.MONTH||agg==AggregationInterval.YEAR) {
+					boxplot = true;
+				} else {
+					log.warn("no boxplot for aggregate "+agg);
+				}
+				break;
+			case "false":
+				boxplot = false;
+				break;
+			default:
+				log.warn("unknown input for boxplot");
+				boxplot = false;				
+			}
 		}
+
+
+
+
 
 		String quality = request.getParameter("quality");
 		DataQuality dataQuality = DataQuality.STEP;
@@ -170,7 +190,7 @@ public class Handler_query_image extends MethodHandler {
 			} else {
 				ts = tsdb.plot(null, plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
 			}
-			
+
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				

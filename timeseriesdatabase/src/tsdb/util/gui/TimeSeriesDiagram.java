@@ -3,6 +3,7 @@ package tsdb.util.gui;
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,14 @@ import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesDiagram {
+	
+	private static final int ELEMENT_INDEX_MIN = 0;
+	private static final int ELEMENT_INDEX_MAX = 6;
+	private static final int ELEMENT_INDEX_W_MIN = 1;
+	private static final int ELEMENT_INDEX_W_MAX = 5;
+	private static final int ELEMENT_INDEX_Q1 = 2;
+	private static final int ELEMENT_INDEX_Q3 = 4;
+	private static final int ELEMENT_INDEX_MEDIAN = 3;
 
 	private static final Logger log = LogManager.getLogger();
 
@@ -126,12 +135,12 @@ public class TimeSeriesDiagram {
 		} else {
 			long prev = 0;
 			for(TsEntry entry:timestampseries) {
-				float valueMin = entry.data[0];
+				float valueMin = entry.data[ELEMENT_INDEX_MIN];
 				if(!Float.isNaN(valueMin)) {
 					if(valueMin<dataMinValue) {
 						dataMinValue = valueMin;						
 					}
-					float valueMax = entry.data[4];
+					float valueMax = entry.data[ELEMENT_INDEX_MAX];
 					if(valueMax>dataMaxValue) {
 						dataMaxValue = valueMax;						
 					}
@@ -426,20 +435,34 @@ public class TimeSeriesDiagram {
 
 		setDiagramValueRange(min,max);
 	}
-	
-	private void drawBoxplot(TimeSeriesPainter tsp) {
+
+	private void drawBoxplot(TimeSeriesPainter tsp) { // 0:min 1:dmin 2:q1 3:median 4:q3 5:dmax 6:max
 		
-		tsp.setColorConnectLineTemperature();
+		/*switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(180,220,180);
+			break;
+		case WATER:
+			tsp.setColor(180,220,180);
+			break;
+		case OTHER:
+			tsp.setColor(180,220,180);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}*/
 		
+		tsp.setColor(100,220,100);
+
 		for(TsEntry entry:timestampseries) {
 			if(entry.timestamp<diagramMinTimestamp) {
 				continue;
 			}			
 
 			long timestamp = entry.timestamp;
-			float valueMin = entry.data[0];
+			float valueMin = entry.data[ELEMENT_INDEX_MIN];
 			if(!Float.isNaN(valueMin)) {
-				float valueMax = entry.data[4];
+				float valueMax = entry.data[ELEMENT_INDEX_MAX];
 				int x0 = calcDiagramX(timestamp);
 				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
 				int y0 = calcDiagramY(valueMin);
@@ -453,17 +476,69 @@ public class TimeSeriesDiagram {
 
 		}
 		
-		tsp.setColorValueLineTemperature();
 		
+
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(220,180,180);
+			break;
+		case WATER:
+			tsp.setColor(180,180,220);
+			break;
+		case OTHER:
+			tsp.setColor(220,220,220);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}
+
 		for(TsEntry entry:timestampseries) {
 			if(entry.timestamp<diagramMinTimestamp) {
 				continue;
 			}			
 
 			long timestamp = entry.timestamp;
-			float valueMin = entry.data[1];
+			float valueDMin = entry.data[ELEMENT_INDEX_W_MIN];
+			if(!Float.isNaN(valueDMin)) {
+				float valueDMax = entry.data[ELEMENT_INDEX_W_MAX];
+				int x0 = calcDiagramX(timestamp);
+				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+				int y0 = calcDiagramY(valueDMin);
+				int y1 = calcDiagramY(valueDMax);
+				tsp.fillRect(x0, y1, x1, y0);
+			}
+
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+
+		}
+		
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(220, 100, 100);
+			break;
+		case WATER:
+			tsp.setColor(120, 120, 220);
+			break;
+		case OTHER:
+			tsp.setColor(160, 160, 160);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}		
+
+		//tsp.setColorValueLineTemperature();
+
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}			
+
+			long timestamp = entry.timestamp;
+			float valueMin = entry.data[ELEMENT_INDEX_Q1];
 			if(!Float.isNaN(valueMin)) {
-				float valueMax = entry.data[3];
+				float valueMax = entry.data[ELEMENT_INDEX_Q3];
 				int x0 = calcDiagramX(timestamp);
 				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
 				int y0 = calcDiagramY(valueMin);
@@ -476,16 +551,31 @@ public class TimeSeriesDiagram {
 			}
 
 		}
-		
+
 		tsp.setColorValueLineUnknown();
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(100, 0, 0);
+			break;
+		case WATER:
+			tsp.setColor(0, 0, 100);
+			break;
+		case OTHER:
+			tsp.setColor(30, 30, 30);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}
 		
+		
+
 		for(TsEntry entry:timestampseries) {
 			if(entry.timestamp<diagramMinTimestamp) {
 				continue;
 			}			
 
 			long timestamp = entry.timestamp;
-			float valueMed = entry.data[2];
+			float valueMed = entry.data[ELEMENT_INDEX_MEDIAN];
 			if(!Float.isNaN(valueMed)) {
 				int x0 = calcDiagramX(timestamp);
 				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);

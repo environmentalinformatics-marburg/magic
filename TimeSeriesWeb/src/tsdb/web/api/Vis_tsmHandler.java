@@ -62,10 +62,10 @@ public class Vis_tsmHandler extends AbstractHandler {
 		Html html = new Html();
 
 		Css css = html.css;
-		css.addLine("body {background-color:#f6f6f6;}");
-		css.addLine("table {background-color:#dddddd;}");
-		css.addLine("div.bg {background-image: url(../content/timeseries_bg3.png);background-position: top left;background-size: 100%;}");
-		css.addLine("h1 {text-align: center;}");
+		css.addLine("body", "background-color:#f6f6f6");
+		css.addLine("table", "background-color:#dddddd");
+		css.addLine("div.bg", "background-image:url(../content/timeseries_bg3.png)","background-position:top left","background-size:100%");
+		css.addLine("h1", "text-align:center");
 
 		Tag body = html.body;
 		Tag divTop = body.addDiv();
@@ -103,24 +103,17 @@ public class Vis_tsmHandler extends AbstractHandler {
 			directorylist.sort(null);
 
 
-			Tag dtable = body.addTag("table");
-			Tag divDirectories = body.addTag("div");
-			
+			Tag divDirectories = body.addTag("div");			
 			for(Path subPath:directorylist) { // directories
-				Tag tr = dtable.addTag("tr");
+				//Tag tr = dtable.addTag("tr");
 				String name = subPath.getFileName().toString();
 				String subPage = page;
 				if(!subPage.isEmpty()) {
 					subPage += '/';
 				}
 				subPage += name;
-
-				//Tag link = tr.addTag("td").addLink("../vis_tsm?page="+subPage).addTag("b", name);
-				//tr.addTag("td","(subpage)");
-				
-				divDirectories.addTag("td").addLink("../vis_tsm?page="+subPage).addTag("b", name);
+				divDirectories.addLink("../vis_tsm?page="+subPage).addTag("b", name);
 				divDirectories.addText(" . . . ");
-
 			}
 
 			body.addTag("hr");

@@ -112,7 +112,7 @@ public class TsEntry implements Serializable {
 		} else {
 			String s="i";
 			for(int qIndex=0; qIndex<interpolated.length; qIndex++) {
-				s+=interpolated[qIndex];
+				s+=interpolated[qIndex]?'y':"n";
 			}
 			return s;			
 		}

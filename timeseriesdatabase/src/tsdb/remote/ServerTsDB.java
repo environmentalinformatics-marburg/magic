@@ -417,16 +417,16 @@ public class ServerTsDB implements RemoteTsDB {
 		case HOUR:
 			throw new RuntimeException("no boxplot for "+aggregationInterval);
 		case DAY:
-			collectingAggregator = new DayCollectingAggregator(hour_it);
+			collectingAggregator = new DayCollectingAggregator(tsdb, hour_it);
 			break;
 		case WEEK:
-			collectingAggregator = new WeekCollectingAggregator(new DayCollectingAggregator(hour_it));
+			collectingAggregator = new WeekCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it));
 			break;
 		case MONTH:
-			collectingAggregator = new MonthCollectingAggregator(new DayCollectingAggregator(hour_it));
+			collectingAggregator = new MonthCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it));
 			break;
 		case YEAR:
-			collectingAggregator = new YearCollectingAggregator(new MonthCollectingAggregator(new DayCollectingAggregator(hour_it)));
+			collectingAggregator = new YearCollectingAggregator(new MonthCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it)));
 			break;
 		default:
 			throw new RuntimeException("no boxplot for "+aggregationInterval);
