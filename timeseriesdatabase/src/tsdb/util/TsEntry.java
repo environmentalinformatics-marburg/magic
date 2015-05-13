@@ -14,7 +14,7 @@ public class TsEntry implements Serializable {
 	public final DataQuality[] qualityFlag; // maybe null
 	public final int[][] qualityCounter; // maybe null
 	public final boolean[] interpolated; // maybe null
-	
+
 	public static TsEntry of(long timestamp, float ... values) {
 		return new TsEntry(timestamp, values);
 	}
@@ -43,7 +43,7 @@ public class TsEntry implements Serializable {
 		this(timestamp,dataPair.a,dataPair.b);
 	}
 
-	public TsEntry(long timestamp, Object unused, Pair<float[],int[][]> dataPair) {		
+	public TsEntry(long timestamp, Void unused, Pair<float[],int[][]> dataPair) {		
 		this(timestamp,dataPair.a, null,dataPair.b, null);
 		if(unused!=null) {
 			throw new RuntimeException();
@@ -51,10 +51,10 @@ public class TsEntry implements Serializable {
 	}
 
 	public static TsEntry createNaN(long timestamp, int columnCount) {
-		return new TsEntry(timestamp, getNanData(columnCount), getNanQuality(columnCount));
+		return new TsEntry(timestamp, createNanData(columnCount), createNaQuality(columnCount));
 	}
 
-	public static float[] getNanData(int columnCount) {
+	public static float[] createNanData(int columnCount) {
 		float[] data = new float[columnCount];
 		for(int i=0;i<columnCount;i++) {
 			data[i] = Float.NaN;
@@ -62,7 +62,7 @@ public class TsEntry implements Serializable {
 		return data;
 	}
 
-	public static DataQuality[] getNanQuality(int columnCount) {
+	public static DataQuality[] createNaQuality(int columnCount) {
 		DataQuality[] qualityFlag = new DataQuality[columnCount];
 		for(int i=0;i<columnCount;i++) {
 			qualityFlag[i] = DataQuality.Na;
@@ -72,10 +72,10 @@ public class TsEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return timestamp+"|"+TimeConverter.oleMinutesToLocalDateTime(timestamp)+" "+Util.arrayToString(data)+" "+qualityFlagToString()+" "+interpolatedFlagToString()+" "+qualityCounterToString();
+		return timestamp+"|"+TimeConverter.oleMinutesToLocalDateTime(timestamp)+" "+Util.arrayToString(data)+/*" "+qualityFlagToString()+" "+interpolatedFlagToString()+*/" "+qualityCountersToString();
 	}
 
-	public String qualityFlagToString() {
+	/*public String qualityFlagToString() {
 		if(qualityFlag==null) {
 			return "q-";
 		} else {
@@ -104,9 +104,9 @@ public class TsEntry implements Serializable {
 			}
 			return s;
 		}
-	}
+	}*/
 
-	private String interpolatedFlagToString() {
+	/*private String interpolatedFlagToString() {
 		if(interpolated==null) {
 			return "i-";
 		} else {
@@ -116,16 +116,47 @@ public class TsEntry implements Serializable {
 			}
 			return s;			
 		}
-	}
-	
-	private String qualityCounterToString() {
+	}*/
+
+	public String qualityCountersToString() {
+		String s = "";	
 		if(qualityCounter==null) {
-			return "c-";
+			if(interpolated==null) {
+				for(int i=0;i<data.length;i++) {
+					if(i>0) {
+						s += "_";
+					}
+					s+=Float.isNaN(data[i])?"c0":"c1";
+				}
+			} else {
+				for(int i=0;i<data.length;i++) {
+					if(i>0) {
+						s += "_";
+					}
+					s+="c1"+(interpolated[i]?"i1":"i0");
+				}				
+			}
 		} else {
-			return "c?";
+			for(int i=0;i<qualityCounter.length;i++) {
+				if(i>0) {
+					s += "_";
+				}
+				for(int q=0;q<qualityCounter[i].length;q++) {
+					switch(q) {
+					case 0:
+						s+='c';
+						break;
+					case 1:
+						s+='i';
+						break;
+					default:
+						s+='?';
+					}
+					s += qualityCounter[i][q];
+				}
+
+			}			
 		}
+		return s;
 	}
-
-
-
 }

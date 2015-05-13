@@ -16,11 +16,11 @@ import tsdb.util.iterator.TsIterator;
 
 
 public abstract class AbstractAggregationIterator extends InputProcessingIterator {
-	
+
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private final Sensor[] sensors;
-	
+
 	private int wind_direction_pos;
 	private int wind_velocity_pos;	
 	private boolean aggregate_wind_direction;
@@ -33,8 +33,15 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 	private float wind_v_sum;
 	private int wind_cnt;
 	private int[] columnEntryCounter;
-	private int collectedRowsInCurrentAggregate;	
-	
+	private int collectedRowsInCurrentAggregate;
+
+	//*** quality counters ***
+	private final static int QUALITY_COUNTERS = 2;
+	private final static int QUALITY_COUNTER_POS_VALUES = 0;
+	private final static int QUALITY_COUNTER_POS_INTERPOLATED = 1;
+	private int[][] aggQualityCounter;
+	//************************
+
 	protected static TsSchema createSchemaConstantStep(TsSchema schema, int fromStep, int toStep) {
 		schema.throwNotAggregation(Aggregation.CONSTANT_STEP);
 		Aggregation aggregation = Aggregation.CONSTANT_STEP;
@@ -44,10 +51,10 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		boolean isContinuous = true;
 		boolean hasQualityFlags = false; // TODO
 		boolean hasInterpolatedFlags = false; // TODO
-		boolean hasQualityCounters = false; // TODO
+		boolean hasQualityCounters = schema.hasQualityCounters||schema.hasQualityFlags; // TODO change
 		return new TsSchema(schema.names, aggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);			
 	}
-	
+
 	protected static TsSchema createSchemaFromConstantToVariableStep(TsSchema schema, int fromStep, Aggregation toAggregation) {
 		schema.throwNotAggregation(Aggregation.CONSTANT_STEP);
 		toAggregation.throwNotVariableStepAggregation();
@@ -57,10 +64,10 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		boolean isContinuous = true;
 		boolean hasQualityFlags = false; // TODO
 		boolean hasInterpolatedFlags = false; // TODO
-		boolean hasQualityCounters = false; // TODO
+		boolean hasQualityCounters = schema.hasQualityCounters||schema.hasQualityFlags; // TODO change
 		return new TsSchema(schema.names, toAggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);			
 	}
-	
+
 	protected static TsSchema createSchemaVariableStep(TsSchema schema, Aggregation fromAggregation, Aggregation toAggregation) {
 		schema.throwNotAggregation(fromAggregation);
 		toAggregation.throwNotVariableStepAggregation();
@@ -69,17 +76,17 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		boolean isContinuous = true;
 		boolean hasQualityFlags = false; // TODO
 		boolean hasInterpolatedFlags = false; // TODO
-		boolean hasQualityCounters = false; // TODO
+		boolean hasQualityCounters = schema.hasQualityCounters||schema.hasQualityFlags; // TODO change
 		return new TsSchema(schema.names, toAggregation, timeStep, isContinuous, hasQualityFlags, hasInterpolatedFlags, hasQualityCounters);			
 	}
-	
+
 	public AbstractAggregationIterator(TsDB tsdb, TsIterator input_iterator, TsSchema output_schema) {
 		super(input_iterator, output_schema);
 		this.sensors = tsdb.getSensors(schema.names);
 		prepareWindDirectionAggregation();
 		initAggregates();
 	}
-	
+
 	/**
 	 * search for sensors of wind direction and wind velocity
 	 */
@@ -112,13 +119,13 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			}
 		}
 	}
-	
+
 	/**
 	 * create aggregation variables
 	 */
 	private void initAggregates() {
 		aggregation_timestamp = -1l;
-		//aggQualityCounter = new int[schema.length][QUALITY_COUNTERS];
+		aggQualityCounter = new int[schema.length][QUALITY_COUNTERS];
 		aggCnt = new int[schema.length];
 		aggSum = new float[schema.length];
 		aggMax = new float[schema.length];		
@@ -128,18 +135,18 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		}		
 		resetAggregates();
 	}
-	
+
 	/**
 	 * set aggregation variables to initial state
 	 */
 	private void resetAggregates() {
 		collectedRowsInCurrentAggregate = 0;
 		for(int i=0;i<schema.length;i++) {
-			/*if(aggQualityCounter!=null) {
+			if(aggQualityCounter!=null) {
 				for(int q=0;q<QUALITY_COUNTERS;q++) {
 					aggQualityCounter[i][q] = 0;
 				}
-			}*/
+			}
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
 			aggMax[i] = Float.NEGATIVE_INFINITY;
@@ -148,13 +155,13 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		wind_v_sum=0f;
 		wind_cnt=0;
 	}
-	
+
 	/**
 	 * adds one row of input into aggregation variables
 	 * @param inputData
-	 * @param inputInterpolated 
+	 * @param inputQualityCounter 
 	 */
-	private void collectValues(float[] inputData, DataQuality[] quality, boolean[] inputInterpolated) {
+	private void collectValues(float[] inputData, int[][] inputQualityCounter) {
 		//collect values for aggregation
 		collectedRowsInCurrentAggregate++;		
 		for(int i=0;i<schema.length;i++) {
@@ -170,14 +177,15 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 					aggMax[i] = value;
 				}
 			}		
-			
-			/*if(quality!=null) {
+
+			if(inputQualityCounter!=null) {				
+					for(int q=0;q<QUALITY_COUNTERS;q++) {
+						aggQualityCounter[i][q] += inputQualityCounter[i][q];
+					}					
+					
 				
-				if(inputInterpolated!=null&&inputInterpolated[i]) {
-					aggQualityCounter[i][QUALITY_INTERPOLATED_POS]++;
-				}
-				
-				switch(quality[i]) {
+
+				/*switch(quality[i]) {
 				case Na:
 					break; // nothing to count
 				case NO:
@@ -190,10 +198,10 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 					aggQualityCounter[i][QUALITY_STEP_POS]++;
 				case EMPIRICAL:
 					aggQualityCounter[i][QUALITY_EMPIRICAL_POS]++;
-				}
+				}*/
 			} else {
 				aggQualityCounter = null;
-			}*/
+			}
 		}			
 		if(aggregate_wind_direction) {
 			float wd_degrees = (float) inputData[wind_direction_pos];				
@@ -208,7 +216,7 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			}				
 		}					
 	}
-	
+
 	/**
 	 * checks if enough values have been collected for one aggregation unit
 	 * @param collectorCount
@@ -216,7 +224,7 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 	 * @return
 	 */
 	protected abstract boolean isValidAggregate(int collectorCount, AggregationType aggregationType);
-	
+
 	/**
 	 * process collected data to aggregates
 	 * @return result or null if there are no valid aggregates
@@ -275,14 +283,14 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		}
 		if(validValueCounter>0) { // if there are some valid aggregates return result data
 			int[][] resultQualityCounter = null;
-			/*if(aggQualityCounter!=null) {
-				resultQualityCounter = new int[schema.length][QUALITY_COUNTERS]; 
-				for(int c=0;c<schema.length;c++) {
+			if(aggQualityCounter!=null) {
+				resultQualityCounter = new int[schema.length][QUALITY_COUNTERS];
+				for(int i=0;i<schema.length;i++) {
 					for(int q=0;q<QUALITY_COUNTERS;q++) {
-						resultQualityCounter[c][q] = aggQualityCounter[c][q];
-					}
-				}
-			}*/
+						resultQualityCounter[i][q] = aggQualityCounter[i][q];
+					}					
+				}	
+			}
 			resetAggregates();
 			return new Pair<float[],int[][]>(resultData,resultQualityCounter);
 		} else { //no aggregates created
@@ -290,9 +298,9 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			return null;
 		}
 	}
-	
+
 	protected abstract long calcAggregationTimestamp(long timestamp);
-	
+
 	@Override
 	protected TsEntry getNext() {
 		while(input_iterator.hasNext()) { // begin of while-loop for raw input-events
@@ -301,6 +309,19 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			float[] inputData = entry.data;
 			DataQuality[] inputQuality = entry.qualityFlag;
 			boolean[] inputInterpolated = entry.interpolated;
+			int[][] inputQualityCounter = entry.qualityCounter;
+			if(inputQualityCounter==null&&inputQuality!=null) {
+				inputQualityCounter = new int[inputQuality.length][QUALITY_COUNTERS];
+
+				//TODO
+
+				if(inputInterpolated!=null) {
+					for(int i=0;i<inputInterpolated.length;i++) {
+						inputQualityCounter[i][QUALITY_COUNTER_POS_VALUES] = 1;
+						inputQualityCounter[i][QUALITY_COUNTER_POS_INTERPOLATED] = inputInterpolated[i]?1:0;
+					}
+				}
+			}
 
 			long nextAggTimestamp = calcAggregationTimestamp(timestamp);
 			if(nextAggTimestamp>aggregation_timestamp) { // aggregate aggregation_timestamp is ready for output
@@ -310,25 +331,25 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 					if(aggregatedPair!=null) {
 						TsEntry resultElement = new TsEntry(aggregation_timestamp,null,aggregatedPair);
 						aggregation_timestamp = nextAggTimestamp;
-						collectValues(inputData, inputQuality, inputInterpolated);
+						collectValues(inputData, inputQualityCounter);
 						return resultElement;
 					} else {
 						if(!dataInAggregateCollection) {
 							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData, inputQuality, inputInterpolated);
+							collectValues(inputData, inputQualityCounter);
 						} else {	
 							TsEntry resultElement = TsEntry.createNaN(aggregation_timestamp,schema.length);
 							aggregation_timestamp = nextAggTimestamp;
-							collectValues(inputData, inputQuality, inputInterpolated);
+							collectValues(inputData, inputQualityCounter);
 							return resultElement;
 						}
 					}
 				} else {
 					aggregation_timestamp = nextAggTimestamp;
-					collectValues(inputData, inputQuality, inputInterpolated);
+					collectValues(inputData, inputQualityCounter);
 				}
 			} else {
-				collectValues(inputData, inputQuality, inputInterpolated);
+				collectValues(inputData, inputQualityCounter);
 			}
 		}  // end of while-loop for raw input-events
 

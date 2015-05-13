@@ -76,10 +76,10 @@ public class MergeIterator extends MoveIterator {
 			return null;
 		}
 
-		float[] resultData = TsEntry.getNanData(result_schema.length);
+		float[] resultData = TsEntry.createNanData(result_schema.length);
 		DataQuality[] resultFlags = null;
 		if(processQualityFlags) {
-			resultFlags = TsEntry.getNanQuality(result_schema.length);
+			resultFlags = TsEntry.createNaQuality(result_schema.length);
 		}
 		for(int iterator_index=0;iterator_index<processing_iterator.length;iterator_index++) { //loop over iterators with iterator_index
 			if(processing_current[iterator_index]!=null) {

@@ -9,6 +9,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +72,18 @@ public class Explorer extends Application {
 					Button buttonMetadataView = new Button("metadata view");
 					hboxMain.getChildren().add(buttonMetadataView);
 					buttonMetadataView.setOnAction(e->new MetadataScene(tsdb).show());
+					
+					/*WebView webView = new WebView();
+					WebEngine engine = webView.getEngine();
+					engine.documentProperty().addListener(c->{System.out.println("doc change "+c);});
+					engine.getLoadWorker().exceptionProperty().addListener(c->{System.out.println("exception "+c);});
+					engine.setConfirmHandler(c->{System.out.println("exception "+c);return true;});
+					
+					webView.getEngine().setOnError((e)->System.out.println("error "+e));
+					webView.getEngine().setPromptHandler((x)->{System.out.println("error "+x);return "ok";});
+					webView.getEngine().load("");
+					//webView.getEngine().load("");
+					hboxMain.getChildren().add(webView);*/
 				}
 
 				BorderPane borderPane = new BorderPane();

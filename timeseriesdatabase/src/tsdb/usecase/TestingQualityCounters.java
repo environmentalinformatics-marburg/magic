@@ -15,7 +15,7 @@ public class TestingQualityCounters {
 		TsDB tsdb = TsDBFactory.createDefault();
 		String plotID = "HEG01";
 		String[] columnNames = new String[]{"Ta_200","rH_200"};
-		AggregationInterval aggregationInterval = AggregationInterval.HOUR;
+		AggregationInterval aggregationInterval = AggregationInterval.MONTH;
 		DataQuality dataQuality = DataQuality.EMPIRICAL;
 		boolean interpolated = true;
 		Node node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);		
@@ -24,6 +24,8 @@ public class TestingQualityCounters {
 			TsEntry e = it.next();
 			System.out.println(e);
 		}
+		
+		System.out.println(it.getSchema());
 
 	}
 

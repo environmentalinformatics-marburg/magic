@@ -5,6 +5,14 @@
 <meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
+
+<style type="text/css">
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+h1 {margin-bottom: 40px; text-align:center;}
+</style>
+
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -32,12 +40,12 @@ var json_settings;
 
 $(document).ready(function(){
 	incTask();	
-	$("#button_cancel").button();
+	//$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
 		window.location = "export.html";
 	}
 	
-	$("#button_apply").button();
+	//$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {
 		incTask();
 		
@@ -50,6 +58,7 @@ $(document).ready(function(){
 		json_settings.col_plotid = document.getElementById("col_plotid").checked;
 		json_settings.col_timestamp = document.getElementById("col_timestamp").checked;
 		json_settings.col_datetime = document.getElementById("col_datetime").checked;
+		json_settings.col_qualitycounter = document.getElementById("col_qualitycounter").checked;
 		json_settings.write_header = document.getElementById("write_header").checked;
 
 		$.postJSON("../export/apply_settings",json_settings)
@@ -75,6 +84,7 @@ $(document).ready(function(){
 		document.getElementById("col_plotid").checked = json_settings.col_plotid;
 		document.getElementById("col_timestamp").checked = json_settings.col_timestamp;
 		document.getElementById("col_datetime").checked = json_settings.col_datetime;
+		document.getElementById("col_qualitycounter").checked = json_settings.col_qualitycounter;
 		document.getElementById("write_header").checked = json_settings.write_header;
 		
 		var raw = false;
@@ -103,35 +113,31 @@ $(document).ready(function(){
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
-<h1 style="text-align:center">Export Time Series - settings</h1>
+
+<div id="top_line">
+<div id="top_line_left">
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
-<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button> </div>
-<hr/>
 </div>
-
-<div id="div_instructions" style="display:none">
-<script type="text/javascript">
-function show_instructions() {
-	if(document.getElementById("div_instructions").style.display==="none") {
-		document.getElementById("div_instructions").style.display = "inline";
-		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
-	} else {
-		document.getElementById("div_instructions").style.display = "none";
-		document.getElementById("button_instructions").innerHTML = "Show Instructions";
-	}
-}
-</script>
-<h3>Instructions</h3>
-On this page you can choose some setting of the zip file containing the exported data. Click on "cancel" to discard changed. Click on "apply settings" to confirm changes.
-<hr/>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
 </div>
+<h1>Export Time Series - settings</h1>
 
-<h3>Actions</h3>
+
+
+
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply settings</button>
 <hr/>
+</div>
+<div id="div_help" style="display:none">
+<h3>Help</h3>
+On this page you can choose some setting of the zip file containing the exported data. Click on "cancel" to discard changed. Click on "apply settings" to confirm changes.
+<hr/>
+</div>
 <h3>Settings</h3>
 
 <p>
@@ -157,9 +163,10 @@ On this page you can choose some setting of the zip file containing the exported
 <h4>columns in CSV-Files</h4>
 <p><input type="checkbox" id="col_plotid"><label for="col_plotid">include column &quot;<i>plotID</i>&quot;</label></p>
 <p><input type="checkbox" id="col_timestamp"><label for="col_timestamp">include column &quot;<i>timestamp</i>&quot;  (time in minutes since 1899-12-30T00:00 - based on OLE Automation Time)</label></p>
-<p><input type="checkbox" id="col_datetime"><label for="col_datetime">include column &quot;<i>datetime</i>&quot; (according to ISO 8601)</label></p>
+<p><input type="checkbox" id="col_datetime"><label for="col_datetime">include column &quot;<i>datetime</i>&quot; (according to ISO 8601: {yyyy-mm-ddThh}  [year]-[month]-[day]T[hour]  )</label></p>
+<p><input type="checkbox" id="col_qualitycounter"><label for="col_qualitycounter">include column &quot;<i>qualitycounter</i>&quot; (counters of aggregated values: {c[COUNT]i[COUNT]_c[COUNT]...}  example <i>c99i3_c20i0</i>: first parameter with 99 values in aggregate of which 3 are interpolated, second parameter 20 values no interpolation  )</label></p>
 <h4>additional files in ZIP-archive</h4>
-<p><input type="checkbox" id="desc_sensor"><label for="desc_sensor">sensor description</label></p>
+<p><input type="checkbox" id="desc_sensor"><label for="desc_sensor">parameter (sensor) description</label></p>
 <p><input type="checkbox" id="desc_plot"><label for="desc_plot">plot description</label></p>
 <p><input type="checkbox" id="desc_settings"><label for="desc_settings">info about used settings</label></p>
 

@@ -5,6 +5,14 @@
 <meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
+
+<style type="text/css">
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+h1 {margin-bottom: 40px; text-align:center;}
+</style>
+
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -150,14 +158,14 @@ $(document).ready(function(){
 		setStateReady();
 	}
 	
-	$("#button_cancel").button();
+	//$("#button_cancel").button();
 	document.getElementById("button_cancel").onclick = function() {
 		setStateBusy();
 		window.location = "export.html";
 		setStateReady();
 	}
 	
-	$("#button_apply").button();
+	//$("#button_apply").button();
 	document.getElementById("button_apply").onclick = function() {	
 		setStateBusy();
 		$.post("../export/apply_sensors",arrayToText(chosen_sensors))
@@ -217,7 +225,7 @@ $(document).ready(function(){
 	
 	setStateReady();
 	
-	$("button").button().tooltip();
+	//$("button").button().tooltip();
 })
 
 </script>
@@ -247,37 +255,33 @@ $(document).ready(function(){
 
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
-<h1 style="text-align:center">Export Time Series - choose parameters</h1>
-<p id="busy" style="text-align:right;visibility:hidden">busy...<p>
+
+<div id="top_line">
+<div id="top_line_left">
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div>
-<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button> </div> 
+<div id="busy" style="display:inline-block;text-align:right;visibility:hidden">busy...</div>
+</div>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
+</div>
+<h1 style="text-align:center">Export Time Series - choose parameters</h1>
+<button id="button_cancel">cancel</button>
+<button id="button_apply">apply chosen parameters</button>
 <hr/>
 </div>
-<div id="div_instructions" style="display:none">
-<script type="text/javascript">
-function show_instructions() {
-	if(document.getElementById("div_instructions").style.display==="none") {
-		document.getElementById("div_instructions").style.display = "inline";
-		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
-	} else {
-		document.getElementById("div_instructions").style.display = "none";
-		document.getElementById("button_instructions").innerHTML = "Show Instructions";
-	}
-}
-</script>
-<h3>Instructions</h3>
+
+<div id="div_help" style="display:none">
+<h3>Help</h3>
 On this page you can choose the parameters of which the data from the selected plots should be exported. click on "cancel" to discard changed. click on "apply parameters" to confirm changes.
 <br>
 <br>
 Double-click on one parameter in the box of "Available Parameters" to add it to your chosen parameter in the box "Chosen Parameters" and vice versa.
 <hr/>
 </div>
-<h3>Actions</h3>
-<button id="button_cancel">cancel</button>
-<button id="button_apply">apply chosen parameters</button>
-<hr/>
+
 <h3>Select Parameters</h3>
 
 <p>

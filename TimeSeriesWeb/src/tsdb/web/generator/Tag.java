@@ -24,6 +24,9 @@ public class Tag {
 	public void setClass(String className) {
 		element.setAttribute("class", className);
 	}
+	public void setId(String id) {
+		element.setAttribute("id", id);
+	}
 	public Tag addDiv() {
 		return addTag("div");
 	}

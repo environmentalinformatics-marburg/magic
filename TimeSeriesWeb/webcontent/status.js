@@ -45,7 +45,12 @@ var updataRegions = function() {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		updateGeneralStations();
-		decTask();		
+		decTask();
+		if(rows.length==1) {
+			$("#div_region_select").hide();
+		} else {
+			$("#div_region_select").show();
+		}		
 	}).fail(function() {region_select.append(new Option("[error]","[error]"));decTask();});
 }
 

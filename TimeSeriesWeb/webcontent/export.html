@@ -5,6 +5,14 @@
 <meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
+
+<style type="text/css">
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+h1 {margin-bottom: 40px; text-align:center;}
+</style>
+
 <script src="jquery-2.1.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script src="util.js"></script>
@@ -150,41 +158,41 @@ $.getJSON("../export/settings").done(function( data ) {
 	})
 	.fail(function(data) {clear_println(settings_output,"error getting data");decTask();});	
 
-$("#button_instructions").button();
+//$("#button_instructions").button();
 	
-$("#choose_region").button();
+//$("#choose_region").button();
 document.getElementById("choose_region").onclick = function() {
 	window.location = "export_region.html";
 }	
 	
-$("#choose_sensors").button();
+//$("#choose_sensors").button();
 document.getElementById("choose_sensors").onclick = function() {
 	window.location = "export_sensors.html";
 }		
 	
-$("#choose_plots").button();
+//$("#choose_plots").button();
 document.getElementById("choose_plots").onclick = function() {
 	window.location = "export_plots.html";
 }
 
-$("#choose_time").button();
+//$("#choose_time").button();
 document.getElementById("choose_time").onclick = function() {
 	window.location = "export_time.html";
 }
 
-$("#download").button();
-document.getElementById("download").onclick = function() {
+//$("#download").button();
+/*document.getElementById("download").onclick = function() {
 	incTask();
 	window.location = "../export/result.zip";
 	decTask();
-}
+}*/
 
-$("#create").button();
+//$("#create").button();
 document.getElementById("create").onclick = function() {
 	window.location = "export_create.html";
 }
 
-$("#button_settings").button();
+//$("#button_settings").button();
 document.getElementById("button_settings").onclick = function() {window.location = "export_settings.html";};	
 decTask();
 
@@ -193,21 +201,12 @@ $.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		if(rows.length<2) {
 			$("#choose_region").hide();
+			$("#div_region").hide();
 		}
 		//decTask();
 	}).fail(function() {/*clear_println(sensors_output,"error getting data");decTask();*/});
 
 });
-
-var show_instructions = function() {
-	if(document.getElementById("div_instructions").style.display==="none") {
-		document.getElementById("div_instructions").style.display = "inline";
-		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
-	} else {
-		document.getElementById("div_instructions").style.display = "none";
-		document.getElementById("button_instructions").innerHTML = "Show Instructions";
-	}
-}
 
 </script>
 
@@ -217,43 +216,56 @@ var show_instructions = function() {
 </head>
 
 <body>
+
 <div class="bg">
-<p style="text-align:right"><a href="index.html">back to Start Page<a><br>Export Summary Page<p>
-<p style="text-align:right"><p>
-<h1 style="text-align:center">Export Time Series</h1>
-<div style="text-align:right">
-<button id="button_instructions" onclick="show_instructions()">Show Instructions</button>
-</div>
+
+
+<div id="top_line">
+<div id="top_line_left">
 <div style="display:inline-block">status:</div>
 <div id="status" style="display:inline-block">init...</div> 
+</div>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
+</div>
+
+
+<h1>Export Time Series</h1>
+
+
+
+
+
+
+&nbsp;&nbsp;<b>(0)</b><button id="choose_region">choose region</button>
+&nbsp;&nbsp;<b>(1)</b><button id="choose_sensors">choose parameters</button>
+&nbsp;&nbsp;<b>(2)</b><button id="choose_plots">choose plots</button>
+&nbsp;&nbsp;<b>(3)</b><button id="choose_time">choose timespan and aggregation</button>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;<b>(4)</b><button id="button_settings">settings</button>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;&nbsp;<b>(5)</b><!--<button id="download"><b>download ZIP-File</b></button>--><a href="../export/result.zip"><b>&gt;&gt;| DOWNLOAD ZIP-FILE (click) |&lt;&lt;</b></a>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <button id="create">(create ZIP-File [experimantal]) </button>
 <hr/>
 </div>
-<div id="div_instructions" style="display:none">
-<h3>Instructions</h3>
+
+<div id="div_help" style="display:none">
+<h3>Help</h3>
 <p>On this page time series data can be downloaded as a zip-file.</p>
 <p>The summary section of this page shows currently chosen plots, parameters and other settings for this zip-file.</p>
 <p>In the actions section of this page settings can be changed.</p>
 At the right side of the actions section you can download the generated zip, with the specified settings. Before downloading check at the summary section if you chose suitable settings.
 <hr/>
 </div>
-<h3>Actions</h3>
-<button id="choose_region">choose region</button>
-<button id="choose_sensors">choose parameters</button>
-<button id="choose_plots">choose plots</button>
-<button id="choose_time">choose time</button>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<button id="button_settings">settings</button>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-<button id="download"><b>download ZIP-File</b></button>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <button id="create">(create ZIP-File [experimantal]) </button>
-
-
-<hr/>
 
 <h3>Summary of exported time series</h3>
+<div id="div_region">
 <h4 style="display:inline-block">Region&nbsp; &nbsp; &nbsp;</h4>
 <div id="region_output" style="display:inline-block"></div>
 <br/>
+</div>
 <h4 style="display:inline-block">Time&nbsp; &nbsp; &nbsp;</h4>
 timespan of &nbsp;&nbsp;
 <b><div id="timespan_output" style="display:inline-block"></div></b>

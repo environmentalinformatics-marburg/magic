@@ -68,6 +68,7 @@ public class ExportModel{
 	public boolean col_plotid;
 	public boolean col_timestamp;
 	public boolean col_datetime;
+	public boolean col_qualitycounter;
 	public boolean write_header;
 
 	public TimespanType timespanType;	
@@ -91,6 +92,7 @@ public class ExportModel{
 		this.col_plotid = true;
 		this.col_timestamp = true;
 		this.col_datetime = true;
+		this.col_qualitycounter = true;
 		this.write_header = true;
 		this.timespanType = TimespanType.ALL;
 		this.timespanYear = 0;

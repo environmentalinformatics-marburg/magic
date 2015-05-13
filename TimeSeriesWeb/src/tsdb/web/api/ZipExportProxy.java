@@ -74,12 +74,13 @@ public class ZipExportProxy {
 		boolean col_plotid = model.col_plotid;
 		boolean col_timestamp = model.col_timestamp;
 		boolean col_datetime = model.col_datetime;
+		boolean col_qualitycounter = model.col_qualitycounter;
 		boolean write_header = model.write_header;
 		
 		Pair<Long, Long> timespan = model.getTimespan();
 		
 		
-		zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,timespan.a,timespan.b);
+		zipexport = new ZipExport(tsdb, region, sensorNames, plotIDs, aggregationInterval, dataQuality, interpolated, allinone,desc_sensor,desc_plot,desc_settings,col_plotid,col_timestamp,col_datetime,write_header,timespan.a,timespan.b,col_qualitycounter);
 		zipexport.setPrintCallback(this::println);
 		workerThread = new Thread(new Runnable() {					
 			@Override

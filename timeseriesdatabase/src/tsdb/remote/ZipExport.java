@@ -54,13 +54,14 @@ public class ZipExport {
 	private final boolean col_plotid;
 	private final boolean col_timestamp;
 	private final boolean col_datetime;
+	private final boolean col_qualitycounter;
 	private final boolean write_header;
 	private final Long startTimestamp;
 	private final Long endTimestamp;
 
 	private int processedPlots = 0;
 
-	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header, Long startTimestamp, Long endTimestamp) {
+	public ZipExport(RemoteTsDB tsdb, Region region, String[] sensorNames, String[] plotIDs,AggregationInterval aggregationInterval,DataQuality dataQuality,boolean interpolated, boolean allinone, boolean desc_sensor, boolean desc_plot, boolean desc_settings, boolean col_plotid, boolean col_timestamp, boolean col_datetime, boolean write_header, Long startTimestamp, Long endTimestamp, boolean col_qualitycounter) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
 
@@ -105,6 +106,7 @@ public class ZipExport {
 		this.write_header = write_header;
 		this.startTimestamp = startTimestamp;
 		this.endTimestamp = endTimestamp;
+		this.col_qualitycounter = col_qualitycounter;
 	}
 
 	public boolean createZipFile(String filename) {
@@ -295,6 +297,13 @@ public class ZipExport {
 			stringbuilder.append(name);
 			isFirst = false;
 		}
+		if(col_qualitycounter) {
+			if(!isFirst) {
+				stringbuilder.append(',');				
+			}
+			stringbuilder.append("qualitycounter");
+			isFirst = false;
+		}
 		csvOut.println(stringbuilder);
 	}
 
@@ -350,7 +359,9 @@ public class ZipExport {
 		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.sensorNames, false, false);
 		//printLine("sensorNames "+Arrays.asList(sensorNames));
 		//printLine("schema "+Arrays.asList(timeseries.sensorNames));							
-		//printLine(Util.arrayToString(pos));		
+		//printLine(Util.arrayToString(pos));
+		
+		
 
 
 
@@ -408,6 +419,14 @@ public class ZipExport {
 						}
 					}
 				}
+			}
+			
+			if(col_qualitycounter) {
+				if(!isFirst) {
+					s.append(',');
+				}
+				s.append(entry.qualityCountersToString());
+				isFirst = false;
 			}
 
 			csvOut.println(s);

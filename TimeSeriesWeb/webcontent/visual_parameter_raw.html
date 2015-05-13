@@ -39,13 +39,39 @@ table tr:nth-child(even) {background-color:#f2f2f2;}
 	padding:0;
 }
 
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+
+div.bg {
+	background-image: url(timeseries_bg3.png);
+	background-position: top left;
+	background-size: 100%;
+}
+
+body { margin: 0px; }
+h1 { margin-top:0px; text-align:center }
 
 </style>
 
 </head>
+<body>
+<div class="bg">
+<div id="top_line">
+<div id="top_line_left">
+status: <div id="status" style="display:inline-block"></div>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<font color=#555555>available visualisazion types (depending on selections): <b>graph - heatmap - boxplot</b></font>
+</div>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
+</div>
+<h1>Visualize Parameter</h1>
 
-status: <div id="status" style="display:inline-block"></div>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=#555555>available visualisazion types (depending on selections): <b>graph - heatmap - boxplot</b></font>
-<hr/>
+
+
+
 <div class="input_bar">
 
 <div class="input_entity" id="div_region_select">
@@ -118,6 +144,52 @@ status: <div id="status" style="display:inline-block"></div>  &nbsp;&nbsp;&nbsp;
 
 </div>
 <hr/>
+</div>
+
+<div id="div_help" style="display:none">
+<h2>Help</h2>
+On this page you can view one parameter (sensor) of multiple plots. 
+<ul>
+<li><b>Raw</b> parameters (no aggregation) can be viewed as <b>graph</b>.</li>
+<li><b>Hour</b> aggregated parameters can be viewed as <b>graph</b> or <b>heatmap</b>.</li>
+<li><b>Higher</b> aggregated parameters can be viewed as <b>graph</b> or <b>boxplot</b>.</li>
+</ul>
+Choose your settings from left to right:
+<ul>
+<li><b>Region</b> (if there are more than one)</li>
+<li><b>General</b>: [all] plots of one region or some group of plots</li>
+<li><b>Parameter</b></li>
+<li><b>Time</b>: [all] data or one year or one month</li>
+<li><b>Aggregation</b>: raw (not aggregated) or aggregated to hour, day, week, month, year</li>
+<li><b>Quality Check</b>: no check or physical range check or + step range check or + empirical difference check</li>
+<li><b>Interpolation</b>: if missing data should be (possibly) interpolated</li>
+<li><b>Type</b></li>
+<li><b>Magnification</b>: (heatmaps only) magnification ratio for heatmap images</li>
+<li><b>visualise</b>: request results of chosen visualisations</li>
+</ul>
+
+<h3>Visualisation types</h3>
+
+<h4>graph</h4>
+Time series data is plotted with time at x-axis and value at y-axis. 
+<br>Aggregated data is plotted with strong lines of size of the aggregation interval and light lines connecting this lines and no connection for missing data values.
+<br>Raw data is plotted with strong dots at data values and light connecting lines between them.
+
+<h4>heatmap</h4>
+Only hour aggregated data can be viewed as heatmap.
+<br>Every dot at heatmap denotes one hour in time. The color indicates the data value at this hour with black as missing data.
+<br>Dots are plotted with hour of day at x-axis (top to bottom: 00:00 to 23:00) and day at y-axis.
+
+<h4>boxplot</h4>
+To day, week, month or year aggregated data can be viewed as boxplot.
+<br>Typical statistical measures of boxplots are visualised: 
+<br><b>median</b> (strong line), <b>inter quartile range</b> (strong rectangle), <b>whisker</b> (light rectangle), <b>outliers</b> (green rectangle of lowest to highest outlier)
+<br>Source values of boxplots are hour aggregated values with (as selected) quality checks and interpolation.
+
+<hr/>
+</div>
+
+
 <div id="div_result"></div>
 
 </body>

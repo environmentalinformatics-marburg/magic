@@ -4,6 +4,14 @@
 <title>Export Time Series</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+<style type="text/css">
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+h1 {margin-bottom: 40px; text-align:center;}
+</style>
+
 <meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <script src="jquery-2.1.1.min.js"></script>
@@ -66,7 +74,9 @@ function append_output(text) {
 function handle_download(filename) {
 	getID("download").innerHTML = "plots processed ";
 	var a = document.createElement('a');
-	a.appendChild(document.createTextNode("click to download"));
+	var dl = document.createElement('h2');
+	dl.appendChild(document.createTextNode("click to download"));	
+	a.appendChild(dl);
 	a.title = "link to resulting zip file";
 	a.href = "../download/"+filename;
 	getID("download").appendChild(a);
@@ -79,31 +89,26 @@ $(document).ready(ready);
 </head>
 <body>
 <div class="bg">
-<p style="text-align:right"><a href="index.html">back to Start Page<a><br><a href="export.html">back to Export Summary Page</a><p>
-<h1 style="text-align:center">Export Time Series</h1>
-<div style="text-align:right">
-<button id="button_instructions" onclick="show_instructions()">Show Instructions</button>
-</div>
+
+<div id="top_line">
+<div id="top_line_left">
 <div style="display:inline-block">status:</div>
-<div id="status" style="display:inline-block">init...</div> 
-<hr/>
+<div id="status" style="display:inline-block">init...</div>
 </div>
-<div id="div_instructions" style="display:none">
-<script type="text/javascript">
-function show_instructions() {
-	if(document.getElementById("div_instructions").style.display==="none") {
-		document.getElementById("div_instructions").style.display = "inline";
-		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
-	} else {
-		document.getElementById("div_instructions").style.display = "none";
-		document.getElementById("button_instructions").innerHTML = "Show Instructions";
-	}
-}
-</script>
-<h3>Instructions</h3>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
+</div>
+<h1>Export Time Series - create zip-file</h1>
+<hr>
+</div>
+<div id="div_help" style="display:none">
+<h3>Help</h3>
 On this page you can view the progress of processing the chosen plots. Wait until it's done. Then you get a link to download the resulting zip file.
 <hr/>
 </div>
+
 <p>
 <progress id="progress" style="width:700px"></progress>&nbsp;&nbsp;&nbsp;<span id="progressLabel"></span>
 </p>
@@ -115,6 +120,5 @@ processing plots (download not ready)
 <p>
 <textarea id="output" cols="100" rows="30" wrap="soft" readonly="readonly">init...</textarea>
 </p>
-
 </body>
 </html>

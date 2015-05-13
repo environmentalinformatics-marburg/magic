@@ -62,14 +62,23 @@ public class Vis_tsmHandler extends AbstractHandler {
 		Html html = new Html();
 
 		Css css = html.css;
-		css.addLine("body", "background-color:#f6f6f6");
+		css.addLine("body", "background-color:#f6f6f6", "margin:0px");
 		css.addLine("table", "background-color:#dddddd");
 		css.addLine("div.bg", "background-image:url(../content/timeseries_bg3.png)","background-position:top left","background-size:100%");
-		css.addLine("h1", "text-align:center");
+		css.addLine("h1", "text-align:center", "margin:0px");
+		css.addLine("#top_line", "display:table", "width:100%");
+		//#top_line_left {display: table-cell; text-align: left; }
+		css.addLine("#top_line_right", "display:table-cell", "text-align:right");
+		
 
 		Tag body = html.body;
 		Tag divTop = body.addDiv();
 		divTop.setClass("bg");
+		Tag divTopLine = divTop.addDiv();
+		divTopLine.setId("top_line");
+		Tag divTopLineRight = divTopLine.addDiv();
+		divTopLineRight.setId("top_line_right");
+		divTopLineRight.addLink("..", "main-page");
 		Tag h1 = divTop.addTag("h1");
 		h1.addLink("../vis_tsm", "Precomputed Exploratories Visualizations");
 
@@ -103,7 +112,7 @@ public class Vis_tsmHandler extends AbstractHandler {
 			directorylist.sort(null);
 
 
-			Tag divDirectories = body.addTag("div");			
+			Tag divDirectories = divTop.addTag("div");			
 			for(Path subPath:directorylist) { // directories
 				//Tag tr = dtable.addTag("tr");
 				String name = subPath.getFileName().toString();
@@ -116,7 +125,7 @@ public class Vis_tsmHandler extends AbstractHandler {
 				divDirectories.addText(" . . . ");
 			}
 
-			body.addTag("hr");
+			divTop.addTag("hr");
 
 
 			fileList.sort(null);
