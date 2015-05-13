@@ -4,7 +4,19 @@ public class ProcessingChainTitle implements ProcessingChainEntry {
 	
 	public final String title;
 	
-	public ProcessingChainTitle(String title) {
+	public static ProcessingChainTitle createUnknown() {
+		return new ProcessingChainTitle("unknown");
+	}
+	
+	public static ProcessingChainTitle of(String title) {
+		if(title==null) {
+			return createUnknown();
+		} else {
+			return new ProcessingChainTitle(title);
+		}
+	}
+	
+	private ProcessingChainTitle(String title) {
 		this.title = title;
 	}
 

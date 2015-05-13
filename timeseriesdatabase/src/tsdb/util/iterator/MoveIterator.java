@@ -37,6 +37,11 @@ public abstract class MoveIterator extends TsIterator {
 		return result;
 	}
 
+	/**
+	 * returns null if no more elements
+	 * Guaranteed to not be called again when it first returns null
+	 * Should not be called from deriving classes
+	 */
 	protected abstract TsEntry getNext();
 
 }

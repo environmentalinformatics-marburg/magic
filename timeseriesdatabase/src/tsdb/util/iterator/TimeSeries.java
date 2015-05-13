@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.DataQuality;
+import tsdb.util.ProcessingChainEntry;
+import tsdb.util.ProcessingChainSupplier;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
@@ -17,7 +19,7 @@ import tsdb.util.TsSchema.Aggregation;
  * @author woellauer
  *
  */
-public class TimeSeries implements TsIterable {
+public class TimeSeries implements TsIterable, ProcessingChainEntry, ProcessingChainSupplier {
 	
 	private static final Logger log = LogManager.getLogger();
 
@@ -50,9 +52,12 @@ public class TimeSeries implements TsIterable {
 
 	public DataQuality[][] dataQuality;
 	public boolean[][] dataInterpolated;
+	
+	private ProcessingChain processingChain;
 
-	public TimeSeries(ProcessingChain processingChain, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
+	public TimeSeries(ProcessingChainSupplier processingChainSupplier, String[] parameterNames, long startTimestamp, int timeStep, float[][] data, DataQuality[][] dataQuality, boolean[][] dataInterpolated) {
 		//this.processingChain = new NewProcessingChainOneSource(processingChain,new ProcessingChainTitle("TimeSeries"));
+		this.processingChain = ProcessingChain.of(processingChainSupplier,this);
 		this.parameterNames = parameterNames;
 		this.startTimestamp = startTimestamp;
 		this.timeStep = timeStep;
@@ -73,6 +78,11 @@ public class TimeSeries implements TsIterable {
 			this.dataInterpolated = null;
 			this.hasDataInterpolatedFlag = false;
 		}		
+	}
+	
+	@Override
+	public String getProcessingTitle() {
+		return "TimeSeries";
 	}
 
 	/**
@@ -127,7 +137,7 @@ public class TimeSeries implements TsIterable {
 			}
 		}
 
-		TimeSeries result = new TimeSeries(input_iterator.getProcessingChain(),schema, startTimestamp, tsSchema.timeStep, data, dataQuality, dataInterpolated);
+		TimeSeries result = new TimeSeries(input_iterator,schema, startTimestamp, tsSchema.timeStep, data, dataQuality, dataInterpolated);
 		return result;
 	}
 
@@ -214,6 +224,7 @@ public class TimeSeries implements TsIterable {
 	/**
 	 * some summary data of this time series
 	 */
+	@Override
 	public String toString() {
 		return "BaseTimeSeries: "+startTimestamp+"\t"+timeStep+"\t"+data.length+"\t"+data[0].length;
 	}
@@ -438,5 +449,23 @@ public class TimeSeries implements TsIterable {
 		public String getProcessingTitle() {
 			return "InternalClipIterator";
 		}
+		
+		@Override
+		public ProcessingChain getProcessingChain() {
+			return ProcessingChain.of(TimeSeries.this, this);
+		}
+	}
+
+	@Override
+	public ProcessingChain getProcessingChain() {
+		return processingChain;
+	}
+	
+	public void addToProcessingChain(String entry) {
+		addToProcessingChain(ProcessingChainEntry.of(entry));
+	}
+	
+	public void addToProcessingChain(ProcessingChainEntry entry) {
+		processingChain = ProcessingChain.of(processingChain,entry);
 	}
 }

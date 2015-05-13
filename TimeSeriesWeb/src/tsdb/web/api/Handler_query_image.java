@@ -67,6 +67,31 @@ public class Handler_query_image extends MethodHandler {
 			}
 		}
 
+		boolean boxplot = false;		
+
+		String boxplotText = request.getParameter("boxplot");
+		if(boxplotText!=null) {
+			switch(boxplotText) {
+			case "true":
+				if(agg==AggregationInterval.DAY||agg==AggregationInterval.WEEK||agg==AggregationInterval.MONTH||agg==AggregationInterval.YEAR) {
+					boxplot = true;
+				} else {
+					log.warn("no boxplot for aggregate "+agg);
+				}
+				break;
+			case "false":
+				boxplot = false;
+				break;
+			default:
+				log.warn("unknown input for boxplot");
+				boxplot = false;				
+			}
+		}
+
+
+
+
+
 		String quality = request.getParameter("quality");
 		DataQuality dataQuality = DataQuality.STEP;
 		if(quality!=null) {
@@ -157,7 +182,15 @@ public class Handler_query_image extends MethodHandler {
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);				
 				return;
 			}
-			TimestampSeries ts = tsdb.plot(null, plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
+
+			TimestampSeries ts;
+
+			if(boxplot) {
+				ts = tsdb.plotQuartile(plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
+			} else {
+				ts = tsdb.plot(null, plot, sensorNames, agg, dataQuality, isInterpolated, startTime, endTime);
+			}
+
 			if(ts==null) {
 				log.error("TimestampSeries null: "+plot);
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
@@ -172,10 +205,10 @@ public class Handler_query_image extends MethodHandler {
 					log.warn(e,e);
 				}
 			}
-			
+
 			int imageWidth = 1500;
 			int imageHeight = 400;
-			
+
 			String imageWidthText = request.getParameter("width");
 			String imageHeightText = request.getParameter("height");
 			if(imageWidthText!=null&&imageHeightText!=null) {
@@ -190,8 +223,8 @@ public class Handler_query_image extends MethodHandler {
 					log.warn(e);
 				}
 			}
-			
-			
+
+
 
 			BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, java.awt.image.BufferedImage.TYPE_INT_RGB);
 			Graphics2D gc = bufferedImage.createGraphics();
@@ -213,7 +246,8 @@ public class Handler_query_image extends MethodHandler {
 				log.warn(e);
 			}
 
-			TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts, agg, diagramType);
+			TimeSeriesDiagram tsd = new TimeSeriesDiagram(ts, agg, diagramType, boxplot);
+
 			if(agg!=null&&startTime!=null&&endTime!=null&&agg==AggregationInterval.RAW) {
 				tsd.setDiagramTimestampRange(startTime, endTime);
 			}

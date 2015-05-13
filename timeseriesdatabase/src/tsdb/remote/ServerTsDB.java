@@ -24,6 +24,12 @@ import tsdb.component.Sensor;
 import tsdb.component.SourceEntry;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.iterator.CollectingAggregator;
+import tsdb.iterator.DayCollectingAggregator;
+import tsdb.iterator.EvaluatingAggregationIterator;
+import tsdb.iterator.MonthCollectingAggregator;
+import tsdb.iterator.WeekCollectingAggregator;
+import tsdb.iterator.YearCollectingAggregator;
 import tsdb.run.ConsoleRunner;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
@@ -195,7 +201,7 @@ public class ServerTsDB implements RemoteTsDB {
 	public StationInfo[] getStations() {
 		return tsdb.getStations().stream().map(s->new StationInfo(s)).toArray(StationInfo[]::new);
 	}
-	
+
 	@Override
 	public String getStationLoggerTypeName(String stationName) throws RemoteException {
 		if(stationName==null) {
@@ -392,6 +398,48 @@ public class ServerTsDB implements RemoteTsDB {
 		log.info(it.getProcessingChain().getText());
 		return it.toTimestampSeries(plotID);
 	}
+
+	@Override
+	public TimestampSeries plotQuartile(String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
+		Node node = QueryPlan.plot(tsdb, plotID, columnNames, AggregationInterval.HOUR, dataQuality, interpolated);		
+		if(node==null) {
+			return null;
+		}
+		TsIterator hour_it = node.get(start, end);
+		if(hour_it==null||!hour_it.hasNext()) {
+			return null;
+		}
+
+		CollectingAggregator collectingAggregator;
+		switch(aggregationInterval) {
+		case RAW:
+			throw new RuntimeException("no boxplot for "+aggregationInterval);
+		case HOUR:
+			throw new RuntimeException("no boxplot for "+aggregationInterval);
+		case DAY:
+			collectingAggregator = new DayCollectingAggregator(tsdb, hour_it);
+			break;
+		case WEEK:
+			collectingAggregator = new WeekCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it));
+			break;
+		case MONTH:
+			collectingAggregator = new MonthCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it));
+			break;
+		case YEAR:
+			collectingAggregator = new YearCollectingAggregator(new MonthCollectingAggregator(new DayCollectingAggregator(tsdb, hour_it)));
+			break;
+		default:
+			throw new RuntimeException("no boxplot for "+aggregationInterval);
+		}
+
+		EvaluatingAggregationIterator eai = new EvaluatingAggregationIterator(hour_it.getSchema(),collectingAggregator);
+		
+		if(eai==null||!eai.hasNext()) {
+			return null;
+		}
+		log.info(eai.getProcessingChain().getText());
+		return eai.toTimestampSeries(plotID);
+	}	
 
 	@Override
 	public TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) {

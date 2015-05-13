@@ -158,7 +158,7 @@ public class Handler_query_heatmap extends MethodHandler {
 
 
 			tshm.draw(tsp,sensorName, xDiagramMin);
-			tshm.drawTimescale(tsp, xDiagramMin, 24, imageWidth+1, imageHeight-1);
+			tshm.drawTimescale(tsp, xDiagramMin, 24, imageWidth+1, imageHeight-1, true);
 			tshm.leftField(tsp,0,0,xDiagramMin-1,imageHeight-1);
 
 			try {

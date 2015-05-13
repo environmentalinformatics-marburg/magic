@@ -34,6 +34,7 @@ import tsdb.remote.ServerTsDB;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
+import tsdb.web.api.Vis_tsmHandler;
 
 public class Main {
 	
@@ -52,6 +53,9 @@ public class Main {
 	private static final String TSDB_API_PART_URL = "/tsdb";
 	private static final String EXPORT_API_PART_URL = "/export";
 	private static final String DOWNLOAD_PART_URL = "/download";
+	
+	private static final String VIS_TSM_PART_URL = "/vis_tsm";
+	private static final String FILES_PART_URL = "/files";
 
 	private static final Logger log = LogManager.getLogger();
 
@@ -144,8 +148,10 @@ public class Main {
 		ContextHandler[] contexts = new ContextHandler[] {
 				wrapLogin(createContextWebcontent(),wrap), 
 				wrapLogin(createContextTsDB(tsdb),wrap), 
-				wrapLogin(createContextExport(tsdb),wrap), 
+				wrapLogin(createContextExport(tsdb),wrap),
+				wrapLogin(createContextVis_tsm(),wrap), 
 				wrapLogin(createContextWebDownload(),wrap),
+				wrapLogin(createContextWebFiles(),wrap),
 				contextRedirect,
 				Robots_txt_Handler.CONTEXT_HANDLER,
 				//x,
@@ -277,6 +283,14 @@ public class Main {
 		sessions.setHandler(exportHandler);
 		return contextExport;
 	}
+	
+	private static ContextHandler createContextVis_tsm() {
+		ContextHandler contextVis_tsm = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+VIS_TSM_PART_URL);
+		Vis_tsmHandler handler = new Vis_tsmHandler();
+		//handler.setStopTimeout(TSDB_API_TIMEOUT_MILLISECONDS);
+		contextVis_tsm.setHandler(handler);
+		return contextVis_tsm;
+	}
 
 
 	private static ContextHandler createContextWebDownload() {
@@ -292,6 +306,20 @@ public class Main {
 		contextHandler.setHandler(handlers);
 		return contextHandler;
 	}
+	
+	private static ContextHandler createContextWebFiles() {
+		ContextHandler contextHandler = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+FILES_PART_URL);
+		ResourceHandler resourceHandler = new ResourceHandler();
+		//resourceHandler.setStopTimeout(FILE_DOWNLOAD_TIMEOUT_MILLISECONDS);
+		//resourceHandler.setMinAsyncContentLength(-1); //no async
+		//resourceHandler.setDirectoriesListed(true);
+		resourceHandler.setDirectoriesListed(true); // !! show directory content !!
+		resourceHandler.setResourceBase(TsDBFactory.WEBFILES_PATH);
+		HandlerList handlers = new HandlerList();
+		handlers.setHandlers(new Handler[] {resourceHandler, new DefaultHandler()});
+		contextHandler.setHandler(handlers);
+		return contextHandler;
+	}	
 
 	private static ContextHandler createContextInvalidURL() {
 		ContextHandler contextInvalidURL = new ContextHandler();

@@ -1,0 +1,32 @@
+package tsdb.iterator;
+
+import java.time.LocalDateTime;
+import java.time.Month;
+
+import tsdb.util.AggregationType;
+import tsdb.util.TimeConverter;
+
+public class YearCollectingAggregator extends AbstractCollectingAggregator {
+
+	public YearCollectingAggregator(MonthCollectingAggregator mca) {
+		super(mca, 12);
+	}
+
+	@Override
+	protected long calcAggregationTimestamp(long timestamp) {		
+		LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(timestamp);
+		int year = datetime.getYear();
+		LocalDateTime aggregationDatetime = LocalDateTime.of(year,Month.JANUARY,1,0,0);
+		return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);		
+	}
+
+	@Override
+	protected boolean isValidAggregate(int collectorCount, AggregationType aggregationType) {
+		return 12==collectorCount; 
+	}
+
+	@Override
+	public String getProcessingTitle() {
+		return "YearCollectingAggregator";
+	}
+}

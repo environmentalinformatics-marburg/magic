@@ -3,6 +3,7 @@ package tsdb.util.gui;
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +21,20 @@ import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesDiagram {
+	
+	private static final int ELEMENT_INDEX_MIN = 0;
+	private static final int ELEMENT_INDEX_MAX = 6;
+	private static final int ELEMENT_INDEX_W_MIN = 1;
+	private static final int ELEMENT_INDEX_W_MAX = 5;
+	private static final int ELEMENT_INDEX_Q1 = 2;
+	private static final int ELEMENT_INDEX_Q3 = 4;
+	private static final int ELEMENT_INDEX_MEDIAN = 3;
 
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private static final float MIN_VALUE_RANGE = 0.01f;
+
+	private final boolean boxplot;
 
 	private final TimestampSeries timestampseries;
 	private final AggregationInterval aggregationInterval;
@@ -65,8 +76,9 @@ public class TimeSeriesDiagram {
 	private double diagramTimestampFactor;
 	private double diagramValueFactor;
 
-	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType) {
+	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType, boolean boxplot) {
 		throwNulls(timestampseries,aggregationInterval);
+		this.boxplot = boxplot;
 		this.timestampseries = timestampseries;
 		this.aggregationInterval = aggregationInterval;
 		this.diagramType = diagramType;
@@ -94,34 +106,96 @@ public class TimeSeriesDiagram {
 		default:
 			log.warn("error in agg");
 		}
-		
+
 		dataMinValue = Float.MAX_VALUE;
 		dataMaxValue = -Float.MAX_VALUE;
 		dataCount = 0f;
 		dataSum = 0f;
 
-		long prev = 0;
-		for(TsEntry entry:timestampseries) {
-			float value = entry.data[0];
-			if(!Float.isNaN(value)) {
-				if(value<dataMinValue) {
-					dataMinValue = value;						
+		if(!boxplot) {
+			long prev = 0;
+			for(TsEntry entry:timestampseries) {
+				float value = entry.data[0];
+				if(!Float.isNaN(value)) {
+					if(value<dataMinValue) {
+						dataMinValue = value;						
+					}
+					if(value>dataMaxValue) {
+						dataMaxValue = value;						
+					}
+					long diff = entry.timestamp-prev;
+					if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
+						aggregationTimeInterval = diff;
+					}
+					prev = entry.timestamp;
+					dataCount++;
+					dataSum += value;
 				}
-				if(value>dataMaxValue) {
-					dataMaxValue = value;						
-				}
-				long diff = entry.timestamp-prev;
-				if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
-					aggregationTimeInterval = diff;
-				}
-				prev = entry.timestamp;
-				dataCount++;
-				dataSum += value;
 			}
+		} else {
+			long prev = 0;
+			for(TsEntry entry:timestampseries) {
+				float valueMin = entry.data[ELEMENT_INDEX_MIN];
+				if(!Float.isNaN(valueMin)) {
+					if(valueMin<dataMinValue) {
+						dataMinValue = valueMin;						
+					}
+					float valueMax = entry.data[ELEMENT_INDEX_MAX];
+					if(valueMax>dataMaxValue) {
+						dataMaxValue = valueMax;						
+					}
+					long diff = entry.timestamp-prev;
+					if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
+						aggregationTimeInterval = diff;
+					}
+					prev = entry.timestamp;
+					dataCount++;
+					dataSum += valueMin;
+				}
+			}
+			/*long prev = 0;
+			for(TsEntry entry:timestampseries) {
+				float value = entry.data[2];
+				if(!Float.isNaN(value)) {
+					if(value<dataMinValue) {
+						dataMinValue = value;						
+					}
+					if(value>dataMaxValue) {
+						dataMaxValue = value;						
+					}
+					long diff = entry.timestamp-prev;
+					if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
+						aggregationTimeInterval = diff;
+					}
+					prev = entry.timestamp;
+					dataCount++;
+					dataSum += value;
+				}
+			}*/
+			/*long prev = 0;
+			for(TsEntry entry:timestampseries) {
+				float valueMin = entry.data[1];
+				if(!Float.isNaN(valueMin)) {
+					if(valueMin<dataMinValue) {
+						dataMinValue = valueMin;						
+					}
+					float valueMax = entry.data[3];
+					if(valueMax>dataMaxValue) {
+						dataMaxValue = valueMax;						
+					}
+					long diff = entry.timestamp-prev;
+					if(aggregationInterval==AggregationInterval.RAW && diff>0&&diff<aggregationTimeInterval) {
+						aggregationTimeInterval = diff;
+					}
+					prev = entry.timestamp;
+					dataCount++;
+					dataSum += valueMin;
+				}
+			}*/
 		}
 
 		dataValueRange = dataMaxValue-dataMinValue;
-		
+
 		if(dataValueRange>MIN_VALUE_RANGE) {
 			diagramMinValue = dataMinValue;
 			diagramMaxValue = dataMaxValue;			
@@ -233,11 +307,11 @@ public class TimeSeriesDiagram {
 
 		diagramTimestampFactor = ((double)diagramWidth)/((double)diagramTimestampRange);
 		diagramValueFactor = ((double)diagramHeigh)/((double)diagramValueRange);
-		
+
 		tsp.setLineStyleDotted();
 
 		drawYScale(tsp);
-		
+
 		TimeGranularity lowestGranularity = TimeGranularity.MAX;
 		switch(aggregationInterval) {
 		case RAW:
@@ -261,16 +335,21 @@ public class TimeSeriesDiagram {
 		default:
 			log.warn("error in agg");
 		}
-		
-		
+
+
 		TimeScale timescale = new TimeScale(diagramMinTimestamp,diagramMaxTimestamp, lowestGranularity);		
 		timescale.draw(tsp, diagramMinX, diagramMaxX, diagramMaxY+1, diagramTimestampFactor,diagramMinY,diagramMaxY+3);
 		tsp.setLineStyleSolid();
 		drawAxis(tsp);
-		if(compareTs!=null) {
-			drawGraph(tsp,compareTs,false);
+
+		if(boxplot) {
+			drawBoxplot(tsp);
+		} else {
+			if(compareTs!=null) {
+				drawGraph(tsp,compareTs,false);
+			}
+			drawGraph(tsp,timestampseries,true);
 		}
-		drawGraph(tsp,timestampseries,true);
 
 
 		tsp.setColor(150, 150, 150);
@@ -355,6 +434,160 @@ public class TimeSeriesDiagram {
 		}
 
 		setDiagramValueRange(min,max);
+	}
+
+	private void drawBoxplot(TimeSeriesPainter tsp) { // 0:min 1:dmin 2:q1 3:median 4:q3 5:dmax 6:max
+		
+		/*switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(180,220,180);
+			break;
+		case WATER:
+			tsp.setColor(180,220,180);
+			break;
+		case OTHER:
+			tsp.setColor(180,220,180);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}*/
+		
+		tsp.setColor(100,220,100);
+
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}			
+
+			long timestamp = entry.timestamp;
+			float valueMin = entry.data[ELEMENT_INDEX_MIN];
+			if(!Float.isNaN(valueMin)) {
+				float valueMax = entry.data[ELEMENT_INDEX_MAX];
+				int x0 = calcDiagramX(timestamp);
+				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+				int y0 = calcDiagramY(valueMin);
+				int y1 = calcDiagramY(valueMax);
+				tsp.fillRect(x0, y1, x1, y0);
+			}
+
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+
+		}
+		
+		
+
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(220,180,180);
+			break;
+		case WATER:
+			tsp.setColor(180,180,220);
+			break;
+		case OTHER:
+			tsp.setColor(220,220,220);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}
+
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}			
+
+			long timestamp = entry.timestamp;
+			float valueDMin = entry.data[ELEMENT_INDEX_W_MIN];
+			if(!Float.isNaN(valueDMin)) {
+				float valueDMax = entry.data[ELEMENT_INDEX_W_MAX];
+				int x0 = calcDiagramX(timestamp);
+				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+				int y0 = calcDiagramY(valueDMin);
+				int y1 = calcDiagramY(valueDMax);
+				tsp.fillRect(x0, y1, x1, y0);
+			}
+
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+
+		}
+		
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(220, 100, 100);
+			break;
+		case WATER:
+			tsp.setColor(120, 120, 220);
+			break;
+		case OTHER:
+			tsp.setColor(160, 160, 160);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}		
+
+		//tsp.setColorValueLineTemperature();
+
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}			
+
+			long timestamp = entry.timestamp;
+			float valueMin = entry.data[ELEMENT_INDEX_Q1];
+			if(!Float.isNaN(valueMin)) {
+				float valueMax = entry.data[ELEMENT_INDEX_Q3];
+				int x0 = calcDiagramX(timestamp);
+				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+				int y0 = calcDiagramY(valueMin);
+				int y1 = calcDiagramY(valueMax);
+				tsp.fillRect(x0, y1, x1, y0);
+			}
+
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+
+		}
+
+		tsp.setColorValueLineUnknown();
+		switch(diagramType) {
+		case TEMPERATURE:
+			tsp.setColor(100, 0, 0);
+			break;
+		case WATER:
+			tsp.setColor(0, 0, 100);
+			break;
+		case OTHER:
+			tsp.setColor(30, 30, 30);
+			break;
+		default:
+			log.error("unknown diagram type: "+diagramType);
+		}
+		
+		
+
+		for(TsEntry entry:timestampseries) {
+			if(entry.timestamp<diagramMinTimestamp) {
+				continue;
+			}			
+
+			long timestamp = entry.timestamp;
+			float valueMed = entry.data[ELEMENT_INDEX_MEDIAN];
+			if(!Float.isNaN(valueMed)) {
+				int x0 = calcDiagramX(timestamp);
+				int x1 = calcDiagramX(timestamp+aggregationTimeInterval);
+				int y = calcDiagramY(valueMed);
+				tsp.drawLine(x0, y, x1, y);
+			}
+
+			if(entry.timestamp>diagramMaxTimestamp) {
+				break;
+			}
+
+		}
 	}
 
 
