@@ -25,7 +25,8 @@ setwd(path.wd)
 
 # Import plot coordinates and select middle poles only
 shp <- readOGR(dsn = "../coordinates/coords/", 
-               layer = "PlotPoles_ARC1960_mod_20140807_final")
+               layer = "PlotPoles_ARC1960_mod_20140807_final", 
+               p4s = "+init=epsg:21037")
 shp <- subset(shp, PoleType == "AMP")
 shp <- spTransform(shp, CRS("+init=epsg:32737"))
 
@@ -34,6 +35,9 @@ shp <- spTransform(shp, CRS("+init=epsg:32737"))
 
 # List and import classified images
 fls.lcp <- list.files("final/plots/", pattern = ".rst$", full.names = TRUE)
+fls.lcp <- c(fls.lcp, 
+             list.files("final/plots/", pattern = ".RST$", full.names = TRUE))
+
 rst.lcp <- lapply(fls.lcp, raster)
 
 # Extract class ids (column 'Value' in each raster's attribute table) and 
