@@ -200,7 +200,7 @@ decTask();
 $.get("../tsdb/region_list").done(function(data) {
 		var rows = splitData(data);
 		if(rows.length<2) {
-			$("#choose_region").hide();
+			$("#choose_region_div")[0].style.display="none";
 			$("#div_region").hide();
 		}
 		//decTask();
@@ -239,7 +239,7 @@ $.get("../tsdb/region_list").done(function(data) {
 
 
 
-&nbsp;&nbsp;<b>(0)</b><button id="choose_region">choose region</button>
+<div id="choose_region_div" style="display:inline">&nbsp;&nbsp;<b>(0)</b><button id="choose_region">choose region</button></div>
 &nbsp;&nbsp;<b>(1)</b><button id="choose_sensors">choose parameters</button>
 &nbsp;&nbsp;<b>(2)</b><button id="choose_plots">choose plots</button>
 &nbsp;&nbsp;<b>(3)</b><button id="choose_time">choose timespan and aggregation</button>
@@ -247,16 +247,30 @@ $.get("../tsdb/region_list").done(function(data) {
 &nbsp;&nbsp;<b>(4)</b><button id="button_settings">settings</button>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 &nbsp;&nbsp;<b>(5)</b><!--<button id="download"><b>download ZIP-File</b></button>--><a href="../export/result.zip"><b>&gt;&gt;| DOWNLOAD ZIP-FILE (click) |&lt;&lt;</b></a>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <button id="create">(create ZIP-File [experimantal]) </button>
+&nbsp; &nbsp; &nbsp; or &nbsp; &nbsp; &nbsp; <button id="create">create ZIP-File</button>
 <hr/>
 </div>
 
 <div id="div_help" style="display:none">
 <h3>Help</h3>
-<p>On this page time series data can be downloaded as a zip-file.</p>
-<p>The summary section of this page shows currently chosen plots, parameters and other settings for this zip-file.</p>
-<p>In the actions section of this page settings can be changed.</p>
-At the right side of the actions section you can download the generated zip, with the specified settings. Before downloading check at the summary section if you chose suitable settings.
+This the main page to download time series data as zip-file.
+<br>Below is a <b>summary</b> of settings that will be used to create the zip-file. Before download check this info to make sure, that you chose correct settings for your request.
+<br><br>The numbers at the buttons at the top guide you through the process of data selection and download:
+<ul>
+<br><li><b>(0)</b> select your region of plots (only present if there are multiple regions)</li>
+<br><li><b>(1)</b> choose your set of parameters (sensors) out of the available parameters</li>
+<br><li><b>(2)</b> choose your set of plots</li>
+<br><li><b>(3)</b> choose an aggregation of time and a time series timespan</li>
+<br><li><b>(4)</b> choose some additional settings like quality control and structure of csv-files</li>
+<br><li><b>(5)</b> first examine the summary then download your zip-file either by clicking the download-link (with right click you can choose location and filename on some browsers) or by pressing the create ZIP-File button.
+<br>The difference between the two download methods is that by clicking the download-link the data will be processed at the same time the data is downloading.
+<br>The create zip-file method opens a new page where you can watch the progress in processing the data. When it finishes you get a download link.</li>
+</ul>
+
+
+
+
+
 <hr/>
 </div>
 
