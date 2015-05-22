@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +32,9 @@ import tsdb.iterator.MonthCollectingAggregator;
 import tsdb.iterator.WeekCollectingAggregator;
 import tsdb.iterator.YearCollectingAggregator;
 import tsdb.run.ConsoleRunner;
+import tsdb.streamdb.StreamIterator;
 import tsdb.util.AggregationInterval;
+import tsdb.util.DataEntry;
 import tsdb.util.DataQuality;
 import tsdb.util.Pair;
 import tsdb.util.TimeSeriesMask;
@@ -310,6 +313,55 @@ public class ServerTsDB implements RemoteTsDB {
 				}
 			});	
 		});
+		return result;
+	}
+	
+	
+	@Override
+	public ArrayList<PlotStatus> getPlotStatuses() {
+		return collectPlotStatuses(tsdb.getPlotNames());
+	}
+	
+	@Override
+	public ArrayList<PlotStatus> getPlotStatusesOfGeneralStation(String generalStationName) {		
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+		if(generalStation==null) {
+			log.warn("generalStationName not found: "+generalStationName);
+			return null;
+		}		
+		return collectPlotStatuses(generalStation.getStationAndVirtualPlotNames());
+	}
+	
+	@Override
+	public ArrayList<PlotStatus> getPlotStatusesOfRegion(String regionName) {
+		return collectPlotStatuses(tsdb.getGeneralStations(regionName).flatMap(g->g.getStationAndVirtualPlotNames()));
+	}
+	
+	private ArrayList<PlotStatus> collectPlotStatuses(Stream<String> plotIDstream) {
+		return collectPlotStatuses(plotIDstream, new ArrayList<PlotStatus>());
+	}
+	
+	private ArrayList<PlotStatus> collectPlotStatuses(Stream<String> plotIDstream, ArrayList<PlotStatus> result) {
+		plotIDstream.forEach(plotID->{
+			long[] interval = tsdb.getTimeInterval(plotID);
+			if(interval!=null) {
+				float voltage = Float.NaN;
+				tsdb.streamStorage.getStationTimeInterval(plotID);
+				int[] ub = tsdb.streamStorage.getSensorTimeInterval(plotID, "UB");
+				if(ub!=null) {
+				StreamIterator it = tsdb.streamStorage.getRawSensorIterator(plotID, "UB", (long)ub[1], (long)ub[1]);
+				if(it!=null&&it.hasNext()) {
+					DataEntry e = it.next();
+					if(e.timestamp==ub[1]) {
+						voltage = e.value;
+					} else {
+						log.warn("timestamp error");
+					}
+				}
+				}
+				result.add(new PlotStatus(plotID, (int)interval[0], (int)interval[1], voltage));
+			}
+		});		
 		return result;
 	}
 

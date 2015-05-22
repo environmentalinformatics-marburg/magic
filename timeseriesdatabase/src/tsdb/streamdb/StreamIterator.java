@@ -54,7 +54,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 		int min = getDataMinTimestamp(chunkMetaMap,minQueryTimestamp);
 		int max = getDataMaxTimestamp(chunkMetaMap,maxQueryTimestamp);
 		
-		if(min<max) {
+		if(min<=max) {
 			this.minQueryTimestamp = min;
 			this.maxQueryTimestamp = max;
 		} else {
@@ -153,7 +153,7 @@ public class StreamIterator implements Iterator<DataEntry> {
 
 	@Override
 	public String toString() {
-		return "streamIterator("+stationName+"/"+sensorName+")";
+		return "streamIterator("+stationName+"/"+sensorName+"["+minQueryTimestamp+","+maxQueryTimestamp+"])";
 	}
 	
 	

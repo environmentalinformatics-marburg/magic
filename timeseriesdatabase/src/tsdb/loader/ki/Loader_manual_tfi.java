@@ -41,7 +41,7 @@ class Loader_manual_tfi {
 					sourcePos[targetIndexMap.get(sensorName)] = sourceIndex;
 					containsValidColumns = true;
 				} else {
-					log.warn("sensor name not in target schema "+sensorName+" "+getClass().toGenericString());
+					log.warn("sensor name not in target schema '"+sensorName+"' "+getClass().toGenericString()+"   "+timestampSeries.name);
 				}
 			} else {
 				log.warn("no sensor translation: "+inputSchema[sourceIndex]);

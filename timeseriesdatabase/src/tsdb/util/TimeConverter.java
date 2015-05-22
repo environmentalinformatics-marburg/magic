@@ -212,7 +212,7 @@ public class TimeConverter implements Serializable {
 			minute = 10*(timeText.charAt(3)-'0')+(timeText.charAt(4)-'0');
 			second = 10*(timeText.charAt(6)-'0')+(timeText.charAt(7)-'0');
 		} else {
-			log.warn("no time at "+dateText+"  -> set time to 12:00:00");
+			log.info("no time at "+dateText+"  -> set time to 12:00:00");
 			hour = 12;
 			minute = 00;
 			second = 00;

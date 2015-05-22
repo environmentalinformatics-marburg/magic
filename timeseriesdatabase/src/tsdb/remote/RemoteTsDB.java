@@ -73,4 +73,7 @@ public interface RemoteTsDB extends Remote {
 	//time series mask
 	TimeSeriesMask getTimeSeriesMask(String stationName, String sensorName) throws RemoteException;
 	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask) throws RemoteException;
+	ArrayList<PlotStatus> getPlotStatuses() throws RemoteException;
+	ArrayList<PlotStatus> getPlotStatusesOfGeneralStation(String generalStationName) throws RemoteException;
+	ArrayList<PlotStatus> getPlotStatusesOfRegion(String regionName) throws RemoteException;
 }

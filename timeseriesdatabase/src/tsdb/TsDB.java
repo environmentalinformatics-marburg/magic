@@ -257,7 +257,7 @@ public class TsDB implements AutoCloseable {
 			end = it.next().getTimestamp();
 		}
 		return new long[]{start,end};*/
-		return streamStorage.getTimeInterval(stationName);
+		return streamStorage.getStationTimeInterval(stationName);
 	}
 
 	/**

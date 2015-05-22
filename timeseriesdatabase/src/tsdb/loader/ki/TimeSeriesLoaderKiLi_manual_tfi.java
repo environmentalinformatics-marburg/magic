@@ -61,7 +61,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 									loadOneFile_structure_kili_iso_tfi(path);
 								} else if(filename.indexOf("_tfi")==4) {
 									String plotID = filename.substring(0, 4);
-									log.info("load plot tfi  "+plotID);
+									log.info("load plot tfi  "+plotID+"   from  "+path.getFileName());
 									VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 									if(virtualPlot!=null) {
 										loadOneFile_structure_kili_tfi(virtualPlot,path);
@@ -225,7 +225,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 						log.warn("stationID not found of plot "+plotID);	
 					}
 				} else {
-					log.warn("unknown plotID: "+plotID);
+					log.warn("unknown plotID: "+plotID+"   in  "+filePath);
 				}
 
 

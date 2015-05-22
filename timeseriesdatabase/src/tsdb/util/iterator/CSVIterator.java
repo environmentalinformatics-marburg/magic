@@ -59,10 +59,14 @@ public class CSVIterator extends TsIterator {
 		float[] data = new float[schema.length];
 		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			try {
-				data[colIndex] = Float.parseFloat(row[colIndex+2]); 
+				if(!row[colIndex+2].isEmpty()) {
+					data[colIndex] = Float.parseFloat(row[colIndex+2]);
+				} else {
+					data[colIndex] = Float.NaN;
+				}
 			} catch (Exception e) {
 				data[colIndex] = Float.NaN;
-				log.warn(e+ "   csv line "+(currIndex+1)+"  in "+filename);
+				log.warn(e+ "   csv line "+(currIndex+1)+"  col "+(colIndex+2)+"   in "+filename+"   ->|"+row[colIndex+2]+"|<-");
 			}
 		}
 		return new TsEntry(timestamp,data);

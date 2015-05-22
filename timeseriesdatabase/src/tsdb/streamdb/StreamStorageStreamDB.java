@@ -114,13 +114,16 @@ public class StreamStorageStreamDB implements StreamStorage {
 		//TODO		
 	}
 
-	@Override
-	public long[] getTimeInterval(String streamName) {
-		int[] interval = streamdb.getTimeInterval(streamName);
+	public long[] getStationTimeInterval(String streamName) {
+		int[] interval = streamdb.getStationTimeInterval(streamName);
 		if(interval==null) {
 			return null;
 		}
 		return new long[]{interval[0],interval[1]};
+	}
+	
+	public int[] getSensorTimeInterval(String stationName, String sensorName) {
+		return streamdb.getSensorTimeInterval(stationName, sensorName);
 	}
 
 	@Override

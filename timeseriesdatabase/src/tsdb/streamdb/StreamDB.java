@@ -455,8 +455,16 @@ public class StreamDB {
 		}		
 		return getSensorMap(stationMeta);
 	}
+	
+	public int[] getSensorTimeInterval(String stationName, String sensorName) {
+		SensorMeta sensorMeta = getSensorMeta(stationName, sensorName);
+		if(sensorMeta==null) {
+			return null;
+		}
+		return getSensorTimeInterval(sensorMeta);
+	}
 
-	public int[] getSensorInterval(SensorMeta sensorMeta) {
+	public int[] getSensorTimeInterval(SensorMeta sensorMeta) {
 		throwNull(sensorMeta);
 		BTreeMap<Integer, ChunkMeta> chunkMetaMap = getSensorChunkMetaMap(sensorMeta);
 		if(chunkMetaMap.isEmpty()) {
@@ -465,7 +473,7 @@ public class StreamDB {
 		return new int[]{chunkMetaMap.firstKey(),chunkMetaMap.lastEntry().getValue().lastTimestamp};
 	}
 
-	public int[] getTimeInterval(String stationName) {
+	public int[] getStationTimeInterval(String stationName) {
 		throwNull(stationName);
 		BTreeMap<String, SensorMeta> sensorMap = getSensorMap(stationName);
 		if(sensorMap==null||sensorMap.isEmpty()) {
@@ -474,7 +482,7 @@ public class StreamDB {
 		int minTimestamp = Integer.MAX_VALUE;
 		int maxTimestamp = Integer.MIN_VALUE;
 		for(SensorMeta sensorMeta:sensorMap.values()) {
-			int[] interval = getSensorInterval(sensorMeta);
+			int[] interval = getSensorTimeInterval(sensorMeta);
 			if(interval!=null) {
 				if(interval[0]<minTimestamp) {
 					minTimestamp = interval[0];
@@ -489,7 +497,7 @@ public class StreamDB {
 		}
 		return new int[]{minTimestamp,maxTimestamp};	
 	}
-
+	
 	public void printStatistics() {
 		for(StationMeta stationMeta:stationMetaMap.values()) {
 			System.out.println(stationMeta.stationName);
