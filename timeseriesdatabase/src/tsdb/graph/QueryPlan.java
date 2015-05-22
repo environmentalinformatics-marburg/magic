@@ -155,11 +155,14 @@ public class QueryPlan {
 			if(station.loggerType.typeName.equals("tfi")) {
 				rawSource = PeakSmoothed.of(rawSource);
 			}			
-			if(DataQuality.Na==dataQuality) {
-				return rawSource;
-			} else {
-				return RangeStepFiltered.of(tsdb, rawSource, dataQuality);
+			if(DataQuality.Na!=dataQuality) {
+				rawSource = RangeStepFiltered.of(tsdb, rawSource, dataQuality);
 			}
+			if(Util.containsString(schema, "sunshine")) {
+				log.info("sunshine!");				
+				rawSource = Sunshine.of(tsdb, rawSource);
+			}
+			return rawSource;
 		};
 	}
 

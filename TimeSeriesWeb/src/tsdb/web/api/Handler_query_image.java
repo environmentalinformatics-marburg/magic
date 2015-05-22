@@ -170,13 +170,16 @@ public class Handler_query_image extends MethodHandler {
 		}
 
 		try {
-			String[] sensorNames;
+			String[] sensorNames = tsdb.supplementSchema(sensorName);
+			/*String[] sensorNames;
 			if(sensorName.equals("WD")) {
 				sensorNames = new String[]{sensorName,"WV"};
+			} else if(sensorName.equals("sunshine")) {
+				sensorNames = new String[]{sensorName,"Rn_300"};
 			} else {
 				sensorNames = new String[]{sensorName};
-			}
-			String[] validSchema =  tsdb.getValidSchema(plot, sensorNames);
+			}*/
+			String[] validSchema =  tsdb.getValidSchemaWithVirtualSensors(plot, sensorNames);
 			if(sensorNames.length!=validSchema.length) {
 				log.info("sensorName not in plot: "+plot+"  "+sensorName);
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);				

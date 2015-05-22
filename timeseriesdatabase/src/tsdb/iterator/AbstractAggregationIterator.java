@@ -246,6 +246,7 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 					columnEntryCounter[i]++;
 					break;
 				case SUM:
+				case SUM_SUNSHINE:
 					resultData[i] = aggSum[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;

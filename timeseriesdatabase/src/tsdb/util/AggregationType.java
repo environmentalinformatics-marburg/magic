@@ -13,7 +13,8 @@ public enum AggregationType {
 	AVERAGE_WIND_VELOCITY,  // helper tag for calculation of AVERAGE_WIND_DIRECTION 
 	MAXIMUM,
 	AVERAGE_ZERO, //average aggregation type, NaN values are interpreted as 0
-	AVERAGE_ALBEDO;
+	AVERAGE_ALBEDO,
+	SUM_SUNSHINE;
 
 	public static AggregationType getAggregationType(String aggregateTypeText) {
 		switch(aggregateTypeText.toLowerCase()) {
@@ -32,7 +33,9 @@ public enum AggregationType {
 		case "average_albedo":
 			return AVERAGE_ALBEDO;
 		case "none":
-			return NONE;			
+			return NONE;
+		case "sum_sunshine":
+			return SUM_SUNSHINE;
 		default:
 			return null;
 		}

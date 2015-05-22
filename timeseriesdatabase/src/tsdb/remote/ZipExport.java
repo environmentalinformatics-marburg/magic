@@ -66,7 +66,6 @@ public class ZipExport {
 		this.tsdb = tsdb;
 
 		this.region = region;
-
 		if(aggregationInterval == AggregationInterval.RAW) {
 			this.sensorNames = sensorNames;
 		} else {
@@ -175,7 +174,7 @@ public class ZipExport {
 				for(String plotID:plotIDs) {
 					printLine("processing plot "+plotID);
 					try {
-						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
+						String[] schema = tsdb.getValidSchemaWithVirtualSensors(plotID, sensorNames);
 						if(!Util.empty(schema)) {
 							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, startTimestamp, endTimestamp);
 							if(timeseries!=null) {								
@@ -195,7 +194,7 @@ public class ZipExport {
 				for(String plotID:plotIDs) {
 					printLine("processing plot "+plotID);
 					try {
-						String[] schema = tsdb.getValidSchema(plotID, sensorNames);
+						String[] schema = tsdb.getValidSchemaWithVirtualSensors(plotID, sensorNames);
 						if(!Util.empty(schema)) {
 							TimestampSeries timeseries = tsdb.plot(null,plotID, schema, aggregationInterval, dataQuality, interpolated, startTimestamp, endTimestamp);
 							if(timeseries!=null) {

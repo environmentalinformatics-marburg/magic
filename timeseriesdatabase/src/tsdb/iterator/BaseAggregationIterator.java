@@ -257,7 +257,10 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 					} else {
 						resultData[i] = Float.NaN;
 					}
-					break;							
+					break;
+				case SUM_SUNSHINE:
+					resultData[i] = aggSum[i]/6;
+					break;
 				default:
 					resultData[i] = Float.NaN;
 					log.warn("aggration type unknown");

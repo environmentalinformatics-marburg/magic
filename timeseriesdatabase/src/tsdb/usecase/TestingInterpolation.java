@@ -11,8 +11,6 @@ import tsdb.util.iterator.TsIterator;
 
 public class TestingInterpolation {
 	
-//	private static final Log logger = LogFactory.getLog(EventStoreConfig.class);
-
 	public static void main(String[] args) {
 		
 	//	logger.error("_...__----_-----");

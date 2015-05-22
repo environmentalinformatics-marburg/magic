@@ -154,10 +154,20 @@ public class Station {
 		//return Util.getValidEntries(querySchema, loggerType.sensorNames);
 		return Util.getValidEntries(querySchema, getSchema());
 	}
+	
+	public String[] getValidSchemaEntriesWithVirtualSensors(String[] querySchema) {		
+		//return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		return Util.getValidEntries(querySchema, tsdb.includeVirtualSensorNames(getSchema()));
+	}
 
 	public boolean isValidSchema(String[] querySchema) {
 		//return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
 		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, getSchema()));
+	}
+	
+	public boolean isValidSchemaWithVirtualSensors(String[] querySchema) {
+		//return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, tsdb.includeVirtualSensorNames(getSchema())));
 	}
 
 	public boolean isValidBaseSchema(String[] querySchema) {

@@ -46,7 +46,7 @@ public class ServerTsDB implements RemoteTsDB {
 
 	private static final Logger log = LogManager.getLogger();
 
-	protected final TsDB tsdb; //not null
+	private final TsDB tsdb; //not null
 
 	public ServerTsDB(TsDB tsdb) throws RemoteException { // !!
 		throwNull(tsdb);
@@ -63,11 +63,11 @@ public class ServerTsDB implements RemoteTsDB {
 		}
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
-			return virtualPlot.getSchema();
+			return tsdb.includeVirtualSensorNames(virtualPlot.getSchema());
 		}
 		Station station = tsdb.getStation(plotID);
 		if(station!=null) {
-			return station.getSchema();
+			return tsdb.includeVirtualSensorNames(station.getSchema());
 
 		}
 		log.warn("plotID not found "+plotID);
@@ -96,7 +96,7 @@ public class ServerTsDB implements RemoteTsDB {
 			sensorNameSet.addAll(Arrays.asList(virtualPlot.getSchema()));
 		}		
 
-		return sensorNameSet.toArray(new String[sensorNameSet.size()]); 
+		return tsdb.includeVirtualSensorNames(sensorNameSet.toArray(new String[sensorNameSet.size()])); 
 	}
 
 	@Override
@@ -122,6 +122,16 @@ public class ServerTsDB implements RemoteTsDB {
 	@Override
 	public String[] getValidSchema(String plotID, String[] sensorNames) {
 		return tsdb.getValidSchema(plotID, sensorNames);
+	}
+	
+	@Override
+	public String[] getValidSchemaWithVirtualSensors(String plotID, String[] sensorNames) {
+		return tsdb.getValidSchemaWithVirtualSensors(plotID, sensorNames);
+	}
+	
+	@Override
+	public String[] supplementSchema(String... schema) {
+		return tsdb.supplementSchema(schema);
 	}
 
 	// ----------------------------------- region
@@ -453,6 +463,7 @@ public class ServerTsDB implements RemoteTsDB {
 
 	@Override
 	public TimestampSeries plotQuartile(String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated, Long start, Long end) {
+		
 		Node node = QueryPlan.plot(tsdb, plotID, columnNames, AggregationInterval.HOUR, dataQuality, interpolated);		
 		if(node==null) {
 			return null;

@@ -1,6 +1,7 @@
 package tsdb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import tsdb.component.SourceCatalog;
 import tsdb.streamdb.StreamStorageStreamDB;
 import tsdb.util.AggregationType;
 import tsdb.util.BaseAggregationTimeUtil;
+import tsdb.util.Util;
 
 /**
  * This is the main class of the timeseries database.
@@ -26,7 +28,6 @@ import tsdb.util.BaseAggregationTimeUtil;
  *
  */
 public class TsDB implements AutoCloseable {
-
 	private static final Logger log = LogManager.getLogger();
 
 	/**
@@ -576,6 +577,27 @@ public class TsDB implements AutoCloseable {
 		
 		throw new RuntimeException("plotID not found: "+plotID);
 	}
+	
+	public String[] getValidSchemaWithVirtualSensors(String plotID, String[] schema) {
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.getValidSchemaEntriesWithVirtualSensors(schema);
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.getValidSchemaEntriesWithVirtualSensors(schema);
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
+		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getValidSchemaEntriesWithVirtualSensors(schema);
+		}
+		
+		throw new RuntimeException("plotID not found: "+plotID);
+	}
 
 	public boolean isValidSchema(String plotID, String[] schema) {
 
@@ -610,5 +632,46 @@ public class TsDB implements AutoCloseable {
 			}
 		}
 		return result;
-	}	
+	}
+	
+	public String[] includeVirtualSensorNames(String[] schema) {
+		if(schema==null) {
+			return null;
+		}
+		ArrayList<String> additionalSensorNames = null;
+		for(String name:schema) {
+			if(name.equals("Rn_300")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("sunshine");
+			}
+		}
+		if(additionalSensorNames==null) {
+			return schema;
+		} else {
+			return Stream.concat(Arrays.stream(schema), additionalSensorNames.stream()).toArray(String[]::new);			
+		}
+	}
+	
+	public String[] supplementSchema(String... schema) {
+		if(schema==null) {
+			return null;
+		}
+		
+		Map<String, Integer> schemaMap = Util.stringArrayToMap(schema);
+		ArrayList<String> additionalSensorNames = new ArrayList<String>();
+		if(schemaMap.containsKey("WD")&&!schemaMap.containsKey("WV")) {
+			additionalSensorNames.add("WV");
+		}
+		if(schemaMap.containsKey("sunshine")&&!schemaMap.containsKey("Rn_300")) {
+			additionalSensorNames.add("Rn_300");
+		}
+
+		if(additionalSensorNames.isEmpty()) {
+			return schema;
+		} else {
+			return Stream.concat(Arrays.stream(schema), additionalSensorNames.stream()).toArray(String[]::new);			
+		}		
+	}
 }

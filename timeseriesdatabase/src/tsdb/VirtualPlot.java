@@ -109,6 +109,10 @@ public class VirtualPlot {
 	public String[] getValidSchemaEntries(String[] querySchema) {
 		return Util.getValidEntries(querySchema, getSchema());
 	}
+	
+	public String[] getValidSchemaEntriesWithVirtualSensors(String[] querySchema) {
+		return Util.getValidEntries(querySchema, tsdb.includeVirtualSensorNames(getSchema()));
+	}
 
 	/**
 	 * Adds one time interval of one station to this plot

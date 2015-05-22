@@ -23,7 +23,7 @@ public class StationRawSource extends RawSource.Abstract {
 		if(this.schema.length==0) {
 			throw new RuntimeException("no schema");
 		}
-		if(!station.isValidSchema(schema)) {
+		if(!station.isValidSchemaWithVirtualSensors(schema)) {
 			throw new RuntimeException("not valid schema: "+Util.arrayToString(schema)+" in "+Util.arrayToString(station.loggerType.sensorNames)); 
 		}
 	}

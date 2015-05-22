@@ -61,10 +61,10 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 				currentTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(first.timestamp) + TIMESTEP;
 				nextTimestamp = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(second.timestamp);
 			} else {
-				closed = true;				
+				this.close();
 			}			
 		} else {
-			closed = true;
+			this.close();
 		}
 	}
 

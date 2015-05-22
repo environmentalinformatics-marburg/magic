@@ -386,10 +386,19 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		try {
 			OutputStream outputstream = response.getOutputStream();
 			Region region = model.region;
-			String[] sensorNames = model.sensors;
+			String[] sensorNames = tsdb.supplementSchema(model.sensors);
+			
+			/*
+			
 			if(Arrays.stream(sensorNames).anyMatch(name->name.equals("WD")) && Arrays.stream(sensorNames).noneMatch(name->name.equals("WV"))) {
 				sensorNames = Stream.concat(Arrays.stream(sensorNames), Stream.of("WV")).toArray(String[]::new);
 			}
+			if(Arrays.stream(sensorNames).anyMatch(name->name.equals("sunshine")) && Arrays.stream(sensorNames).noneMatch(name->name.equals("Rn_300"))) {
+				sensorNames = Stream.concat(Arrays.stream(sensorNames), Stream.of("Rn_300")).toArray(String[]::new);
+			}
+			
+			*/
+			
 			String[] plotIDs = model.plots;
 			AggregationInterval aggregationInterval = model.aggregationInterval;
 			DataQuality dataQuality = model.quality;

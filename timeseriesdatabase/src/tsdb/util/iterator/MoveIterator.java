@@ -6,7 +6,7 @@ import tsdb.util.TsSchema;
 public abstract class MoveIterator extends TsIterator {
 
 	private TsEntry current = null;
-	protected boolean closed = false;
+	private boolean closed = false;
 	
 	public MoveIterator(TsSchema schema) {
 		super(schema);
@@ -20,7 +20,7 @@ public abstract class MoveIterator extends TsIterator {
 			if(current==null) {
 				current = getNext();
 				if(current==null) {
-					closed=true;
+					closed = true;
 					return false;
 				} 
 			}				
@@ -43,5 +43,10 @@ public abstract class MoveIterator extends TsIterator {
 	 * Should not be called from deriving classes
 	 */
 	protected abstract TsEntry getNext();
+	
+	public void close() {
+		current = null;		
+		closed = true;
+	}
 
 }

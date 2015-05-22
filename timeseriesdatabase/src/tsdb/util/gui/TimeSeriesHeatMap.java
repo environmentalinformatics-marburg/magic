@@ -420,6 +420,9 @@ public class TimeSeriesHeatMap {
 		case "DecagonECH2O":
 			tsp.setIndexedColorRange(300, 1000);
 			break;
+		case "sunshine":
+			tsp.setIndexedColorRange(0, 1);
+			break;			
 		default:
 			tsp.setIndexedColorRange(-10, 30);
 		}		

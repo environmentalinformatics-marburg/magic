@@ -25,6 +25,8 @@ public interface RemoteTsDB extends Remote {
 	String[] getBaseSchema(String[] rawSchema) throws RemoteException;
 	String[] getCacheSchemaNames(String streamName) throws RemoteException;
 	String[] getValidSchema(String plotID, String[] sensorNames) throws RemoteException;
+	String[] getValidSchemaWithVirtualSensors(String plotID, String[] sensorNames) throws RemoteException;
+	String[] supplementSchema(String... schema) throws RemoteException;
 	
 	//region
 	Region[] getRegions() throws RemoteException;
