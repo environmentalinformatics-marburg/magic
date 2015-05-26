@@ -126,14 +126,14 @@ public class TsEntry implements Serializable {
 					if(i>0) {
 						s += "_";
 					}
-					s+=Float.isNaN(data[i])?"c0":"c1";
+					s+=Float.isNaN(data[i])?/*"c0"*/"":"c1";
 				}
 			} else {
 				for(int i=0;i<data.length;i++) {
 					if(i>0) {
 						s += "_";
 					}
-					s+="c1"+(interpolated[i]?"i1":"i0");
+					s+="c1"+(interpolated[i]?"i1":/*"i0"*/"");
 				}				
 			}
 		} else {
@@ -142,17 +142,19 @@ public class TsEntry implements Serializable {
 					s += "_";
 				}
 				for(int q=0;q<qualityCounter[i].length;q++) {
-					switch(q) {
-					case 0:
-						s+='c';
-						break;
-					case 1:
-						s+='i';
-						break;
-					default:
-						s+='?';
+					if(qualityCounter[i][q]>0) {
+						switch(q) {
+						case 0:
+							s+='c';
+							break;
+						case 1:
+							s+='i';
+							break;
+						default:
+							s+='?';
+						}
+						s += qualityCounter[i][q];
 					}
-					s += qualityCounter[i][q];
 				}
 
 			}			

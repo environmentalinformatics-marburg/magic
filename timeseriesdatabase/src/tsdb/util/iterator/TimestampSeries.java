@@ -242,11 +242,12 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 		s+='\n';
 		for(int i=0;i<n;i++) {			
 			TsEntry entry = entryList.get(i);
-			float[] data = entry.data;
+			/*float[] data = entry.data;
 			s+=TimeConverter.oleMinutesToLocalDateTime(entry.timestamp)+"\t";
 			for(int c=0;c<data.length;c++) {
 				s+=Util.floatToString(data[c])+"\t";
-			}
+			}*/
+			s+=entry.toString();
 			s+='\n';
 		}
 

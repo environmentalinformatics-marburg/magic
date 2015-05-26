@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.component.Region;
 import tsdb.component.Sensor;
+import tsdb.iterator.ProjectionFillIterator;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.TimeConverter;
@@ -353,14 +354,71 @@ public class ZipExport {
 	}
 
 	private void writeTimeseries(TimestampSeries timeseries, String plotID, PrintStream csvOut) {		
+		ProjectionFillIterator it = new ProjectionFillIterator(timeseries.tsIterator(), sensorNames);
+		while(it.hasNext()) {
+			TsEntry entry = it.next();
+			boolean isFirst = true;
+			StringBuilder s = new StringBuilder();
+			if(col_plotid) {
+				s.append(plotID);
+				isFirst = false;
+			}
+			if(col_timestamp) {
+				if(!isFirst) {
+					s.append(',');
+				}
+				s.append(entry.timestamp);
+				isFirst = false;
+			}
+			if(col_datetime) {
+				if(!isFirst) {
+					s.append(',');
+				}
+				s.append(TimeConverter.oleMinutesToText(entry.timestamp));
+				isFirst = false;
+			}
+			Formatter formater = new Formatter(s,Locale.ENGLISH);
+			for(int i=0;i<sensorNames.length;i++) {
+				float v = entry.data[i];
+				if(Float.isNaN(v)) {
+					if(isFirst) {
+						formater.format("NA");
+						isFirst = false;
+					} else {
+						formater.format(",NA");
+					}	
+				} else {
+					if(isFirst) {
+						//formater.format("%3.3f", v);
+						formater.format("%.2f", v);
+						isFirst = false;
+					} else {
+						//formater.format(",%3.3f", v);
+						formater.format(",%.2f", v);
+					}
+				}
+			}
+			if(col_qualitycounter) {
+				if(!isFirst) {
+					s.append(',');
+				}
+				s.append(entry.qualityCountersToString());
+				isFirst = false;
+			}
+			csvOut.println(s);
+			formater.close();			
+		}		
+	}
+
+	/*private void writeTimeseries(TimestampSeries timeseries, String plotID, PrintStream csvOut) {		
 		//printLine(timeseries.toString());
 
 		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.sensorNames, false, false);
 		//printLine("sensorNames "+Arrays.asList(sensorNames));
 		//printLine("schema "+Arrays.asList(timeseries.sensorNames));							
 		//printLine(Util.arrayToString(pos));
-		
-		
+
+
 
 
 
@@ -389,6 +447,7 @@ public class ZipExport {
 			Formatter formater = new Formatter(s,Locale.ENGLISH);
 
 			float[] data = entry.data;
+			int[][] qc = entry.qualityCounter;
 			for(int targetIndex=0;targetIndex<sensorNames.length;targetIndex++) {
 				int sourceIndex = pos[targetIndex];
 				if(sourceIndex<0) {
@@ -419,7 +478,7 @@ public class ZipExport {
 					}
 				}
 			}
-			
+
 			if(col_qualitycounter) {
 				if(!isFirst) {
 					s.append(',');
@@ -431,7 +490,7 @@ public class ZipExport {
 			csvOut.println(s);
 			formater.close();															
 		}		
-	}
+	}*/
 
 	public int getProcessedPlots() {
 		return processedPlots;

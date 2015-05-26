@@ -1,5 +1,7 @@
 package tsdb.iterator;
 
+import java.util.Arrays;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,9 +38,9 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 	private int collectedRowsInCurrentAggregate;
 
 	//*** quality counters ***
-	private final static int QUALITY_COUNTERS = 2;
-	private final static int QUALITY_COUNTER_POS_VALUES = 0;
-	private final static int QUALITY_COUNTER_POS_INTERPOLATED = 1;
+	public final static int QUALITY_COUNTERS = 2;
+	public final static int QUALITY_COUNTER_POS_VALUES = 0;
+	public final static int QUALITY_COUNTER_POS_INTERPOLATED = 1;
 	private int[][] aggQualityCounter;
 	//************************
 
@@ -178,27 +180,13 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 				}
 			}		
 
-			if(inputQualityCounter!=null) {				
-					for(int q=0;q<QUALITY_COUNTERS;q++) {
-						aggQualityCounter[i][q] += inputQualityCounter[i][q];
-					}					
-					
-				
-
-				/*switch(quality[i]) {
-				case Na:
-					break; // nothing to count
-				case NO:
-					aggQualityCounter[i][QUALITY_NO_POS]++;
-					break;
-				case PHYSICAL:
-					aggQualityCounter[i][QUALITY_PHYSICAL_POS]++;
-					break;
-				case STEP:
-					aggQualityCounter[i][QUALITY_STEP_POS]++;
-				case EMPIRICAL:
-					aggQualityCounter[i][QUALITY_EMPIRICAL_POS]++;
-				}*/
+			if(inputQualityCounter!=null) {
+				for(int q=0;q<QUALITY_COUNTERS;q++) {
+					if(Float.isNaN(value)) {
+						//log.info(Arrays.toString(inputQualityCounter[i]));
+					}
+					aggQualityCounter[i][q] += inputQualityCounter[i][q];
+				}					
 			} else {
 				aggQualityCounter = null;
 			}
@@ -230,7 +218,11 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 	 * @return result or null if there are no valid aggregates
 	 */
 	private Pair<float[],int[][]> aggregateCollectedData() {
-		float[] resultData = new float[schema.length];	
+		float[] resultData = new float[schema.length];
+		int[][] resultQualityCounter = null;
+		if(aggQualityCounter!=null) {
+			resultQualityCounter = new int[schema.length][QUALITY_COUNTERS];			
+		}
 		int validValueCounter=0; //counter of valid aggregates
 
 		for(int i=0;i<schema.length;i++) {
@@ -277,21 +269,16 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 				default:
 					resultData[i] = Float.NaN;
 					log.warn("aggration type unknown");
-				}							
+				}
+
+				for(int q=0;q<QUALITY_COUNTERS;q++) {
+					resultQualityCounter[i][q] = aggQualityCounter[i][q];
+				}				
 			} else {// no entry in this aggregation time period
 				resultData[i] = Float.NaN;
 			}
 		}
-		if(validValueCounter>0) { // if there are some valid aggregates return result data
-			int[][] resultQualityCounter = null;
-			if(aggQualityCounter!=null) {
-				resultQualityCounter = new int[schema.length][QUALITY_COUNTERS];
-				for(int i=0;i<schema.length;i++) {
-					for(int q=0;q<QUALITY_COUNTERS;q++) {
-						resultQualityCounter[i][q] = aggQualityCounter[i][q];
-					}					
-				}	
-			}
+		if(validValueCounter>0) { // if there are some valid aggregates return result data			
 			resetAggregates();
 			return new Pair<float[],int[][]>(resultData,resultQualityCounter);
 		} else { //no aggregates created
@@ -313,12 +300,11 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			int[][] inputQualityCounter = entry.qualityCounter;
 			if(inputQualityCounter==null&&inputQuality!=null) {
 				inputQualityCounter = new int[inputQuality.length][QUALITY_COUNTERS];
-
-				//TODO
-
+				for(int i=0;i<inputQuality.length;i++) {
+					inputQualityCounter[i][QUALITY_COUNTER_POS_VALUES] = Float.isNaN(inputData[i])?0:1;
+				}
 				if(inputInterpolated!=null) {
-					for(int i=0;i<inputInterpolated.length;i++) {
-						inputQualityCounter[i][QUALITY_COUNTER_POS_VALUES] = 1;
+					for(int i=0;i<inputQuality.length;i++) {
 						inputQualityCounter[i][QUALITY_COUNTER_POS_INTERPOLATED] = inputInterpolated[i]?1:0;
 					}
 				}
