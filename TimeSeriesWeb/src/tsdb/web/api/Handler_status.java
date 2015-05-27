@@ -40,7 +40,6 @@ public class Handler_status extends MethodHandler {
 		super(tsdb, "status");
 	}
 
-	//TODO
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		baseRequest.setHandled(true);

@@ -45,4 +45,12 @@ public class Tag {
 		element.appendChild(node);
 		return node;
 	}
+	public Tag addButton(String text) {
+		Tag button = addTag("button");
+		button.element.setTextContent(text);
+		return button;
+	}
+	public void setStyle(String styleText) {
+		setAttribute("style", styleText);
+	}
 }

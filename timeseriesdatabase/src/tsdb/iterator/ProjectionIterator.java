@@ -8,6 +8,12 @@ import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * converts input schema to output schema
+ * output schema needs to be subset of input schema (with arbitrary order)
+ * @author woellauer
+ *
+ */
 public class ProjectionIterator extends InputIterator {
 
 	private int[] parameterPos;

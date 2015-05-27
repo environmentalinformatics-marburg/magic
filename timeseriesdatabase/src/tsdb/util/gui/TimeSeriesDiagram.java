@@ -800,21 +800,30 @@ public class TimeSeriesDiagram {
 			tsp.setColorYScaleLine();
 			tsp.drawLine(diagramMinX-1 , y, diagramMaxX, y);			
 			String valueText;
-			if(lineStep>=1d) {
+			PosHorizontal posType = PosHorizontal.RIGHT;
+			float pos = diagramMinX-3;
+			float absLine = Math.abs(line);
+			if(absLine>99999) {
+				posType = PosHorizontal.LEFT;
+				pos = diagramMinX-borderLeft;
 				valueText = Util.doubleToString0(line);
-			} else if(lineStep>=0.1d) {
+			} else if(lineStep>=1d||absLine>9999) {
+				valueText = Util.doubleToString0(line);
+			} else if(lineStep>=0.1d||absLine>999) {
 				valueText = Util.doubleToString1(line);
-			} else if(lineStep>=0.01d) {
+			} else if(lineStep>=0.01d||absLine>99) {
 				valueText = Util.doubleToString2(line);
-			} else if(lineStep>=0.001d) {
+			} else if(lineStep>=0.001d||absLine>9) {
 				valueText = Util.doubleToString3(line);
 			} else if(lineStep>=0.0001d) {
 				valueText = Util.doubleToString4(line);								
 			} else {
+				posType = PosHorizontal.LEFT;
+				pos = diagramMinX-borderLeft;
 				valueText = Util.doubleToStringFull(line);
 			}			
 			tsp.setColorYScaleText();
-			tsp.drawText(valueText,diagramMinX-3,y,PosHorizontal.RIGHT,PosVerical.CENTER);
+			tsp.drawText(valueText,pos,y,posType,PosVerical.CENTER);
 			line+=lineStep;
 		}		
 	}

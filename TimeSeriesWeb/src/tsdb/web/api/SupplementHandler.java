@@ -39,7 +39,7 @@ import tsdb.web.generator.Css;
 import tsdb.web.generator.Html;
 import tsdb.web.generator.Tag;
 
-public class Vis_tsmHandler extends AbstractHandler {
+public class SupplementHandler extends AbstractHandler {
 	private static final Logger log = LogManager.getLogger();
 
 	@Override
@@ -53,7 +53,7 @@ public class Vis_tsmHandler extends AbstractHandler {
 		page = page.replace('.', '_');
 
 
-		String vis_tsm_path = TsDBFactory.WEBFILES_PATH+"/vis_tsm";
+		String vis_tsm_path = TsDBFactory.WEBFILES_PATH+"/supplement";
 		Path rootDirectory = Paths.get(vis_tsm_path,page);
 		log.info(rootDirectory);
 
@@ -70,6 +70,16 @@ public class Vis_tsmHandler extends AbstractHandler {
 		//#top_line_left {display: table-cell; text-align: left; }
 		css.addLine("#top_line_right", "display:table-cell", "text-align:right");
 		
+		Tag head = html.head;
+		head.setAttribute("lang", "en");
+		Tag metaRobots = head.addTag("meta");
+		metaRobots.setAttribute("name", "robots");
+		metaRobots.setAttribute("content", "noindex");
+		head.addTag("meta").setAttribute("charset", "utf-8");
+		Tag fav = head.addTag("link");
+		fav.setAttribute("rel", "icon");
+		fav.setAttribute("type", "image/png");
+		fav.setAttribute("href", "../content/favicon.png");
 
 		Tag body = html.body;
 		Tag divTop = body.addDiv();
@@ -79,15 +89,18 @@ public class Vis_tsmHandler extends AbstractHandler {
 		Tag divTopLineRight = divTopLine.addDiv();
 		divTopLineRight.setId("top_line_right");
 		divTopLineRight.addLink("..", "main-page");
+		divTopLineRight.addButton("?").setAttribute("onclick", "var h=document.getElementById('div_help').style;h.display=(h.display=='none')?'inline':'none'");
 		Tag h1 = divTop.addTag("h1");
-		h1.addLink("../vis_tsm", "Precomputed Exploratories Visualizations");
+		//h1.addLink("../vis_tsm", "Precomputed Exploratories Visualizations");
+		h1.addLink("../supplement", "Supplementary Content");
+		
 
 		int lastSlashIndex = page.lastIndexOf("/");
 		if(lastSlashIndex>=0) {
 			String parent = page.substring(0, lastSlashIndex);
 			String current = page.substring(lastSlashIndex);			
 			Tag h2 = divTop.addTag("h2");
-			h2.addLink("../vis_tsm?page="+parent, parent);
+			h2.addLink("../supplement?page="+parent, parent);
 			h2.addText(current);
 		} else {			
 			divTop.addTag("h2",page);
@@ -121,12 +134,23 @@ public class Vis_tsmHandler extends AbstractHandler {
 					subPage += '/';
 				}
 				subPage += name;
-				divDirectories.addLink("../vis_tsm?page="+subPage).addTag("b", name);
+				divDirectories.addLink("../supplement?page="+subPage).addTag("b", name);
 				divDirectories.addText(" . . . ");
 			}
 
 			divTop.addTag("hr");
-
+			
+			
+			Tag divHelp = body.addDiv();
+			divHelp.setId("div_help");
+			divHelp.setStyle("display:none");
+			divHelp.addTag("h2","Help");
+			divHelp.addText("On this page you can view additional files.");
+			divHelp.addTag("br");
+			divHelp.addText("By clicking a link in the area at the top you can navigate to a sub-page or to a parent-page.");
+			divHelp.addTag("br");
+			divHelp.addText("The area below contains links to files at the current page.");
+			divHelp.addTag("hr");
 
 			fileList.sort(null);
 			Tag table = body.addTag("table");
@@ -144,7 +168,7 @@ public class Vis_tsmHandler extends AbstractHandler {
 				} else if(fileText.endsWith(".html")) {
 					fileText = fileText.substring(0, fileText.length()-5);
 				}
-				tr.addTag("td").addLink("../files/vis_tsm/"+subPage, fileText);
+				tr.addTag("td").addLink("../files/supplement/"+subPage, fileText);
 
 			}
 

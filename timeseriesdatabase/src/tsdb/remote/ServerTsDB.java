@@ -356,19 +356,26 @@ public class ServerTsDB implements RemoteTsDB {
 			long[] interval = tsdb.getTimeInterval(plotID);
 			if(interval!=null) {
 				float voltage = Float.NaN;
-				tsdb.streamStorage.getStationTimeInterval(plotID);
-				int[] ub = tsdb.streamStorage.getSensorTimeInterval(plotID, "UB");
-				if(ub!=null) {
-				StreamIterator it = tsdb.streamStorage.getRawSensorIterator(plotID, "UB", (long)ub[1], (long)ub[1]);
-				if(it!=null&&it.hasNext()) {
-					DataEntry e = it.next();
-					if(e.timestamp==ub[1]) {
-						voltage = e.value;
-					} else {
-						log.warn("timestamp error");
+				StreamIterator it = null;
+				//tsdb.streamStorage.getStationTimeInterval(plotID);
+				int[] uottInterval = tsdb.streamStorage.getSensorTimeInterval(plotID, "UOtt");
+				if(uottInterval!=null&&uottInterval[1]+(60*24)>=interval[1]) {
+					it = tsdb.streamStorage.getRawSensorIterator(plotID, "UOtt", (long)uottInterval[1], (long)uottInterval[1]);
+				}
+				if(it==null) {
+					int[] ubInterval = tsdb.streamStorage.getSensorTimeInterval(plotID, "UB");
+					if(ubInterval!=null&&ubInterval[1]+(60*24)>=interval[1]) {
+						it = tsdb.streamStorage.getRawSensorIterator(plotID, "UB", (long)ubInterval[1], (long)ubInterval[1]);
 					}
 				}
-				}
+				if(it!=null&&it.hasNext()) {
+					DataEntry e = it.next();
+					//if(e.timestamp==ub[1]) {
+						voltage = e.value;
+					//} else {
+					//	log.warn("timestamp error");
+					//}
+				}				
 				result.add(new PlotStatus(plotID, (int)interval[0], (int)interval[1], voltage));
 			}
 		});		

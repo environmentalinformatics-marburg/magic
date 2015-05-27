@@ -92,7 +92,7 @@ public class ExportModel{
 		this.col_plotid = true;
 		this.col_timestamp = true;
 		this.col_datetime = true;
-		this.col_qualitycounter = true;
+		this.col_qualitycounter = false; //default true?
 		this.write_header = true;
 		this.timespanType = TimespanType.ALL;
 		this.timespanYear = 0;

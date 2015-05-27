@@ -10,7 +10,8 @@ import tsdb.util.iterator.TsIterator;
 
 /**
  * Transforms from input schema to ouput schema
- * If some parameter in output schema is not in input schema -> column wille be filled with Na-values.
+ * output schema does not need to be subset of input schema (with arbitrary order)
+ * If some parameter in output schema is not in input schema -> column will be filled with Na-values.
  * @author woellauer
  *
  */

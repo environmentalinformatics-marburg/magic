@@ -34,7 +34,7 @@ import tsdb.remote.ServerTsDB;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
-import tsdb.web.api.Vis_tsmHandler;
+import tsdb.web.api.SupplementHandler;
 
 public class Main {
 	
@@ -54,7 +54,7 @@ public class Main {
 	private static final String EXPORT_API_PART_URL = "/export";
 	private static final String DOWNLOAD_PART_URL = "/download";
 	
-	private static final String VIS_TSM_PART_URL = "/vis_tsm";
+	private static final String SUPPLEMENT_PART_URL = "/supplement";
 	private static final String FILES_PART_URL = "/files";
 
 	private static final Logger log = LogManager.getLogger();
@@ -149,7 +149,7 @@ public class Main {
 				wrapLogin(createContextWebcontent(),wrap), 
 				wrapLogin(createContextTsDB(tsdb),wrap), 
 				wrapLogin(createContextExport(tsdb),wrap),
-				wrapLogin(createContextVis_tsm(),wrap), 
+				wrapLogin(createContextSupplement(),wrap), 
 				wrapLogin(createContextWebDownload(),wrap),
 				wrapLogin(createContextWebFiles(),wrap),
 				contextRedirect,
@@ -284,12 +284,12 @@ public class Main {
 		return contextExport;
 	}
 	
-	private static ContextHandler createContextVis_tsm() {
-		ContextHandler contextVis_tsm = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+VIS_TSM_PART_URL);
-		Vis_tsmHandler handler = new Vis_tsmHandler();
+	private static ContextHandler createContextSupplement() {
+		ContextHandler contextSupplement = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+SUPPLEMENT_PART_URL);
+		SupplementHandler handler = new SupplementHandler();
 		//handler.setStopTimeout(TSDB_API_TIMEOUT_MILLISECONDS);
-		contextVis_tsm.setHandler(handler);
-		return contextVis_tsm;
+		contextSupplement.setHandler(handler);
+		return contextSupplement;
 	}
 
 
@@ -313,7 +313,7 @@ public class Main {
 		//resourceHandler.setStopTimeout(FILE_DOWNLOAD_TIMEOUT_MILLISECONDS);
 		//resourceHandler.setMinAsyncContentLength(-1); //no async
 		//resourceHandler.setDirectoriesListed(true);
-		resourceHandler.setDirectoriesListed(true); // !! show directory content !!
+		resourceHandler.setDirectoriesListed(false); // !! show directory content !!
 		resourceHandler.setResourceBase(TsDBFactory.WEBFILES_PATH);
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] {resourceHandler, new DefaultHandler()});
