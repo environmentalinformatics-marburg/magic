@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
@@ -28,9 +27,9 @@ import tsdb.component.SensorCategory;
 import tsdb.util.AggregationType;
 import tsdb.util.Interval;
 import tsdb.util.Table;
-import tsdb.util.TimeConverter;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderString;
+import tsdb.util.TimeConverter;
 import tsdb.util.Util;
 import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
@@ -1190,7 +1189,7 @@ public class ConfigLoader {
 			String loggerTypeName = cr_logger.get(row);
 			String serial = cr_serial.get(row);
 			String startText = cr_start.get(row);
-			String endText = cr_start.get(row);
+			String endText = cr_end.get(row);
 
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {

@@ -17,6 +17,11 @@ import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;
 
+/**
+ * Overview of regions
+ * @author woellauer
+ *
+ */
 public class RegionView {
 	private static final Logger log = LogManager.getLogger();
 	

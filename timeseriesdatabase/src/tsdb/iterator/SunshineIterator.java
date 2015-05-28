@@ -4,10 +4,16 @@ import java.util.Arrays;
 
 import tsdb.util.AssumptionCheck;
 import tsdb.util.TsEntry;
-import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * fills sunshine columns with calculated values from Rn_300 column.
+ * 1: sunhine at this point in time
+ * 0: no sunshine at this point in time
+ * @author woellauer
+ *
+ */
 public class SunshineIterator extends InputIterator {
 	
 	private int Rn_300_pos = -1;
@@ -37,7 +43,8 @@ public class SunshineIterator extends InputIterator {
 	public TsEntry next() {
 		TsEntry entry = input_iterator.next();
 		float[] data = Arrays.copyOf(entry.data, entry.data.length);
-		data[sunshine_pos] = entry.data[Rn_300_pos]>=120?1f:0f; 
+		float value = entry.data[Rn_300_pos];
+		data[sunshine_pos] = Float.isNaN(value)?Float.NaN:(value>=120?1f:0f); 
 		return new TsEntry(entry.timestamp, data, entry.qualityFlag);
 	}
 

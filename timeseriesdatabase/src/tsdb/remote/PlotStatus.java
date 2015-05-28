@@ -3,6 +3,11 @@ package tsdb.remote;
 import java.io.Serializable;
 import java.util.Comparator;
 
+/**
+ * Serializable plot status
+ * @author woellauer
+ *
+ */
 public class PlotStatus implements Serializable {
 	private static final long serialVersionUID = 7104450052055571808L;
 	

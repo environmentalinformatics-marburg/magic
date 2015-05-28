@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +41,11 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Local implementation of RemoteTsDB
+ * @author woellauer
+ *
+ */
 public class ServerTsDB implements RemoteTsDB {
 
 	private static final Logger log = LogManager.getLogger();

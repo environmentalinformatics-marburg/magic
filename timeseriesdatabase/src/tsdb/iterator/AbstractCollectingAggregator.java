@@ -4,8 +4,12 @@ import java.util.ArrayList;
 
 import tsdb.util.AggregationType;
 import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainOneSource;
 
+/**
+ * Base class for collecting aggregators
+ * @author woellauer
+ *
+ */
 public abstract class AbstractCollectingAggregator implements CollectingAggregator  {
 		private CollectingAggregator collectingAggregator;
 
@@ -16,6 +20,7 @@ public abstract class AbstractCollectingAggregator implements CollectingAggregat
 		public final int[] outputCounters;
 		public long outputTimestamp;
 
+		@SuppressWarnings("unchecked")
 		public AbstractCollectingAggregator(CollectingAggregator collectingAggregator, int estimatedAggregationCapacity) {
 			this.collectingAggregator = collectingAggregator;
 			this.outputs = new ArrayList[collectingAggregator.getAttributeCount()];

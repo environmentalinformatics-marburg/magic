@@ -6,9 +6,12 @@ import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainOneSource;
-import tsdb.util.iterator.ProcessingChainSource;
 
+/**
+ * Evaluates collections from CollectingAggregator to statics: min, max, median, quantiles 
+ * @author woellauer
+ *
+ */
 public class EvaluatingAggregationIterator extends MoveIterator {
 
 	private final CollectingAggregator collectingAggregator;

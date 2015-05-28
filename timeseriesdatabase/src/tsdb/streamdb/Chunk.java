@@ -10,6 +10,11 @@ import org.xerial.snappy.Snappy;
 
 import tsdb.util.DataEntry;
 
+/**
+ * Chunk of time series data
+ * @author woellauer
+ *
+ */
 public class Chunk {
 	public final DataEntry[] data;
 

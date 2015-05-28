@@ -9,6 +9,11 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 
+/**
+ * Load tfi files into database
+ * @author woellauer
+ *
+ */
 public class ImportTfi {
 	
 private static final Logger log = LogManager.getLogger();

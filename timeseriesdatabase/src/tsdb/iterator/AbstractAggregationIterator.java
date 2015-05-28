@@ -1,7 +1,5 @@
 package tsdb.iterator;
 
-import java.util.Arrays;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,9 +14,12 @@ import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
-
+/**
+ * Base class for aggregation iterators
+ * @author woellauer
+ *
+ */
 public abstract class AbstractAggregationIterator extends InputProcessingIterator {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private final Sensor[] sensors;

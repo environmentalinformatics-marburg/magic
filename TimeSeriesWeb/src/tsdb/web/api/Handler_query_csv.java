@@ -17,7 +17,6 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.TimeConverter;
-import tsdb.util.Util;
 import tsdb.util.iterator.CSV;
 import tsdb.util.iterator.CSVTimeType;
 import tsdb.util.iterator.TimestampSeries;

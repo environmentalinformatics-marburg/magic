@@ -5,8 +5,12 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.StationProperties;
 
-public class LoaderFactory {
-	
+/**
+ * Facatory for loaders by logger type name
+ * @author woellauer
+ *
+ */
+public class LoaderFactory {	
 	private static final Logger log = LogManager.getLogger();
 	
 	private LoaderFactory(){}
@@ -30,6 +34,7 @@ public class LoaderFactory {
 		case "rug":
 			return new Loader_rug(input_schema, properties, sourceInfo);					
 		default:
+			log.warn("no loader found");
 			return null;
 		}
 	}

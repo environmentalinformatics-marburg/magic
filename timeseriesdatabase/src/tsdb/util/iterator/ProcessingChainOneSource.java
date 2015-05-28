@@ -2,7 +2,6 @@ package tsdb.util.iterator;
 
 import tsdb.util.ProcessingChainEntry;
 import tsdb.util.ProcessingChainSupplier;
-import tsdb.util.ProcessingChainTitle;
 
 public class ProcessingChainOneSource implements ProcessingChain {	
 	public final ProcessingChain source;

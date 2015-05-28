@@ -8,8 +8,12 @@ import java.io.Serializable;
 import tsdb.Station;
 import tsdb.VirtualPlot;
 
-public class PlotInfo implements Serializable {
-	
+/**
+ * Serializable plot info
+ * @author woellauer
+ *
+ */
+public class PlotInfo implements Serializable {	
 	private static final long serialVersionUID = -304301220496293360L;
 
 	public final String name;

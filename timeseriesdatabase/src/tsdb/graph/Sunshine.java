@@ -6,6 +6,11 @@ import tsdb.TsDB;
 import tsdb.iterator.SunshineIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Node: calculates sunshine duration from source (Rn_300)
+ * @author woellauer
+ *
+ */
 public class Sunshine extends Node.Abstract{
 	
 	private final Node source;

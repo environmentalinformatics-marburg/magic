@@ -19,6 +19,11 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * This node creates raw values from one station source filtered by a virtual plot interval.
+ * @author woellauer
+ *
+ */
 public class VirtualPlotStationRawSource extends RawSource.Abstract {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();

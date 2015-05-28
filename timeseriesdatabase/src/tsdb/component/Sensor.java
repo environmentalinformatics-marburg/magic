@@ -6,7 +6,6 @@ import tsdb.util.AggregationType;
 
 /**
  * This class contains metadata that is associated with a sensor.
- * Only sensors that are part of base aggregation are created.
  * @author woellauer
  *
  */

@@ -6,11 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.TimeSeriesArchivReader;
+import tsdb.TimeSeriesArchivReader.TimeSeriesArchivVisitor;
 import tsdb.TimeSeriesArchivWriter;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.TimeSeriesArchivReader.EntryType;
-import tsdb.TimeSeriesArchivReader.TimeSeriesArchivVisitor;
 import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
 import tsdb.util.AggregationInterval;

@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import tsdb.util.ProcessingChainEntry;
 import tsdb.util.TimeConverter;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;

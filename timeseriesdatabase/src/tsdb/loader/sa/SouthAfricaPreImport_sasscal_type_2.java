@@ -19,6 +19,11 @@ import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Reads SASSCAL_Type_2 files and writes content into ".tsa"-files
+ * @author woellauer
+ *
+ */
 public class SouthAfricaPreImport_sasscal_type_2 {
 	private static final Logger log = LogManager.getLogger();
 

@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.usecase;
 
 import java.io.IOException;
 

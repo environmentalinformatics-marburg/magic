@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class contains data that is common for station and virtual plot
+ * This class contains data that is common for station and virtual plot.
+ *  - currently not used -
  * @author woellauer
  *
  */

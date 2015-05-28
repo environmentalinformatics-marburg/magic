@@ -16,6 +16,14 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.util.Util;
 
+/**
+ * Factory of RemoteTsDB
+ * - create local instance 
+ * - start server for RMI
+ * - connect to RMI 
+ * @author woellauer
+ *
+ */
 public class RemoteTsDBFactory {
 	private static final Logger log = LogManager.getLogger();
 	

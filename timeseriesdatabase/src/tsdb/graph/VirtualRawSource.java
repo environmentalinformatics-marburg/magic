@@ -19,6 +19,11 @@ import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Node: raw source of virtual plot
+ * @author woellauer
+ *
+ */
 public class VirtualRawSource extends RawSource.Abstract {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();

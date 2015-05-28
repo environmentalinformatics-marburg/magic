@@ -9,10 +9,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
-
-
-
+/**
+ * Internal Executor for threads in TimeSeriesMultiViewScene
+ * @author woellauer
+ *
+ */
 public class PriorityExecutor {
 	
 	private ThreadPoolExecutor executor;

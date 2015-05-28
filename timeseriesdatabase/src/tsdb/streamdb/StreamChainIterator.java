@@ -6,6 +6,12 @@ import java.util.List;
 import tsdb.util.DataEntry;
 import tsdb.util.TimeConverter;
 
+/**
+ * chain StreamIterators to one iterator.
+ * Time stamps need to be ascending from one iterator to next iterator.
+ * @author woellauer
+ *
+ */
 public class StreamChainIterator implements Iterator<DataEntry>{
 	
 	private final Iterator<StreamIterator> itit;
@@ -44,5 +50,4 @@ public class StreamChainIterator implements Iterator<DataEntry>{
 	public DataEntry next() {
 		return current.next();
 	}
-
 }

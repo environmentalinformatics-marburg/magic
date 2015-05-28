@@ -6,6 +6,12 @@ import java.io.Serializable;
 
 import tsdb.util.Interval;
 
+/**
+ * A region names a collection of plots (from one project).
+ * Every general station is associated with one region.
+ * @author woellauer
+ *
+ */
 public class Region implements Serializable {
 	private static final long serialVersionUID = -8897183157291637247L;
 	

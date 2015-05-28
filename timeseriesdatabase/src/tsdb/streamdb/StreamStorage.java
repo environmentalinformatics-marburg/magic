@@ -9,7 +9,7 @@ import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
 /**
- * This class encapsulates EventStore and provides basic methods store and query time series data. 
+ * This class encapsulates StreamDB and provides basic methods to store and query time series data. 
  * @author woellauer
  *
  */
@@ -38,7 +38,7 @@ public interface StreamStorage {
 	 * @param last
 	 * @param sensorNames 
 	 */
-	public void insertEventList(String streamName, List<DataRow> eventList, long first, long last, String[] sensorNames);
+	public void insertDataRows(String streamName, List<DataRow> eventList, long first, long last, String[] sensorNames);
 
 	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long minTimestamp, Long maxTimestamp);
 	

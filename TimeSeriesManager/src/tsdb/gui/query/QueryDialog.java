@@ -480,6 +480,7 @@ public class QueryDialog extends Dialog {
 		model.addPropertyChangeCallback("aggregationName", this::onChangeAggregationName);
 	}
 
+	@SuppressWarnings("deprecation")
 	void updateRegionLongNames() {
 		String[] regionLongNames = null;
 		try {
@@ -502,6 +503,7 @@ public class QueryDialog extends Dialog {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private void onChangeRegionLongName(String regionLongName) {
 		System.out.println("onChangeRegionLongName: "+regionLongName);
 		String[] generalStationLongNames = null;

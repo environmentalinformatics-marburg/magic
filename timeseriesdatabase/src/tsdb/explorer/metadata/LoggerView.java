@@ -18,6 +18,11 @@ import javafx.scene.layout.GridPane;
 import tsdb.component.LoggerType;
 import tsdb.remote.RemoteTsDB;
 
+/**
+ * Overview of loggers
+ * @author woellauer
+ *
+ */
 public class LoggerView {
 	private static final Logger log = LogManager.getLogger();	
 	

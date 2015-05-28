@@ -37,6 +37,11 @@ import tsdb.util.TsSchema;
 
 import com.sun.javafx.binding.ObjectConstant;
 
+/**
+ * View of SourceCatalog
+ * @author woellauer
+ *
+ */
 public class SourceCatalogScene extends TsdbScene {
 	
 	private static final Logger log = LogManager.getLogger();

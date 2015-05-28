@@ -23,6 +23,11 @@ import tsdb.util.TimeConverter;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * create cache of average values from groups of stations
+ * @author woellauer
+ *
+ */
 public class CreateStationGroupAverageCache_NEW {
 
 	private static final Logger log = LogManager.getLogger();

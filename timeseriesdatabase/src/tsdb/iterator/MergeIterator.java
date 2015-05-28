@@ -13,6 +13,11 @@ import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 import static tsdb.util.AssumptionCheck.throwEmpty;
 
+/**
+ * Merges multiple iterators into one by time stamp.
+ * @author woellauer
+ *
+ */
 public class MergeIterator extends MoveIterator {
 
 	public static TsSchema createSchema(String[] result_names, TsIterator[] input_iterator) {
@@ -125,5 +130,3 @@ public class MergeIterator extends MoveIterator {
 		return new ProcessingChainMultiSources(processing_iterator, this);
 	}
 }
-
-

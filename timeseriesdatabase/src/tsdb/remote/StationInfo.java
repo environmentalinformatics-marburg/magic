@@ -6,6 +6,11 @@ import tsdb.Station;
 import tsdb.component.LoggerType;
 import tsdb.util.Util;
 
+/**
+ * Serializable station info
+ * @author woellauer
+ *
+ */
 public class StationInfo implements Serializable {
 
 	private static final long serialVersionUID = -5759969271465519328L;

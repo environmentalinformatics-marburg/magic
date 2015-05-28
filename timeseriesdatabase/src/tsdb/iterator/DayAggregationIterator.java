@@ -4,6 +4,11 @@ import tsdb.TsDB;
 import tsdb.util.AggregationType;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * aggregation iterator to day
+ * @author woellauer
+ *
+ */
 public class DayAggregationIterator extends AbstractAggregationIterator {	
 
 	public DayAggregationIterator(TsDB tsdb, TsIterator input_iterator) {

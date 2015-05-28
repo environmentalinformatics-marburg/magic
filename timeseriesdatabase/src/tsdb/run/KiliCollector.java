@@ -32,6 +32,14 @@ import tsdb.util.TimeConverter;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * This class preprocesses new KiLi-data files.
+ * 1. read all old data files
+ * 2. read all new data files
+ * 3. compare old to new
+ * @author woellauer
+ *
+ */
 public class KiliCollector {
 
 	private static final Logger log = LogManager.getLogger();

@@ -10,6 +10,11 @@ import org.mapdb.BTreeMap;
 
 import tsdb.util.DataEntry;
 
+/**
+ * Iterator over one time series
+ * @author woellauer
+ *
+ */
 public class StreamIterator implements Iterator<DataEntry> {	
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();

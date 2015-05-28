@@ -56,6 +56,11 @@ import tsdb.util.gui.TimeSeriesHeatMap;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * View of multiple time series
+ * @author woellauer
+ *
+ */
 public class TimeSeriesMultiViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;

@@ -11,6 +11,11 @@ import org.mapdb.BTreeMap;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
+/**
+ * SourceCatalog contains info about imported data-files.
+ * @author woellauer
+ *
+ */
 public class SourceCatalog {
 	
 	private static final Logger log = LogManager.getLogger();
@@ -41,11 +46,7 @@ public class SourceCatalog {
 		} else {
 			System.out.println("create new SourceCatalog");
 			this.catalogMap =  db.createTreeMap(DB_NAME_SOURCE_CATALOG).makeStringMap();
-		}
-		
-		
-		
-		
+		}		
 	}
 
 	public void clear() {
@@ -68,5 +69,4 @@ public class SourceCatalog {
 		db.commit();
 		db.close();
 	}
-
 }

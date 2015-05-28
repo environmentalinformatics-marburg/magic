@@ -21,7 +21,11 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TimeSeriesMask;
 import tsdb.util.iterator.TsIterator;
 
-
+/**
+ * Central class of StreamDB
+ * @author woellauer
+ *
+ */
 public class StreamDB {
 
 	private static final Logger log = LogManager.getLogger();

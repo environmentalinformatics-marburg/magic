@@ -19,6 +19,11 @@ import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Node: source from cache (average of group)
+ * @author woellauer
+ *
+ */
 public class GroupAverageSource_NEW extends Continuous.Abstract {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();

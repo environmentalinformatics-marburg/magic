@@ -12,8 +12,12 @@ import tsdb.util.DataRow;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
-public abstract class AbstractLoader {
-	
+/**
+ * Base class for data loaders
+ * @author woellauer
+ *
+ */
+public abstract class AbstractLoader {	
 	private static final Logger log = LogManager.getLogger();
 
 	protected final String[] inputSchema;
@@ -32,7 +36,7 @@ public abstract class AbstractLoader {
 
 	protected abstract void createProcessingTypes();
 	protected abstract void createResultSchema();	
-	protected abstract List<DataRow> toEvents(TimestampSeries timestampSeries);
+	protected abstract List<DataRow> toDataRows(TimestampSeries timestampSeries);
 
 	protected boolean createSourcePos(String[] targetSchema) {
 		//sourcePos[targetIndex] => sourceIndex
@@ -68,7 +72,7 @@ public abstract class AbstractLoader {
 
 		boolean containsValidColumns = createSourcePos(targetSchema);
 		if(containsValidColumns) {
-			return toEvents(timestampSeries);			
+			return toDataRows(timestampSeries);			
 		} else {
 			return null;
 		}		
@@ -76,7 +80,5 @@ public abstract class AbstractLoader {
 
 	public String[] getResultSchema() {
 		return resultSchema;
-	}
-
-	
+	}	
 }

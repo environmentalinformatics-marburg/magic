@@ -17,6 +17,11 @@ import tsdb.util.AssumptionCheck;
 import tsdb.util.DataEntry;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Load data files from Southafrica own stations
+ * @author woellauer
+ *
+ */
 public class ImportSaOwn {
 	private static final Logger log = LogManager.getLogger();
 
@@ -113,10 +118,7 @@ public class ImportSaOwn {
 								corrected_data[i] = new DataEntry(data[i].timestamp,data[i].value*0.2f);
 							}
 							data = corrected_data;
-						}
-						
-						
-						
+						}						
 						if(data!=null&&data.length>0) {
 							//System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
 							//streamdb.insertSensorData(stationName, sensorName, data);
@@ -136,21 +138,11 @@ public class ImportSaOwn {
 							}
 						}
 					}
-
-
-
 				} else {
 					log.info("sensor not found "+sensorName);
 				}
-
 			}
-
-
-
 			//log.info(timestampseries);
-
-
-
 		} catch (Exception e) {
 			log.error(e);
 		}

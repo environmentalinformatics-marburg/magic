@@ -1,16 +1,19 @@
 package tsdb.iterator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import tsdb.TsDB;
 import tsdb.component.Sensor;
 import tsdb.util.AggregationType;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainOneSource;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * collecting aggregator to day
+ * @author woellauer
+ *
+ */
 public class DayCollectingAggregator implements CollectingAggregator {
 
 	private final TsIterator input_iterator;
@@ -22,6 +25,8 @@ public class DayCollectingAggregator implements CollectingAggregator {
 	private final ArrayList<Float>[] outputs; //No NaNs
 	private long outputTimestamp;
 
+	
+	@SuppressWarnings("unchecked")
 	public DayCollectingAggregator(TsDB tsdb, TsIterator input_iterator) {
 		this.input_iterator = input_iterator;
 		this.sensors = tsdb.getSensors(input_iterator.getSchema().names);

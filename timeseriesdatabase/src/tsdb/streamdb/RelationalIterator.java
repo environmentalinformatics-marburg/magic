@@ -13,6 +13,12 @@ import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Joins a collection of StreamIterators to TsIterator with outputSchema.
+ * Fills not existing source rows with NaN-values.
+ * @author woellauer
+ *
+ */
 public class RelationalIterator extends TsIterator {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
@@ -95,5 +101,4 @@ public class RelationalIterator extends TsIterator {
 		calcNext();
 		return r;
 	}
-
 }

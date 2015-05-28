@@ -9,6 +9,7 @@ import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
+@Deprecated
 public class CreateStationCache {
 
 	public static void main(String[] args) {

@@ -10,6 +10,11 @@ import tsdb.component.Sensor;
 import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
+/**
+ * TsDB console
+ * @author woellauer
+ *
+ */
 public class ConsoleRunner implements Runnable {
 
 	private final TsDB tsdb;

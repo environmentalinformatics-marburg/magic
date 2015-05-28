@@ -19,6 +19,11 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * parses ".asc"-files
+ * @author woellauer
+ *
+ */
 public class AscParser {
 
 	private static final Logger log = LogManager.getLogger();

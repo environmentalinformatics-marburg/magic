@@ -1,11 +1,15 @@
 package tsdb.iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
 public class LinearIterpolationIterator extends InputProcessingIterator {
+	private static final Logger log = LogManager.getLogger();
 	
 	TsEntry prev = null;
 	TsEntry curr = null;
@@ -67,8 +71,8 @@ public class LinearIterpolationIterator extends InputProcessingIterator {
 				}
 			}
 			TsEntry res = new TsEntry(curr.timestamp, result);
-			System.out.println("-"+curr);
-			System.out.println("+"+res);			
+			log.info("-"+curr);
+			log.info("+"+res);			
 			return res;
 		} else { // curr is first or last in iterator
 			return curr;

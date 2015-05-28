@@ -4,6 +4,11 @@ import tsdb.TsDB;
 import tsdb.util.AggregationType;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * aggregation iterator to week
+ * @author woellauer
+ *
+ */
 public class WeekAggregationIterator extends AbstractAggregationIterator {
 
 	public WeekAggregationIterator(TsDB tsdb, TsIterator input_iterator) {

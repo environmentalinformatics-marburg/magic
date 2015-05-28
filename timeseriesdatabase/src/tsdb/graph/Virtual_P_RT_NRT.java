@@ -10,6 +10,11 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.iterator.Virtual_P_RT_NRT_Iterator;
 
+/**
+ * Node: calculates corrected precipitation values from source (container)
+ * @author woellauer
+ *
+ */
 public class Virtual_P_RT_NRT extends Node.Abstract{
 	
 	private final Node source;

@@ -15,6 +15,11 @@ import org.apache.logging.log4j.Logger;
 import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
+/**
+ * Properties of stations
+ * @author woellauer
+ *
+ */
 public class StationProperties implements Serializable{
 	private static final long serialVersionUID = -4558930650676952510L;
 	private static final Logger log = LogManager.getLogger();

@@ -7,6 +7,11 @@ import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * converts StreamIterator (or other DataEntry Iterator) to TsIterator
+ * @author woellauer
+ *
+ */
 public class StreamTsIterator extends TsIterator {
 	
 	private final Iterator<DataEntry> input_iterator;

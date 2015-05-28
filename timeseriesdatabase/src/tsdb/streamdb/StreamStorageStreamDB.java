@@ -16,8 +16,12 @@ import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Implementations of StreamStorage with StreamDB
+ * @author woellauer
+ *
+ */
 public class StreamStorageStreamDB implements StreamStorage {
-
 	private static final Logger log = LogManager.getLogger();
 
 	private StreamDB streamdb;
@@ -57,7 +61,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	@Override
-	public void insertEventList(String streamName, List<DataRow> eventList,long first, long last, String[] sensorNames) {
+	public void insertDataRows(String streamName, List<DataRow> eventList,long first, long last, String[] sensorNames) {
 		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventList.size());
 		for(int i=0;i<sensorNames.length;i++) {
 			sensorData.clear();

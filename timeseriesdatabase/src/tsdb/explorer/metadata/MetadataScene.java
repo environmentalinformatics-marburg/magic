@@ -12,6 +12,11 @@ import org.apache.logging.log4j.Logger;
 import tsdb.explorer.TsdbScene;
 import tsdb.remote.RemoteTsDB;
 
+/**
+ * Central window for all types of metadata
+ * @author woellauer
+ *
+ */
 public class MetadataScene extends TsdbScene {
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();	

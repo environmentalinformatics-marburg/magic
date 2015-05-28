@@ -12,7 +12,6 @@ import tsdb.VirtualPlot;
 import tsdb.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.Interpolator;
-import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.TimeSeries;
 import tsdb.util.iterator.TsIterator;
 

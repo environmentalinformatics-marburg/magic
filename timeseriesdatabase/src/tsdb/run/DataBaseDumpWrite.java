@@ -20,6 +20,12 @@ import tsdb.streamdb.StreamDB;
 import tsdb.streamdb.StreamIterator;
 import tsdb.util.DataEntry;
 
+/**
+ * Writes database dumb to file
+ * @author woellauer
+ *
+ */
+@Deprecated
 public class DataBaseDumpWrite {
 
 	public final static int TIME_SERIES_STREAM_HEADER_MARKER = 0x54535348; //TSSH

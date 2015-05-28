@@ -9,25 +9,24 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.TsDBFactory;
 import tsdb.explorer.metadata.MetadataScene;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.RemoteTsDBFactory;
 
+/**
+ * Entry point for Explorer Application
+ * @author woellauer
+ *
+ */
 public class Explorer extends Application {
-
-
-
-	public static String ESCAPE = ""+(char)27;
-
 	private static final Logger log = LogManager.getLogger();
+	
+	public static final String ESCAPE = ""+(char)27;
 
 	@Override
 	public void start(Stage primaryStage) {

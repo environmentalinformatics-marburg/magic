@@ -22,6 +22,11 @@ import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;
 
+/**
+ * Overview of sensors
+ * @author woellauer
+ *
+ */
 public class SensorView {	
 	private static final Logger log = LogManager.getLogger();
 	

@@ -7,8 +7,12 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Info about an imported data-file
+ * @author woellauer
+ *
+ */
 public class SourceEntry implements Serializable {
-
 	private static final long serialVersionUID = 8603819733815550502L;
 	
 	public final String path;

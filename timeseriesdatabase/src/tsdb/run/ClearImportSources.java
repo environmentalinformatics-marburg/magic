@@ -14,6 +14,12 @@ import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.util.TimeConverter;
 
+/**
+ * first creates empty database
+ * then loads data files into database
+ * @author woellauer
+ *
+ */
 public class ClearImportSources {
 	private static final Logger log = LogManager.getLogger();
 

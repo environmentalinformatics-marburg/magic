@@ -2,8 +2,12 @@ package tsdb.explorer;
 
 import tsdb.component.SourceEntry;
 
-public class SourceItem {
-	
+/**
+ * Items in View of SourceCatalog
+ * @author woellauer
+ *
+ */
+public class SourceItem {	
 	public final SourceEntry sourceEntry;
 	public String generalStationName;
 	public String regionName;
@@ -15,5 +19,4 @@ public class SourceItem {
 		this.regionName = null;
 		this.plotid = null;
 	}
-
 }

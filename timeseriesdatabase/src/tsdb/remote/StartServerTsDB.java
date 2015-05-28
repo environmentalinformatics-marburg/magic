@@ -14,6 +14,11 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 
+/**
+ * Start RMI Server
+ * @author woellauer
+ *
+ */
 public class StartServerTsDB {
 
 	private static final Logger log = LogManager.getLogger();

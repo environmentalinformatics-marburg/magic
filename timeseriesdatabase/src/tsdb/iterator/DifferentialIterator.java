@@ -5,6 +5,11 @@ import tsdb.util.TsSchema;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Calculates difference between consecutive time stamps
+ * @author woellauer
+ *
+ */
 public class DifferentialIterator extends InputProcessingIterator {
 	
 	public static TsSchema createSchema(TsSchema schema) {

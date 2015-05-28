@@ -184,7 +184,7 @@ public class TimeSeriesLoaderKiLi {
 			log.error("no entries for "+station.stationID+"   in   "+ascPath);
 			return;
 		}
-		tsdb.streamStorage.insertEventList(timestampSeries.name, eventList, timestampSeries.getFirstTimestamp(), timestampSeries.getLastTimestamp(), station.loggerType.sensorNames);
+		tsdb.streamStorage.insertDataRows(timestampSeries.name, eventList, timestampSeries.getFirstTimestamp(), timestampSeries.getLastTimestamp(), station.loggerType.sensorNames);
 		String[] resultSchema = loader.getResultSchema();
 
 		tsdb.sourceCatalog.insert(SourceEntry.of(timestampSeries, ascPath, resultSchema));

@@ -22,8 +22,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class BaseAggregationIterator extends InputProcessingIterator {
-	
+public class BaseAggregationIterator extends InputProcessingIterator {	
 	private static final Logger log = LogManager.getLogger();
 
 	Sensor[] sensors;

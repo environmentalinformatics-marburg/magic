@@ -2,13 +2,15 @@ package tsdb.iterator;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
-
-import org.w3c.dom.views.AbstractView;
 
 import tsdb.util.AggregationType;
 import tsdb.util.TimeConverter;
 
+/**
+ * collecting aggregator to month
+ * @author woellauer
+ *
+ */
 public class MonthCollectingAggregator extends AbstractCollectingAggregator {
 
 	public MonthCollectingAggregator(DayCollectingAggregator dca) {

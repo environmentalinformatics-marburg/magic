@@ -21,16 +21,20 @@ import tsdb.VirtualPlot;
 import tsdb.component.SourceEntry;
 import tsdb.util.DataRow;
 import tsdb.util.Table;
-import tsdb.util.TimeConverter;
+import tsdb.util.Table.ColumnReaderFloat;
+import tsdb.util.Table.ColumnReaderString;
+import tsdb.util.Table.ColumnReaderTimestampTwoCols;
+import tsdb.util.TimestampInterval;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.Table.ColumnReaderFloat;
-import tsdb.util.Table.ColumnReaderTimestampTwoCols;
-import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.iterator.CSVIterator;
 import tsdb.util.iterator.TimestampSeries;
-import tsdb.util.TimestampInterval;
 
+/**
+ * loads tfi data from directory
+ * @author woellauer
+ *
+ */
 public class TimeSeriesLoaderKiLi_manual_tfi {
 
 	private static final Logger log = LogManager.getLogger();
@@ -125,9 +129,9 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 				String[] targetSchema = tsdb.getLoggerType("tfi").sensorNames;
 				Loader_manual_tfi loader = new Loader_manual_tfi(timestampSeries);
 				loader.load(targetSchema);
-				List<DataRow> events = loader.toEvents();
+				List<DataRow> events = loader.toDataRows();
 				if(events!=null) {
-					tsdb.streamStorage.insertEventList(serial, events, start, end, targetSchema);
+					tsdb.streamStorage.insertDataRows(serial, events, start, end, targetSchema);
 					tsdb.sourceCatalog.insert(new SourceEntry(path,serial,start,end,events.size(),timestampSeries.sensorNames, targetSchema, TsSchema.NO_CONSTANT_TIMESTEP));
 				} else {
 					log.warn("no events inserted: "+path);
@@ -196,9 +200,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 					}
 					tsList.add(new TsEntry(timestamp, new float[]{iso_d18_16,iso_dD_H,iso_d_excess}));
 				}
-
 			}
-
 		}
 
 
@@ -227,15 +229,7 @@ public class TimeSeriesLoaderKiLi_manual_tfi {
 				} else {
 					log.warn("unknown plotID: "+plotID+"   in  "+filePath);
 				}
-
-
-
-
 			}
-
 		}
-
-
 	}
-
 }

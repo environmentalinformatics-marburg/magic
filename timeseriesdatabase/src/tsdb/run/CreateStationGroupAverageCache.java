@@ -23,6 +23,7 @@ import static tsdb.util.AssumptionCheck.*;
  * @author woellauer
  *
  */
+@Deprecated
 public class CreateStationGroupAverageCache {
 
 	private static final Logger log = LogManager.getLogger();

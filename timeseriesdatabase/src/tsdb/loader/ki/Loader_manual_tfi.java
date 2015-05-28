@@ -12,6 +12,11 @@ import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * loader for manual collected tfi data
+ * @author woellauer
+ *
+ */
 class Loader_manual_tfi {
 	
 	private static final Logger log = LogManager.getLogger();
@@ -54,26 +59,26 @@ class Loader_manual_tfi {
 	public List<DataRow> load(String[] targetSchema) {
 		boolean containsValidColumns = createSourcePos(targetSchema);
 		if(containsValidColumns) {
-			return toEvents();			
+			return toDataRows();			
 		} else {
 			return null;
 		}		
 	}
 
-	public List<DataRow> toEvents() {
-		List<DataRow> eventList = new ArrayList<DataRow>(timestampSeries.entryList.size());
+	public List<DataRow> toDataRows() {
+		List<DataRow> rowList = new ArrayList<DataRow>(timestampSeries.entryList.size());
 		for(TsEntry entry:timestampSeries.entryList) {
-			Float[] eventData = new Float[sourcePos.length];
+			Float[] rowData = new Float[sourcePos.length];
 			for(int schemaIndex=0;schemaIndex<sourcePos.length;schemaIndex++) {
 				int sourceIndex = sourcePos[schemaIndex];
 				if(sourceIndex==-1) {
-					eventData[schemaIndex] = Float.NaN;
+					rowData[schemaIndex] = Float.NaN;
 				} else {
-					eventData[schemaIndex] = entry.data[sourceIndex];								
+					rowData[schemaIndex] = entry.data[sourceIndex];								
 				}
 			}
-			eventList.add(new DataRow(eventData, entry.timestamp));
+			rowList.add(new DataRow(rowData, entry.timestamp));
 		}
-		return eventList;
+		return rowList;
 	}
 }

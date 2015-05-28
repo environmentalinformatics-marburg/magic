@@ -3,7 +3,6 @@ package tsdb.util.gui;
 import static tsdb.util.AssumptionCheck.throwNull;
 import static tsdb.util.AssumptionCheck.throwNulls;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -45,6 +45,7 @@ public class CollectorController {
 		bindModel();
 	}
 
+	@SuppressWarnings("deprecation")
 	public void initModel() {
 		String[] regionLongNames = null;
 		String regionLongName = null;

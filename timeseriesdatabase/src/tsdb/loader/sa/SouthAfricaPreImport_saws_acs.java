@@ -20,6 +20,11 @@ import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.Util;
 
+/**
+ * Reads SAWS ACS files and writes content into ".tsa"-files
+ * @author woellauer
+ *
+ */
 public class SouthAfricaPreImport_saws_acs {
 	
 	private static final Logger log = LogManager.getLogger();

@@ -1,4 +1,4 @@
-package tsdb.run;
+package tsdb.usecase;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -7,30 +7,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import tsdb.TsDBFactory;
 import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
-import tsdb.graph.Difference;
+import tsdb.graph.Differential;
 import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.iterator.TsIteratorIterator;
 
-public class AverageDiff {
-
+public class CreateSteps {
+	
 	private static final String CSV_OUTPUT_PATH = "C:/timeseriesdatabase_output/";
-
+	
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
+		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.PHYSICAL);
 
-		//String sensorName="Ta_200"; {
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {
 			System.out.println("process: "+sensorName);
 			String[] schema = new String[]{sensorName};
@@ -57,7 +56,7 @@ public class AverageDiff {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				TsIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
+				TsIterator it = Differential.of(tsdb, source).get(null, null);
 				if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);
@@ -66,8 +65,7 @@ public class AverageDiff {
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {
 				TsIteratorIterator result_iterator = new TsIteratorIterator(iterator_list,schema);
-				//result_iterator.writeCSV(CSV_OUTPUT_PATH+"AverageDiff/"+sensorName+".csv");
-				FileOutputStream out = new FileOutputStream(CSV_OUTPUT_PATH+"AverageDiff/"+sensorName);
+				FileOutputStream out = new FileOutputStream(CSV_OUTPUT_PATH+"Steps/"+sensorName);
 				PrintStream printStream = new PrintStream(out);
 				
 				
@@ -84,12 +82,15 @@ public class AverageDiff {
 				System.out.println("final calc...");
 				
 				float prevValue = Float.NaN;
-				float prevDiff = Float.NaN;				
-				for(Float value:result_list.subList(result_list.size()*95/100, result_list.size())) {					
+				float prevDiff = Float.NaN;
+				long startIndex = result_list.size();
+				startIndex*=999;
+				startIndex/=1000;
+				for(Float value:result_list.subList((int) startIndex, result_list.size())) {					
 					float diff = value-prevValue;
 					float diffdiff = diff-prevDiff;
 					if(!Float.isNaN(diff)&&!Float.isNaN(diffdiff)) {
-					printStream.format(Locale.ENGLISH,"%3.2f %3.5f %3.5f\n", value, diff, diffdiff);
+					printStream.format(Locale.ENGLISH,"%3.3f %3.5f %3.5f\n", value, diff, diffdiff);
 					}					
 					prevValue = value;
 					prevDiff = diff;

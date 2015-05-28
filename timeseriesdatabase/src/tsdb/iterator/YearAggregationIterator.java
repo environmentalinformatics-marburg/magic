@@ -9,6 +9,11 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * aggregation iterator to year
+ * @author woellauer
+ *
+ */
 public class YearAggregationIterator extends AbstractAggregationIterator  {
 
 	public YearAggregationIterator(TsDB tsdb, TsIterator input_iterator) {

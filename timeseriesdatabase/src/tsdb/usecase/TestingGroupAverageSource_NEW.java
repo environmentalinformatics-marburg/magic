@@ -13,6 +13,7 @@ import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
+@SuppressWarnings("unused")
 public class TestingGroupAverageSource_NEW {
 	private static final Logger log = LogManager.getLogger();
 

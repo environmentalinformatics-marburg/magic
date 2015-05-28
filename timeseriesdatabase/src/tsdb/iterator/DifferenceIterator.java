@@ -6,6 +6,11 @@ import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Calculates difference between input_iterator and compare_iterator, corrected by reference values
+ * @author woellauer
+ *
+ */
 public class DifferenceIterator extends TsIterator {
 	private TsIterator input_iterator;
 	private TsIterator compare_iterator;

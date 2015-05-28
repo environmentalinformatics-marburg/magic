@@ -16,6 +16,11 @@ import tsdb.TsDBFactory;
 import tsdb.util.Table;
 import tsdb.util.Table.ColumnReaderString;
 
+/**
+ * creates station inventroy from data files of external Southafrica stations
+ * @author woellauer
+ *
+ */
 public class SouthAfricaCreateStationInventory {
 	private static final Logger log = LogManager.getLogger();
 	public static void main(String[] args) throws IOException {

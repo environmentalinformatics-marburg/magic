@@ -1,8 +1,6 @@
 package tsdb.usecase;
 
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
@@ -11,10 +9,7 @@ import tsdb.graph.QueryPlan;
 import tsdb.util.AggregationInterval;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
 import tsdb.util.TsEntry;
-import tsdb.util.TsSchema;
-import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
@@ -56,6 +51,7 @@ public class TestingSunshineDuration {
 		}		
 	}
 
+	@SuppressWarnings("unused")
 	private static class SunshineDurationIterator extends InputEnumerationIterator {
 		private long aggregationTimestamp;
 		private boolean end=false;

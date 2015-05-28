@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -34,6 +33,11 @@ import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Creates Zip-files of sets of time series
+ * @author woellauer
+ *
+ */
 public class ZipExport {
 
 	private static final Logger log = LogManager.getLogger();

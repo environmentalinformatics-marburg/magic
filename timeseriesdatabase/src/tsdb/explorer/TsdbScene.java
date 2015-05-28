@@ -8,6 +8,11 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * Base class for Views.
+ * @author woellauer
+ *
+ */
 public abstract class TsdbScene {
 
 	private static final String ESCAPE = ""+(char)27;

@@ -15,6 +15,11 @@ import tsdb.util.TimeSeriesMask;
 import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Remote interface of TsDB, callable locally or by RMI
+ * @author woellauer
+ *
+ */
 public interface RemoteTsDB extends Remote {
 	
 	//sensor

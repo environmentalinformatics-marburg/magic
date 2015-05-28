@@ -8,6 +8,11 @@ import tsdb.util.TsEntry;
 import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Node: adds a value to all entries of source
+ * @author woellauer
+ *
+ */
 public class Addition implements Continuous {
 	
 	private final Continuous source;

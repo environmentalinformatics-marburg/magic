@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 public class TestingThrow {
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 
 		try {

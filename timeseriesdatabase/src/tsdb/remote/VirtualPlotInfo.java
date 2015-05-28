@@ -8,6 +8,11 @@ import tsdb.VirtualPlot;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 
+/**
+ * Serializable virtual plot info
+ * @author woellauer
+ *
+ */
 public class VirtualPlotInfo implements Serializable {
 	
 	private static final long serialVersionUID = -288110404460514296L;

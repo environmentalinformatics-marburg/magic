@@ -6,7 +6,11 @@ import java.io.Serializable;
 
 import org.mapdb.Serializer;
 
-
+/**
+ * Metadat of station
+ * @author woellauer
+ *
+ */
 public class StationMeta {
 
 	private static final String DB_NAME_SENSOR_MAP_PREFIX = "sensorMap/";

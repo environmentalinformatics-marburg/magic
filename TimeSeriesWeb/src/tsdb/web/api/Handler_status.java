@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.JApplet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,8 +17,6 @@ import org.json.JSONWriter;
 import tsdb.remote.PlotStatus;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.TimeConverter;
-import tsdb.util.TimestampInterval;
-import tsdb.util.Util;
 
 public class Handler_status extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();

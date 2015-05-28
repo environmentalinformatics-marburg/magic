@@ -3,6 +3,11 @@ package tsdb.component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Type of sensor: used for visualization purposes
+ * @author woellauer
+ *
+ */
 public enum SensorCategory {	
 	TEMPERATURE,
 	WATER,

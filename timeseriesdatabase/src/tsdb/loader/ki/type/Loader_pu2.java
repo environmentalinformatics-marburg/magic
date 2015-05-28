@@ -11,6 +11,11 @@ import tsdb.util.DataRow;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * data loader for pu2
+ * @author woellauer
+ *
+ */
 class Loader_pu2 extends AbstractLoader {
 	
 	private static final Logger log = LogManager.getLogger();
@@ -115,7 +120,7 @@ class Loader_pu2 extends AbstractLoader {
 	}
 
 	@Override
-	protected List<DataRow> toEvents(TimestampSeries timestampSeries) {
+	protected List<DataRow> toDataRows(TimestampSeries timestampSeries) {
 		List<DataRow> eventList = new ArrayList<DataRow>(timestampSeries.entryList.size());
 		for(TsEntry entry:timestampSeries.entryList) {
 			Float[] eventData = new Float[sourcePos.length];

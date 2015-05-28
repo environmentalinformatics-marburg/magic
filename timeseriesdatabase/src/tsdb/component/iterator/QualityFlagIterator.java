@@ -9,7 +9,7 @@ import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
- * adds Quality flags to input data
+ * adds Quality flags to input data: physical- and step-check 
  * @author woellauer
  *
  */

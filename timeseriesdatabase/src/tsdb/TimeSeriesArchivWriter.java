@@ -1,7 +1,6 @@
 package tsdb;
 
 import java.io.BufferedOutputStream;
-import java.io.DataOutput;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,6 +16,11 @@ import tsdb.streamdb.StreamIterator;
 import tsdb.util.DataEntry;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * writes ".tsa"-files
+ * @author woellauer
+ *
+ */
 public class TimeSeriesArchivWriter {
 	private static final Logger log = LogManager.getLogger();
 

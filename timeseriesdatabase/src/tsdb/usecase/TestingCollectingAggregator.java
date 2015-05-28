@@ -1,7 +1,5 @@
 package tsdb.usecase;
 
-import java.util.ArrayList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,10 +11,10 @@ import tsdb.iterator.DayCollectingAggregator;
 import tsdb.iterator.EvaluatingAggregationIterator;
 import tsdb.iterator.MonthCollectingAggregator;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingCollectingAggregator {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {

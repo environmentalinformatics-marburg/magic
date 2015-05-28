@@ -14,6 +14,12 @@ import tsdb.TsDBFactory;
 import tsdb.streamdb.StreamDB;
 import tsdb.util.DataEntry;
 
+/**
+ * Loads database dump from file
+ * @author woellauer
+ *
+ */
+@Deprecated
 public class DataBaseDumpRead {
 
 	private static final Logger log = LogManager.getLogger();

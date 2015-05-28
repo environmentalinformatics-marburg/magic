@@ -12,6 +12,11 @@ import tsdb.TsDBFactory;
 import tsdb.util.Pair;
 import tsdb.util.Util;
 
+/**
+ * Entry Point for console 
+ * @author woellauer
+ *
+ */
 public class ConsoleStarter {
 
 	static boolean running = true;

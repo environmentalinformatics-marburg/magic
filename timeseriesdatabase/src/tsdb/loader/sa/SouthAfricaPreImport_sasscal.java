@@ -22,6 +22,11 @@ import tsdb.util.Table.ColumnReaderTimestamp;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.Util;
 
+/**
+ * Reads SASSCAL files and writes content into ".tsa"-files
+ * @author woellauer
+ *
+ */
 public class SouthAfricaPreImport_sasscal {
 	private static final Logger log = LogManager.getLogger();
 
@@ -48,7 +53,7 @@ public class SouthAfricaPreImport_sasscal {
 
 	public static void readOneFile(Path filepath, TimeSeriesArchivWriter tsaWriter) {
 
-		String prefix = filepath.getName(filepath.getNameCount()-1).toString();
+		//String prefix = filepath.getName(filepath.getNameCount()-1).toString();
 
 		String filename = filepath.toString();
 		System.out.println("read file...");

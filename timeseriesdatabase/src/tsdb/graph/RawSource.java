@@ -5,6 +5,11 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 
+/**
+ * Interface Node: raw source
+ * @author woellauer
+ *
+ */
 public interface RawSource extends Node {	
 	
 	public static RawSource of(TsDB tsdb, String plotID, String[] querySchema) {		

@@ -1,6 +1,5 @@
 package tsdb.loader.sa;
 
-import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,10 +11,12 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TimeSeriesArchivReader;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.TimeSeriesArchivReader.TimeSeriesArchivVisitor;
-import tsdb.util.DataEntry;
-import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Reads pre-imported ".tsa"-files and loads content into TsDB
+ * @author woellauer
+ *
+ */
 public class SouthAfricaImport {
 
 	private static final Logger log = LogManager.getLogger();

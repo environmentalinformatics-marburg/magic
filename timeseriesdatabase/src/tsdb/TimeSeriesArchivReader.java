@@ -14,6 +14,11 @@ import tsdb.util.AssumptionCheck;
 import tsdb.util.DataEntry;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * Reads ".tsa"-files
+ * @author woellauer
+ *
+ */
 public class TimeSeriesArchivReader {
 	private static final Logger log = LogManager.getLogger();
 

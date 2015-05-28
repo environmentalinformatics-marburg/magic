@@ -8,6 +8,11 @@ import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.util.iterator.TsIterator;
 
+/**
+ * Node: source from cache (average of group)
+ * @author woellauer
+ *
+ */
 public class GroupAverageSource implements Continuous {
 	
 	private final Continuous source;

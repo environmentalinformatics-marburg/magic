@@ -6,6 +6,11 @@ import java.time.Month;
 import tsdb.util.AggregationType;
 import tsdb.util.TimeConverter;
 
+/**
+ * collecting aggregator to year
+ * @author woellauer
+ *
+ */
 public class YearCollectingAggregator extends AbstractCollectingAggregator {
 
 	public YearCollectingAggregator(MonthCollectingAggregator mca) {

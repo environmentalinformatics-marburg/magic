@@ -21,6 +21,11 @@ import tsdb.util.TimestampInterval;
 import com.sun.javafx.binding.ObjectConstant;
 import com.sun.javafx.binding.StringConstant;
 
+/**
+ * Overview of virtual plots
+ * @author woellauer
+ *
+ */
 public class VirtualPlotView {
 	private static final Logger log = LogManager.getLogger();
 	

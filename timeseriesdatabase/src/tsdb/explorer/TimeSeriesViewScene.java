@@ -64,6 +64,11 @@ import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.util.iterator.TimestampSeries;
 
+/**
+ * View of one time series
+ * @author woellauer
+ *
+ */
 public class TimeSeriesViewScene extends TsdbScene {
 	private static final Logger log = LogManager.getLogger();	
 	private final RemoteTsDB tsdb;

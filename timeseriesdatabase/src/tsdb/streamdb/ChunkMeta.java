@@ -9,6 +9,11 @@ import java.util.Iterator;
 import org.mapdb.BTreeMap;
 import org.mapdb.Serializer;
 
+/**
+ * Metadata of chunk
+ * @author woellauer
+ *
+ */
 public class ChunkMeta {
 	public final int firstTimestamp;
 	public final int lastTimestamp;

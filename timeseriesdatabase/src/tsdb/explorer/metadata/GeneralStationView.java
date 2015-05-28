@@ -17,6 +17,11 @@ import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;
 
+/**
+ * Overview of general stations
+ * @author woellauer
+ *
+ */
 public class GeneralStationView {
 	private static final Logger log = LogManager.getLogger();
 	

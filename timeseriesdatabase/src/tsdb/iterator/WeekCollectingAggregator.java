@@ -2,6 +2,11 @@ package tsdb.iterator;
 
 import tsdb.util.AggregationType;
 
+/**
+ * collecting aggregator to week
+ * @author woellauer
+ *
+ */
 public class WeekCollectingAggregator extends AbstractCollectingAggregator {
 
 	public WeekCollectingAggregator(DayCollectingAggregator dca) {
