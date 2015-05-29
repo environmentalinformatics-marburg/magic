@@ -15,8 +15,8 @@ if (pc=="hanna"){
   msgpath <- "/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
   rasterpathout <- "/media/hanna/ubt_kdata_0005/improve_DE_retrieval/predictions/Rain"
 }
-if (pc=="183"){
-  resultpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/"
+if (pc=="ui183"){
+  resultpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/"
   radarpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
   msgpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
   rasterpathout <- "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/predictions/Rain"
@@ -49,6 +49,10 @@ evaluation_validation=data.frame(matrix(ncol=7))
 evaluation_training=data.frame(matrix(ncol=7))
 names(evaluation_validation)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
 names(evaluation_training)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
+comp_training<-data.frame(matrix(ncol=2))
+comp_validation<-data.frame(matrix(ncol=2))
+names(comp_training)<-c("pred","obs")
+names(comp_validation)<-c("pred","obs")
 for (i in 1:nrow(rainevents)){
   month=rainevents[i,1]
   day=rainevents[i,2]
@@ -58,36 +62,50 @@ for (i in 1:nrow(rainevents)){
   reference=raster(paste0(radarpath,"/",month,"/",day,"/2010",
                           month,day,exacttime,"_radolan_SGrid.rst"))
   values(reference)[values(reference<0.06)]=NA
+  
   #plot(reference)
   pred<-predictRainfall(model=model, inpath= paste0(msgpath,"/",month,"/",
                                                     day,"/",time,"/"),
                         rainmask=reference,min_x=min_x,max_x=max_x)
+  
+  reference[reference<0.06]<-NA
+  pred[reference<0.06]<-NA
+  reference=mask(reference,pred)
+  
   #  writeRaster(pred, filename=paste0(rasterpathout,"/prediction_",
   #                                          responseName,"2010",month,
   #                                          day,time,".tif"), 
   #                    datatype='GTiff', overwrite=TRUE)
-  reference=mask(reference,pred)
+  
+  
   
   
   
   #for training scenes:
   if (paste0("2010",month,day,time)%in%trainingsc[[1]]) {
     evaluation_training=rbind(evaluation_training,validate(obs=reference,pred=pred))
+    comp_training<-rbind(comp_training,data.frame("pred"=values(pred)[!is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
   }
   #and non training scenes:
-  if (!paste0(month,day,time)%in%trainingsc[[1]]) {
+  if (!paste0("2010",month,day,time)%in%trainingsc[[1]]) {
     evaluation_validation=rbind(evaluation_validation,validate(obs=reference,pred=pred))
+    comp_validation<-rbind(comp_validation,data.frame("pred"=values(pred)[!is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
   }
   print(i)
 }
 
 evaluation_validation<-evaluation_validation[-1,]
 evaluation_training<-evaluation_training[-1,]
+comp_training<-comp_training[-1,]
+comp_validation<-comp_validation[-1,]
 
 ### save evaluation
 save(evaluation_validation,file=paste0(resultpath,"/evaluation_validation_",datasetTime,
                                        "_",responseName,".Rdata"))
 save(evaluation_training,file=paste0(resultpath,"/evaluation_training_",datasetTime,
                                      "_",responseName,".Rdata"))
+
+save(comp_training,file=paste0(resultpath,"/globalComp_training.RData"))
+save(comp_validation,file=paste0(resultpath,"globalComp_validation.RData"))
 
 ###direct comparison mit nur kanäle...
