@@ -27,6 +27,9 @@ gc()
   model<- train4rainfall(predictors,response, nnetSize = seq(2,ncol(predictors),2),
                      nnetDecay=seq(0.01,0.1,0.02),sampsize=sampsize,scaleVars=TRUE)
 
+#model<- train4rainfall(predictors,response, nnetSize = 10,
+#                       nnetDecay=0.05,sampsize=1,scaleVars=TRUE)
+
 
 ### save model
 save(model,file=paste0(resultpath,"/trainedModel_",datasetTime,"_",responseName,".Rdata"))
