@@ -29,7 +29,12 @@ for (i in months){
                       " could not be processed"))
         next
       }
-      act_daytime <- getDaytime(sunzenith)
+      act_daytime <- tryCatch(getDaytime(sunzenith),error = function(e)e)
+      if(inherits(act_daytime, "error")) {
+        print (paste0("month ", i, " day ", k, " scene ", l, 
+                      " could not be processed"))
+        next
+      }
       
       radarpathtmp= paste0(radarpath,i,"/",k)
       tmp=list.files(radarpathtmp,pattern=glob2rx("*.rst"))

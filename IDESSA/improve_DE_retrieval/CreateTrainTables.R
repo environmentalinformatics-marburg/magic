@@ -3,26 +3,30 @@ msgpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
 radarpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
 resultpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
 samplesize=0.1 # number of scenes for training
-y<-2010
+y<-2010 # year
 daytime <- c("day","twilight","night")
 
 library(Rainfall)
 
 
-rainevents=load(paste0(resultpath,"/rainevents.RData"))
-for (dt in daytime) {
+load(paste0(resultpath,"/rainevents.RData"))
+trsc=1
+trainingsc<-list()
+for (dayt in daytime) {
   
   ### Definde training scenes ##################################################
 #  scenes<-list.dirs(msgpath,recursive=TRUE)
 #  trainingscenes<-randomScenes(sampsize=samplesize,seed=50)
   
   ###neu:
-  ts <- rainevents[rainevents$daytime==dt,]
+  ts <- rainevents[rainevents$daytime==dayt,]
   set.seed(20)
   ts <- ts[sample(nrow(ts),samplesize*nrow(ts)),]
   trainingscenes <- as.vector(paste0(y,ts[,1],ts[,2],ts[,3]))
-  print (paste0("trainingscenes for ", daytime,": "))
+  print (paste0("trainingscenes for ", dayt,": "))
   print (trainingscenes)
+  trainingsc[[trsc]]<-trainingscenes
+  trsc=trsc+1
 
   ### set global min/max values for each channel
   min_x <- c(0.08455839,0.05533640,0.02237568,156.625000,210.00000000,
@@ -40,25 +44,25 @@ for (dt in daytime) {
              59.8000183) 
   names(max_x) <-  names(min_x)
 ### define variables ###########################################################  
-  if (dt=="twilight"||dt=="night"){
-    min_x=min_x[4:length(min_x)]
-    max_x=max_x[4:length(max_x)]
-  }
+#  if (dayt=="twilight"||dayt=="night"){
+#    min_x=min_x[4:length(min_x)]
+#    max_x=max_x[4:length(max_x)]
+#  }
   
-  if (dt=="day"){
+  if (dayt=="day"){
     spectral <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3","IR8.7",
                   "IR9.7","IR10.8","IR12.0","IR13.4","T0.6_1.6","T6.2_10.8",
                   "T7.3_12.0", "T8.7_10.8","T10.8_12.0", "T3.9_7.3","T3.9_10.8")
     further <- c("sunzenith","jday")
   }
   
-  if (dt=="twilight"){
+  if (dayt=="twilight"){
     spectral <- c("IR3.9","WV6.2","WV7.3","IR8.7",
                   "IR9.7","IR10.8","IR12.0","IR13.4","T6.2_10.8","T7.3_12.0", 
                   "T8.7_10.8","T10.8_12.0", "T3.9_7.3","T3.9_10.8")
     further <- c("sunzenith","jday")
   }
-  if (dt=="night"){
+  if (dayt=="night"){
     spectral <- c("IR3.9","WV6.2","WV7.3","IR8.7",
                   "IR9.7","IR10.8","IR12.0","IR13.4","T6.2_10.8","T7.3_12.0", 
                   "T8.7_10.8","T10.8_12.0", "T3.9_7.3","T3.9_10.8")
@@ -98,7 +102,7 @@ for (dt in daytime) {
                         " could not be processed"))
           next
         }
-#        if(getDaytime(sunzenith)!=dt) next
+#        if(getDaytime(sunzenith)!=dayt) next
         ### get radar ##########################################################
         radarpathtmp= paste0(radarpath,i,"/",k)
         tmp=list.files(radarpathtmp,pattern=glob2rx("*.rst"))
@@ -144,7 +148,7 @@ for (dt in daytime) {
   
   print(warnings())
   
-  save(datatable,file=paste0(resultpath,"/datatable_",dt,".RData"))
+  save(datatable,file=paste0(resultpath,"/datatable_",dayt,".RData"))
 }            
 
-
+save(trainingsc,file=paste0(resultpath,"/trainingscenes.RData"))

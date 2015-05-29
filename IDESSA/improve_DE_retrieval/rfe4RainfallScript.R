@@ -8,15 +8,14 @@ resultpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
 
 
 for (dt in c("day","twilight","night")){
+  datasetTime<-dt
   for (rn in c("Rain","RInfo")){    
-    datasetTime<-dt
+  #for (rn in c("RInfo")){  
     responseName<-rn
-
     sampsize=0.05
     if(responseName=="Rain"){
-      sampsize=1
+      sampsize=0.5
     }
-    
     
     ############################################################################
     load(paste0(resultpath,"/datatable_",datasetTime,".RData"))
@@ -35,7 +34,6 @@ for (dt in c("day","twilight","night")){
     save(rfeModel,file=paste0(resultpath,"/rfeModel_",
                               datasetTime,"_",responseName,".Rdata"))
     
-    rm(list=ls())
-    resultpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
+    rm(rfeModel,predictors,response)
   }
 }

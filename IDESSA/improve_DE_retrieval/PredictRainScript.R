@@ -7,19 +7,19 @@ library(Rainfall)
 library(Rsenal)
 datasetTime<-"day"
 responseName<-"Rain"
-pc="hanna"
+pc="183"
 
 if (pc=="hanna"){
-resultpath<-"/media/hanna/ubt_kdata_0005/improve_DE_retrieval/"
-radarpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
-msgpath <- "/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
-rasterpathout <- "/media/hanna/ubt_kdata_0005/improve_DE_retrieval/predictions/Rain"
+  resultpath<-"/media/hanna/ubt_kdata_0005/improve_DE_retrieval/"
+  radarpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
+  msgpath <- "/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
+  rasterpathout <- "/media/hanna/ubt_kdata_0005/improve_DE_retrieval/predictions/Rain"
 }
 if (pc=="183"){
-resultpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/"
-radarpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
-msgpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
-rasterpathout <- "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/predictions/Rain"
+  resultpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/"
+  radarpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
+  msgpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
+  rasterpathout <- "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/predictions/Rain"
 }
 
 
@@ -27,7 +27,6 @@ rasterpathout <- "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/res
 load(paste0(resultpath,"/trainedModel_",datasetTime,"_",responseName,".Rdata"))
 load(paste0(resultpath,"/rainevents.RData"))
 rainevents <- rainevents[rainevents$daytime==datasetTime,]
-load(paste0(resultpath,"trainingscenes.RData"))
 
 ### set global min/max values for each channel
 min_x <- c(0.08455839,0.05533640,0.02237568,156.625000,210.00000000,208.75000000,
@@ -45,16 +44,13 @@ names(max_x) <-  names(min_x)
 
 
 
-evaluation_validation=data.frame(matrix(ncol=7))
-evaluation_training=data.frame(matrix(ncol=7))
-names(evaluation_validation)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
-names(evaluation_training)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
+evaluation=data.frame(matrix(ncol=7))
+names(evaluation)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
 for (i in 1:nrow(rainevents)){
   month=rainevents[i,1]
   day=rainevents[i,2]
   time=rainevents[i,3]
   exacttime=paste0(time,"50")
-  
   reference=raster(paste0(radarpath,"/",month,"/",day,"/2010",
                           month,day,exacttime,"_radolan_SGrid.rst"))
   values(reference)[values(reference<0.06)]=NA
@@ -62,32 +58,17 @@ for (i in 1:nrow(rainevents)){
   pred<-predictRainfall(model=model, inpath= paste0(msgpath,"/",month,"/",
                                                     day,"/",time,"/"),
                         rainmask=reference,min_x=min_x,max_x=max_x)
-#  writeRaster(pred, filename=paste0(rasterpathout,"/prediction_",
-#                                          responseName,"2010",month,
-#                                          day,time,".tif"), 
-#                    datatype='GTiff', overwrite=TRUE)
+  writeRaster(pred, filename=paste0(rasterpathout,"/prediction_",
+                                    responseName,"2010",month,
+                                    day,time,".tif"), 
+              datatype='GTiff', overwrite=TRUE)
   reference=mask(reference,pred)
-  
-  
-  
-  #for training scenes:
-  if (paste0("2010",month,day,time)%in%trainingsc[[1]]) {
-    evaluation_training=rbind(evaluation_training,validate(obs=reference,pred=pred))
-  }
-  #and non training scenes:
-  if (!paste0(month,day,time)%in%trainingsc[[1]]) {
-    evaluation_validation=rbind(evaluation_validation,validate(obs=reference,pred=pred))
-  }
-  print(i)
+  evaluation[i,]=validate(obs=reference,pred=pred)
+  print (evaluation[i,])
 }
 
-evaluation_validation<-evaluation_validation[-1,]
-evaluation_training<-evaluation_training[-1,]
-
 ### save evaluation
-save(evaluation_validation,file=paste0(resultpath,"/evaluation_validation_",datasetTime,
+save(evaluation,file=paste0(resultpath,"/validation_",datasetTime,
                             "_",responseName,".Rdata"))
-save(evaluation_training,file=paste0(resultpath,"/evaluation_training_",datasetTime,
-                                       "_",responseName,".Rdata"))
 
 ###direct comparison mit nur kanäle...
