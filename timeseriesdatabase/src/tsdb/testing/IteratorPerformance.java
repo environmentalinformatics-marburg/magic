@@ -41,7 +41,8 @@ public class IteratorPerformance {
 		@Override
 		public TsEntry next() {
 			TsEntry e = input_iterator.next();
-			return TsEntry.of(e.timestamp,e.data[0]/2);
+			//return TsEntry.of(e.timestamp,e.data[0]/2);
+			return e;
 		}		
 	}
 
@@ -78,10 +79,10 @@ public class IteratorPerformance {
 			});*/
 			//TsIterator it = new ApplyIterator(new Source(ELEMENT_COUNT),e->e);
 			//TsIterator it = new SimpleIterator(new Source(ELEMENT_COUNT));
-			//TsIterator it = new SimpleIterator(new SimpleIterator(new SimpleIterator(new Source(ELEMENT_COUNT))));
-			ApplyIterator.ApplyFunc func = e->TsEntry.of(e.timestamp,e.data[0]);
+			TsIterator it = new SimpleIterator(new SimpleIterator(new SimpleIterator(new SimpleIterator(new Source(ELEMENT_COUNT)))));
+			/*ApplyIterator.ApplyFunc func = e->TsEntry.of(e.timestamp,e.data[0]);
 			TsIterator it = new ApplyIterator(new ApplyIterator(new ApplyIterator(new ApplyIterator(new ApplyIterator(new ApplyIterator(new Source(ELEMENT_COUNT),func),func),func),func),func),func);
-			System.out.println(it.getProcessingChain().getText());
+			System.out.println(it.getProcessingChain().getText());*/
 			
 			long time_start = System.currentTimeMillis();
 			/*for(int i=0;i<100;i++) {

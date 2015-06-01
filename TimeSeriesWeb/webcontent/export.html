@@ -192,6 +192,21 @@ document.getElementById("create").onclick = function() {
 	window.location = "export_create.html";
 }
 
+document.getElementById("button_reset").onclick = function() {
+	incTask();
+	$.post("../export/reset")
+		 .done(function() {
+			document.location.reload();
+			decTask();
+		 })
+		 .fail(function(jqXHR, textStatus, errorThrown) {
+			alert("error sending reset: "+textStatus+"  "+errorThrown);
+			decTask();
+	});
+}
+
+
+
 //$("#button_settings").button();
 document.getElementById("button_settings").onclick = function() {window.location = "export_settings.html";};	
 decTask();
@@ -238,7 +253,7 @@ $.get("../tsdb/region_list").done(function(data) {
 
 
 
-<button id="button_reset"><font color=#999999>reset</font></button>
+<button id="button_reset">reset</button>
 <div id="choose_region_div" style="display:inline">&nbsp;&nbsp;<b>(0)</b><button id="choose_region">region</button></div>
 &nbsp;&nbsp;<b>(1)</b><button id="choose_sensors">parameters</button>
 &nbsp;&nbsp;<b>(2)</b><button id="choose_plots">plots</button>

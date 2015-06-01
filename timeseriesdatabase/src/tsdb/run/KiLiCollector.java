@@ -40,8 +40,7 @@ import tsdb.util.iterator.TimestampSeries;
  * @author woellauer
  *
  */
-public class KiliCollector {
-
+public class KiLiCollector {
 	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb;	
@@ -89,7 +88,7 @@ public class KiliCollector {
 		}
 	}
 
-	public KiliCollector(TsDB tsdb) {
+	public KiLiCollector(TsDB tsdb) {
 		this.tsdb = tsdb;
 		this.timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);		
 	}
@@ -103,7 +102,7 @@ public class KiliCollector {
 		System.out.println("start...");
 
 		TsDB tsdb = TsDBFactory.createDefault();
-		KiliCollector kiliCollector = new KiliCollector(tsdb);
+		KiLiCollector kiliCollector = new KiLiCollector(tsdb);
 
 		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/empty"));
 		HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));

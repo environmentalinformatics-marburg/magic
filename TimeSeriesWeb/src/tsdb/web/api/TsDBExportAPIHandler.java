@@ -45,6 +45,36 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 	public TsDBExportAPIHandler(RemoteTsDB tsdb) {
 		this.tsdb = tsdb;
 	}
+	
+	private void resetModel(ExportModel model) {
+		model.reset();
+		//model.plots = new String[]{"HEG01"};
+		//model.sensors = new String[]{"Ta_200"};
+		model.plots = new String[]{};
+		model.sensors = new String[]{};
+		model.aggregationInterval = AggregationInterval.HOUR;
+		model.timespanYear = 2014;
+		model.timespanYearsFrom = 2008;
+		model.timespanYearsTo = 2014;
+		model.timespanDatesFrom = "2014-04";
+		model.timespanDatesTo = "2014-09";
+		try {
+			if(TsDBFactory.JUST_ONE_REGION==null) {
+				model.region = tsdb.getRegions()[0];
+			} else {
+				Region[] regions = tsdb.getRegions();
+				model.region = regions[0];
+				for(Region region:regions) {
+					if(region.name.equals(TsDBFactory.JUST_ONE_REGION)) {
+						model.region = region;
+						break;
+					}
+				}
+			}
+		} catch(Exception e) {
+			log.error(e);
+		}
+	}
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -60,32 +90,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		if(session.isNew()) {
 			ExportModel model = new ExportModel();
 			session.setAttribute("ExportModel", model);
-			//model.plots = new String[]{"HEG01"};
-			//model.sensors = new String[]{"Ta_200"};
-			model.plots = new String[]{};
-			model.sensors = new String[]{};
-			model.aggregationInterval = AggregationInterval.HOUR;
-			model.timespanYear = 2014;
-			model.timespanYearsFrom = 2008;
-			model.timespanYearsTo = 2014;
-			model.timespanDatesFrom = "2014-04";
-			model.timespanDatesTo = "2014-09";
-			try {
-				if(TsDBFactory.JUST_ONE_REGION==null) {
-					model.region = tsdb.getRegions()[0];
-				} else {
-					Region[] regions = tsdb.getRegions();
-					model.region = regions[0];
-					for(Region region:regions) {
-						if(region.name.equals(TsDBFactory.JUST_ONE_REGION)) {
-							model.region = region;
-							break;
-						}
-					}
-				}
-			} catch(Exception e) {
-				log.error(e);
-			}
+			resetModel(model);
 		}
 		ExportModel model = (ExportModel) session.getAttribute("ExportModel");
 		boolean ret = false;
@@ -165,6 +170,10 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			ret = handle_apply_region(reader,model);
 			break;
 		}
+		case "/reset": {
+			ret = handle_reset(model);
+			break;
+		}
 		default: {
 			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
 		}
@@ -175,6 +184,11 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		} else {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	private boolean handle_reset(ExportModel model) {
+		resetModel(model);
+		return true;
 	}
 
 	private boolean handle_error(PrintWriter writer, String target) {

@@ -79,6 +79,10 @@ public class ExportModel{
 	public String timespanDatesTo;
 
 	public ExportModel() {
+		reset();
+	}
+	
+	public void reset() {
 		this.plots = new String[]{"plot1","plot2","plot3"};
 		this.sensors = new String[]{"sensor1","sensor2","sensor3","sensor4"};
 		this.interpolate = false;
