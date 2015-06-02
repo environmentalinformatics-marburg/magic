@@ -25,7 +25,9 @@ public class PeakSmoothIterator extends InputProcessingIterator {
 		TIME_DIVISION
 	}
 
-	private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*2;
+	//private static final int MAX_FILL_TIME_INTERVAL = 60*24*7*2;
+	//public static final int MAX_FILL_TIME_INTERVAL = 31*24*60;
+	public static final int MAX_FILL_TIME_INTERVAL = 8*7*24*60;
 
 	private static final int TIMESTEP=60;
 

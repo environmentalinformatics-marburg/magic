@@ -8,6 +8,7 @@ import tsdb.util.iterator.TsIterator;
 
 /**
  * Special node for manual precipitation sensors.
+ * May produce timestamps before query start timestamp.
  * @author woellauer
  *
  */
@@ -25,7 +26,10 @@ public class PeakSmoothed implements Base {
 	}	
 
 	@Override
-	public TsIterator get(Long start, Long end) {		
+	public TsIterator get(Long start, Long end) {
+		if(start!=null&&start>0) {
+			start -= PeakSmoothIterator.MAX_FILL_TIME_INTERVAL;
+		}
 		TsIterator input_iterator = source.get(start, end);
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;

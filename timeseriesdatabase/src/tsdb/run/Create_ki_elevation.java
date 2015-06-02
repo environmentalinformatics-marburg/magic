@@ -35,7 +35,7 @@ public class Create_ki_elevation {
 		TsDB tsdb = TsDBFactory.createDefault();
 		//cof1 Easting:305573 Northing:9641686 Elevation:1303.08
 
-		//loaf geoTiff library
+		//load geoTiff library
 		gdal.AllRegister();
 
 		//read geoTiff

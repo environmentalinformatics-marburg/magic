@@ -58,11 +58,11 @@ public class StationProperties implements Serializable{
 			try {
 				return Integer.parseInt(text);
 			} catch(Exception e) {
-				log.warn("error in read int: "+e);
+				log.warn("error in read int: "+e+"  for propery  "+key+" and value  "+text);
 				return null;
 			}
 		} else {
-			log.warn("error in read int: not found");
+			log.warn("error in read int: not found for property "+key);
 			return null;
 		}
 	}
@@ -73,11 +73,11 @@ public class StationProperties implements Serializable{
 			try {
 				return Float.parseFloat(text);
 			} catch(Exception e) {
-				log.warn("error in read float: "+e);
+				log.warn("error in read float: "+e+"  for propery  "+key+" and value  "+text);
 				return Float.NaN;
 			}
 		} else {
-			log.warn("error in read float: not found");
+			log.warn("error in read float: not found for property "+key);
 			return Float.NaN;
 		}
 	}
