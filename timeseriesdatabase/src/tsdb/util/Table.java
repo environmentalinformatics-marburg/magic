@@ -65,6 +65,29 @@ public class Table {
 		}
 	}
 	
+	public static class ColumnReaderDouble extends ColumnReader {
+		public ColumnReaderDouble(int rowIndex) {
+			super(rowIndex);
+		}
+		public double get(String[] row, boolean warnIfEmpty) {			
+			try {
+				String textValue = row[rowIndex];
+				if(!warnIfEmpty&&textValue.isEmpty()) {
+					return Double.NaN;
+				}
+				return Double.parseDouble(row[rowIndex]);
+			} catch(NumberFormatException e) {
+				if(row[rowIndex].toLowerCase().equals("na")||row[rowIndex].toLowerCase().equals("null")) {
+					return Double.NaN;
+				} else {
+					log.warn(row[rowIndex]+" not parsed");
+					e.printStackTrace();
+					return Double.NaN;
+				}
+			}
+		}
+	}
+	
 	public static class ColumnReaderInt extends ColumnReader {
 		public ColumnReaderInt(int rowIndex) {
 			super(rowIndex);
@@ -316,6 +339,14 @@ public class Table {
 			return null;
 		}
 		return new ColumnReaderFloat(columnIndex);
+	}
+	
+	public ColumnReaderDouble createColumnReaderDouble(String name) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderDouble(columnIndex);
 	}
 	
 	public ColumnReaderInt createColumnReaderInt(String name) {

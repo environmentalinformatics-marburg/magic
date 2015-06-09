@@ -27,6 +27,7 @@ import tsdb.component.SensorCategory;
 import tsdb.util.AggregationType;
 import tsdb.util.Interval;
 import tsdb.util.Table;
+import tsdb.util.Table.ColumnReaderDouble;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderString;
 import tsdb.util.TimeConverter;
@@ -388,7 +389,7 @@ public class ConfigLoader {
 						try {					
 							double lon = Double.parseDouble(row[lonIndex]);
 							double lat = Double.parseDouble(row[latIndex]);					
-							station.geoPoslongitude = lon;
+							station.geoPosLongitude = lon;
 							station.geoPosLatitude = lat;					
 						} catch(Exception e) {
 							log.warn("geo pos not read: "+plotID);
@@ -417,14 +418,14 @@ public class ConfigLoader {
 				continue;
 			}
 
-			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
+			double[] geoPos = transformCoordinates(station.geoPosLongitude,station.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
 
 			List<Station> stationList = station.generalStation.stationList;
 			//System.out.println(station.plotID+" --> "+stationList);
 			for(Station targetStation:stationList) {
 				if(station!=targetStation) { // reference compare
-					double[] targetGeoPos = transformCoordinates(targetStation.geoPoslongitude,targetStation.geoPosLatitude);
+					double[] targetGeoPos = transformCoordinates(targetStation.geoPosLongitude,targetStation.geoPosLatitude);
 					double difference = getDifference(geoPos, targetGeoPos);
 					differenceList.add(new Object[]{difference,targetStation});
 				}
@@ -1092,6 +1093,8 @@ public class ConfigLoader {
 		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
 		ColumnReaderFloat eastingReader = table.createColumnReaderFloat("Easting");
 		ColumnReaderFloat northingReader = table.createColumnReaderFloat("Northing");
+		ColumnReaderDouble latReader = table.createColumnReaderDouble("Lat");
+		ColumnReaderDouble lonReader = table.createColumnReaderDouble("Lon");
 		for(String[] row:table.rows) {
 			String plotID = plotidReader.get(row);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
@@ -1103,6 +1106,10 @@ public class ConfigLoader {
 			float northing = northingReader.get(row,true);
 			virtualPlot.geoPosEasting = easting;
 			virtualPlot.geoPosNorthing = northing;
+			double lat = latReader.get(row, true);
+			double lon = lonReader.get(row, true);
+			virtualPlot.geoPosLatitude = lat;
+			virtualPlot.geoPosLongitude = lon;
 		}
 	}
 
@@ -1144,7 +1151,7 @@ public class ConfigLoader {
 				float lat = cr_lat.get(row,true);
 				float lon = cr_lon.get(row,true);
 				station.geoPosLatitude = lat;
-				station.geoPoslongitude = lon;
+				station.geoPosLongitude = lon;
 			} catch(Exception e) {
 				log.error(e);
 			}

@@ -47,7 +47,7 @@ public class Station {
 
 	//*** start of fields that are used if this station is identical to one plot ***
 	public final boolean isPlot;
-	public double geoPoslongitude;
+	public double geoPosLongitude;
 	public double geoPosLatitude;
 	/**
 	 * The general name of this plotID for example HEG03 it is HEG
@@ -74,7 +74,7 @@ public class Station {
 		this.generalStation = generalStation;
 		this.stationID = stationID;
 		this.propertiesList = StationProperties.createIntervalList(propertyMapList);
-		this.geoPoslongitude = Float.NaN;
+		this.geoPosLongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
 		this.loggerType = loggerType;
 		sensorNameTranlationMap = new HashMap<String, String>();

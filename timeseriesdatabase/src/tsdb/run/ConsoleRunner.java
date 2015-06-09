@@ -127,7 +127,7 @@ public class ConsoleRunner implements Runnable {
 		if(station!=null) {
 			plotID = station.stationID;
 			println("station plot: "+plotID+" in "+station.generalStation.name+" ("+station.generalStation.longName+")");
-			println("position: "+station.geoPoslongitude+" "+station.geoPoslongitude);
+			println("position: "+station.geoPosLongitude+" "+station.geoPosLongitude);
 			return;
 		}
 		println("unknown plot: "+plot);

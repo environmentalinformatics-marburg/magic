@@ -347,7 +347,16 @@ public class ZipExport {
 				PlotInfo plotInfo = map.get(plotIDs[i]);
 				if(plotInfo!=null) {
 					printStream.println("category:\t"+plotInfo.generalStationInfo.longName);
-					printStream.println("position:\t"+Util.arrayToString(plotInfo.geoPos));
+					//printStream.println("position:\t"+Util.arrayToString(plotInfo.geoPos));
+					if(Double.isFinite(plotInfo.geoPosLatitude)) {
+						printStream.println("Latitude:\t"+plotInfo.geoPosLatitude);
+					}
+					if(Double.isFinite(plotInfo.geoPosLongitude)) {
+						printStream.println("Longitude:\t"+plotInfo.geoPosLongitude);
+					}
+					if(Float.isFinite(plotInfo.elevation)) {
+						printStream.println("Elevation:\t"+plotInfo.elevation);
+					}
 				}
 
 				printStream.println();

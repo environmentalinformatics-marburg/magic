@@ -33,7 +33,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 	private static final Logger log = LogManager.getLogger();
 
 	private final RemoteTsDB tsdb;
-	
+
 	private HashMap<String,Handler> handlerMap;
 
 	public TsDBAPIHandler(RemoteTsDB tsdb) {
@@ -52,7 +52,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 		addMethodHandler(new Handler_plotstation_list(tsdb));
 		addMethodHandler(new Handler_status(tsdb));
 	}
-	
+
 	private void addMethodHandler(MethodHandler methodHandler) {
 		handlerMap.put("/"+methodHandler.handlerMethodName, methodHandler);
 	}
@@ -60,33 +60,33 @@ public class TsDBAPIHandler extends AbstractHandler {
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	
 		log.info(WebUtil.requestMarker,WebUtil.getRequestLogString("tsdb", target, baseRequest));
-		
+
 		/*log.info("auth   "+request.getAuthType());
 		UserAuthentication userAuthentication = (UserAuthentication) baseRequest.getAuthentication();
 		if(userAuthentication!=null&&userAuthentication.isUserInRole(null, "admin")) {
 			log.info("is admin");
 		}*/
-		
-		
-		
-		
+
+
+
+
 		//response.setHeader("Server", "");
 		//response.setHeader("Date", null);
-		
+
 		Handler handler = handlerMap.get(target);
 		if(handler!=null) {
 			handler.handle(target, baseRequest, request, response);
 			return;
 		}
-		
+
 		log.info("*********************************** old request handlers: "+target);
-		
-		
+
+
 		baseRequest.setHandled(true);
 		response.setContentType("text/plain;charset=utf-8");
-		
-		
-		
+
+
+
 
 		boolean ret = false;
 
@@ -152,7 +152,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	private boolean handle_console_comand_get_output(Long commandThreadId, PrintWriter writer) {
 		try {
 			Pair<Boolean, String[]> pair = tsdb.console_comand_get_output(commandThreadId);
@@ -220,13 +220,26 @@ public class TsDBAPIHandler extends AbstractHandler {
 				json_output.value(plotInfo.name);
 				json_output.key("general");
 				json_output.value(plotInfo.generalStationInfo.longName);
+				/*
+				if(plotInfo.geoPos!=null&&Double.isFinite(plotInfo.geoPos[0])&&Double.isFinite(plotInfo.geoPos[0])) {
 				json_output.key("pos");
-				if(plotInfo.geoPos!=null) {
 					json_output.array();
 					for(double v:plotInfo.geoPos) {
 						json_output.value(v);
 					}
 					json_output.endArray();
+				}*/
+				if(Double.isFinite(plotInfo.geoPosLatitude)) {
+					json_output.key("lat");
+					json_output.value(plotInfo.geoPosLatitude);
+				}
+				if(Double.isFinite(plotInfo.geoPosLongitude)) {
+					json_output.key("lon");
+					json_output.value(plotInfo.geoPosLongitude);
+				}
+				if(Float.isFinite(plotInfo.elevation)) {
+					json_output.key("elevation");
+					json_output.value(plotInfo.elevation);
 				}
 				json_output.endObject();
 			}
@@ -273,7 +286,7 @@ public class TsDBAPIHandler extends AbstractHandler {
 			return false;
 		}
 	}
-	
+
 	private boolean handle_region_sensor_list(PrintWriter writer, String region) {
 		try {			
 			Set<String> sensorNameSet = new TreeSet<String>();

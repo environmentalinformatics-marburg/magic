@@ -12,7 +12,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 
-public class Create_ki_LatLong {	
+public class Create_ki_LatLon {	
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) throws FileNotFoundException {
@@ -27,11 +27,15 @@ public class Create_ki_LatLong {
 		dst.ImportFromProj4("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
 		CoordinateTransformation ct = CoordinateTransformation.CreateCoordinateTransformation(src, dst);
 
+		System.out.println("PlotID"+","+"Lat"+","+"Lon");
+		
+		
 		for(VirtualPlot virtualPlots:tsdb.getVirtualPlots()) {
 			if(virtualPlots.generalStation.region.name.equals("KI")&&!Float.isNaN(virtualPlots.geoPosEasting)&&!Float.isNaN(virtualPlots.geoPosNorthing)) {
 				//System.out.println(":["+virtualPlots.geoPosEasting+","+virtualPlots.geoPosNorthing+"]");
 				double[] d = ct.TransformPoint(virtualPlots.geoPosEasting,virtualPlots.geoPosNorthing);			
-				System.out.println("['"+virtualPlots.plotID+"',"+d[1]+","+d[0]+"],");
+				//System.out.println("['"+virtualPlots.plotID+"',"+d[1]+","+d[0]+"],");
+				System.out.println(virtualPlots.plotID+","+d[1]+","+d[0]);
 			}
 		}
 	}

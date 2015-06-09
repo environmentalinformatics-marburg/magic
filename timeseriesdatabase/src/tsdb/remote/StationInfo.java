@@ -24,7 +24,7 @@ public class StationInfo implements Serializable {
 	public StationInfo(Station station) {
 		stationID = station.stationID;
 		loggerType = station.loggerType;
-		geoPoslongitude = station.geoPoslongitude;
+		geoPoslongitude = station.geoPosLongitude;
 		geoPosLatitude = station.geoPosLatitude;
 		generalStationInfo = Util.ifnull(station.generalStation, gs->new GeneralStationInfo(gs));
 		alternativeID = station.alternativeID;

@@ -21,7 +21,9 @@ public class PlotInfo implements Serializable {
 	public final GeneralStationInfo generalStationInfo;
 	public final boolean isStation;
 	public final boolean isVIP;
-	public final double[] geoPos;
+	public final double geoPosLatitude;
+	public final double geoPosLongitude;
+	public final float elevation;
 	public final String loggerTypeName;
 	
 	public PlotInfo(VirtualPlot virtualPlot) {
@@ -29,7 +31,10 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(virtualPlot.generalStation);
 		this.isStation = false;
 		this.isVIP = virtualPlot.isFocalPlot;
-		this.geoPos = new double[]{virtualPlot.geoPosEasting,virtualPlot.geoPosNorthing,virtualPlot.elevation};
+		//this.geoPos = new double[]{virtualPlot.geoPosEasting,virtualPlot.geoPosNorthing,virtualPlot.elevation};
+		this.geoPosLatitude = virtualPlot.geoPosLatitude;
+		this.geoPosLongitude = virtualPlot.geoPosLongitude;
+		this.elevation = virtualPlot.elevation;
 		this.loggerTypeName = "virtual";
 	}
 	
@@ -39,7 +44,9 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(station.generalStation);
 		this.isStation = true;
 		this.isVIP = station.isVIP();
-		this.geoPos = new double[]{station.geoPoslongitude,station.geoPosLatitude};
+		this.geoPosLatitude = station.geoPosLatitude;
+		this.geoPosLongitude = station.geoPosLongitude;
+		this.elevation = Float.NaN;
 		if(station.loggerType!=null) {
 			this.loggerTypeName = station.loggerType.typeName;
 		} else {
@@ -53,7 +60,9 @@ public class PlotInfo implements Serializable {
 		this.generalStationInfo = new GeneralStationInfo(generalName, regionName);
 		this.isStation = false;
 		this.isVIP = false;
-		this.geoPos = new double[]{Double.NaN,Double.NaN};
+		this.geoPosLatitude = Double.NaN;
+		this.geoPosLongitude = Double.NaN;
+		this.elevation = Float.NaN;
 		this.loggerTypeName = "unknown";
 	}
 

@@ -32,6 +32,9 @@ public class VirtualPlot {
 
 	public float geoPosEasting;
 	public float geoPosNorthing;
+	
+	public double geoPosLatitude;
+	public double geoPosLongitude;
 
 	public float elevation;
 	public float elevationTemperature;
@@ -58,6 +61,8 @@ public class VirtualPlot {
 		this.isFocalPlot = isFocalPlot;
 		this.intervalList = new ArrayList<TimestampInterval<StationProperties>>();
 		this.nearestVirtualPlots = new ArrayList<VirtualPlot>(0);
+		this.geoPosLatitude = Float.NaN;
+		this.geoPosLongitude = Float.NaN;
 	}
 
 	/**
