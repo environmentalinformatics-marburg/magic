@@ -6,233 +6,20 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
 
+<script src="jquery-2.1.1.min.js"></script>
+<script src="export_plots.js"></script>
+
 <style type="text/css">
 #top_line {display: table; width: 100%; }
 #top_line_left {display: table-cell; text-align: left; }
 #top_line_right {display: table-cell; text-align: right; }
 h1 {margin-bottom: 40px; text-align:center;}
-</style>
-
-<script src="jquery-2.1.1.min.js"></script>
-<script src="jquery-ui.min.js"></script>
-<script src="util.js"></script>
-<script type="text/javascript">
-
-
-var chosen_select;
-var available_select;
-
-var chosen_plots = [];
-var available_plots = ["plot0","plot1","plot2","plot3"];
-
-var tasks = 0;
-
-var incTask = function() {
-	tasks++;	
-	getID("status").innerHTML = "busy ("+tasks+")...";
+div.bg {
+	background-image: url(timeseries_bg3.png);
+	background-position: top left;
+	background-size: 100%;
 }
-
-var decTask = function() {
-	tasks--;
-	if(tasks===0) {
-		getID("status").innerHTML = "ready";
-	} else if(tasks<0){
-		getID("status").innerHTML = "error";
-	} else {
-		getID("status").innerHTML = "busy ("+tasks+")...";
-	}
-}
-
-var update_chosen_select = function() {
-	chosen_select.innerHTML = "";
-	for(i in chosen_plots) {
-		chosen_select.add(new Option(chosen_plots[i],i));
-	}
-}
-
-var update_available_select = function() {
-	available_select.innerHTML = "";
-	for(r in available_plots) {
-		var plot = available_plots[r];
-		var available = true;	
-		for(i in chosen_plots) {
-			if(plot==chosen_plots[i]) {
-				available = false;
-				break;
-			}			
-		}
-		if(available) {
-			available_select.add(new Option(plot,r));
-		}
-	}
-}
-
-var arrayToText = function(a) {
-	var s = "";
-	for(i in a) {
-		if(i>0) {
-			s+="\n";
-		}
-		s+=a[i];
-	}
-	return s;
-}
-
-function on_choose_selected_button() {
-	$.each(available_select.selectedOptions, function(i,option) {
-		chosen_plots.push(available_plots[option.value]);
-	});
-	update_chosen_select();
-	update_available_select();
-}
-
-function on_remove_selected_button() {
-	var removed_count = 0;
-	$.each(chosen_select.selectedOptions, function(i,option) {
-		chosen_plots.splice(option.value-removed_count,1);
-		removed_count++;
-	});	
-	update_chosen_select();
-	update_available_select();
-}
-
-function on_choose_all_button() {
-	$.each(available_select, function(i,option) {
-		chosen_plots.push(available_plots[option.value]);
-	});
-	update_chosen_select();
-	update_available_select();
-}
-
-function on_remove_all_button() {
-	chosen_plots = [];
-	update_chosen_select();
-	update_available_select();
-}
-
-$(document).ready(function(){
-	
-	chosen_select = document.getElementById("chosen_select");
-	available_select = document.getElementById("available_select");	
-	
-	chosen_select.ondblclick = function(){
-		chosen_plots.splice(chosen_select.value,1);
-		update_chosen_select();
-		update_available_select();
-	};
-	
-	available_select.ondblclick = function(){
-		chosen_plots.push(available_plots[available_select.value]);
-		update_chosen_select();
-		update_available_select();
-	}
-	
-	//$("#button_cancel").button();
-	document.getElementById("button_cancel").onclick = function() {
-		window.location = "export.html";
-	}
-	
-	//$("#button_apply").button();
-	document.getElementById("button_apply").onclick = function() {	
-		$.post("../export/apply_plots",arrayToText(chosen_plots))
-		 .done(function() {
-			window.location = "export.html";
-		 })
-		 .fail(function() {alert("error sending data");})		 
-	}
-	
-	getID("choose_selected_button").onclick = on_choose_selected_button;
-	getID("remove_selected_button").onclick = on_remove_selected_button;
-	getID("choose_all_button").onclick = on_choose_all_button;
-	getID("remove_all_button").onclick = on_remove_all_button;	
-	
-	$.get("../export/plots").done(function(data) {
-		chosen_plots = [];
-		rows = splitData(data);
-		for(i in rows) {
-			chosen_plots.push(rows[i][0]);
-		}
-		update_chosen_select();
-		update_available_select();
-	}).fail(function() {alert("error getting data");});
-	
-	var update_filtered_available_select_from_regionName = function(regionName) {
-		$.get("../tsdb/region_plot_list?region="+regionName).done(function(data) {
-		var rows = splitData(data);
-		for(i in rows) {
-			available_plots.push(rows[i][0]);
-		}
-		update_chosen_select();
-		update_available_select();
-		}).fail(function() {plot_input.append(new Option("[error]","[error]"));});	
-	}
-	
-	var update_filtered_available_select_from_region = function() {
-		incTask();
-		$.get("../export/region").done(function(data) {
-			var rows = splitData(data);	
-			var region = rows[0][0];
-			update_filtered_available_select_from_regionName(region);
-			decTask();
-		}).fail(function() {alert("error getting data");decTask();});		
-	}
-	
-	var update_filtered_available_select_from_generalstation = function(generalstationName) {
-		$.get("../tsdb/plot_list?generalstation="+generalstationName).done(function(data) {
-			var rows = splitData(data);
-			for(i in rows) {
-				available_plots.push(rows[i][0]);
-			}
-			update_chosen_select();
-			update_available_select();
-		}).fail(function() {plot_input.append(new Option("[error]","[error]"));});	
-	}
-	
-	
-	var update_filtered_available_select = function() {
-		var generalstationName = getID("general_select").value;
-		available_plots = [];
-		if(generalstationName==="all") {
-			update_filtered_available_select_from_region();			
-		} else {
-			update_filtered_available_select_from_generalstation(generalstationName);
-		}
-	}
-	
-	
-	var update_general_select = function(regionName) {
-		incTask();
-		var general_select = $("#general_select");
-		general_select.empty();
-		$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
-			var rows = splitData(data);
-			general_select.append(new Option("[all]","all"));
-			$.each(rows, function(i,row) {general_select.append(new Option(row[1],row[0]));})
-			update_filtered_available_select();
-			decTask();		
-		}).fail(function() {general_select.append(new Option("[error]","[error]"));decTask();});		
-	}
-	
-	incTask();
-	$.get("../export/region").done(function(data) {
-		var rows = splitData(data);	
-		var region = rows[0][0];
-		update_general_select(region);
-		decTask();
-	}).fail(function() {alert("error getting data");decTask();});	
-	
-	getID("general_select").onchange = update_filtered_available_select;	
-
-	update_chosen_select();
-	update_available_select();
-});
-
-</script>
-
-<link rel="stylesheet" href="jquery-ui.css">
-<link rel="stylesheet" type="text/css" href="querytimeseries.css">
-
-<style type="text/css">
+body {margin: 0px; background-color:#f6f6f6}
 
 #box_centered {
     display:inline-block;
@@ -246,8 +33,6 @@ $(document).ready(function(){
     display: table;
     margin: 0 auto;
 }
-
- 
 </style>
 
 </head>
@@ -285,10 +70,8 @@ Double-click on one plot in the box of "Available Plots" to add it to your chose
 
 <p>
 <div style="display:inline-block;width:200px;vertical-align:top">
-<label for="chosen_select">Chosen Plots</label>
+<label for="chosen_select">Chosen Plots</label><br>
 <select id="chosen_select" size="5" multiple="multiple" style="height:300px">
-<option>plt1</option>
-<option>plt2</option>
 </select>
 </div>
 <div id="box_centered" style="display:inline-block;width:200px;vertical-align:top">
@@ -298,12 +81,10 @@ Double-click on one plot in the box of "Available Plots" to add it to your chose
 <button class="button_centered" title="remove all chosen plots" id="remove_all_button">&gt;&gt;</button>
 </div>
 <div style="display:inline-block;width:200px;vertical-align:top;text-align:center">
-<label for="available_select">Available Plots</label><br/>
-<label for="general_select">filter by</label>
-<select id="general_select"></select>
+<label for="available_select">Available Plots</label><br>
+<label for="general_select">filter by</label><br>
+<select id="general_select"></select><br>
 <select id="available_select" size="5" multiple="multiple" style="height:260px">
-<option>plt1</option>
-<option>plt2</option>
 </select>
 </div>
 </p>

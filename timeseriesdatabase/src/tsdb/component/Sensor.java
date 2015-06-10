@@ -59,6 +59,8 @@ public class Sensor implements Serializable {
 	
 	public SensorCategory category;
 	
+	public boolean internal;
+	
 	public Sensor(String name) {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;
@@ -69,6 +71,7 @@ public class Sensor implements Serializable {
 		useInterpolation = false;
 		empiricalDiff = null;
 		category = SensorCategory.OTHER;
+		internal = false;
 	}
 	
 	/**

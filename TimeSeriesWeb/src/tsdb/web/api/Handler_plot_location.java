@@ -12,6 +12,7 @@ import org.eclipse.jetty.server.Request;
 
 import tsdb.remote.RemoteTsDB;
 
+//TODO
 public class Handler_plot_location extends MethodHandler {
 	private static final Logger log = LogManager.getLogger();
 	
@@ -21,7 +22,7 @@ public class Handler_plot_location extends MethodHandler {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-
+		//TODO
 		
 	}
 }

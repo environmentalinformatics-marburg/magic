@@ -352,6 +352,17 @@ public class TsDB implements AutoCloseable {
 	public Sensor getSensor(String sensorName) {
 		return sensorMap.get(sensorName);
 	}
+	
+	public Sensor getOrCreateSensor(String sensorName) {
+		Sensor sensor = sensorMap.get(sensorName);
+		if(sensor==null) {
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+			return sensor;
+		} else {
+			return sensor;
+		}
+	}
 
 	public Collection<Sensor> getSensors() {
 		return sensorMap.values();

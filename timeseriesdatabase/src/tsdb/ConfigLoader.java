@@ -1056,6 +1056,24 @@ public class ConfigLoader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * mark sensors in config-file as internal
+	 * @param configFile
+	 */
+	public void readSensorInternalConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("internal_sensors");
+			if(section!=null) {
+				section.keySet().forEach(sensorName->tsdb.getOrCreateSensor(sensorName).internal = true);
+			} else {
+				log.warn("internal_sensors section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}	
 
 	public static String loggerPropertyKiLiToLoggerName(String s) {

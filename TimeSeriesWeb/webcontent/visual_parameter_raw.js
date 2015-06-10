@@ -194,8 +194,15 @@ function updateSensors() {
 		var curIndex = 0;
 		$.each(rows, function(i,row) {
 			var sensorTitle = row[0];
-			if(row[3]==="NONE") {
-				sensorTitle += " (raw)";
+			if(row[4]=="true") {
+				if(row[3]==="NONE") {
+					//sensorTitle += " raw-internal";
+					sensorTitle += " internal";
+				} else {
+					sensorTitle += " internal";
+				}
+			} else if(row[3]==="NONE") {
+				sensorTitle += " raw";
 			}
 			sensor_select.append(new Option(sensorTitle,i));
 			if(row[0]==prevSensorName) {

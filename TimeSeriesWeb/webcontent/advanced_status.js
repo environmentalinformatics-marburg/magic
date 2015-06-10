@@ -6,6 +6,21 @@ var tasks = 0;
 
 var sort_by_text = ["first timestamp","last timestamp","plot","voltage"];
 
+function getID(id) {
+	return document.getElementById(id);
+}
+
+function splitData(data) {
+	var lines = data.split(/\n/);
+	var rows = [];
+	for (var i in lines) {
+		if(lines[i].length>0) {
+			rows.push(lines[i].split(';'));
+		}
+	}
+	return rows;
+}
+
 var incTask = function() {
 	runDisabled(true);
 	tasks++;	

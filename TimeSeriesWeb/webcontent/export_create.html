@@ -2,89 +2,24 @@
 <html lang="en">
 <head>
 <title>Export Time Series</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
-<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+<script src="jquery-2.1.1.min.js"></script>
+<script src="export_create.js"></script>
 
 <style type="text/css">
 #top_line {display: table; width: 100%; }
 #top_line_left {display: table-cell; text-align: left; }
 #top_line_right {display: table-cell; text-align: right; }
 h1 {margin-bottom: 40px; text-align:center;}
+div.bg {
+	background-image: url(timeseries_bg3.png);
+	background-position: top left;
+	background-size: 100%;
+}
+body {margin: 0px; background-color:#f6f6f6}
 </style>
-
-<meta name="robots" content="noindex" />
-<meta charset="utf-8">
-<script src="jquery-2.1.1.min.js"></script>
-<script src="util.js"></script>
-
-<script>
-
-var id = -1;
-var total_plots = -1;
-
-function ready() {
-
-getID("status").innerHTML = "start creating zip-file";
-
-$.get("../export/create")
-	.done(function(data) {
-		id = data.id;
-		total_plots = data.plots;
-		getID("progress").max = total_plots;
-		getID("status").innerHTML = "with id "+id;
-		window.setTimeout(function() {get_output();}, 100);
-	}).fail(function() {
-		getID("status").innerHTML = "error";
-	});	
-
-
-}
-
-function get_output() {
-$.get("../export/create_get_output?id="+id)
-	.done(function(data) {
-		var processed_plots = data.processed_plots;
-		getID("progress").value = processed_plots;
-		getID("progressLabel").innerHTML = "processed "+processed_plots + " of " + total_plots + " plots";
-		var output_lines = data.output_lines;
-		if(output_lines.length>0) {
-			var out = "";
-			for(i in output_lines) {
-				out += output_lines[i]+"\n";
-			}
-			append_output(out);
-		}		
-		if(!data.finished) {
-			window.setTimeout(function() {get_output();}, 500);
-		} else {
-			getID("status").innerHTML = "ready";
-			handle_download(data.filename);			
-		}
-	}).fail(function() {
-		append_output("\nerror");
-		getID("status").innerHTML = "ready";		
-	});
-}
-
-function append_output(text) {
-	$("#output").val($("#output").val()+text);
-	getID("output").scrollTop = getID("output").scrollTopMax;
-}
-
-function handle_download(filename) {
-	getID("download").innerHTML = "plots processed ";
-	var a = document.createElement('a');
-	var dl = document.createElement('h2');
-	dl.appendChild(document.createTextNode("click to download"));	
-	a.appendChild(dl);
-	a.title = "link to resulting zip file";
-	a.href = "../download/"+filename;
-	getID("download").appendChild(a);
-}
-
-$(document).ready(ready);
-</script>
-
 
 </head>
 <body>

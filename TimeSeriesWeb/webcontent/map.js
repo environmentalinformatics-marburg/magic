@@ -4,9 +4,15 @@ var url_plot_info = url_base + "tsdb/plot_info";
 var map;
 
 function document_ready() {
-	var mapOptions = { zoom: 11, center: new google.maps.LatLng(-3.1738427, 37.3574291) };
+	var mapOptions = { 	zoom: 11, 
+						center: new google.maps.LatLng(-3.1738427, 37.3574291),
+						mapTypeId: google.maps.MapTypeId.TERRAIN,
+						streetViewControl: false,
+						panControl: false
+					};
 	map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-	$.get(url_plot_info).done(function(plots) {
+	
+	$.get(url_plot_info+"?region=KI").done(function(plots) {
 		for(var i in plots) {
 			var plot = plots[i];
 			if(plot.lat!=undefined && plot.lon!=undefined) {	  
@@ -22,20 +28,22 @@ function document_ready() {
 					map: map,
 					center: myLatlng,
 					radius: 100,
-					title: 'Hello World!'
+					title: plot.name
 				};			
-				new google.maps.Circle(populationOptions);
+				var circle = new google.maps.Circle(populationOptions);
 				
-				/*var myicon = 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld='+plot.name+'|FF0000|000000'
-				
-				var marker = new google.maps.Marker({
-							position: myLatlng,
-							map: map,
-							title: 'Hello World!',
-							icon: myicon
-							});*/
-
-				
+				var marker = new MarkerWithLabel({
+				   position: myLatlng,
+				   map: map,
+				   labelContent: plot.name,
+				   //labelClass: "labels", // the CSS class for the label
+				   //labelInBackground: false,
+				   icon: 'plot_icon.png'
+				 });
+				 
+				/*var contentString = "<h1>"+plot.name+"</h1>";
+				var infowindow = new google.maps.InfoWindow({content: contentString});
+				google.maps.event.addListener(marker, 'click', function() {infowindow.open(map,marker);});*/
 			}
 		}
 	}).fail(function() {sensor_select.append(new Option("[error]","[error]"));decTask();});	

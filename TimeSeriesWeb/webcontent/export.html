@@ -5,228 +5,23 @@
 <meta name="robots" content="noindex" />
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
+<script src="jquery-2.1.1.min.js"></script>
+<script src="export.js"></script>
 
 <style type="text/css">
 #top_line {display: table; width: 100%; }
 #top_line_left {display: table-cell; text-align: left; }
 #top_line_right {display: table-cell; text-align: right; }
 h1 {margin-bottom: 40px; text-align:center;}
+div.bg {
+	background-image: url(timeseries_bg3.png);
+	background-position: top left;
+	background-size: 100%;
+}
+body {margin: 0px; background-color:#f6f6f6}
+li { line-height:150%; }
+ul { padding-left:15px; }
 </style>
-
-<script src="jquery-2.1.1.min.js"></script>
-<script src="jquery-ui.min.js"></script>
-<script src="util.js"></script>
-<script type="text/javascript">
-
-var tasks = 0;
-
-var incTask = function() {
-	tasks++;	
-	getID("status").innerHTML = "busy ("+tasks+")...";
-}
-
-var decTask = function() {
-	tasks--;
-	if(tasks===0) {
-		getID("status").innerHTML = "ready";
-	} else if(tasks<0){
-		getID("status").innerHTML = "error";
-	} else {
-		getID("status").innerHTML = "busy ("+tasks+")...";
-	}
-}
-
-$(document).ready(function(){
-incTask();
-var plots_output = getID("plots_output");
-var sensors_output = getID("sensors_output");
-var settings_output = getID("settings_output");
-var region_output = getID("region_output");
-var timespan_output = getID("timespan_output");
-var aggregation_output = getID("aggregation_output");
-
-clear_println(region_output,"query data...");
-incTask();
-$.get("../export/region").done(function(data) {
-		var rows = splitData(data);
-		clear(region_output);		
-		region_output.innerHTML = rows[0][1];
-		decTask();
-	}).fail(function() {clear_println(region_output,"error getting data");decTask();});
-	
-clear_println(timespan_output,"query data...");
-/*incTask();
-$.get("../export/timespan").done(function(data) {
-		var value = +data;
-		var timespanText = "[not valid timespan]";
-		if(value===0) {
-			timespanText = "[all]";
-		} else {
-			timespanText = "year "+value;
-		}
-		
-		timespan_output.innerHTML = timespanText;
-		decTask();
-	}).fail(function() {clear_println(timespan_output,"error getting data");decTask();});*/	
-
-clear_println(plots_output,"query data...");
-incTask();
-$.get("../export/plots").done(function(data) {
-		clear(plots_output);
-		var rows = splitData(data);
-		for(i in rows) {
-			println(plots_output, rows[i]);
-		}
-		decTask();		
-	}).fail(function() {clear_println(plots_output,"error getting data");decTask();});
-
-clear_println(sensors_output,"query data...");
-incTask();	
-$.get("../export/sensors").done(function(data) {
-		clear(sensors_output);
-		var rows = splitData(data);
-		for(i in rows) {
-			println(sensors_output, rows[i]);
-		}
-		decTask();
-	}).fail(function() {clear_println(sensors_output,"error getting data");decTask();});
-	
-clear_println(settings_output,"query data...");
-incTask();
-$.getJSON("../export/settings").done(function( data ) {
-		var json_settings = data;
-		console.log(JSON.stringify(json_settings));		
-		clear(settings_output);
-		var settings_array = [];
-		//{"col_plotid":true,"col_timestamp":false,"col_datetime":false}
-		
-		var timespan_type = json_settings.timespan_type;
-		
-		var timespanText;
-		if(timespan_type=="all") {
-			timespanText = "[all available data]";
-		} else if(timespan_type=="year"){
-			timespanText = "year "+json_settings.timespan_year;
-		} else if(timespan_type=="years"){
-			timespanText = "years "+json_settings.timespan_years_from+" to "+json_settings.timespan_years_to;
-		} else if(timespan_type=="dates"){
-			timespanText = "dates from "+json_settings.timespan_dates_from+" to "+json_settings.timespan_dates_to;			
-			
-		} else {
-			timespanText = "[not valid timespan]";
-		}		
-		
-		/*var value = +json_settings.timespan;
-		var timespanText = "[not valid timespan]";
-		if(value===0) {
-			timespanText = "[all]";
-		} else {
-			timespanText = "year "+value;
-		}*/		
-		timespan_output.innerHTML = timespanText;
-		aggregation_output.innerHTML = json_settings.timestep;
-		var raw = false;
-		if(json_settings.timestep=="raw") {
-			aggregation_output.innerHTML = "collect raw measured values:  no quality checks or interpolation can be performed";
-			raw = true;
-		}		
-		if(!raw) {
-			settings_array.push("quality check: "+json_settings.quality);		
-			if(json_settings.interpolate) {
-				settings_array.push("interpolate missing values");
-			}
-		}		
-		if(json_settings.desc_sensor) {
-			settings_array.push("include sensor description");
-		}
-		if(json_settings.desc_plot) {
-			settings_array.push("include plot description");
-		}		
-		if(json_settings.desc_settings) {
-			settings_array.push("include settings description");
-		}
-		if(json_settings.allinone) {
-			settings_array.push("all plots in one file");
-		} else {
-			settings_array.push("one file per plot");
-		}
-		if(!json_settings.write_header) {
-			settings_array.push("not write CSV header");
-		}		
-		array_to_html_list(settings_output,settings_array);
-		decTask();
-	})
-	.fail(function(data) {clear_println(settings_output,"error getting data");decTask();});	
-
-//$("#button_instructions").button();
-	
-//$("#choose_region").button();
-document.getElementById("choose_region").onclick = function() {
-	window.location = "export_region.html";
-}	
-	
-//$("#choose_sensors").button();
-document.getElementById("choose_sensors").onclick = function() {
-	window.location = "export_sensors.html";
-}		
-	
-//$("#choose_plots").button();
-document.getElementById("choose_plots").onclick = function() {
-	window.location = "export_plots.html";
-}
-
-//$("#choose_time").button();
-document.getElementById("choose_time").onclick = function() {
-	window.location = "export_time.html";
-}
-
-//$("#download").button();
-/*document.getElementById("download").onclick = function() {
-	incTask();
-	window.location = "../export/result.zip";
-	decTask();
-}*/
-
-//$("#create").button();
-document.getElementById("create").onclick = function() {
-	window.location = "export_create.html";
-}
-
-document.getElementById("button_reset").onclick = function() {
-	incTask();
-	$.post("../export/reset")
-		 .done(function() {
-			document.location.reload();
-			decTask();
-		 })
-		 .fail(function(jqXHR, textStatus, errorThrown) {
-			alert("error sending reset: "+textStatus+"  "+errorThrown);
-			decTask();
-	});
-}
-
-
-
-//$("#button_settings").button();
-document.getElementById("button_settings").onclick = function() {window.location = "export_settings.html";};	
-decTask();
-
-//incTask();	
-$.get("../tsdb/region_list").done(function(data) {
-		var rows = splitData(data);
-		if(rows.length<2) {
-			$("#choose_region_div")[0].style.display="none";
-			$("#div_region").hide();
-		}
-		//decTask();
-	}).fail(function() {/*clear_println(sensors_output,"error getting data");decTask();*/});
-
-});
-
-</script>
-
-<link rel="stylesheet" href="jquery-ui.css">
-<link rel="stylesheet" type="text/css" href="querytimeseries.css">
 
 </head>
 
@@ -246,12 +41,7 @@ $.get("../tsdb/region_list").done(function(data) {
 </div> 
 </div>
 
-
 <h1>Export Time Series</h1>
-
-
-
-
 
 <button id="button_reset">reset</button>
 <div id="choose_region_div" style="display:inline">&nbsp;&nbsp;<b>(0)</b><button id="choose_region">region</button></div>

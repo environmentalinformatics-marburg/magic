@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +48,8 @@ public class TsDBFactory {
 	//public static String JUST_ONE_REGION = "BE";
 	//public static String JUST_ONE_REGION = "KI";
 	//public static String JUST_ONE_REGION = "SA";
+	
+	public static boolean HIDE_INTENAL_SENSORS = true;
 
 	public static boolean WEB_SERVER_LOGIN = false;
 
@@ -114,7 +117,6 @@ public class TsDBFactory {
 				JUST_ONE_REGION = pathMap.get("JUST_ONE_REGION");
 			}
 			if(pathMap.containsKey("WEB_SERVER_LOGIN")) {
-
 				if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("true")) {
 					WEB_SERVER_LOGIN = true;
 				} else if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("false")) {
@@ -123,13 +125,26 @@ public class TsDBFactory {
 					log.warn("ini config value for WEB_SERVER_LOGIN unknown: "+pathMap.get("WEB_SERVER_LOGIN"));
 					WEB_SERVER_LOGIN = false;
 				}
-
-
-
-			}			
+			}
+			HIDE_INTENAL_SENSORS = getBoolean(pathMap,"HIDE_INTENAL_SENSORS",HIDE_INTENAL_SENSORS);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
+	}
+	
+	private static boolean getBoolean(Map<String, String> map, String key, boolean defaultValue) {
+		String valueText = map.get(key);
+		if(valueText==null) {
+			return defaultValue;
+		}
+		if(valueText.toLowerCase().trim().equals("true")) {
+			return true;
+		}
+		if(valueText.toLowerCase().trim().equals("false")) {
+			return false;
+		}
+		log.warn("tsdb ini config value for "+key+" unknown: "+valueText);		
+		return defaultValue;
 	}
 
 	public static TsDB createDefault() {
@@ -190,6 +205,7 @@ public class TsDBFactory {
 			configLoader.readSensorDescriptionConfig(configDirectory+"global_sensor_description.ini");
 			configLoader.readSensorUnitConfig(configDirectory+"global_sensor_unit.ini");
 			configLoader.readSensorCategoryConfig(configDirectory+"global_sensor_category.ini");
+			configLoader.readSensorInternalConfig(configDirectory+"global_sensor_internal.ini");
 			//*** global config end
 
 			//*** calc additional data start

@@ -138,8 +138,9 @@ public class TsDBAPIHandler extends AbstractHandler {
 			break;
 		}
 		case "/plot_info": {
+			String region = request.getParameter("region");
 			response.setContentType("application/json");
-			ret = handle_plot_info(response.getWriter());
+			ret = handle_plot_info(response.getWriter(),region);
 			break;
 		}
 		default:
@@ -208,27 +209,23 @@ public class TsDBAPIHandler extends AbstractHandler {
 		}
 	}
 
-	private boolean handle_plot_info(PrintWriter writer) {
+	private boolean handle_plot_info(PrintWriter writer, String region) {
 		try {
 			PlotInfo[] plotInfos = tsdb.getPlots();
 			JSONWriter json_output = new JSONWriter(writer);
 			json_output.array();
-			for(PlotInfo plotInfo:plotInfos) {			
+			for(PlotInfo plotInfo:plotInfos) {
+				
+				if(region!=null && !region.equals(plotInfo.generalStationInfo.region.name)) {
+					continue;
+				}
 
 				json_output.object();
 				json_output.key("name");
 				json_output.value(plotInfo.name);
 				json_output.key("general");
 				json_output.value(plotInfo.generalStationInfo.longName);
-				/*
-				if(plotInfo.geoPos!=null&&Double.isFinite(plotInfo.geoPos[0])&&Double.isFinite(plotInfo.geoPos[0])) {
-				json_output.key("pos");
-					json_output.array();
-					for(double v:plotInfo.geoPos) {
-						json_output.value(v);
-					}
-					json_output.endArray();
-				}*/
+
 				if(Double.isFinite(plotInfo.geoPosLatitude)) {
 					json_output.key("lat");
 					json_output.value(plotInfo.geoPosLatitude);
