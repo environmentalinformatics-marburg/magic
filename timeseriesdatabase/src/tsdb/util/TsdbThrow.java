@@ -1,9 +1,9 @@
-package tsdb.usecase;
+package tsdb.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class TestingThrow {
+public class TsdbThrow {
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {

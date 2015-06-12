@@ -6,16 +6,46 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/png" href="favicon.png" />
 <style type="text/css">
-#center { width: 800px; height: auto; margin-left: auto; margin-right: auto; line-height:60px; }
 button.linkbutton { width: 170px; }
 table { background-color:#f6f6f6; }
-body { margin: 0px; background-color:#f6f6f6; }
+body { margin: 0px; background-color:#e6e6e6;}
 
 div.bg {
 	background-image: url(timeseries_bg3.png);
 	background-position: top left;
 	background-size: 100%;
 }
+
+/*#center { width: 800px; height: auto; margin-left: auto; margin-right: auto; line-height:60px; }*/
+
+
+
+.horizontal-box {
+  display: flex;
+  flex-flow: row;
+}
+
+.spacer {
+  flex: auto;
+}
+#center {
+  flex: none;
+}
+
+.vertical-box {
+  display: flex;
+  flex-flow: column;
+}
+
+td {
+    padding: 10px;
+}
+
+#infobox {
+	flex: auto;
+	background-color:#f6f6f6;
+}
+
 </style>
 </head>
 <body>
@@ -39,46 +69,33 @@ This is the central start page of Time Series Web Interface. You can navigate to
 <hr/>
 </div>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
 <div id="center">
+<div class="vertical-box">
 <table>
 <colgroup>
-    <col width="100px" height="50px"/>
+    <!--<col width="100px" height="50px"/>
 	<col width="100px" height="50px"/>
-    <col width="600px" height="50px"/>
+    <col width="600px" height="50px"/>-->
 </colgroup>
 <tr><td></td><td><button class="linkbutton" onclick="window.location = 'visual_plotstation_raw.html';">visualize plots</button></td><td> view parameters of one plot (resp. station)</td></tr>
-<tr><td></td><td><button class="linkbutton" onclick="window.location = 'visual_parameter_raw.html';">visualize parameters</button></td><td>view parameter (sensor) of a group of plots</td></tr>
+<tr><td></td><td><button class="linkbutton" onclick="window.location = 'visual_parameter_raw.html';">visualize parameters</button></td><td>view one parameter of a group of plots</td></tr>
 <tr><td></td><td><button class="linkbutton" onclick="window.location = 'export.html';">export</button></td><td>download time series data</td></tr>
-<!--<tr><td></td><td><button class="linkbutton" onclick="window.location = 'status.html';">status</button></td><td>get the "up to date"-status of plots</td></tr>-->
 <tr><td></td><td><button class="linkbutton" onclick="window.location = 'advanced_status.html';">advanced status</button></td><td>get the "up to date"-status of plots</td></tr>
+<tr><td>(prototype)</td><td><button class="linkbutton" onclick="window.location = 'map.html';">map</button></td><td>map of plots with "up to date"-status</td></tr>
 <tr><td></td><td><button class="linkbutton" onclick="window.location = '../supplement';">supplementary content</button></td><td>additional files</td></tr>
-<tr><td>(testing)</td><td><button class="linkbutton" onclick="window.location = 'map.html';">map</button></td><td>map of plots</td></tr>
 </table>
-<hr>
-Infobox
+<div class="entry"><hr></div>
+<div class="entry">Infobox</div>
 <br>
-<iframe width="800px" height="200px" src="../files/info.html"></iframe>
+<!--<iframe width="800px" height="200px" src="../files/info.html"></iframe>-->
+<iframe id="infobox" height="300px" src="../files/info.html"></iframe>
+</div><!--END vertical-box-->
+</div><!--END center-->
+<div class="spacer"></div>
+</div><!--END horizontal-box-->
 
-<!--<hr>
-<table>
-<colgroup>
-    <col width="100px" height="50px"/>
-	<col width="100px" height="50px"/>
-    <col width="400px" height="50px"/>
-</colgroup>-->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'visual_plotstation.html';"><font color=#999999>plot</font></button></td><td><font color=#999999> view parameters of one plot (resp. station)</font></td></tr> -->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'visual_sensor.html';"><font color=#999999>parameter</font></button></td><td><font color=#999999>view parameter of a group of plots</font></td></tr> -->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'querytimeseries.html';"><font color=#999999>query time series</font></button></td><td><font color=#999999>view one sensor plot</font></td></tr> -->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'queryplots.html';"><font color=#999999>query plots</font></button></td><td><font color=#999999>view sensors of one plot</font></td></tr> -->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'querysensors.html';"><font color=#999999>sensor</font></button></td><td><font color=#999999>view one sensor at a group of plots</font></td></tr> -->
-<!--<tr><td><font color=#999999>(deprecated)</font></td><td><button class="linkbutton" onclick="window.location = 'heatmap.html';"><font color=#999999>heat map</font></button></td><td><font color=#999999>view heatmaps of one sensor at a group of plots</font></td></tr> -->
-
-
-<!-- <tr><td><button class="linkbutton" onclick="window.location = 'info.html';">info</button></td><td>metadata of tsdb</td></tr> -->
-<!-- <tr><td><button class="linkbutton" onclick="window.location = 'console.html';">console</button></td><td>get access to internals time series database</td></tr> -->
-<!--</table>-->
-
-</div>
 
 </body>
 

@@ -71,17 +71,21 @@ function incTask() {
 	ready_to_run(false);
 	tasks++;	
 	getID("status").innerHTML = "busy ("+tasks+")...";
+	document.getElementById("busy_indicator").style.display = 'inline';
 }
 
 function decTask() {
 	tasks--;
 	if(tasks===0) {
 		getID("status").innerHTML = "ready";
+		document.getElementById("busy_indicator").style.display = 'none';
 		ready_to_run(true);
 	} else if(tasks<0){
 		getID("status").innerHTML = "error";
+		document.getElementById("busy_indicator").style.display = 'none';
 	} else {
 		getID("status").innerHTML = "busy ("+tasks+")...";
+		document.getElementById("busy_indicator").style.display = 'inline';
 	}
 }
 

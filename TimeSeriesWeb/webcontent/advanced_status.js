@@ -32,17 +32,21 @@ var incTask = function() {
 	runDisabled(true);
 	tasks++;	
 	getID("status").innerHTML = "busy ("+tasks+")...";
+	document.getElementById("busy_indicator").style.display = 'inline';
 }
 
 var decTask = function() {
 	tasks--;
 	if(tasks===0) {
 		getID("status").innerHTML = "ready";
+		document.getElementById("busy_indicator").style.display = 'none';
 		runDisabled(false);
 	} else if(tasks<0){
 		getID("status").innerHTML = "error";
+		document.getElementById("busy_indicator").style.display = 'none';
 	} else {
 		getID("status").innerHTML = "busy ("+tasks+")...";
+		document.getElementById("busy_indicator").style.display = 'inline';
 	}
 }
 
@@ -125,6 +129,7 @@ var runQuery = function() {
 		queryText = "generalstation="+generalStationName;
 	}
 	
+	incTask();
 	$.getJSON(url_plot_status+"?"+queryText).done(function(interval) {
 		getID("result").innerHTML = "";
 		var min_last = 999999999;
@@ -209,6 +214,6 @@ var runQuery = function() {
 		
 		info += "</table>";
 		getID("result").innerHTML = info;
-		
-	}).fail(function() {getID("result").innerHTML = "error";});
+		decTask();
+	}).fail(function() {getID("result").innerHTML = "error";decTask();});
 }

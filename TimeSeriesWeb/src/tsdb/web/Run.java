@@ -9,7 +9,7 @@ import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.remote.StartServerTsDB;
-import tsdb.usecase.TestingThrow;
+import tsdb.util.TsdbThrow;
 
 public class Run {
 	public static void main(String[] args) throws RemoteException, InterruptedException {
@@ -25,7 +25,7 @@ public class Run {
 				System.out.println("ERROR could not bind RMI: "+e);
 			} catch (Exception e) {
 				//e.printStackTrace();
-				TestingThrow.printStackTrace(e);
+				TsdbThrow.printStackTrace(e);
 				System.out.println(e.getClass());				
 			}
 		};
@@ -40,7 +40,7 @@ public class Run {
 				System.out.println("ERROR could not bind socket: "+e);
 			} catch (Exception e) {
 				//e.printStackTrace();
-				TestingThrow.printStackTrace(e);
+				TsdbThrow.printStackTrace(e);
 			}
 		};
 
