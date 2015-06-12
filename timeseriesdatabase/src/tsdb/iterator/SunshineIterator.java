@@ -3,6 +3,7 @@ package tsdb.iterator;
 import java.util.Arrays;
 
 import tsdb.util.AssumptionCheck;
+import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
@@ -44,8 +45,15 @@ public class SunshineIterator extends InputIterator {
 		TsEntry entry = input_iterator.next();
 		float[] data = Arrays.copyOf(entry.data, entry.data.length);
 		float value = entry.data[Rn_300_pos];
-		data[sunshine_pos] = Float.isNaN(value)?Float.NaN:(value>=120?1f:0f); 
-		return new TsEntry(entry.timestamp, data, entry.qualityFlag);
+		data[sunshine_pos] = Float.isNaN(value)?Float.NaN:(value>=120?1f:0f);
+		DataQuality[] qf;
+		if(entry.qualityFlag!=null) {
+			qf = Arrays.copyOf(entry.qualityFlag, entry.qualityFlag.length);
+			qf[sunshine_pos] = entry.qualityFlag[Rn_300_pos];
+		} else {
+			qf = null;
+		}
+		return new TsEntry(entry.timestamp, data, qf);
 	}
 
 }

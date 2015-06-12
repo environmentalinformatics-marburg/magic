@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * Evaluates collections from CollectingAggregator to statics: min, max, median, quantiles 

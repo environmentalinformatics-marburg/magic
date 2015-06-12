@@ -1,5 +1,10 @@
-package tsdb.util;
+package tsdb.util.processingchain;
 
+/**
+ * Base interface and factory of processing chain entries
+ * @author woellauer
+ *
+ */
 public interface ProcessingChainEntry {	
 	String getProcessingTitle();
 	

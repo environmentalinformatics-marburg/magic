@@ -1,7 +1,10 @@
-package tsdb.util.iterator;
+package tsdb.util.processingchain;
 
-import tsdb.util.ProcessingChainEntry;
-
+/**
+ * A processing chain with one entry as source
+ * @author woellauer
+ *
+ */
 public class ProcessingChainSource implements ProcessingChain  {
 	public final ProcessingChainEntry entry;
 	

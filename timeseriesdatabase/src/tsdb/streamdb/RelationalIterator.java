@@ -1,8 +1,11 @@
 package tsdb.streamdb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +15,8 @@ import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainEntry;
 
 /**
  * Joins a collection of StreamIterators to TsIterator with outputSchema.
@@ -101,4 +106,41 @@ public class RelationalIterator extends TsIterator {
 		calcNext();
 		return r;
 	}
+
+	@Override
+	public ProcessingChain getProcessingChain() {
+		if(iterators.length==0) {
+			return ProcessingChain.of(this);
+		}
+		TreeMap<String,ArrayList<String>> stationMap = new TreeMap<String,ArrayList<String>>();
+		for(StreamIterator it:iterators) {
+			ArrayList<String> list = stationMap.get(it.stationName);
+			if(list==null) {
+				list = new ArrayList<String>();
+				stationMap.put(it.stationName, list);
+			}
+			list.add(it.sensorName);
+		}
+		String s="(";
+		for(Entry<String, ArrayList<String>> entry:stationMap.entrySet()) {
+			if(entry.getValue().size()==1) {
+			s+=entry.getKey()+"/"+entry.getValue().get(0);
+			} else {
+				s+=entry.getKey()+"/{";//+entry.getValue().get(0);
+				boolean first=true;
+				for(String name:entry.getValue()) {
+					if(first) {
+						first = false;
+					} else {
+						s+=",";
+					}
+					s+=name;
+				}
+				s+="}";
+			}
+		}
+		s+=")";
+		return ProcessingChain.of(ProcessingChainEntry.of(this.getProcessingTitle()+s));
+	}
+	
 }

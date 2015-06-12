@@ -1,5 +1,10 @@
-package tsdb.util;
+package tsdb.util.processingchain;
 
+/**
+ * Simple processing chain entry with a title.
+ * @author woellauer
+ *
+ */
 public class ProcessingChainTitle implements ProcessingChainEntry {
 	
 	public final String title;

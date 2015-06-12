@@ -1,8 +1,11 @@
-package tsdb.util.iterator;
+package tsdb.util.processingchain;
 
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.ProcessingChainSupplier;
-
+/**
+ * Base interface and factory for processing chains 
+ * @author woellauer
+ *
+ */
+@FunctionalInterface
 public interface ProcessingChain {	
 	public String getText();
 	
@@ -28,5 +31,9 @@ public interface ProcessingChain {
 	
 	public static ProcessingChainOneSource of(ProcessingChainSupplier source, String entry) {
 		return ProcessingChainOneSource.of(source, entry);
+	}
+	
+	public static ProcessingChainMultiSources of(ProcessingChainSupplier[] sources, ProcessingChainEntry entry) {
+		return ProcessingChainMultiSources.of(sources, entry);
 	}
 }

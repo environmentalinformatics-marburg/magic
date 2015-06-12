@@ -8,9 +8,9 @@ import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainMultiSources;
 import static tsdb.util.AssumptionCheck.throwEmpty;
 
 /**
@@ -127,6 +127,6 @@ public class MergeIterator extends MoveIterator {
 	
 	@Override
 	public ProcessingChain getProcessingChain() {
-		return new ProcessingChainMultiSources(processing_iterator, this);
+		return ProcessingChain.of(processing_iterator, this);
 	}
 }

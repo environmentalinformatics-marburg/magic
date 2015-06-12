@@ -1,6 +1,7 @@
 package tsdb.util.iterator;
 
 import tsdb.util.TsSchema;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * Base class for iterators that process input from one TimeSeriesIterator

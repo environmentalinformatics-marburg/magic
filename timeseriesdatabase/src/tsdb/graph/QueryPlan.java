@@ -1,5 +1,7 @@
 package tsdb.graph;
 
+import java.util.Arrays;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -136,6 +138,7 @@ public class QueryPlan {
 	 */
 	public static NodeGen getStationGen(TsDB tsdb, DataQuality dataQuality) {
 		return (String stationID, String[] schema)->{
+			log.info("StationGen get "+Arrays.toString(schema));
 			Station station = tsdb.getStation(stationID);
 			if(station==null) {
 				throw new RuntimeException("station not found");

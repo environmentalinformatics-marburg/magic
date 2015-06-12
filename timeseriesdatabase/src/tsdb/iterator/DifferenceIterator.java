@@ -2,9 +2,8 @@ package tsdb.iterator;
 
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * Calculates difference between input_iterator and compare_iterator, corrected by reference values
@@ -62,6 +61,6 @@ public class DifferenceIterator extends TsIterator {
 
 	@Override
 	public ProcessingChain getProcessingChain() {
-		return new ProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
+		return ProcessingChain.of(new TsIterator[]{input_iterator,compare_iterator}, this);
 	}
 }

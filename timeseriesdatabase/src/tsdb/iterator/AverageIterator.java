@@ -6,12 +6,11 @@ import java.util.Map;
 
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
-import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * This iterator outputs elements of average values of input_iterator values.
@@ -86,6 +85,6 @@ public class AverageIterator extends MoveIterator {
 	
 	@Override
 	public ProcessingChain getProcessingChain() {
-		return new ProcessingChainMultiSources(input_iterators, this);
+		return ProcessingChain.of(input_iterators, this);
 	}
 }

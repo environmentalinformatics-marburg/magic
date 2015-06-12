@@ -3,7 +3,7 @@ package tsdb.iterator;
 import java.util.ArrayList;
 
 import tsdb.util.AggregationType;
-import tsdb.util.iterator.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * Base class for collecting aggregators

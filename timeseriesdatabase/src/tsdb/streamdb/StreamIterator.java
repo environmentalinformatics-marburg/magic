@@ -9,13 +9,16 @@ import org.apache.logging.log4j.Logger;
 import org.mapdb.BTreeMap;
 
 import tsdb.util.DataEntry;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainEntry;
+import tsdb.util.processingchain.ProcessingChainSupplier;
 
 /**
  * Iterator over one time series
  * @author woellauer
  *
  */
-public class StreamIterator implements Iterator<DataEntry> {	
+public class StreamIterator implements Iterator<DataEntry>, ProcessingChainEntry, ProcessingChainSupplier {	
 	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
@@ -159,6 +162,16 @@ public class StreamIterator implements Iterator<DataEntry> {
 	@Override
 	public String toString() {
 		return "streamIterator("+stationName+"/"+sensorName+"["+minQueryTimestamp+","+maxQueryTimestamp+"])";
+	}
+
+	@Override
+	public String getProcessingTitle() {
+		return "stream("+stationName+"/"+sensorName+")";
+	}
+
+	@Override
+	public ProcessingChain getProcessingChain() {
+		return ProcessingChain.of(this);
 	}
 	
 	

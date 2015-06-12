@@ -1,3 +1,10 @@
+var url_base = "../";
+
+var url_generalstation_list = url_base + "tsdb/generalstation_list";
+var url_region_list = url_base + "tsdb/region_list";
+var url_plot_status = url_base + "tsdb/status";
+	
+
 var region_select;
 var generalstation_select;
 var sort_by_select;
@@ -65,7 +72,7 @@ $(document).ready(function(){
 var updataRegions = function() {
 	incTask();
 	region_select.empty();
-	$.get("../tsdb/region_list").done(function(data) {
+	$.get(url_region_list).done(function(data) {
 		var rows = splitData(data);
 		$.each(rows, function(i,row) {region_select.append(new Option(row[1],row[0]));});
 		updateGeneralStations();
@@ -82,7 +89,7 @@ var updateGeneralStations = function() {
 	incTask();
 	var regionName = region_select.val();
 	generalstation_select.empty();	
-	$.get("../tsdb/generalstation_list?region="+regionName).done(function(data) {
+	$.get(url_generalstation_list+"?region="+regionName).done(function(data) {
 		var rows = splitData(data);
 		generalstation_select.append(new Option("[all]","[all]"));
 		$.each(rows, function(i,row) {generalstation_select.append(new Option(row[1],row[0]));})
@@ -118,7 +125,7 @@ var runQuery = function() {
 		queryText = "generalstation="+generalStationName;
 	}
 	
-	$.getJSON("../tsdb/status?"+queryText).done(function(interval) {
+	$.getJSON(url_plot_status+"?"+queryText).done(function(interval) {
 		getID("result").innerHTML = "";
 		var min_last = 999999999;
 		var max_last = 0;
@@ -159,9 +166,6 @@ var runQuery = function() {
 		}
 
 		var info = "<table><tr><th>Plot</th><th>First Timestamp</th><th>Last Timestamp</th><th>elapsed days</th><th>latest voltage reading</th></tr>";
-	
-		
-
 		
 		for(i in interval) {
 			var t = max_last - interval[i].last_timestamp;

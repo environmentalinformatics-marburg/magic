@@ -1,14 +1,18 @@
 package tsdb.iterator;
 
+import java.util.Arrays;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.DataQuality;
 import tsdb.util.TimeConverter;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
-import tsdb.util.iterator.ProcessingChain;
-import tsdb.util.iterator.ProcessingChainMultiSources;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * This iterator checks values of input_iterator by comparing values to compare_iterator.
@@ -17,6 +21,7 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class EmpiricalIterator extends TsIterator {
+	private static final Logger log = LogManager.getLogger();
 
 	private TsIterator input_iterator;
 	private TsIterator compare_iterator;
@@ -89,6 +94,6 @@ public class EmpiricalIterator extends TsIterator {
 
 	@Override
 	public ProcessingChain getProcessingChain() {
-		return new ProcessingChainMultiSources(new TsIterator[]{input_iterator,compare_iterator}, this);
+		return ProcessingChain.of(new TsIterator[]{input_iterator,compare_iterator}, this);
 	}
 }

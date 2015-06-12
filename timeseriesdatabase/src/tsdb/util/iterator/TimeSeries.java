@@ -7,12 +7,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.DataQuality;
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.ProcessingChainSupplier;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainEntry;
+import tsdb.util.processingchain.ProcessingChainSupplier;
 
 /**
  * time series of aggregated data. time interval between values is constant

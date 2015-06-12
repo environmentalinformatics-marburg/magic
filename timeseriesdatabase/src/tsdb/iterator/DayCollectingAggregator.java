@@ -6,8 +6,8 @@ import tsdb.TsDB;
 import tsdb.component.Sensor;
 import tsdb.util.AggregationType;
 import tsdb.util.TsEntry;
-import tsdb.util.iterator.ProcessingChain;
 import tsdb.util.iterator.TsIterator;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * collecting aggregator to day

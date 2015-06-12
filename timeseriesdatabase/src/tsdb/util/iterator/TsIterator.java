@@ -3,10 +3,11 @@ package tsdb.util.iterator;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import tsdb.util.ProcessingChainEntry;
-import tsdb.util.ProcessingChainSupplier;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainEntry;
+import tsdb.util.processingchain.ProcessingChainSupplier;
 
 public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry, ProcessingChainSupplier {
 

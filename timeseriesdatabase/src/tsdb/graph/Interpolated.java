@@ -64,7 +64,7 @@ public class Interpolated extends Continuous.Abstract {
 		if(querySchema==null) {
 			querySchema = station.getSchema();
 		} else {
-			querySchema = station.getValidSchemaEntries(querySchema);
+			querySchema = station.getValidSchemaEntriesWithVirtualSensors(querySchema);
 		}
 		if(querySchema.length==0) {
 			throw new RuntimeException("empty schema");
@@ -79,8 +79,8 @@ public class Interpolated extends Continuous.Abstract {
 		Continuous[] interpolationSources = station.nearestStations
 				.stream()
 				.limit(STATION_INTERPOLATION_COUNT)
-				.filter(sourceStation -> sourceStation.getValidSchemaEntries(interpolationSchema).length>0)
-				.map(sourceStation -> sourceGen.get(sourceStation.stationID, sourceStation.getValidSchemaEntries(interpolationSchema)))
+				.filter(sourceStation -> sourceStation.getValidSchemaEntriesWithVirtualSensors(interpolationSchema).length>0)
+				.map(sourceStation -> sourceGen.get(sourceStation.stationID, sourceStation.getValidSchemaEntriesWithVirtualSensors(interpolationSchema)))
 				.toArray(Continuous[]::new);
 
 		if(interpolationSources.length<MIN_STATION_INTERPOLATION_COUNT) {
