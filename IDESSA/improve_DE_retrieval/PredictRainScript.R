@@ -45,10 +45,10 @@ names(max_x) <-  names(min_x)
 
 
 
-evaluation_validation=data.frame(matrix(ncol=7))
-evaluation_training=data.frame(matrix(ncol=7))
-names(evaluation_validation)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
-names(evaluation_training)=c("ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
+evaluation_validation=data.frame(matrix(ncol=8))
+evaluation_training=data.frame(matrix(ncol=8))
+names(evaluation_validation)=c("scene","ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
+names(evaluation_training)=c("scene","ME","ME.se","MAE","MAE.se","RMSE","RMSE.se","Rsq")
 comp_training<-data.frame(matrix(ncol=2))
 comp_validation<-data.frame(matrix(ncol=2))
 names(comp_training)<-c("pred","obs")
@@ -68,6 +68,12 @@ for (i in 1:nrow(rainevents)){
                                                     day,"/",time,"/"),
                         rainmask=reference,min_x=min_x,max_x=max_x)
   
+  ###test:only mean:
+#  pred<-reference
+#  values(pred)<-1.633273
+#  pred<-mask(pred,reference)
+  ###
+  
   reference[reference<0.06]<-NA
   pred[reference<0.06]<-NA
   reference=mask(reference,pred)
@@ -83,13 +89,15 @@ for (i in 1:nrow(rainevents)){
   
   #for training scenes:
   if (paste0("2010",month,day,time)%in%trainingsc[[1]]) {
-    evaluation_training=rbind(evaluation_training,validate(obs=reference,pred=pred))
-    comp_training<-rbind(comp_training,data.frame("pred"=values(pred)[!is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
+    evaluation_training=rbind(evaluation_training,cbind("scene"=paste0("2010",month,day,time),validate(obs=reference,pred=pred)))
+    comp_training<-rbind(comp_training,data.frame("pred"=values(pred)[
+      !is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
   }
   #and non training scenes:
   if (!paste0("2010",month,day,time)%in%trainingsc[[1]]) {
-    evaluation_validation=rbind(evaluation_validation,validate(obs=reference,pred=pred))
-    comp_validation<-rbind(comp_validation,data.frame("pred"=values(pred)[!is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
+    evaluation_validation=rbind(evaluation_validation,cbind("scene"=paste0("2010",month,day,time),validate(obs=reference,pred=pred)))
+    comp_validation<-rbind(comp_validation,data.frame("pred"=values(pred)[
+      !is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
   }
   print(i)
 }
@@ -100,12 +108,11 @@ comp_training<-comp_training[-1,]
 comp_validation<-comp_validation[-1,]
 
 ### save evaluation
-save(evaluation_validation,file=paste0(resultpath,"/evaluation_validation_",datasetTime,
+save(evaluation_validation,file=paste0(resultpath,"/evaluation_validation_20_",datasetTime,
                                        "_",responseName,".Rdata"))
-save(evaluation_training,file=paste0(resultpath,"/evaluation_training_",datasetTime,
+save(evaluation_training,file=paste0(resultpath,"/evaluation_training_20_",datasetTime,
                                      "_",responseName,".Rdata"))
 
-save(comp_training,file=paste0(resultpath,"/globalComp_training.RData"))
-save(comp_validation,file=paste0(resultpath,"globalComp_validation.RData"))
+save(comp_training,file=paste0(resultpath,"/globalComp_training20.RData"))
+save(comp_validation,file=paste0(resultpath,"globalComp_validation20.RData"))
 
-###direct comparison mit nur kanäle...
