@@ -55,4 +55,6 @@ public interface StreamStorage {
 	void setTimeSeriesMask(String stationName, String sensorName, TimeSeriesMask timeSeriesMask);
 
 	public void insertTimestampSeries(TimestampSeries timestampSeries);
+
+	void removeInterval(String stationName, int start, int end);
 }

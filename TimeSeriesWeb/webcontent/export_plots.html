@@ -33,6 +33,11 @@ body {margin: 0px; background-color:#f6f6f6}
     display: table;
     margin: 0 auto;
 }
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
 </style>
 
 </head>
@@ -52,8 +57,15 @@ body {margin: 0px; background-color:#f6f6f6}
 </div>
 <h1>Export Time Series - choose plots</h1>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply chosen plots</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 <hr/>
 </div>
 
@@ -66,12 +78,15 @@ Double-click on one plot in the box of "Available Plots" to add it to your chose
 <hr/>
 </div>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <h3>Select Plots</h3>
 
 <p>
 <div style="display:inline-block;width:200px;vertical-align:top">
 <label for="chosen_select">Chosen Plots</label><br>
-<select id="chosen_select" size="5" multiple="multiple" style="height:300px">
+<select id="chosen_select" size="5" multiple="multiple" style="min-width:100px;height:300px">
 </select>
 </div>
 <div id="box_centered" style="display:inline-block;width:200px;vertical-align:top">
@@ -84,9 +99,13 @@ Double-click on one plot in the box of "Available Plots" to add it to your chose
 <label for="available_select">Available Plots</label><br>
 <label for="general_select">filter by</label><br>
 <select id="general_select"></select><br>
-<select id="available_select" size="5" multiple="multiple" style="height:260px">
+<select id="available_select" size="5" multiple="multiple" style="min-width:100px;height:260px">
 </select>
 </div>
 </p>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 </body>
 </html>

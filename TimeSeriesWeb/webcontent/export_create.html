@@ -19,6 +19,11 @@ div.bg {
 	background-size: 100%;
 }
 body {margin: 0px; background-color:#f6f6f6}
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
 </style>
 
 </head>
@@ -44,6 +49,9 @@ On this page you can view the progress of processing the chosen plots. Wait unti
 <hr/>
 </div>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <p>
 <progress id="progress" style="width:700px"></progress>&nbsp;&nbsp;&nbsp;<span id="progressLabel"></span>
 </p>
@@ -55,5 +63,9 @@ processing plots (download not ready)
 <p>
 <textarea id="output" cols="100" rows="30" wrap="soft" readonly="readonly">init...</textarea>
 </p>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 </body>
 </html>

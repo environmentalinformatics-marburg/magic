@@ -40,6 +40,13 @@ body {margin: 0px; background-color:#f6f6f6}
 	text-align: center;
 }
 
+#chosen_select {min-width:100px;height:300px}
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
+
 
 
 </style>
@@ -59,9 +66,18 @@ body {margin: 0px; background-color:#f6f6f6}
 <button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
 </div> 
 </div>
+
 <h1 style="text-align:center">Export Time Series - choose parameters</h1>
+
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply chosen parameters</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 <hr/>
 </div>
 
@@ -74,12 +90,15 @@ Double-click on one parameter in the box of "Available Parameters" to add it to 
 <hr/>
 </div>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <h3>Select Parameters</h3>
 
 <p>
 <div style="display:inline-block;width:200px;vertical-align:top">
 <label for="chosen_select">Chosen Parameters</label><br>
-<select id="chosen_select" size="5" multiple="multiple" style="height:300px">
+<select id="chosen_select" size="5" multiple="multiple">
 </select>
 </div>
 
@@ -92,12 +111,15 @@ Double-click on one parameter in the box of "Available Parameters" to add it to 
 
 <div style="display:inline-block;width:200px;vertical-align:top">
 <label for="available_select">Available Parameters</label><br>
-<select id="available_select" size="5" multiple="multiple" style="height:300px">
+<select id="available_select" size="5" multiple="multiple" style="min-width:100px;height:300px">
 </select>
 </div>
 
 
 
 </p>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 </body>
 </html>

@@ -1181,11 +1181,15 @@ public class ConfigLoader {
 	public void readSaOwnPlotInventory(String configFile) {
 		Table table = Table.readCSV(configFile,',');
 		ColumnReaderString cr_plot = table.createColumnReader("plot");
-		ColumnReaderString cr_general = table.createColumnReader("general");
+		ColumnReaderString cr_general = table.createColumnReader("general");		
+		ColumnReaderFloat cr_lat = table.createColumnReaderFloat("lat");
+		ColumnReaderFloat cr_lon = table.createColumnReaderFloat("lon");
 
 		for(String[] row:table.rows) {
 			String plotID = cr_plot.get(row);
-			String generalStationName = cr_general.get(row);			
+			String generalStationName = cr_general.get(row);
+			float lat = cr_lat.get(row,true);
+			float lon = cr_lon.get(row,true);
 			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
 			if(generalStation==null) {
 				log.error("GeneralStation not found "+generalStationName);
@@ -1196,6 +1200,8 @@ public class ConfigLoader {
 			float geoPosNorthing = Float.NaN;
 			boolean isFocalPlot = false;
 			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing, isFocalPlot);
+			virtualPlot.geoPosLatitude = lat;
+			virtualPlot.geoPosLongitude = lon;
 			tsdb.insertVirtualPlot(virtualPlot);
 		}
 

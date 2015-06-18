@@ -19,10 +19,12 @@ public class CountTsDBValues {
 		long dbChunkCount = 0;
 		long dbSensorCount = 0;
 		long dbStationCount = 0;
+		long dbClassicRows = 0; 
 		for(String stationName:streamdb.getStationNames()) {
 			long stationValues = 0;
 			long stationChunkCount = 0;
 			long stationSensorCount = 0;
+			long stationClassicRows = 0; 
 			for(SensorMeta sensorMeta:streamdb.getSensorMap(stationName).values()) {
 				long sensorValues = 0;
 				long sensorChunkCount = 0;
@@ -34,15 +36,19 @@ public class CountTsDBValues {
 				stationValues += sensorValues;
 				stationChunkCount += sensorChunkCount;
 				stationSensorCount++;
+				if(stationClassicRows<sensorValues) {
+					stationClassicRows = sensorValues;
+				}
 			}
-			System.out.println(stationName+"  "+stationValues+ " values in "+stationSensorCount+" sensors and "+stationChunkCount+" chunks");
+			System.out.println(stationName+"  "+stationValues+ " values in "+stationSensorCount+" sensors and "+stationChunkCount+" chunks and  "+stationClassicRows+" 'table'-rows");
 			dbValues += stationValues;
 			dbChunkCount += stationChunkCount;
 			dbSensorCount += stationSensorCount;
-			dbStationCount++;			
+			dbStationCount++;
+			dbClassicRows += stationClassicRows;
 		}
 		System.out.println();
-		System.out.println("db  "+dbValues+ " values in "+dbStationCount+" stations and "+dbSensorCount+" sensors and "+dbChunkCount+" chunks");
+		System.out.println("db  "+dbValues+ " values in "+dbStationCount+" stations and "+dbSensorCount+" sensors and "+dbChunkCount+" chunks and  "+dbClassicRows+" 'table'-rows");
 		
 		
 		/*SensorMeta sensorMeta = streamdb.getSensorMeta("51021020159", "Ta_200");

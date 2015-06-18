@@ -170,6 +170,11 @@ public class StreamStorageStreamDB implements StreamStorage {
 			streamdb.insertSensorData(stationName, sensorName, dataEntries);
 		}
 	}
+	
+	@Override
+	public void removeInterval(String stationName, int start, int end) {
+		streamdb.removeInterval(stationName, start, end);
+	}
 
 	public NavigableSet<String> getStationNames() {
 		return streamdb.getStationNames();		

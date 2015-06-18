@@ -281,6 +281,52 @@ public class StreamDB {
 		}
 	}
 	
+	public void removeSensorData(String stationName, String sensorName, int start, int end) {
+		SensorMeta sensorMeta = getSensorMeta(stationName,sensorName,false);
+		if(sensorMeta==null) {
+			log.info("no sensor: "+stationName+" "+sensorName+" ->  nothing removed");
+			return;
+		}
+		BTreeMap<Integer, ChunkMeta> chunkMetaMap = getSensorChunkMetaMap(sensorMeta);
+		BTreeMap<Integer, Chunk> chunkMap = getSensorChunkMap(sensorMeta);
+		
+		ChunkMeta[] allChunkMetas = chunkMetaMap.values().toArray(new ChunkMeta[0]); //proxy
+		
+		for(ChunkMeta chunkMeta:allChunkMetas) {
+			if(start<=chunkMeta.firstTimestamp&&chunkMeta.lastTimestamp<=end) { //remove full chunk
+				removeChunk(chunkMetaMap,chunkMap,chunkMeta);
+			} else if(start<=chunkMeta.lastTimestamp&&chunkMeta.firstTimestamp<=end){ // partial data chunk remove
+				Chunk oldChunk = chunkMap.get(chunkMeta.firstTimestamp);
+				Chunk newChunk = removeIntervalInChunk(oldChunk,start, end);
+				if(newChunk!=null) {
+					removeChunk(chunkMetaMap,chunkMap,chunkMeta);
+					insertChunk(chunkMetaMap,chunkMap,newChunk);
+					log.info("chunk part reinserted");
+				} else {
+					log.error("chunk not removed (internal error): "+chunkMeta);
+				}
+				
+			}
+		}
+	}
+	
+	/**
+	 * returns a new chunk without data in interval
+	 * @param chunk
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	private static Chunk removeIntervalInChunk(Chunk chunk, int start, int end) {
+		ArrayList<DataEntry> result = new ArrayList<DataEntry>(chunk.data.length);
+		for(DataEntry value:chunk.data) {
+			if(value.timestamp<start || end<value.timestamp) {
+				result.add(value);
+			}
+		}
+		return Chunk.of(result);
+	}
+	
 	/**
 	 * get meta, that is correct target of timestamp if present
 	 * @param timestamp
@@ -526,4 +572,17 @@ public class StreamDB {
 	public void compact() {
 		db.compact();
 	}
+
+	public void removeInterval(String stationName, int start, int end) {//TODO remove empty streams and stations
+		NavigableSet<String> sensorNames = getSensorNames(stationName);
+		if(sensorNames.isEmpty()) {
+			log.info("no sensors in station -> nothing removed: "+stationName);
+			return;
+		}
+		for(String sensorName:sensorNames) {
+			log.info("remove "+stationName+"/"+sensorName+"  "+start+"  "+end);
+			removeSensorData(stationName, sensorName, start, end);
+		}
+	}
+
 }

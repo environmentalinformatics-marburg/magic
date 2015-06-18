@@ -21,6 +21,12 @@ div.bg {
 body {margin: 0px; background-color:#f6f6f6}
 li { line-height:150%; }
 ul { padding-left:15px; }
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
+
 </style>
 
 </head>
@@ -43,6 +49,9 @@ ul { padding-left:15px; }
 
 <h1>Export Time Series</h1>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_reset">reset</button>
 <div id="choose_region_div" style="display:inline">&nbsp;&nbsp;<b>(0)</b><button id="choose_region">region</button></div>
 &nbsp;&nbsp;<b>(1)</b><button id="choose_sensors">parameters</button>
@@ -52,7 +61,14 @@ ul { padding-left:15px; }
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 &nbsp;&nbsp;<b>(5)</b><!--<button id="download"><b>download ZIP-File</b></button>--><a href="../export/result.zip"><b>&gt;&gt;DOWNLOAD ZIP-FILE&lt;&lt;</b></a>
 &nbsp; &nbsp; &nbsp; or &nbsp; &nbsp; &nbsp; <button id="create">create ZIP-File</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
+
 <hr/>
+
+
 </div>
 
 <div id="div_help" style="display:none">
@@ -74,6 +90,10 @@ This the main page to download time series data as zip-file.
 <hr/>
 </div>
 
+
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <h3>Summary of exported time series</h3>
 <div id="div_region">
 <h4 style="display:inline-block">Region&nbsp; &nbsp; &nbsp;</h4>
@@ -100,6 +120,8 @@ with time steps of &nbsp;&nbsp;
 <h4>Plots</h4>
 <div id="plots_output"></div>
 </div>
-
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 </body>
 </html>

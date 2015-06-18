@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +14,8 @@ import org.ini4j.Wini;
 import tsdb.util.Util;
 
 /**
- * Factory for TimeSeriesDatabase
+ * Factory for TimeSeriesDatabase.
+ * Creates tsdb object and loads tsdb config data from config files.
  * @author woellauer
  *
  */
@@ -57,6 +57,9 @@ public class TsDBFactory {
 		initPaths();
 	}
 
+	/**
+	 * If entry is in path config file read it else set to default.
+	 */
 	private static void initPaths() {
 		try {
 			Wini ini;
@@ -76,62 +79,36 @@ public class TsDBFactory {
 				return;
 			}
 			Map<String, String> pathMap = Util.readIniSectionMap(section);
-			if(pathMap.containsKey("CONFIG_PATH")) {
-				CONFIG_PATH = pathMap.get("CONFIG_PATH");
-			}
-			if(pathMap.containsKey("STORAGE_PATH")) {
-				STORAGE_PATH = pathMap.get("STORAGE_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_BE_TSM_PATH")) {
-				SOURCE_BE_TSM_PATH = pathMap.get("SOURCE_BE_TSM_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_KI_TSM_PATH")) {
-				SOURCE_KI_TSM_PATH = pathMap.get("SOURCE_KI_TSM_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_KI_TFI_PATH")) {
-				SOURCE_KI_TFI_PATH = pathMap.get("SOURCE_KI_TFI_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_SA_DAT_PATH")) {
-				SOURCE_SA_DAT_PATH = pathMap.get("SOURCE_SA_DAT_PATH");
-			}
-			if(pathMap.containsKey("SOURCE_SA_OWN_PATH")) {
-				SOURCE_SA_OWN_PATH = pathMap.get("SOURCE_SA_OWN_PATH");
-			}			
-			if(pathMap.containsKey("WEBCONTENT_PATH")) {
-				WEBCONTENT_PATH = pathMap.get("WEBCONTENT_PATH");
-			}
-			if(pathMap.containsKey("WEBDOWNLOAD_PATH")) {
-				WEBDOWNLOAD_PATH = pathMap.get("WEBDOWNLOAD_PATH");
-			}
-			if(pathMap.containsKey("WEBFILES_PATH")) {
-				WEBFILES_PATH = pathMap.get("WEBFILES_PATH");
-			}
-			if(pathMap.containsKey("OUTPUT_PATH")) {
-				OUTPUT_PATH = pathMap.get("OUTPUT_PATH");
-			}
-			//WEB_SERVER_PREFIX_BASE_URL
-			if(pathMap.containsKey("WEB_SERVER_PREFIX_BASE_URL")) {
-				WEB_SERVER_PREFIX_BASE_URL = pathMap.get("WEB_SERVER_PREFIX_BASE_URL");
-			}
-			if(pathMap.containsKey("JUST_ONE_REGION")) {
-				JUST_ONE_REGION = pathMap.get("JUST_ONE_REGION");
-			}
-			if(pathMap.containsKey("WEB_SERVER_LOGIN")) {
-				if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("true")) {
-					WEB_SERVER_LOGIN = true;
-				} else if(pathMap.get("WEB_SERVER_LOGIN").toLowerCase().trim().equals("false")) {
-					WEB_SERVER_LOGIN = false;
-				} else {
-					log.warn("ini config value for WEB_SERVER_LOGIN unknown: "+pathMap.get("WEB_SERVER_LOGIN"));
-					WEB_SERVER_LOGIN = false;
-				}
-			}
+			CONFIG_PATH = getString(pathMap, "CONFIG_PATH", CONFIG_PATH);
+			STORAGE_PATH = getString(pathMap, "STORAGE_PATH", STORAGE_PATH);
+			SOURCE_BE_TSM_PATH = getString(pathMap, "SOURCE_BE_TSM_PATH", SOURCE_BE_TSM_PATH);
+			SOURCE_KI_TSM_PATH = getString(pathMap, "SOURCE_KI_TSM_PATH", SOURCE_KI_TSM_PATH);
+			SOURCE_KI_TFI_PATH = getString(pathMap, "SOURCE_KI_TFI_PATH", SOURCE_KI_TFI_PATH);
+			SOURCE_SA_DAT_PATH = getString(pathMap, "SOURCE_SA_DAT_PATH", SOURCE_SA_DAT_PATH);
+			SOURCE_SA_OWN_PATH = getString(pathMap, "SOURCE_SA_OWN_PATH", SOURCE_SA_OWN_PATH);
+			WEBCONTENT_PATH = getString(pathMap, "WEBCONTENT_PATH", WEBCONTENT_PATH);
+			WEBDOWNLOAD_PATH = getString(pathMap, "WEBDOWNLOAD_PATH", WEBDOWNLOAD_PATH);
+			WEBFILES_PATH = getString(pathMap, "WEBFILES_PATH", WEBFILES_PATH);
+			
+			WEB_SERVER_PREFIX_BASE_URL = getString(pathMap, "WEB_SERVER_PREFIX_BASE_URL", WEB_SERVER_PREFIX_BASE_URL);
+			
+			JUST_ONE_REGION = getString(pathMap, "JUST_ONE_REGION", JUST_ONE_REGION);
+
+			WEB_SERVER_LOGIN = getBoolean(pathMap,"WEB_SERVER_LOGIN", WEB_SERVER_LOGIN);
+
 			HIDE_INTENAL_SENSORS = getBoolean(pathMap,"HIDE_INTENAL_SENSORS",HIDE_INTENAL_SENSORS);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
 	}
 	
+	/**
+	 * Read boolean parameter from ini file. If it not exists set to defaul.
+	 * @param map map of ini-file-section
+	 * @param key parameter
+	 * @param defaultValue default
+	 * @return resulting value
+	 */
 	private static boolean getBoolean(Map<String, String> map, String key, boolean defaultValue) {
 		String valueText = map.get(key);
 		if(valueText==null) {
@@ -145,6 +122,25 @@ public class TsDBFactory {
 		}
 		log.warn("tsdb ini config value for "+key+" unknown: "+valueText);		
 		return defaultValue;
+	}
+	
+	/**
+	 * Read String parameter from ini file. If it not exists set to defaul.
+	 * @param map map of ini-file-section
+	 * @param key parameter
+	 * @param defaultValue default
+	 * @return resulting value
+	 */
+	private static String getString(Map<String, String> map, String key, String defaultValue) {
+		String valueText = map.get(key);
+		if(valueText==null) {
+			return defaultValue;
+		}
+		if(valueText.trim().isEmpty()) {
+			log.warn("tsdb ini config value for "+key+" empty: ");
+			return defaultValue;
+		}
+		return valueText;	
 	}
 
 	public static TsDB createDefault() {

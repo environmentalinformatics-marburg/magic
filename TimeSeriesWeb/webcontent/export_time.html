@@ -23,6 +23,11 @@ body {margin: 0px; background-color:#f6f6f6}
 table {
     background-color: #ffffff;
 }
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
 </style>
 
 </head>
@@ -42,8 +47,15 @@ table {
 </div>
 <h1>Export Time Series - choose timespan and aggregation</h1>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply time</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 <hr/>
 </div>
 <div id="div_help" style="display:none">
@@ -59,6 +71,10 @@ When you want to specify exact start- and end-dates of the requested time span s
 
 <hr/>
 </div>
+
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <h3>Time</h3>
 
 <div>
@@ -108,5 +124,9 @@ valid examples:
 </table>
 </input>
 </div>
+
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 </body>
 </html>

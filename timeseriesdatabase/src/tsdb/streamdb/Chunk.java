@@ -4,10 +4,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import org.mapdb.Serializer;
 import org.xerial.snappy.Snappy;
 
+import tsdb.util.AssumptionCheck;
 import tsdb.util.DataEntry;
 
 /**
@@ -17,6 +19,13 @@ import tsdb.util.DataEntry;
  */
 public class Chunk {
 	public final DataEntry[] data;
+	
+	public static Chunk of(ArrayList<DataEntry> list) {
+		AssumptionCheck.throwNull(list);
+		DataEntry[] array = list.toArray(new DataEntry[0]);
+		AssumptionCheck.throwEmpty(array);
+		return new Chunk(array);
+	}
 
 	public Chunk(DataEntry[] data) {
 		this.data = data;

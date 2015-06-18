@@ -19,7 +19,13 @@ div.bg {
 	background-position: top left;
 	background-size: 100%;
 }
-body {margin: 0px; background-color:#f6f6f6}
+body {margin: 0px; background-color:#e6e6e6;}
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
+
 </style>
 
 </head>
@@ -41,8 +47,15 @@ body {margin: 0px; background-color:#f6f6f6}
 
 <h1>Export Time Series - choose region</h1>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply region</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 <hr/>
 </div>
 <div id="div_help" style="display:none">
@@ -50,9 +63,15 @@ body {margin: 0px; background-color:#f6f6f6}
 On this page you can change the region of plots you are interested in. click on "cancel" to discard changed. click on "apply region" to confirm changes.
 <hr/>
 </div>
+
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
 <h3>Region</h3>
-<div id="region_div" style="display:inline-block">
-</div>
+<div id="region_div" style="display:inline-block"></div>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 
 </body>
 </html>

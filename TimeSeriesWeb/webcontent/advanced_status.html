@@ -54,6 +54,11 @@ td:nth-child(4), td:nth-child(5) {text-align:right;}
 .input_entity label {display:block;text-align:center}
 .input_entity div {display:block;text-align:center}
 
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
+
 </style>
 
 </head>
@@ -76,7 +81,9 @@ td:nth-child(4), td:nth-child(5) {text-align:right;}
 
 
 
-
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <div class="input_elements">
 
 <div id="div_region_select" class="input_entity">
@@ -108,6 +115,9 @@ td:nth-child(4), td:nth-child(5) {text-align:right;}
 </div>
 
 </div>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 <hr>
 </div>
 <div id="div_help" style="display:none">

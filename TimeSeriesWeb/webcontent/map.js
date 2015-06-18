@@ -6,8 +6,8 @@ var url_plot_status = url_base + "tsdb/status";
 var BE_prop = {pos:new google.maps.LatLng(50.471885, 10.8121638), zoom:7, region:"BE"};
 var KI_prop = {pos:new google.maps.LatLng(-3.1738427, 37.3574291),zoom:11, region:"KI"};
 var SA_prop = {pos:new google.maps.LatLng(-28.6948631, 24.4571832),zoom:6, region:"SA"};
-//var SA_OWN_prop = {pos:new google.maps.LatLng(-28.6948631, 24.4571832),zoom:6, region:"SA_OWN"};
-var pops = [BE_prop,KI_prop,SA_prop];
+var SA_OWN_prop = {pos:new google.maps.LatLng(-28.1873589, 26.4343353),zoom:7, region:"SA_OWN"};
+var pops = [BE_prop,KI_prop,SA_prop,SA_OWN_prop];
 	
 var map;
 
@@ -83,7 +83,7 @@ function queryPlotInfo(prop) {
 
 function queryPlotStatus(prop) {
 	incTask();
-	$.getJSON(url_plot_status+"?region"+prop.region).done(function(intervals) {
+	$.getJSON(url_plot_status+"?region="+prop.region).done(function(intervals) {
 		var max_last = 0;
 		for(var i in intervals) {
 			var interval = intervals[i];
@@ -170,7 +170,7 @@ function addPlotMarker(plot, timeMark) {
 		   position: myLatlng,
 		   map: map,
 		   labelContent: plot.name+"<br>"+parseInt(plot.days),
-		   //labelClass: "labels", // the CSS class for the label
+		   labelClass: "plotlabels", // the CSS class for the label
 		   //labelInBackground: false,
 		   icon: 'plot_icon.png'
 		 });

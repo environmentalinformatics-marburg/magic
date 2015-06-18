@@ -20,6 +20,11 @@ div.bg {
 	background-size: 100%;
 }
 body {margin: 0px; background-color:#f6f6f6}
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex:auto;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
 </style>
 
 </head>
@@ -39,8 +44,15 @@ body {margin: 0px; background-color:#f6f6f6}
 </div>
 <h1>Export Time Series - settings</h1>
 
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center">
 <button id="button_cancel">cancel</button>
 <button id="button_apply">apply settings</button>
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
+
 <hr/>
 </div>
 <div id="div_help" style="display:none">
@@ -48,6 +60,11 @@ body {margin: 0px; background-color:#f6f6f6}
 On this page you can choose some setting of the zip file containing the exported data. Click on "cancel" to discard changed. Click on "apply settings" to confirm changes.
 <hr/>
 </div>
+
+<div class="horizontal-box">
+<div class="spacer"></div>
+<div class="center main">
+
 <h3>Settings</h3>
 
 <p>
@@ -80,6 +97,8 @@ On this page you can choose some setting of the zip file containing the exported
 <p><input type="checkbox" id="desc_plot"><label for="desc_plot">plot description with geographic position (WGS84)</label></p>
 <p><input type="checkbox" id="desc_settings"><label for="desc_settings">info about used settings</label></p>
 
-
+</div> <!--END center-->
+<div class="spacer"></div>
+</div> <!--END horizontal-box-->
 </body>
 </html>

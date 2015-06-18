@@ -127,6 +127,12 @@ public class ClearImportSources {
 			log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
 			timeStartSA_OWN = System.currentTimeMillis();
 			new ImportSaOwn(tsdb).load(TsDBFactory.SOURCE_SA_OWN_PATH);
+			try {
+				log.info("*remove South Africa Station first measure days*");
+				RemoveSouthAfricaStationBeginings.run(tsdb);
+			} catch (Exception e) {
+				log.error(e);
+			}
 			timeEndSA_OWN = System.currentTimeMillis();
 			System.gc();
 		}

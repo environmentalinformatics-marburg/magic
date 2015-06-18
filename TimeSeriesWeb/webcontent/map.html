@@ -35,13 +35,20 @@ table tr:nth-child(even) {background-color:#f2f2f2;}
 div.bg {background-image: url(timeseries_bg3.png); background-position: top left; background-size: 100%; margin: 0px; padding: 0px;}
 
 body { margin: 0px; }
-h1{ margin-top: 0px; text-align:center }
+h1{ margin: 0px; text-align:center }
 hr{margin-bottom: 0px}
 
 /*html, body, #map-canvas { height: 100%; margin: 0px; padding: 0px }*/
 html {height: 100%}
 body {display: flex; flex-direction: column; height: 100%;}
 #map-canvas { flex-grow: 1; background-color:#000000;}
+
+.horizontal-box {display:flex; flex-flow:row;}
+.spacer {flex-grow: 1;}
+.center {flex:none;}
+.main {background-color:#f6f6f6;}
+
+.plotlabels {background-color:#bbbbbb; opacity:0.6;}
 </style>
 </head>
 <body>
@@ -49,22 +56,42 @@ body {display: flex; flex-direction: column; height: 100%;}
 
 <div id="top_line">
 <div id="top_line_left">
-status : <div id="status" style="display:inline-block"></div> <img src="busy.gif" id="busy_indicator">
+
 </div>
 <div id="top_line_right">
-<a href="..">main-page</a>
-<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+
+
 </div> 
 </div>
+
+
+<div class="horizontal-box">
+<div class="spacer">status : <div id="status" style="display:inline-block"></div> <img src="busy.gif" id="busy_indicator"></div>
+<div class="center">
 <h1>Map of Plots</h1>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <div class="input_entity" id="div_plots_select">
 <label>Plots</label>
 <div class="input_element">
 <select id="plots_select" class="blockable"></select>
 </div>
-
 </div>
+</div> <!--END center-->
+<div class="spacer"></div>
+<div>
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div>
+<div style="font-size: 0.7em">
+<table>
+<tr><td style="background-color:#44ff44">green</td><td>less than one week</td></tr>
+<tr><td style="background-color:#ffff44">yellow</td><td>more than one week</td></tr>
+<tr><td style="background-color:#ff9944">orange</td><td>more than two weeks</td></tr>
+<tr><td style="background-color:#ff4444">red</td><td>more than one month</td></tr>
+<tr><td style="background-color:#666666">grey</td><td>more than one year</td></tr>
+</table>
+</div>
+
+</div> <!--END horizontal-box-->
 <hr>
 
 </div>

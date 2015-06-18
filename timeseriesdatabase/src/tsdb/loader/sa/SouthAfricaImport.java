@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TimeSeriesArchivReader;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
+import tsdb.run.RemoveSouthAfricaStationBeginings;
 
 /**
  * Reads pre-imported ".tsa"-files and loads content into TsDB
@@ -53,7 +54,7 @@ public class SouthAfricaImport {
 			readDirectoryRecursive(tsdb,root);
 		} catch (Exception e) {
 			log.error(e);
-		}
+		}		
 	}
 
 	public static void readDirectoryRecursive(TsDB tsdb, Path rootDirectory) {
