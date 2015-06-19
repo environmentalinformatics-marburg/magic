@@ -563,8 +563,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 		}
 		if(!timeText.equals(timeAll)) {
 			int year = Integer.parseInt(timeText);
-			startTimestamp = TimeConverter.getYearStartTimestamp(year);
-			endTimestamp = TimeConverter.getYearEndTimestamp(year);
+			startTimestamp = TimeConverter.ofDateStartHour(year);
+			endTimestamp = TimeConverter.ofDateEndHour(year);
 		}
 
 		AggregationInterval agg = comboAggregation.getValue();

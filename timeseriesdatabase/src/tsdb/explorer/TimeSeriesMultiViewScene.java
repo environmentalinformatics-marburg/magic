@@ -682,8 +682,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 			if(!timeText.equals(timeAll)) {
 				int year = Integer.parseInt(timeText);
-				startTimestamp = TimeConverter.getYearStartTimestamp(year);
-				endTimestamp = TimeConverter.getYearEndTimestamp(year);
+				startTimestamp = TimeConverter.ofDateStartHour(year);
+				endTimestamp = TimeConverter.ofDateEndHour(year);
 			}
 
 

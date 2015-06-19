@@ -24,6 +24,13 @@ public interface Continuous extends Node {
 		return true;
 	}
 	
+	/**
+	 * create an iterator with values filling the interval (start, end),
+	 * missing timestamps are created with nan values
+	 * @param start
+	 * @param end
+	 * @return
+	 */
 	public TsIterator getExactly(long start, long end);
 	
 	public static Continuous of(Base base) {

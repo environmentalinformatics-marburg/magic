@@ -1,6 +1,7 @@
 package tsdb.util;
 
 import java.io.Serializable;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class TimeConverter implements Serializable {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private static final long serialVersionUID = 4232805611076305334L;
@@ -88,21 +89,21 @@ public class TimeConverter implements Serializable {
 		}
 		return oleMinutesToLocalDateTime(oleTimeMinutes).toString();
 	}
-	
+
 	public static String oleMinutesToText(Integer oleTimeMinutes) {
 		return oleMinutesToText((Long.valueOf(oleTimeMinutes)));
 	}
-	
+
 	public static String oleMinutesToDateTimeFileText(long oleTimeMinutes) {
 		return oleMinutesToDateTimeFileText(Long.valueOf(oleTimeMinutes));
 	}
-	
+
 	public static String oleMinutesToDateTimeFileText(Long oleTimeMinutes) {
 		if(oleTimeMinutes==null||oleTimeMinutes==-1) {
 			return "xxxx_xx_xx";
 		}
 		LocalDate date = oleMinutesToLocalDateTime(oleTimeMinutes).toLocalDate();
-		
+
 		String s = "";
 		s += date.getYear();
 		s += "_";
@@ -126,20 +127,20 @@ public class TimeConverter implements Serializable {
 			s += "0";
 		}
 		s += time.getMinute();
-		
+
 		return s;
 	}
-	
+
 	public static String oleMinutesToText(long oleTimeMinutesStart, long oleTimeMinutesEnd) {
 		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
 	}
-	
+
 	public static String oleMinutesToText(Long oleTimeMinutesStart, Long oleTimeMinutesEnd) {
 		return oleMinutesToText(oleTimeMinutesStart)+" - "+oleMinutesToText(oleTimeMinutesEnd);
 	}
-	
+
 	private static final DateTimeFormatter DATE_TIME_FORMATER_SLASH = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
-	
+
 	/**
 	 * format: yyyy/MM/dd HH:mm
 	 * example: 2010/08/25 00:05
@@ -150,10 +151,10 @@ public class TimeConverter implements Serializable {
 		LocalDateTime dt = LocalDateTime.parse(dateTimeText, DATE_TIME_FORMATER_SLASH);
 		return TimeConverter.DateTimeToOleMinutes(dt);
 	}
-	
+
 	private static final DateTimeFormatter DATE_TIME_FORMATER_MONTH_NAME_ONE_HOUR_DIGIT =  DateTimeFormatter.ofPattern("dd-MMM-yyyy   H:mm").withLocale(Locale.ENGLISH);
 	private static final DateTimeFormatter DATE_TIME_FORMATER_MONTH_NAME_TWO_HOUR_DIGITS = DateTimeFormatter.ofPattern("dd-MMM-yyyy  HH:mm").withLocale(Locale.ENGLISH);
-	
+
 	/**
 	 * example: 01-Jul-2010   3:25
 	 * example: 16-Dec-2010  14:55
@@ -169,8 +170,8 @@ public class TimeConverter implements Serializable {
 		LocalDateTime dt = LocalDateTime.parse(dateTimeText, dtf);
 		return TimeConverter.DateTimeToOleMinutes(dt);
 	}
-	
-	
+
+
 	/**
 	 * example: 2010-10-07,24
 	 * example: 2010-10-08,1
@@ -205,7 +206,7 @@ public class TimeConverter implements Serializable {
 		int hour;
 		int minute;
 		int second;
-		
+
 		if(!timeText.isEmpty())  {
 			// 09:30:00
 			hour = 10*(timeText.charAt(0)-'0')+(timeText.charAt(1)-'0');
@@ -232,12 +233,40 @@ public class TimeConverter implements Serializable {
 		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear()+1,1,1,0,0));
 	}
 
-	public static long getYearStartTimestamp(int year) { // at hour
+	public static long ofDateStartHour(int year) { // at hour
 		return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
 	}
 
-	public static long getYearEndTimestamp(int year) { // at hour
+	public static long ofDateEndHour(int year) { // at hour
 		return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 	}
+
+	public static long ofDateStartHour(int year,int month) { // at hour
+		return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, 1, 0, 0));
+	}
+
+	public static long ofDateEndHour(int year,int month) { // at hour  TODO remove exceptions
+		try {
+			return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, 31, 23, 0));
+		} catch (DateTimeException e31) {
+			try {
+				return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, 30, 23, 0));
+			} catch (DateTimeException e30) {
+				try {
+					return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, 29, 23, 0));
+				} catch (DateTimeException e29) {
+					return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, 28, 23, 0));
+				}
+			}
+		}
+	}
+
+	/*public static int ofDateStart(int year) {
+		return (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+	}
+
+	public static int ofDateEnd(int year) {
+		return (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+	}*/
 
 }

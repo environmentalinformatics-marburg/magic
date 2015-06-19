@@ -24,14 +24,21 @@ import tsdb.util.iterator.TsIterator;
  */
 public class Interpolated extends Continuous.Abstract {
 
-	final static int MIN_STATION_INTERPOLATION_COUNT = 2;
-	final static int STATION_INTERPOLATION_COUNT = 15;		
-	final static int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
+	public final static int MIN_STATION_INTERPOLATION_COUNT = 2;
+	public final static int STATION_INTERPOLATION_COUNT = 15;		
+	public final static int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 
 	final Continuous source;  //not null
 	final Continuous[] interpolationSources;  //not null
 	final String[] interpolationSchema;  //not null
 
+	/**
+	 * internal constructor
+	 * @param tsdb
+	 * @param source
+	 * @param interpolationSources
+	 * @param interpolationSchema
+	 */
 	protected Interpolated(TsDB tsdb, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema) {		
 		super(tsdb);
 		throwNulls(source,interpolationSources,interpolationSchema);
@@ -48,6 +55,26 @@ public class Interpolated extends Continuous.Abstract {
 		this.interpolationSchema = interpolationSchema;
 	}
 	
+	/**
+	 * Constructor for specific use cases (eg. testing)
+	 * @param tsdb
+	 * @param source
+	 * @param interpolationSources
+	 * @param interpolationSchema
+	 * @return
+	 */
+	public static Interpolated of(TsDB tsdb, Continuous source, Continuous[] interpolationSources, String[] interpolationSchema){
+		return new Interpolated(tsdb, source, interpolationSources, interpolationSchema);		
+	}
+	
+	/**
+	 * general constructor
+	 * @param tsdb
+	 * @param plotID
+	 * @param querySchema
+	 * @param sourceGen
+	 * @return
+	 */
 	public static Continuous of(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen sourceGen) {
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
@@ -60,6 +87,14 @@ public class Interpolated extends Continuous.Abstract {
 		throw new RuntimeException("station not found");
 	}
 
+	/**
+	 * Constructor for stations only
+	 * @param tsdb
+	 * @param station
+	 * @param querySchema
+	 * @param sourceGen
+	 * @return
+	 */
 	public static Continuous createFromStation(TsDB tsdb, Station station, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = station.getSchema();
@@ -90,6 +125,14 @@ public class Interpolated extends Continuous.Abstract {
 		}		
 	}
 	
+	/**
+	 * Constructor for virtual plots only
+	 * @param tsdb
+	 * @param virtualPlot
+	 * @param querySchema
+	 * @param sourceGen
+	 * @return
+	 */
 	public static Continuous createFromVirtual(TsDB tsdb, VirtualPlot virtualPlot, String[] querySchema, ContinuousGen sourceGen) {
 		if(querySchema==null) {
 			querySchema = virtualPlot.getSchema();
