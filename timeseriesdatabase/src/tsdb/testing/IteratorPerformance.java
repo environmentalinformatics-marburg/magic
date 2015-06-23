@@ -1,10 +1,7 @@
 package tsdb.testing;
 
-import java.util.LinkedList;
-import java.util.Spliterator;
 import java.util.function.Consumer;
 
-import tsdb.iterator.ApplyIterator;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TsIterator;

@@ -1,8 +1,8 @@
 package tsdb.usecase;
 
-import tsdb.TsDBFactory;
 import tsdb.StationProperties;
 import tsdb.TsDB;
+import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;

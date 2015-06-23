@@ -1,17 +1,17 @@
 package tsdb.iterator;
 
+import static tsdb.util.AssumptionCheck.throwEmpty;
+
 import java.util.Collection;
 
 import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
-import tsdb.util.Util;
 import tsdb.util.TsSchema.Aggregation;
+import tsdb.util.Util;
 import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.processingchain.ProcessingChain;
-import tsdb.util.processingchain.ProcessingChainMultiSources;
-import static tsdb.util.AssumptionCheck.throwEmpty;
 
 /**
  * Merges multiple iterators into one by time stamp.

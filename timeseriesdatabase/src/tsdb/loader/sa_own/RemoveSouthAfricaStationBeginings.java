@@ -1,6 +1,9 @@
-package tsdb.run;
+package tsdb.loader.sa_own;
 
 import java.time.LocalDateTime;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import tsdb.StationProperties;
 import tsdb.TsDB;
@@ -10,6 +13,7 @@ import tsdb.util.TimeConverter;
 import tsdb.util.TimestampInterval;
 
 public class RemoveSouthAfricaStationBeginings {
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 Station 1: bis einschließlich 4.3. löschen
@@ -50,7 +54,7 @@ Station 15: bis einschließlich 26.3. löschen
 		for(Object[] day:days) {
 			String plotID = (String) day[0];
 			int endTime = (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014, 3, ((Number)day[1]).intValue(), 23, 59));
-			System.out.println("remove  "+plotID+"    "+endTime+"  "+TimeConverter.oleMinutesToText(endTime));
+			log.info("remove  "+plotID+"  up to  "+endTime+"  "+TimeConverter.oleMinutesToText(endTime));
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			for(TimestampInterval<StationProperties> entry:virtualPlot.intervalList) {
 				tsdb.streamStorage.removeInterval(entry.value.get_serial(), startTime, endTime);

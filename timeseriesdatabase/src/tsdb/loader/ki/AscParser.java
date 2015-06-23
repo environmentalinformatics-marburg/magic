@@ -142,6 +142,11 @@ public class AscParser {
 				}
 
 				String[] columns = currentLine.split("(\\s|;)+");
+				
+				if(columns.length==0) {
+					//log.info("empty line : "+currentLineIndex+" in "+filename);
+					continue;
+				}
 
 				if(columns.length!=sensorNames.length+2) {					
 					String endoffile = currentLineIndex==lines.length?"at end of file":"at line within file";					

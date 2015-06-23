@@ -4,6 +4,9 @@ import static tsdb.util.AssumptionCheck.throwEmpty;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
@@ -19,6 +22,7 @@ import tsdb.util.processingchain.ProcessingChain;
  *
  */
 public class AverageIterator extends MoveIterator {
+	private static final Logger log = LogManager.getLogger();
 
 	private Map<String, Integer> schemaMap;
 	private TsIterator[] input_iterators;
@@ -73,7 +77,7 @@ public class AverageIterator extends MoveIterator {
 		}
 		float[] value_avg = new float[this.schema.length];
 		for(int i=0;i<this.schema.length;i++) {
-			if(value_cnt[i]>minCount) {
+			if(value_cnt[i]>=minCount) {
 				value_avg[i] = value_sum[i]/value_cnt[i];
 				//System.out.println("cnt: "+value_cnt[i]);
 			} else {

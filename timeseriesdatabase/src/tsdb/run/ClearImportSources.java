@@ -12,6 +12,8 @@ import tsdb.loader.be.TimeSeriesLoaderBE;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.sa.SouthAfricaImport;
+import tsdb.loader.sa_own.ImportSaOwn;
+import tsdb.loader.sa_own.RemoveSouthAfricaStationBeginings;
 import tsdb.util.TimeConverter;
 
 /**
@@ -123,12 +125,12 @@ public class ClearImportSources {
 			System.gc();
 		}
 		if(import_SA_OWN) { //*** SA_OWN
-			log.info("import SA dat");
+			log.info("import SA_OWN");
 			log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
 			timeStartSA_OWN = System.currentTimeMillis();
 			new ImportSaOwn(tsdb).load(TsDBFactory.SOURCE_SA_OWN_PATH);
 			try {
-				log.info("*remove South Africa Station first measure days*");
+				log.info("*remove South Africa Own Stations first measure days*");
 				RemoveSouthAfricaStationBeginings.run(tsdb);
 			} catch (Exception e) {
 				log.error(e);

@@ -6,15 +6,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 
 import tsdb.remote.RemoteTsDB;
 
-//TODO
+//TODO remove?
 public class Handler_plot_location extends MethodHandler {
-	private static final Logger log = LogManager.getLogger();
+	//private static final Logger log = LogManager.getLogger();
 	
 	public Handler_plot_location(RemoteTsDB tsdb, String handlerMethodName) {
 		super(tsdb, "plot_location");

@@ -11,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TimeSeriesArchivReader;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.run.RemoveSouthAfricaStationBeginings;
 
 /**
  * Reads pre-imported ".tsa"-files and loads content into TsDB

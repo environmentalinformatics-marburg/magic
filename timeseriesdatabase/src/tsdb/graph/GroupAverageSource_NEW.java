@@ -39,7 +39,7 @@ public class GroupAverageSource_NEW extends Continuous.Abstract {
 		this.targetSchema = targetSchema;
 	}
 
-	public static GroupAverageSource_NEW ofPlot(TsDB tsdb, String plotID, String[] targetSchema) {	
+	public static GroupAverageSource_NEW ofPlot(TsDB tsdb, String plotID, String... targetSchema) {	
 		GeneralStation generalStation = null;
 		VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 		if(virtualPlot!=null) {

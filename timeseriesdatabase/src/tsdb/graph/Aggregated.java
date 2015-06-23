@@ -20,8 +20,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class Aggregated extends Continuous.Abstract {
-	
+public class Aggregated extends Continuous.Abstract {	
 	private static final Logger log = LogManager.getLogger();
 
 	private final Continuous source; //not null

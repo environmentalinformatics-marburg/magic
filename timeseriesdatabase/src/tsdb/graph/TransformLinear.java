@@ -2,25 +2,25 @@ package tsdb.graph;
 
 import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
-import tsdb.iterator.DifferentialIterator;
+import tsdb.util.TsEntry;
+import tsdb.util.iterator.InputProcessingIterator;
 import tsdb.util.iterator.TsIterator;
 
-/**
- * This node creates differential values from source.
- * @author woellauer
- *
- */
-public class Differential implements Continuous {
+public class TransformLinear implements Continuous {
 	
 	private Continuous source;
+	private final float a;
+	private final float b;
 
-	protected Differential(Continuous source) {
+	protected TransformLinear(Continuous source,float a,float b) {
 		throwNull(source);
 		this.source = source;
+		this.a = a;
+		this.b = b;
 	}
 	
-	public static Differential of(Continuous source) {
-		return new Differential(source);
+	public static TransformLinear of(Continuous source,float a,float b) {
+		return new TransformLinear(source, a, b);
 	}
 
 	@Override
@@ -34,7 +34,21 @@ public class Differential implements Continuous {
 		if(input_iterator==null||!input_iterator.hasNext()) {
 			return null;
 		}		
-		DifferentialIterator it = new DifferentialIterator(input_iterator);
+		InputProcessingIterator it = new InputProcessingIterator(input_iterator,input_iterator.getSchema()){
+			@Override
+			protected TsEntry getNext() {
+				if(!input_iterator.hasNext()) {
+					return null;
+				}
+				TsEntry element = input_iterator.next();
+				float[] data = new float[element.data.length];
+				for(int i=0;i<data.length;i++) {
+					data[i] = a*element.data[i]+b;
+				}
+				return new TsEntry(element.timestamp, data);
+			}
+			
+		};		
 		if(it==null||!it.hasNext()) {
 			return null;
 		}

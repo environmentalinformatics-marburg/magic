@@ -8,7 +8,6 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
-import tsdb.graph.Difference;
 import tsdb.graph.Interpolated;
 import tsdb.graph.IntervalRemove;
 import tsdb.graph.QueryPlan;

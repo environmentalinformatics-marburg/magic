@@ -1,10 +1,9 @@
-package tsdb.run;
+package tsdb.loader.sa_own;
 
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +81,7 @@ public class ImportSaOwn {
 
 	public void loadFile(Path filePath) {
 		try {
-			//log.info("load file "+filePath);
+			log.info("load file "+filePath);
 			TimestampSeries timestampseries = AscParser.parse(filePath);
 			if(timestampseries==null) {
 				log.error("timestampseries null");
@@ -93,9 +92,10 @@ public class ImportSaOwn {
 				log.error("station not found "+timestampseries.name);
 				return;
 			}
+			
 			//log.info(timestampseries);
 
-			HashMap<String,String> translationMap = new HashMap<String, String>();
+			/*HashMap<String,String> translationMap = new HashMap<String, String>();
 			translationMap.put("Temperature", "Ta_200");			
 			translationMap.put("rel.Humidity", "rH_200");
 			translationMap.put("DecagonECH2O", "DecagonECH2O");
@@ -103,15 +103,22 @@ public class ImportSaOwn {
 
 			translationMap.put("Temperatur", "Ta_200");
 			translationMap.put("rel.Feuchte", "rH_200");
-			translationMap.put("Impulse", "P_RT_NRT");
-
+			translationMap.put("Impulse", "P_RT_NRT");*/
+			
+			/*LoggerType loggerType = tsdb.getLoggerType("thdi");
+			if(loggerType==null) {
+				throw new RuntimeException("loggertype not found: "+"thdi");
+			}
+			Map<String, String> translationMap = loggerType.sensorNameTranlationMap;*/
+			
 			for(String sensorName:timestampseries.sensorNames) {
-				if(translationMap.containsKey(sensorName)) {
-					String targetName = translationMap.get(sensorName);
+				String targetName = station.translateInputSensorName(sensorName, false);
+				if(targetName!=null) {
+					//String targetName = translationMap.get(sensorName);
 					if(targetName!=null) {
 						DataEntry[] data = timestampseries.toDataEntyArray(sensorName);
 						
-						if(targetName=="P_RT_NRT") {
+						if(targetName.equals("P_RT_NRT")) {
 							log.info("P_RT_NRT corrected");
 							DataEntry[] corrected_data =  new DataEntry[data.length];
 							for(int i=0;i<data.length;i++) {

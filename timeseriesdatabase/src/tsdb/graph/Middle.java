@@ -14,34 +14,27 @@ import org.apache.logging.log4j.Logger;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.iterator.AverageIterator;
+import tsdb.iterator.MiddleIterator;
 import tsdb.util.iterator.TsIterator;
 
-/**
- * This node creates average values per time step over all sources.
- * @author woellauer
- *
- */
-public class Averaged extends Continuous.Abstract {
+public class Middle extends Continuous.Abstract {
 	private static final Logger log = LogManager.getLogger();
-
+	
 	private final List<Continuous> sources; //not null
 	private final String[] schema; //not null
-	private final int minCount;
 	private final boolean _constant_timestep;
+	
+	private static final int SOURCE_COUNT = 3;
 
-	public Averaged(TsDB tsdb, List<Continuous> sources, String[] schema, int minCount) {
+	public Middle(TsDB tsdb, List<Continuous> sources, String[] schema) {
 		super(tsdb);
 		throwNulls(sources,schema);
 		if(sources.isEmpty()) {
 			throw new RuntimeException("no sources");	
 		}
-		if(minCount<1) {
-			log.warn("no senseful min count= "+minCount);
+		if(sources.size()!=SOURCE_COUNT) {
+			log.warn("insufficient sources != 3");
 		}
-		if(sources.size()<minCount) {
-			log.warn("insufficient sources with min count= "+minCount+"  "+sources.size());
-		}
-		this.minCount = minCount;
 		this._constant_timestep = sources.get(0).isConstantTimestep();
 		for(Continuous source:sources) {
 			if(!source.isContinuous() || source.isConstantTimestep()!=_constant_timestep) {
@@ -52,7 +45,7 @@ public class Averaged extends Continuous.Abstract {
 		this.schema = schema;
 	}
 
-	public static Averaged of(TsDB tsdb, List<Continuous> sources, int minCount) {		
+	public static Middle of(TsDB tsdb, List<Continuous> sources) {		
 		Set<String> schemaSet = new LinkedHashSet<String>();
 		for(Continuous continuous:sources) {
 			String[] schema = continuous.getSchema();
@@ -60,7 +53,7 @@ public class Averaged extends Continuous.Abstract {
 				schemaSet.addAll(Arrays.asList(schema));
 			}
 		}
-		return new Averaged(tsdb, sources, schemaSet.toArray(new String[0]), minCount);
+		return new Middle(tsdb, sources, schemaSet.toArray(new String[0]));
 	}
 
 	@Override
@@ -96,10 +89,10 @@ public class Averaged extends Continuous.Abstract {
 				iteratorList.add(it);				
 			}
 		}
-		if(iteratorList.size()<minCount) {
+		if(iteratorList.size()<SOURCE_COUNT) {
 			return null;
 		}
-		return new AverageIterator(schema, iteratorList.toArray(new TsIterator[0]), minCount);		
+		return new MiddleIterator(schema, iteratorList.toArray(new TsIterator[0]));		
 	}
 
 	@Override
