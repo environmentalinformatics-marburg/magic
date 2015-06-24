@@ -13,8 +13,8 @@ rw<-rw/10
 #documents:software:  
 #python testWradlib.py /home/hanna/Downloads/RW201401/raa01-rw_10000-1401010050-dwd---bin.gz /home/hanna/Downloads/RW201401/testetstetst.tif
 #template_rw<-raster(ergebnis davon)
-template_rw <- raster("/media/hanna/ubt_kdata_0005/tmp/RW201005/raa01-rw_10000-1005312050.tif")
-template_msg <- raster("/home/hanna/Downloads/201010101150_mt09s_B0103xxxx_m1hct_1000_rg01de_003000.rst")
+template_rw <- raster("/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/templates/raa01-rw_10000-1005312050.tif")
+template_msg <- raster("/home/hanna/Documents/Projects/IDESSA/Precipitation/improve_DE_retrieval/templates/201010101150_mt09s_B0103xxxx_m1hct_1000_rg01de_003000.rst")
 proj4string(template_msg) <- "+proj=geos +lon_0=0 +h=35785831 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
 
 
