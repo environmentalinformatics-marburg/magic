@@ -43,15 +43,15 @@ public class TsDBFactory {
 
 	public static String WEB_SERVER_PREFIX_BASE_URL = ""; //no prefix
 	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix
+	public static int WEB_SERVER_PORT = 8080;
+	public static boolean WEB_SERVER_LOGIN = false;
 
 	public static String JUST_ONE_REGION = null;
 	//public static String JUST_ONE_REGION = "BE";
 	//public static String JUST_ONE_REGION = "KI";
 	//public static String JUST_ONE_REGION = "SA";
-	
-	public static boolean HIDE_INTENAL_SENSORS = true;
 
-	public static boolean WEB_SERVER_LOGIN = false;
+	public static boolean HIDE_INTENAL_SENSORS = true;
 
 	static {
 		initPaths();
@@ -90,19 +90,17 @@ public class TsDBFactory {
 			WEBDOWNLOAD_PATH = getString(pathMap, "WEBDOWNLOAD_PATH", WEBDOWNLOAD_PATH);
 			WEBFILES_PATH = getString(pathMap, "WEBFILES_PATH", WEBFILES_PATH);
 			OUTPUT_PATH = getString(pathMap, "OUTPUT_PATH", OUTPUT_PATH);
-			
+
 			WEB_SERVER_PREFIX_BASE_URL = getString(pathMap, "WEB_SERVER_PREFIX_BASE_URL", WEB_SERVER_PREFIX_BASE_URL);
-			
-			JUST_ONE_REGION = getString(pathMap, "JUST_ONE_REGION", JUST_ONE_REGION);
-
+			WEB_SERVER_PORT = getInt(pathMap, "WEB_SERVER_PORT", WEB_SERVER_PORT);
 			WEB_SERVER_LOGIN = getBoolean(pathMap,"WEB_SERVER_LOGIN", WEB_SERVER_LOGIN);
-
 			HIDE_INTENAL_SENSORS = getBoolean(pathMap,"HIDE_INTENAL_SENSORS",HIDE_INTENAL_SENSORS);
+			JUST_ONE_REGION = getString(pathMap, "JUST_ONE_REGION", JUST_ONE_REGION);			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
 	}
-	
+
 	/**
 	 * Read boolean parameter from ini file. If it not exists set to defaul.
 	 * @param map map of ini-file-section
@@ -124,7 +122,7 @@ public class TsDBFactory {
 		log.warn("tsdb ini config value for "+key+" unknown: "+valueText);		
 		return defaultValue;
 	}
-	
+
 	/**
 	 * Read String parameter from ini file. If it not exists set to defaul.
 	 * @param map map of ini-file-section
@@ -142,6 +140,23 @@ public class TsDBFactory {
 			return defaultValue;
 		}
 		return valueText;	
+	}
+
+	private static int getInt(Map<String, String> map, String key, int defaultValue) {
+		String valueText = map.get(key);
+		if(valueText==null) {
+			return defaultValue;
+		}
+		if(valueText.trim().isEmpty()) {
+			log.warn("tsdb ini config value for "+key+" empty: ");
+			return defaultValue;
+		}
+		try{
+			return Integer.parseInt(valueText);
+		} catch(Exception e) {
+			log.error("int not read for "+key+": "+valueText+" || "+e);
+			return defaultValue;
+		}	
 	}
 
 	public static TsDB createDefault() {
@@ -180,10 +195,10 @@ public class TsDBFactory {
 				configLoader.readGeneralStation(configDirectory+"sa/sa_general_stations.ini"); // [create GENERAL_STATION]
 				configLoader.readSaStation(configDirectory+"sa/sa_station_inventory.csv"); //[create STATION] read station with geo position
 			}
-			
+
 			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("SA_OWN")) {  //*** SA_OWN
 				String prefix = configDirectory+"sa_own/";
-				
+
 				configLoader.readRegion(prefix+"sa_own_region.ini");
 				configLoader.readLoggerTypeSchema(prefix+"sa_own_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
 				configLoader.readGeneralStation(prefix+"sa_own_general_stations.ini"); // [create GENERAL_STATION]

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
@@ -17,8 +18,10 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.component.LoggerType;
 import tsdb.component.Sensor;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.StationInfo;
 
 import com.sun.javafx.binding.StringConstant;
 
@@ -63,12 +66,15 @@ public class SensorView {
 		BorderPane borderPane = new BorderPane();
 
 		tableSensor = new TableView<Sensor>();
+		tableSensor.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
 		TableColumn<Sensor,String> colName = new TableColumn<Sensor,String>("name");
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().name));
-
+		colName.setComparator(String.CASE_INSENSITIVE_ORDER);
 
 		tableSensor.getColumns().setAll(colName);
+		tableSensor.getSortOrder().clear();
+		tableSensor.getSortOrder().add(colName);
 
 
 		borderPane.setLeft(tableSensor);
@@ -175,7 +181,20 @@ public class SensorView {
 			e.printStackTrace();
 			log.error(e);
 		}
-		tableSensor.setItems(filteredSensorList);
+		SortedList<Sensor> sorted = new SortedList<>(filteredSensorList);//bugfix for FilteredList with TableView
+		sorted.comparatorProperty().bind(tableSensor.comparatorProperty());
+		tableSensor.setItems(sorted);
+		tableSensor.sort();
+		
 	}
 
+	public void selectSensor(String name) {
+		for(Sensor item:tableSensor.getItems()) {
+			if(item.name.equals(name)) {
+				tableSensor.getSelectionModel().select(item);
+				return;
+			}
+		}
+		tableSensor.getSelectionModel().clearSelection();
+	}
 }

@@ -6,16 +6,24 @@ import org.apache.logging.log4j.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.util.Callback;
+import tsdb.component.LoggerType;
+import tsdb.component.Region;
+import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
+import tsdb.remote.VirtualPlotInfo;
 
 import com.sun.javafx.binding.StringConstant;
 
@@ -33,7 +41,10 @@ public class StationView {
 	
 	private Node node;
 	
-	public StationView() {
+	private final MetadataScene metadataScene;
+	
+	public StationView(MetadataScene metadataScene) {
+		this.metadataScene = metadataScene;
 		node = createContent();
 	}
 	
@@ -41,16 +52,21 @@ public class StationView {
 		return node;
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 
 		tableStation = new TableView<StationInfo>();
+		tableStation.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
 		TableColumn<StationInfo,String> colName = new TableColumn<StationInfo,String>("name");
+		colName.comparatorProperty().set(String.CASE_INSENSITIVE_ORDER);
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().stationID));
 
 		tableStation.getColumns().addAll(colName);
+		tableStation.getSortOrder().clear();
+		tableStation.getSortOrder().add(colName);
 
 		borderPane.setLeft(tableStation);
 
@@ -67,11 +83,23 @@ public class StationView {
 		detailPane.add(new Label("Station"), 0, 0);
 		detailPane.add(lblStation, 1, 0);
 
-		Label lblLogger = new Label();
+		Hyperlink lblLogger = new Hyperlink();
+		lblLogger.setOnAction(e->{
+			StationInfo station = tableStation.getSelectionModel().selectedItemProperty().get();
+			LoggerType loggerType = station.loggerType;
+			metadataScene.selectLogger(loggerType.typeName);
+			lblLogger.setVisited(false);
+		});
 		detailPane.add(new Label("Logger"), 0, 1);
 		detailPane.add(lblLogger, 1, 1);
 
-		Label lblGeneralStation = new Label();
+		Hyperlink lblGeneralStation = new Hyperlink();
+		lblGeneralStation.setOnAction(e->{
+			StationInfo station = tableStation.getSelectionModel().selectedItemProperty().get();
+			GeneralStationInfo generalStation = station.generalStationInfo;
+			metadataScene.selectGeneralStation(generalStation.name);
+			lblGeneralStation.setVisited(false);
+		});
 		detailPane.add(new Label("General Station"), 0, 2);
 		detailPane.add(lblGeneralStation, 1, 2);
 
@@ -127,6 +155,19 @@ public class StationView {
 			log.error(e);
 		}
 
-		tableStation.setItems(filteredStationList);
+		SortedList<StationInfo> sorted = new SortedList<>(filteredStationList);//bugfix for FilteredList with TableView
+		sorted.comparatorProperty().bind(tableStation.comparatorProperty());
+		tableStation.setItems(sorted);
+		//tableStation.setItems(stationList);
+		tableStation.sort();
+	}
+
+	public void selectStation(String name) {
+		for(StationInfo item:tableStation.getItems()) {
+			if(item.stationID.equals(name)) {
+				tableStation.getSelectionModel().select(item);
+				return;
+			}
+		}		
 	}
 }

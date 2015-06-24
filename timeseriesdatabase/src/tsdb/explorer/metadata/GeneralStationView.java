@@ -3,6 +3,7 @@ package tsdb.explorer.metadata;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -12,8 +13,11 @@ import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import tsdb.component.LoggerType;
+import tsdb.component.Region;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
+import tsdb.remote.StationInfo;
 
 import com.sun.javafx.binding.StringConstant;
 
@@ -28,8 +32,11 @@ public class GeneralStationView {
 	private TableView<GeneralStationInfo> tableGeneralStation;
 	
 	private Node node;
+
+	private final MetadataScene metadataScene;
 	
-	public GeneralStationView() {
+	public GeneralStationView(MetadataScene metadataScene) {
+		this.metadataScene = metadataScene;
 		node = createContent();
 	}
 	
@@ -42,10 +49,14 @@ public class GeneralStationView {
 		BorderPane borderPane = new BorderPane();
 				
 		tableGeneralStation = new TableView<GeneralStationInfo>();
+		tableGeneralStation.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		borderPane.setLeft(tableGeneralStation);
 		TableColumn<GeneralStationInfo,String> colName = new TableColumn<GeneralStationInfo,String>("name");
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().name));
+		colName.setComparator(String.CASE_INSENSITIVE_ORDER);
 		tableGeneralStation.getColumns().addAll(colName);
+		tableGeneralStation.getSortOrder().clear();
+		tableGeneralStation.getSortOrder().add(colName);
 				
 		GridPane detailPane = new GridPane();
 		borderPane.setCenter(detailPane);
@@ -65,7 +76,13 @@ public class GeneralStationView {
 		detailPane.add(new Label("Group"), 0, 2);
 		detailPane.add(lblGroup, 1, 2);
 		
-		Label lblRegion = new Label();
+		Hyperlink lblRegion = new Hyperlink();
+		lblRegion.setOnAction(e->{
+			GeneralStationInfo generalstation = tableGeneralStation.getSelectionModel().selectedItemProperty().get();
+			Region region = generalstation.region;
+			metadataScene.selectRegion(region.name);
+			lblRegion.setVisited(false);
+		});		
 		detailPane.add(new Label("Region"), 0, 3);
 		detailPane.add(lblRegion, 1, 3);
 		
@@ -110,6 +127,17 @@ public class GeneralStationView {
 			log.error(e);
 		}
 		tableGeneralStation.setItems(generalList);
+		tableGeneralStation.sort();
+	}
+	
+	public void selectGeneralStation(String name) {
+		for(GeneralStationInfo item:tableGeneralStation.getItems()) {
+			if(item.name.equals(name)) {
+				tableGeneralStation.getSelectionModel().select(item);
+				return;
+			}
+		}
+		tableGeneralStation.getSelectionModel().clearSelection();
 	}
 
 }

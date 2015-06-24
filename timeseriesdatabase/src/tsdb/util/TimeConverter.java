@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,12 +19,10 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class TimeConverter implements Serializable {
-
-	private static final Logger log = LogManager.getLogger();
-
 	private static final long serialVersionUID = 4232805611076305334L;
+	private static final Logger log = LogManager.getLogger();	
 
-	private static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);
+	public static final LocalDateTime OLE_AUTOMATION_TIME_START = LocalDateTime.of(1899,12,30,0,0);
 
 	private final double dActTimeToSecondFactor;
 	private final double startTime;
@@ -269,4 +268,35 @@ public class TimeConverter implements Serializable {
 		return (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
 	}*/
 
+	public final static Comparator<Long> TIMESTAMP_START_ASC_COMPARATOR = (a,b) -> {
+		if(a==null) {
+			if(b==null) {
+				return 0;
+			} else {
+				return -1; // start1==null start2!=null
+			}
+		} else {
+			if(b==null) {
+				return 1; // start1!=null start2==null
+			} else {
+				return (a < b) ? -1 : ((a == b) ? 0 : 1);
+			}
+		}
+	};
+	
+	public final static Comparator<Long> TIMESTAMP_END_ASC_COMPARATOR = (a,b) -> {
+		if(a==null) {
+			if(b==null) {
+				return 0;
+			} else {
+				return 1; // start1==null start2!=null
+			}
+		} else {
+			if(b==null) {
+				return -1; // start1!=null start2==null
+			} else {
+				return (a < b) ? -1 : ((a == b) ? 0 : 1);
+			}
+		}
+	};
 }

@@ -15,7 +15,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import tsdb.StationProperties;
 import tsdb.component.LoggerType;
+import tsdb.explorer.FXUtil;
+import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 
 /**
@@ -30,7 +33,10 @@ public class LoggerView {
 	
 	private Node node;
 	
-	public LoggerView () {
+	private final MetadataScene metadataScene;
+	
+	public LoggerView (MetadataScene metadataScene) {
+		this.metadataScene = metadataScene;
 		node = createContent();
 	}
 	
@@ -43,9 +49,13 @@ public class LoggerView {
 		BorderPane borderPane = new BorderPane();
 
 		tableLogger = new TableView<LoggerType>();
+		tableLogger.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);		
 		TableColumn<LoggerType,String> colName = new TableColumn<LoggerType,String>("name");
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().typeName));
+		colName.setComparator(String.CASE_INSENSITIVE_ORDER);
 		tableLogger.getColumns().addAll(colName);
+		tableLogger.getSortOrder().clear();
+		tableLogger.getSortOrder().add(colName);
 
 		borderPane.setLeft(tableLogger);
 
@@ -60,23 +70,37 @@ public class LoggerView {
 		detailPane.add(lblLogger, 1, 0);
 
 		TableView<String> tableLoggerSensor = new TableView<String>();
+		tableLoggerSensor.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);		
 		TableColumn<String,String> colLoggerSensorName = new TableColumn<String,String>("Sensor");
 		colLoggerSensorName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue()));
 		colLoggerSensorName.setMinWidth(180);
+		colLoggerSensorName.setCellFactory(FXUtil.cellFactoryWithOnClicked(e->{
+			String sensorName = tableLoggerSensor.getSelectionModel().selectedItemProperty().get();
+			metadataScene.selectSensor(sensorName);
+		}));
+		colLoggerSensorName.setComparator(String.CASE_INSENSITIVE_ORDER);
 		tableLoggerSensor.getColumns().addAll(colLoggerSensorName);
+		tableLoggerSensor.getSortOrder().clear();
+		tableLoggerSensor.getSortOrder().add(colLoggerSensorName);
 		GridPane.setRowIndex(tableLoggerSensor, 1);
 		GridPane.setColumnSpan(tableLoggerSensor, 2);
 		detailPane.getChildren().add(tableLoggerSensor);
 
 
 		TableView<Entry<String, String>> tableTranslation = new TableView<Entry<String, String>>();
+		tableTranslation.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		TableColumn<Entry<String, String>,String> colTranslationHeader = new TableColumn<Entry<String, String>,String>("Header");
 		colTranslationHeader.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().getKey()));
 		colTranslationHeader.setMinWidth(180);
+		colTranslationHeader.setComparator(String.CASE_INSENSITIVE_ORDER);
 		TableColumn<Entry<String, String>,String> colTranslationSensor = new TableColumn<Entry<String, String>,String>("Translation");
 		colTranslationSensor.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().getValue()));
 		colTranslationSensor.setMinWidth(180);
-		tableTranslation.getColumns().addAll(colTranslationHeader,colTranslationSensor);
+		colTranslationSensor.setComparator(String.CASE_INSENSITIVE_ORDER);
+		TableColumn<Entry<String, String>,String> colTop = new TableColumn<Entry<String, String>,String>("Sensor Name Translation");
+		colTop.getColumns().setAll(colTranslationHeader,colTranslationSensor);
+		tableTranslation.getColumns().addAll(colTop);
+		tableTranslation.getSortOrder().setAll(colTranslationHeader,colTranslationSensor);
 
 		GridPane.setRowIndex(tableTranslation, 1);
 		GridPane.setColumnIndex(tableTranslation, 2);
@@ -92,7 +116,10 @@ public class LoggerView {
 				if(logger.sensorNameTranlationMap!=null) {
 					translationList.addAll(logger.sensorNameTranlationMap.entrySet());
 				}
-				tableTranslation.setItems(translationList);				
+				tableTranslation.setItems(translationList);
+				tableTranslation.sort();
+			} else {
+				tableTranslation.setItems(null);
 			}
 		});
 
@@ -112,6 +139,17 @@ public class LoggerView {
 			log.error(e);
 		}
 		tableLogger.setItems(loggerList);
+		tableLogger.sort();
+	}
+
+	public void selectLogger(String name) {
+		for(LoggerType item:tableLogger.getItems()) {
+			if(item.typeName.equals(name)) {
+				tableLogger.getSelectionModel().select(item);
+				return;
+			}
+		}
+		tableLogger.getSelectionModel().clearSelection();
 	}
 
 }

@@ -47,8 +47,6 @@ public class Main {
 	private static final long EXPORT_API_TIMEOUT_MILLISECONDS = 2*60*60*1000; // set timeout to 2 hours
 	*/
 
-	private static final int WEB_SERVER_PORT = 8080;
-
 	private static final String WEBCONTENT_PART_URL = "/content";
 	private static final String TSDB_API_PART_URL = "/tsdb";
 	private static final String EXPORT_API_PART_URL = "/export";
@@ -75,7 +73,7 @@ public class Main {
 		httpConfiguration.setSendXPoweredBy(false);
 		HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
 		ServerConnector serverConnector = new ServerConnector(server,httpConnectionFactory);
-        serverConnector.setPort(WEB_SERVER_PORT);
+        serverConnector.setPort(TsDBFactory.WEB_SERVER_PORT);
         serverConnector.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
         server.setConnectors(new Connector[]{serverConnector});
 
@@ -171,7 +169,7 @@ public class Main {
 		//server.dumpStdErr();
 		System.out.println();
 		System.out.println();
-		System.out.println("Web Sever started at    ***      http://[HOSTNAME]:"+WEB_SERVER_PORT+TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"      ***");
+		System.out.println("Web Sever started at    ***      http://[HOSTNAME]:"+TsDBFactory.WEB_SERVER_PORT+TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"      ***");
 		System.out.println();
 		System.out.println("stop Web Server with 'Ctrl-C'");
 		System.out.println();

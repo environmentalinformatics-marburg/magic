@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.component.Region;
+import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 
 import com.sun.javafx.binding.StringConstant;
@@ -42,10 +43,14 @@ public class RegionView {
 		BorderPane borderPane = new BorderPane();
 		
 		tableRegion = new TableView<Region>();
+		tableRegion.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		borderPane.setLeft(tableRegion);
 		TableColumn<Region,String> colName = new TableColumn<Region,String>("name");
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().name));
+		colName.setComparator(String.CASE_INSENSITIVE_ORDER);
 		tableRegion.getColumns().addAll(colName);
+		tableRegion.getSortOrder().setAll(colName);
+		
 		
 		GridPane detailPane = new GridPane();
 		borderPane.setCenter(detailPane);
@@ -92,5 +97,16 @@ public class RegionView {
 			log.error(e);
 		}
 		tableRegion.setItems(regionList);
+		tableRegion.sort();
 	}
+
+	public void selectRegion(String name) {
+		for(Region item:tableRegion.getItems()) {
+			if(item.name.equals(name)) {
+				tableRegion.getSelectionModel().select(item);
+				return;
+			}
+		}
+		tableRegion.getSelectionModel().clearSelection();		
+	}	
 }

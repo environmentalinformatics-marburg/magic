@@ -27,7 +27,15 @@ public class MetadataScene extends TsdbScene {
 	private LoggerView loggerView;
 	private SensorView sensorView;
 	private GeneralStationView generalStationView;
-	private RegionView regionView;	
+	private RegionView regionView;
+	
+	private TabPane tabPane;
+	Tab tabVirtualPlot;
+	Tab tabStation;
+	Tab tabLogger;
+	Tab tabSensor;
+	Tab tabGeneralStation;
+	Tab tabRegion;
 
 	public MetadataScene(RemoteTsDB tsdb) {
 		super("time series databaes metadata view");		
@@ -37,35 +45,35 @@ public class MetadataScene extends TsdbScene {
 
 	@Override
 	protected Parent createContent() {
-		TabPane tabPane = new TabPane();
+		tabPane = new TabPane();
 		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-		Tab tabVirtualPlot = new Tab("Virtual Plot");
-		virtualPlotView = new VirtualPlotView();
+		tabVirtualPlot = new Tab("Virtual Plot");
+		virtualPlotView = new VirtualPlotView(this);
 		tabVirtualPlot.setContent(virtualPlotView.getNode());
 		tabPane.getTabs().add(tabVirtualPlot);
 
-		Tab tabStation = new Tab("Station");
-		stationView = new StationView();
+		tabStation = new Tab("Station");
+		stationView = new StationView(this);
 		tabStation.setContent(stationView.getNode());
 		tabPane.getTabs().add(tabStation);
 
-		Tab tabLogger = new Tab("Logger");
-		loggerView = new LoggerView();
+		tabLogger = new Tab("Logger");
+		loggerView = new LoggerView(this);
 		tabLogger.setContent(loggerView.getNode());
 		tabPane.getTabs().add(tabLogger);
 
-		Tab tabSensor = new Tab("Sensor");
+		tabSensor = new Tab("Sensor");
 		sensorView = new SensorView();
 		tabSensor.setContent(sensorView.getNode());
 		tabPane.getTabs().add(tabSensor);
 
-		Tab tabGeneralStation = new Tab("General Station");
-		generalStationView = new GeneralStationView();
+		tabGeneralStation = new Tab("General Station");
+		generalStationView = new GeneralStationView(this);
 		tabGeneralStation.setContent(generalStationView.getNode());
 		tabPane.getTabs().add(tabGeneralStation);
 		
-		Tab tabRegion = new Tab("Region");
+		tabRegion = new Tab("Region");
 		regionView = new RegionView();
 		tabRegion.setContent(regionView.getNode());
 		tabPane.getTabs().add(tabRegion);
@@ -81,5 +89,33 @@ public class MetadataScene extends TsdbScene {
 		virtualPlotView.collectData(tsdb);
 		generalStationView.collectData(tsdb);
 		regionView.collectData(tsdb);
+	}
+	
+	public void selectGeneralStation(String name) {
+		generalStationView.selectGeneralStation(name);
+		tabPane.selectionModelProperty().get().select(tabGeneralStation);
+	}
+
+	public void selectLogger(String name) {
+		loggerView.selectLogger(name);
+		tabPane.selectionModelProperty().get().select(tabLogger);
+	}
+
+	public void selectRegion(String name) {
+		regionView.selectRegion(name);
+		tabPane.selectionModelProperty().get().select(tabRegion);
+		
+	}
+	
+	public void selectStation(String name) {
+		stationView.selectStation(name);
+		tabPane.selectionModelProperty().get().select(tabStation);
+		
+	}
+	
+	public void selectSensor(String name) {
+		sensorView.selectSensor(name);
+		tabPane.selectionModelProperty().get().select(tabSensor);
+		
 	}
 }

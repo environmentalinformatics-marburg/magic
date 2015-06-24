@@ -155,6 +155,8 @@ public class VirtualPlot {
 		}		
 		return queryStart <= iEnd && iStart <= queryEnd;
 	}
+	
+	
 
 	/**
 	 * Get list of stations with overlapping entries in time interval start - end

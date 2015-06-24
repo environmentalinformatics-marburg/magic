@@ -3,6 +3,8 @@ package tsdb.usecase;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,7 +30,12 @@ import tsdb.util.iterator.TsIterator;
 public class EmpiricalDiffAnalysis {
 	private static final Logger log = LogManager.getLogger();
 
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
+		
+		/*Properties table = System.getProperties();
+		for(Entry<Object, Object> p:table.entrySet()) {
+			System.out.println(p);
+		}*/
 
 		TsDB tsdb = TsDBFactory.createDefault();
 
@@ -47,7 +54,7 @@ public class EmpiricalDiffAnalysis {
 		/*Long start = TimeConverter.ofDateStartHour(2010);
 		Long end = TimeConverter.ofDateEndHour(2010);*/
 		
-		Continuous source = continuousGen.get(plotID,sensorName);
+		Continuous source = continuousGen.getWithSensorNames(plotID,sensorName);
 		source = TransformLinear.of(source,0.113581f, -0.7146292f);
 		
 		//Continuous compareSource = GroupAverageSource_NEW.ofPlot(tsdb, plotID, sensorName);
@@ -61,7 +68,7 @@ public class EmpiricalDiffAnalysis {
 				.limit(3)
 				.map(s->{log.info(s.stationID);
 					float[] lin = linMap.get(s.stationID);
-					Continuous con = continuousGen.get(s.stationID, sensorName);
+					Continuous con = continuousGen.getWithSensorNames(s.stationID, sensorName);
 					//return con;
 					return TransformLinear.of(con,lin[0],lin[1]);
 					})

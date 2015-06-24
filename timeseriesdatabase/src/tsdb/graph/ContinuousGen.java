@@ -6,6 +6,11 @@ package tsdb.graph;
  *
  */
 @FunctionalInterface
-public interface ContinuousGen {	
-	public Continuous get(String stationName, String... schema);
+public interface ContinuousGen {
+	
+	public Continuous get(String stationName, String[] schema);
+	
+	public default Continuous getWithSensorNames(String stationName, String... sensorNames) {
+		return get(stationName,sensorNames);
+	}
 }
