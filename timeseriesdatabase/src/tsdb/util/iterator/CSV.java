@@ -9,7 +9,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 
 /**
@@ -125,12 +125,12 @@ public class CSV {
 						printStream.print(timestamp);
 						break;
 					case DATETIME:
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(timestamp));
+						printStream.print(TimeUtil.oleMinutesToLocalDateTime(timestamp));
 						break;
 					case TIMESTAMP_AND_DATETIME:
 						printStream.print(timestamp);
 						printStream.print(separator);
-						printStream.print(TimeConverter.oleMinutesToLocalDateTime(timestamp));
+						printStream.print(TimeUtil.oleMinutesToLocalDateTime(timestamp));
 						break;
 					default:
 						printStream.print("---");

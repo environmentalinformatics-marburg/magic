@@ -22,7 +22,7 @@ import tsdb.graph.Middle;
 import tsdb.graph.QueryPlan;
 import tsdb.graph.TransformLinear;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 

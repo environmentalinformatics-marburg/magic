@@ -8,7 +8,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.iterator.NanGapIterator;
 import tsdb.util.BaseAggregationTimeUtil;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.iterator.TsIterator;
 
 
@@ -64,11 +64,11 @@ public interface Continuous extends Node {
 				return null;
 			}
 			if(start!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
-				LogManager.getLogger().warn("start timestamp not alligned: "+start+"   "+TimeConverter.oleMinutesToText(start));
+				LogManager.getLogger().warn("start timestamp not alligned: "+start+"   "+TimeUtil.oleMinutesToText(start));
 				start = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(start); // TODO ?
 			}
 			if(end!=null&&!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
-				LogManager.getLogger().warn("end timestamp not alligned: "+end+"   "+TimeConverter.oleMinutesToText(end));
+				LogManager.getLogger().warn("end timestamp not alligned: "+end+"   "+TimeUtil.oleMinutesToText(end));
 				end = BaseAggregationTimeUtil.calcBaseAggregationTimestamp(end); // TODO ?
 			}
 			NanGapIterator continuous = new NanGapIterator(input_iterator, start, end);

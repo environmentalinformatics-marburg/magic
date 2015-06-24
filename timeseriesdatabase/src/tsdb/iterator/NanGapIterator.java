@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.BaseAggregationTimeUtil;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
@@ -58,19 +58,19 @@ public class NanGapIterator extends InputProcessingIterator {
 
 		if(start!=null) {		
 			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(start)) {
-				throw new RuntimeException("timestamp start not alligned: "+TimeConverter.oleMinutesToLocalDateTime(start));
+				throw new RuntimeException("timestamp start not alligned: "+TimeUtil.oleMinutesToLocalDateTime(start));
 			}
 			if(start%schema.timeStep!=0) {
-				throw new RuntimeException("timestamp start not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(start));
+				throw new RuntimeException("timestamp start not alligned to timestep: "+TimeUtil.oleMinutesToLocalDateTime(start));
 			}
 		}
 
 		if(end!=null) {
 			if(!BaseAggregationTimeUtil.isBaseAggregationTimestamp(end)) {
-				throw new RuntimeException("timestamp end not alligned: "+TimeConverter.oleMinutesToLocalDateTime(end));
+				throw new RuntimeException("timestamp end not alligned: "+TimeUtil.oleMinutesToLocalDateTime(end));
 			}		
 			if(end%schema.timeStep!=0) {
-				throw new RuntimeException("timestamp end not alligned to timestep: "+TimeConverter.oleMinutesToLocalDateTime(end));
+				throw new RuntimeException("timestamp end not alligned to timestep: "+TimeUtil.oleMinutesToLocalDateTime(end));
 			}
 		}
 
@@ -148,7 +148,7 @@ public class NanGapIterator extends InputProcessingIterator {
 			//System.out.println(this.getClass()+" "+currTimestamp+" "+currElement);
 			return currElement;
 		} else {// ******************** current timestamp higher than next timestamp
-			throw new RuntimeException("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp+"\t\t"+TimeConverter.oleMinutesToLocalDateTime(currTimestamp)+"\t-\t"+TimeConverter.oleMinutesToLocalDateTime(nextElement.timestamp));
+			throw new RuntimeException("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp+"\t\t"+TimeUtil.oleMinutesToLocalDateTime(currTimestamp)+"\t-\t"+TimeUtil.oleMinutesToLocalDateTime(nextElement.timestamp));
 			//log.error("timestamp error in NanGapIterator: currTimestamp    nextElement.timestamp   "+currTimestamp+"\t\t"+nextElement.timestamp);
 			//return null;
 		}

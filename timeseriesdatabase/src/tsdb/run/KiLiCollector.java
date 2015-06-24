@@ -28,7 +28,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.ki.AscParser;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
 
@@ -70,7 +70,7 @@ public class KiLiCollector {
 		}
 
 		public String toCSVRow() {
-			return plot+","+logger+","+station+","+TimeConverter.oleMinutesToText((long) firstTimestamp)+","+TimeConverter.oleMinutesToText((long) lastTimestamp)+","+status+","+md5+","+filesize+","+filename;
+			return plot+","+logger+","+station+","+TimeUtil.oleMinutesToText((long) firstTimestamp)+","+TimeUtil.oleMinutesToText((long) lastTimestamp)+","+status+","+md5+","+filesize+","+filename;
 		}
 
 		public String createNewFilename() {
@@ -80,9 +80,9 @@ public class KiLiCollector {
 			s += "_";
 			s += station==null?"xxxx":station;
 			s += "___";
-			s += TimeConverter.oleMinutesToDateTimeFileText(this.firstTimestamp);
+			s += TimeUtil.oleMinutesToDateTimeFileText(this.firstTimestamp);
 			s += "___";
-			s += TimeConverter.oleMinutesToDateTimeFileText(this.lastTimestamp);
+			s += TimeUtil.oleMinutesToDateTimeFileText(this.lastTimestamp);
 			s += ".asc";
 			return s;
 		}
@@ -386,7 +386,7 @@ public class KiLiCollector {
 				StationProperties properties = station.getProperties(timestampseries.getFirstTimestamp(), timestampseries.getLastTimestamp());
 
 				if(properties==null) {
-					log.error("no properties found in station "+timestampseries.name+"  of  "+TimeConverter.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+TimeConverter.oleMinutesToText(timestampseries.getLastTimestamp())+"  in  "+ascPath);
+					log.error("no properties found in station "+timestampseries.name+"  of  "+TimeUtil.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+TimeUtil.oleMinutesToText(timestampseries.getLastTimestamp())+"  in  "+ascPath);
 					collectorEntry.status = "no properties found in station";
 					continue;
 				}

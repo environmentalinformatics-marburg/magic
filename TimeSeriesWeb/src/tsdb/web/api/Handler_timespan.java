@@ -14,7 +14,7 @@ import org.eclipse.jetty.server.Request;
 import org.json.JSONWriter;
 
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 public class Handler_timespan extends MethodHandler {	
@@ -62,9 +62,9 @@ public class Handler_timespan extends MethodHandler {
 				json_output.key("last_timestamp");
 				json_output.value(i.end);
 				json_output.key("first_datetime");
-				json_output.value(TimeConverter.oleMinutesToText(i.start));
+				json_output.value(TimeUtil.oleMinutesToText(i.start));
 				json_output.key("last_datetime");
-				json_output.value(TimeConverter.oleMinutesToText(i.end));				
+				json_output.value(TimeUtil.oleMinutesToText(i.end));				
 				json_output.endObject();
 			}
 			json_output.endArray();

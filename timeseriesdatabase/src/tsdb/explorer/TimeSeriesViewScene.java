@@ -58,7 +58,7 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.Interval;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimeSeriesMask;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
@@ -563,8 +563,8 @@ public class TimeSeriesViewScene extends TsdbScene {
 		}
 		if(!timeText.equals(timeAll)) {
 			int year = Integer.parseInt(timeText);
-			startTimestamp = TimeConverter.ofDateStartHour(year);
-			endTimestamp = TimeConverter.ofDateEndHour(year);
+			startTimestamp = TimeUtil.ofDateStartHour(year);
+			endTimestamp = TimeUtil.ofDateEndHour(year);
 		}
 
 		AggregationInterval agg = comboAggregation.getValue();

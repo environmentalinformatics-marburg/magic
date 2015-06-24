@@ -4,7 +4,7 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 /**
@@ -23,8 +23,8 @@ public class DatabaseInfo {
 		for(VirtualPlot virtualplot:timeSeriesDatabase.getVirtualPlots()) {
 			System.out.println("******\t"+virtualplot.plotID+"   ("+virtualplot.generalStation.name+")\t***");
 			for(TimestampInterval<StationProperties> interval:virtualplot.intervalList) {
-				String startText = TimeConverter.oleMinutesToText(interval.start);
-				String endText = TimeConverter.oleMinutesToText(interval.end);
+				String startText = TimeUtil.oleMinutesToText(interval.start);
+				String endText = TimeUtil.oleMinutesToText(interval.end);
 				String typeText = tsdb.util.Util.ifnull(interval.value.get_logger_type_name(), x->x, ()->"unknown");
 				System.out.println(startText+" - "+endText+"\t\tstream name: "+interval.value.get_plotid()+"\t"+typeText);
 			}

@@ -2,7 +2,7 @@ package tsdb.usecase;
 
 import java.time.LocalDateTime;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.iterator.CSV;
 import tsdb.util.iterator.CSVTimeType;
 import tsdb.util.iterator.Interpolator;
@@ -29,10 +29,10 @@ public class UseCaseGapFiller {
 		final int TARGET_VALUE_COUNT = 24*7*20;
 		
 		
-		long sourceStartTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2013,01,01,0,0));
+		long sourceStartTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2013,01,01,0,0));
 		
 		float[][] source = new float[INTERPOLATION_STATION_COUNT][SOURCE_VALUE_COUNT];
-		long targetStartTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2013,03,01,0,0));
+		long targetStartTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2013,03,01,0,0));
 		float[] target = new float[TARGET_VALUE_COUNT];
 		final int TIMEINTERVAL = 60;
 		

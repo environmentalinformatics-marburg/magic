@@ -9,7 +9,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.TimeSeriesLoaderBE;
 import tsdb.loader.be.UDBFTimestampSeries;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 public class Read_dat_file {
 
@@ -29,7 +29,7 @@ public class Read_dat_file {
 			System.out.println(sensorName);
 		}
 		
-		long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
+		long minTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 		TimeSeriesLoaderBE timeSeriesLoaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
 		timeSeriesLoaderBE.loadDirectoryOfOneStation(tsdb.getStation("AET06"), Paths.get("C:/timeseriesdatabase_data_source_be_tsm/AET06"));
 		timeSeriesLoaderBE.loadDirectoryOfOneStation(tsdb.getStation("SET39"), Paths.get("C:/timeseriesdatabase_data_source_be_tsm/SET39"));

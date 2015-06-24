@@ -7,7 +7,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.streamdb.StreamTsIterator;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
@@ -70,7 +70,7 @@ public class TestingStationsOfPlot {
 		
 		System.out.println();
 		for(TimestampInterval<StationProperties> i:infoList) {
-			System.out.println(TimeConverter.oleMinutesToText(i.start,i.end)+"  "+i.value.get_logger_type_name()+"  "+i.value.get_serial());
+			System.out.println(TimeUtil.oleMinutesToText(i.start,i.end)+"  "+i.value.get_logger_type_name()+"  "+i.value.get_serial());
 		}
 		System.out.println();
 		

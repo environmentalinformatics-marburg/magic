@@ -23,7 +23,7 @@ import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
@@ -213,7 +213,7 @@ public class CollectorController {
 								s.append(',');
 								s.append(entry.timestamp);								
 								s.append(',');
-								s.append(TimeConverter.oleMinutesToText(entry.timestamp));
+								s.append(TimeUtil.oleMinutesToText(entry.timestamp));
 								
 								Formatter formater = new Formatter(s,Locale.ENGLISH);								
 								for(float v:entry.data) {									

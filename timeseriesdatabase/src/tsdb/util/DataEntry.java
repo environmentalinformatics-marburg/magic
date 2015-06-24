@@ -17,7 +17,7 @@ public class DataEntry {
 
 	@Override
 	public String toString() {
-		return timestamp+" "+TimeConverter.oleMinutesToText((long) timestamp)+" "+value;
+		return timestamp+" "+TimeUtil.oleMinutesToText((long) timestamp)+" "+value;
 	}
 
 	private static class TimeSeriesArchivDataEntryArraySerializer implements org.mapdb.Serializer<DataEntry[]> {

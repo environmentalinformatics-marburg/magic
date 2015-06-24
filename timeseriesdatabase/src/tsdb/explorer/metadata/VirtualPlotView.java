@@ -24,7 +24,7 @@ import tsdb.explorer.FXUtil;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 import com.sun.javafx.binding.ObjectConstant;
@@ -64,7 +64,7 @@ public class VirtualPlotView {
 			} else if (item == null) {
 				super.setText("*");
 			} else {
-				super.setText(TimeConverter.oleMinutesToText(item));
+				super.setText(TimeUtil.oleMinutesToText(item));
 			}
 		}			
 	}
@@ -128,12 +128,12 @@ public class VirtualPlotView {
 		colIntervalStart.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().start));
 		colIntervalStart.setMinWidth(150);
 		colIntervalStart.setCellFactory(p->new TimestampTableCell());
-		colIntervalStart.setComparator(TimeConverter.TIMESTAMP_START_ASC_COMPARATOR);
+		colIntervalStart.setComparator(TimeUtil.TIMESTAMP_START_ASC_COMPARATOR);
 		TableColumn<TimestampInterval<StationProperties>,Long> colIntervalEnd = new TableColumn<TimestampInterval<StationProperties>,Long>("End");
 		colIntervalEnd.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().end));
 		colIntervalEnd.setMinWidth(150);
 		colIntervalEnd.setCellFactory(p->new TimestampTableCell());
-		colIntervalEnd.setComparator(TimeConverter.TIMESTAMP_END_ASC_COMPARATOR);
+		colIntervalEnd.setComparator(TimeUtil.TIMESTAMP_END_ASC_COMPARATOR);
 		TableColumn<TimestampInterval<StationProperties>,String> colIntervalStation = new TableColumn<TimestampInterval<StationProperties>,String>("Station");
 		colIntervalStation.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().value.get_serial()));		
 		colIntervalStation.setCellFactory(FXUtil.cellFactoryWithOnClicked(e->{

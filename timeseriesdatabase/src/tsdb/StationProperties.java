@@ -12,7 +12,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 /**
@@ -88,7 +88,7 @@ public class StationProperties implements Serializable{
 		}
 		LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
 		LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
-		return TimeConverter.DateTimeToOleMinutes(startDateTime);
+		return TimeUtil.DateTimeToOleMinutes(startDateTime);
 	}
 
 	private static Long parseConfigDateEnd(String endText) {
@@ -97,7 +97,7 @@ public class StationProperties implements Serializable{
 		}
 		LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
 		LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
-		return TimeConverter.DateTimeToOleMinutes(endDateTime);
+		return TimeUtil.DateTimeToOleMinutes(endDateTime);
 	}
 
 	public Long get_date_start() {

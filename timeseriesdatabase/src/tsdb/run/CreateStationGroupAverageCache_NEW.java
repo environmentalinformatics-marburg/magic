@@ -19,7 +19,7 @@ import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
 
@@ -119,7 +119,7 @@ public class CreateStationGroupAverageCache_NEW {
 					continue;
 				}
 
-				cbPrint.println(group+"  "+sensorName+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(groupMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(groupMaxTimestamp)+" **************************************************************** "+groupMinTimestamp+"\t-\t"+groupMaxTimestamp);
+				cbPrint.println(group+"  "+sensorName+" ********************************* "+TimeUtil.oleMinutesToLocalDateTime(groupMinTimestamp)+"\t - \t"+TimeUtil.oleMinutesToLocalDateTime(groupMaxTimestamp)+" **************************************************************** "+groupMinTimestamp+"\t-\t"+groupMaxTimestamp);
 				List<Continuous> sources = new ArrayList<Continuous>();
 				List<Continuous> additions = new ArrayList<Continuous>();
 				for(String plotID:list) {

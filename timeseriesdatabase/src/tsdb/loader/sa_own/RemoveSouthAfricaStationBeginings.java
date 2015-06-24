@@ -9,7 +9,7 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 public class RemoveSouthAfricaStationBeginings {
@@ -53,8 +53,8 @@ Station 15: bis einschließlich 26.3. löschen
 
 		for(Object[] day:days) {
 			String plotID = (String) day[0];
-			int endTime = (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2014, 3, ((Number)day[1]).intValue(), 23, 59));
-			log.info("remove  "+plotID+"  up to  "+endTime+"  "+TimeConverter.oleMinutesToText(endTime));
+			int endTime = (int) TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2014, 3, ((Number)day[1]).intValue(), 23, 59));
+			log.info("remove  "+plotID+"  up to  "+endTime+"  "+TimeUtil.oleMinutesToText(endTime));
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			for(TimestampInterval<StationProperties> entry:virtualPlot.intervalList) {
 				tsdb.streamStorage.removeInterval(entry.value.get_serial(), startTime, endTime);

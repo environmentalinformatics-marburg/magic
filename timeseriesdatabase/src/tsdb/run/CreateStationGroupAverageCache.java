@@ -15,7 +15,7 @@ import tsdb.graph.Continuous;
 import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import static tsdb.util.AssumptionCheck.*;
 /**
  * Generates time series for general stations with average of contained station values
@@ -79,7 +79,7 @@ public class CreateStationGroupAverageCache {
 			}
 
 			if(groupMinTimestamp!=Long.MAX_VALUE && groupMaxTimestamp!=Long.MIN_VALUE) {
-				cbPrint.println(group+" ********************************* "+TimeConverter.oleMinutesToLocalDateTime(groupMinTimestamp)+"\t - \t"+TimeConverter.oleMinutesToLocalDateTime(groupMaxTimestamp)+" **************************************************************** "+groupMinTimestamp+"\t-\t"+groupMaxTimestamp);
+				cbPrint.println(group+" ********************************* "+TimeUtil.oleMinutesToLocalDateTime(groupMinTimestamp)+"\t - \t"+TimeUtil.oleMinutesToLocalDateTime(groupMaxTimestamp)+" **************************************************************** "+groupMinTimestamp+"\t-\t"+groupMaxTimestamp);
 				List<Continuous> sources = new ArrayList<Continuous>();
 				List<Continuous> additions = new ArrayList<Continuous>();
 				for(String plotID:list) {

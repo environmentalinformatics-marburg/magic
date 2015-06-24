@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.component.LoggerType;
 import tsdb.util.AggregationType;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 
@@ -200,7 +200,7 @@ public class Station {
 		for(TimestampInterval<StationProperties> interval:propertiesList) {
 			if((interval.start==null || interval.start<=intervalStart) && (interval.end==null || intervalEnd<=interval.end)) {
 				if(properties!=null) {
-					log.warn("multiple properties for one time interval in station   "+stationID+"  of  "+TimeConverter.oleMinutesToText(intervalStart)+" "+TimeConverter.oleMinutesToText(intervalEnd));
+					log.warn("multiple properties for one time interval in station   "+stationID+"  of  "+TimeUtil.oleMinutesToText(intervalStart)+" "+TimeUtil.oleMinutesToText(intervalEnd));
 				}
 				properties = interval.value;
 			}

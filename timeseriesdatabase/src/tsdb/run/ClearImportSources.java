@@ -14,7 +14,7 @@ import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.loader.sa_own.ImportSaOwn;
 import tsdb.loader.sa_own.RemoveSouthAfricaStationBeginings;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 /**
  * first creates empty database
@@ -92,7 +92,7 @@ public class ClearImportSources {
 			log.info("import BE tsm");
 			log.info("from "+TsDBFactory.SOURCE_BE_TSM_PATH);
 			timeStartBE = System.currentTimeMillis();
-			long minTimestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
+			long minTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 			TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
 			timeseriesloaderBE.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_BE_TSM_PATH));
 			timeEndBE = System.currentTimeMillis();

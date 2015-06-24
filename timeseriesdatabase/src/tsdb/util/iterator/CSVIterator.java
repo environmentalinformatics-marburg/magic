@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.Table;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
@@ -55,7 +55,7 @@ public class CSVIterator extends TsIterator {
 	public TsEntry next() {		
 		String[] row = rows[currIndex];
 		currIndex++;
-		long timestamp = TimeConverter.parseTimestamp(row[0], row[1], true);		
+		long timestamp = TimeUtil.parseTimestamp(row[0], row[1], true);		
 		float[] data = new float[schema.length];
 		for(int colIndex=0;colIndex<schema.length;colIndex++) {
 			try {

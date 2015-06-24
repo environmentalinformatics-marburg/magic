@@ -22,7 +22,7 @@ import tsdb.component.SourceEntry;
 import tsdb.loader.ki.type.AbstractLoader;
 import tsdb.loader.ki.type.LoaderFactory;
 import tsdb.util.DataRow;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.iterator.TimestampSeries;
 
 /**
@@ -161,7 +161,7 @@ public class TimeSeriesLoaderKiLi {
 				StationProperties properties = station.getProperties(timestampseries.getFirstTimestamp(), timestampseries.getLastTimestamp());
 
 				if(properties==null) {
-					log.error("no properties found in station "+timestampseries.name+"  of  "+TimeConverter.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+TimeConverter.oleMinutesToText(timestampseries.getLastTimestamp())+"  in  "+ascPath);
+					log.error("no properties found in station "+timestampseries.name+"  of  "+TimeUtil.oleMinutesToText(timestampseries.getFirstTimestamp())+" - "+TimeUtil.oleMinutesToText(timestampseries.getLastTimestamp())+"  in  "+ascPath);
 					continue;
 				}
 

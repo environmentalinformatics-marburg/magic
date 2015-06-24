@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Display;
 
 import tsdb.gui.util.Painter.PosHorizontal;
 import tsdb.gui.util.Painter.PosVerical;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 public class TimeScalePainter {	
 	Color color_light_blue;
@@ -41,7 +41,7 @@ public class TimeScalePainter {
 	}
 
 	private void drawMark(GC gc,Color lineColor, Color textColor, String text,int year,int month,int day,int hour) {
-		long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
+		long timestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
 		int x = timestampToGraph(timestamp);
 		gc.setForeground(lineColor);
 		gc.drawLine(x , yStart, x, yEnd);
@@ -69,7 +69,7 @@ public class TimeScalePainter {
 		LocalDateTime maxDateTime = timestampToDataTime(maxTimestamp);
 
 
-		int yearStep = timestampToGraph(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-timestampToGraph(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
+		int yearStep = timestampToGraph(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-timestampToGraph(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
 
 
 
@@ -157,7 +157,7 @@ public class TimeScalePainter {
 	}
 
 	private static LocalDateTime timestampToDataTime(double timestamp) {
-		return TimeConverter.oleMinutesToLocalDateTime((long)timestamp);
+		return TimeUtil.oleMinutesToLocalDateTime((long)timestamp);
 	}
 
 	private int timestampToGraph(double timestamp) {

@@ -8,7 +8,7 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 /**
  * GabFiller interpolates missing values (NaN-values) in time series with data of a set of other time series
@@ -169,7 +169,7 @@ public class Interpolator {
 					return 0;
 				}
 				if(endTimestamp!=sourceTimeSeries[i].getLastTimestamp()) {
-					log.error("all sources need to have same endTimestamp: "+TimeConverter.oleMinutesToText(endTimestamp)+"  "+TimeConverter.oleMinutesToText(sourceTimeSeries[i].getLastTimestamp()));
+					log.error("all sources need to have same endTimestamp: "+TimeUtil.oleMinutesToText(endTimestamp)+"  "+TimeUtil.oleMinutesToText(sourceTimeSeries[i].getLastTimestamp()));
 					return 0;
 				}
 				if(timeStep!=sourceTimeSeries[i].timeStep) {

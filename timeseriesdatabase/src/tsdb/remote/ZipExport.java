@@ -28,7 +28,7 @@ import tsdb.component.Sensor;
 import tsdb.iterator.ProjectionFillIterator;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
@@ -387,7 +387,7 @@ public class ZipExport {
 				if(!isFirst) {
 					s.append(',');
 				}
-				s.append(TimeConverter.oleMinutesToText(entry.timestamp));
+				s.append(TimeUtil.oleMinutesToText(entry.timestamp));
 				isFirst = false;
 			}
 			Formatter formater = new Formatter(s,Locale.ENGLISH);

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 
 import tsdb.util.AggregationType;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 /**
  * collecting aggregator to month
@@ -19,11 +19,11 @@ public class MonthCollectingAggregator extends AbstractCollectingAggregator {
 
 	@Override
 	protected long calcAggregationTimestamp(long timestamp) {
-		LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(timestamp);
+		LocalDateTime datetime = TimeUtil.oleMinutesToLocalDateTime(timestamp);
 		int year = datetime.getYear();
 		Month month = datetime.getMonth();
 		LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,1,0,0);
-		return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);
+		return TimeUtil.DateTimeToOleMinutes(aggregationDatetime);
 	}
 	
 	@Override

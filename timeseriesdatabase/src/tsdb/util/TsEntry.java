@@ -72,7 +72,7 @@ public class TsEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return timestamp+"|"+TimeConverter.oleMinutesToLocalDateTime(timestamp)+" "+Util.arrayToString(data)+/*" "+qualityFlagToString()+" "+interpolatedFlagToString()+*/" "+qualityCountersToString();
+		return timestamp+"|"+TimeUtil.oleMinutesToLocalDateTime(timestamp)+" "+Util.arrayToString(data)+/*" "+qualityFlagToString()+" "+interpolatedFlagToString()+*/" "+qualityCountersToString();
 	}
 
 	/*public String qualityFlagToString() {

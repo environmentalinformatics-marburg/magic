@@ -9,7 +9,7 @@ import java.util.GregorianCalendar;
 
 
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 
@@ -48,8 +48,8 @@ public class TimeScale {
 		this.minTimestamp = minTimestamp;
 		this.maxTimestamp = maxTimestamp;
 		this.lowestGranularity = lowestGranularity;
-		this.minYear = TimeConverter.oleMinutesToLocalDateTime((long)minTimestamp).getYear();
-		this.maxYear = TimeConverter.oleMinutesToLocalDateTime((long)maxTimestamp).getYear();		
+		this.minYear = TimeUtil.oleMinutesToLocalDateTime((long)minTimestamp).getYear();
+		this.maxYear = TimeUtil.oleMinutesToLocalDateTime((long)maxTimestamp).getYear();		
 	}
 
 	public int calcDiagramX(double timestamp) {
@@ -57,7 +57,7 @@ public class TimeScale {
 	}
 
 	public int calcTimeMark(int year,int month,int day,int hour, int minute) {
-		long timestamp = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, minute));
+		long timestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, minute));
 		return calcDiagramX(timestamp);
 	}	
 
@@ -68,7 +68,7 @@ public class TimeScale {
 		this.lineY0 = lineY0;
 		this.lineY1 = lineY1;
 		this.posY = posY;
-		yearStep = calcDiagramX(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-calcDiagramX(TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
+		yearStep = calcDiagramX(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-calcDiagramX(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
 		/*if(yearStep/2>=minGap) {
 			drawHalfYearScale(tsp);
 		}*/

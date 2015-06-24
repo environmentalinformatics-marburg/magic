@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TimestampSeries;
 
@@ -168,9 +168,9 @@ public class AscParser {
 					}
 				}
 
-				long timestamp = TimeConverter.DateTimeToOleMinutes(datetime);
+				long timestamp = TimeUtil.DateTimeToOleMinutes(datetime);
 				if(timestamp<=prevTimestamp) {
-					log.warn("skip row: timestamp<=prevTimestamp  "+filename+"  "+TimeConverter.oleMinutesToText(prevTimestamp, timestamp));
+					log.warn("skip row: timestamp<=prevTimestamp  "+filename+"  "+TimeUtil.oleMinutesToText(prevTimestamp, timestamp));
 				} else {
 					resultList.add(new TsEntry(timestamp, data));
 					prevTimestamp = timestamp;

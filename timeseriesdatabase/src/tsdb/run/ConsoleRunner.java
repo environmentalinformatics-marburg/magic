@@ -7,7 +7,7 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.component.Sensor;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 
 /**
@@ -119,7 +119,7 @@ public class ConsoleRunner implements Runnable {
 			println(s.toString());
 			long[] baseInterval = virtualPlot.getTimestampBaseInterval();
 			if(baseInterval!=null) {
-				println("data time span: "+TimeConverter.oleMinutesToText(baseInterval[0])+" - "+TimeConverter.oleMinutesToText(baseInterval[1]));
+				println("data time span: "+TimeUtil.oleMinutesToText(baseInterval[0])+" - "+TimeUtil.oleMinutesToText(baseInterval[1]));
 			}
 			return;
 		}

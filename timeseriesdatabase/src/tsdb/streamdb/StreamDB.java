@@ -17,7 +17,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
 import tsdb.util.DataEntry;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimeSeriesMask;
 import tsdb.util.iterator.TsIterator;
 
@@ -262,7 +262,7 @@ public class StreamDB {
 		int prevTimestamp = -1;
 		for(DataEntry entry:data) {
 			if(entry.timestamp<=prevTimestamp) {
-				throw new RuntimeException("not ordered timestamps "+TimeConverter.oleMinutesToText(prevTimestamp)+"  "+TimeConverter.oleMinutesToText(entry.timestamp)+"   "+entry.value+"  "+stationName+"/"+sensorName);
+				throw new RuntimeException("not ordered timestamps "+TimeUtil.oleMinutesToText(prevTimestamp)+"  "+TimeUtil.oleMinutesToText(entry.timestamp)+"   "+entry.value+"  "+stationName+"/"+sensorName);
 			}
 			if(entry.timestamp<timestamp_next_year) {
 				entryList.add(entry);				
@@ -270,7 +270,7 @@ public class StreamDB {
 				if(!entryList.isEmpty()) {
 					insertIntoOneChunk(chunkMetaMap,chunkMap,entryList);
 				}
-				timestamp_next_year = TimeConverter.roundNextYear(entry.timestamp);
+				timestamp_next_year = TimeUtil.roundNextYear(entry.timestamp);
 				entryList.clear();
 				entryList.add(entry);
 			}
@@ -332,8 +332,8 @@ public class StreamDB {
 	 * @param timestamp
 	 */
 	private ChunkMeta getChunkMeta(BTreeMap<Integer, ChunkMeta> chunkMetaMap, int timestamp) {
-		int timestamp_year = TimeConverter.roundLowerYear(timestamp);
-		int timestamp_next_year = TimeConverter.roundNextYear(timestamp);
+		int timestamp_year = TimeUtil.roundLowerYear(timestamp);
+		int timestamp_next_year = TimeUtil.roundNextYear(timestamp);
 		Integer key = chunkMetaMap.ceilingKey(timestamp_year);
 		if(key==null) {
 			return null;
@@ -348,7 +348,7 @@ public class StreamDB {
 
 	private void insertIntoOneChunk(BTreeMap<Integer, ChunkMeta> chunkMetaMap, BTreeMap<Integer, Chunk> chunkMap, ArrayList<DataEntry> entryList) {
 		//int timestamp_chunk = TimeConverter.roundLowerYear(entryList.get(0).timestamp);
-		int timestamp_next_year = TimeConverter.roundNextYear(entryList.get(0).timestamp);
+		int timestamp_next_year = TimeUtil.roundNextYear(entryList.get(0).timestamp);
 		if(timestamp_next_year<=entryList.get(entryList.size()-1).timestamp) {
 			throw new RuntimeException("data of more than one chunk");
 		}

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import tsdb.util.DataEntry;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 /**
  * chain StreamIterators to one iterator.
@@ -24,7 +24,7 @@ public class StreamChainIterator implements Iterator<DataEntry>{
 		int prev = 0;
 		for(StreamIterator it:iterators) {
 			if(it.minQueryTimestamp<=prev) {
-				throw new RuntimeException("StreamChainIterator: prev timestamp greater or equal to new min timestamp:"+TimeConverter.oleMinutesToText((long) prev)+"  "+TimeConverter.oleMinutesToText((long) it.minQueryTimestamp)+"  "+it.stationName+" of "+it.sensorName);
+				throw new RuntimeException("StreamChainIterator: prev timestamp greater or equal to new min timestamp:"+TimeUtil.oleMinutesToText((long) prev)+"  "+TimeUtil.oleMinutesToText((long) it.minQueryTimestamp)+"  "+it.stationName+" of "+it.sensorName);
 			}
 			if(it.minQueryTimestamp>it.maxQueryTimestamp) {
 				throw new RuntimeException();

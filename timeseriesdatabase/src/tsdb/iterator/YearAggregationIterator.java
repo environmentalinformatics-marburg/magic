@@ -5,7 +5,7 @@ import java.time.Month;
 
 import tsdb.TsDB;
 import tsdb.util.AggregationType;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsSchema.Aggregation;
 import tsdb.util.iterator.TsIterator;
 
@@ -22,10 +22,10 @@ public class YearAggregationIterator extends AbstractAggregationIterator  {
 	
 	@Override
 	protected long calcAggregationTimestamp(long timestamp) {		
-		LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(timestamp);
+		LocalDateTime datetime = TimeUtil.oleMinutesToLocalDateTime(timestamp);
 		int year = datetime.getYear();
 		LocalDateTime aggregationDatetime = LocalDateTime.of(year,Month.JANUARY,1,0,0);
-		return TimeConverter.DateTimeToOleMinutes(aggregationDatetime);		
+		return TimeUtil.DateTimeToOleMinutes(aggregationDatetime);		
 	}
 
 	@Override

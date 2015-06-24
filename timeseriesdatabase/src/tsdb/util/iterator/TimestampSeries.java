@@ -21,7 +21,7 @@ import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
 
 import tsdb.util.DataEntry;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.Util;
 
@@ -106,7 +106,7 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 			for(TsEntry entry:timestampSeries.entryList) {
 				int timestamp = (int) entry.timestamp;
 				if(timestamp<=prevTimestamp) {
-					throw new RuntimeException("write timestampseries format error: timestamps not ascending ordered "+prevTimestamp+"  "+timestamp+"   "+TimeConverter.oleMinutesToText((long) prevTimestamp)+"  "+TimeConverter.oleMinutesToText((long) timestamp));
+					throw new RuntimeException("write timestampseries format error: timestamps not ascending ordered "+prevTimestamp+"  "+timestamp+"   "+TimeUtil.oleMinutesToText((long) prevTimestamp)+"  "+TimeUtil.oleMinutesToText((long) timestamp));
 				}
 				out.writeInt(timestamp);
 				for(int i=0;i<timestampSeries.sensorNames.length;i++) {
@@ -234,7 +234,7 @@ public class TimestampSeries implements TsIterable, Serializable, Externalizable
 	@Override
 	public String toString() {
 		int n = entryList.size()>=3?3:entryList.size();
-		String s=name+"\t"+TimeConverter.oleMinutesToLocalDateTime(getFirstTimestamp())+" - "+TimeConverter.oleMinutesToLocalDateTime(getLastTimestamp())+"\n";
+		String s=name+"\t"+TimeUtil.oleMinutesToLocalDateTime(getFirstTimestamp())+" - "+TimeUtil.oleMinutesToLocalDateTime(getLastTimestamp())+"\n";
 		s+="("+entryList.size()+")\t\t";
 		for(int i=0;i<sensorNames.length;i++) {
 			s+=sensorNames[i]+"\t";

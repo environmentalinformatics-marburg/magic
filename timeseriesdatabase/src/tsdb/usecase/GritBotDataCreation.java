@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
@@ -37,7 +37,7 @@ public class GritBotDataCreation {
 		while(it.hasNext()) {
 			TsEntry e = it.next();
 			
-			LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(e.timestamp);
+			LocalDateTime datetime = TimeUtil.oleMinutesToLocalDateTime(e.timestamp);
 			
 			printStream.print(datetime.getYear());
 			printStream.print("-");

@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Table;
 import tsdb.component.SourceEntry;
 import tsdb.gui.info.SourceViewComparator.SortType;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.Util;
 
 @Deprecated
@@ -120,7 +120,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 			@Override
 			public String getText(Object element) {
 				SourceEntry e = (SourceEntry) element;
-				return ""+TimeConverter.oleMinutesToText(e.firstTimestamp);
+				return ""+TimeUtil.oleMinutesToText(e.firstTimestamp);
 			}
 		});
 		colFirstTimestamp.getColumn().addSelectionListener(getSelectionSortListener(SortType.FIRST_TIMESTAMP));	
@@ -132,7 +132,7 @@ public class SourceCatalogInfoDialog extends Dialog {
 			@Override
 			public String getText(Object element) {
 				SourceEntry e = (SourceEntry) element;
-				return ""+TimeConverter.oleMinutesToText(e.lastTimestamp);
+				return ""+TimeUtil.oleMinutesToText(e.lastTimestamp);
 			}
 		});
 		colLastTimestamp.getColumn().addSelectionListener(getSelectionSortListener(SortType.LAST_TIMESTAMP));

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 /**
  * UniversalDataBinFile reads, cleans and structures data of a UDBF-File.
@@ -31,7 +32,7 @@ public class UniversalDataBinFile {
 	private FileChannel fileChannel;
 	private FileInputStream fileInputStream;
 	private short variableCount;
-	private tsdb.util.TimeConverter timeConverter;
+	private TimeConverter timeConverter;
 	private int dataSectionStartFilePosition;
 	private SensorHeader[] sensorHeaders;
 	private boolean empty = false;
@@ -348,11 +349,11 @@ public class UniversalDataBinFile {
 				data[rowIndex][sensorIndex] = row.data[sensorIndex];
 			}
 			if(prevID!=null&&prevID==row.id) {
-				log.error("duplicate timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeConverter.oleMinutesToText(time[rowIndex]));
+				log.error("duplicate timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeUtil.oleMinutesToText(time[rowIndex]));
 				return null;
 			}
 			if(prevID!=null&&prevID>row.id) {
-				log.error("invalid timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeConverter.oleMinutesToText(time[rowIndex]));
+				log.error("invalid timestamps: "+row.id+"      "+time[rowIndex]+"     "+ TimeUtil.oleMinutesToText(time[rowIndex]));
 				return null;
 			}
 			rowIndex++;

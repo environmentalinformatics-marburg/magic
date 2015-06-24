@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.component.SensorCategory;
 import tsdb.util.AggregationInterval;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.Util;
 import tsdb.util.gui.TimeScale.TimeGranularity;
@@ -216,7 +216,7 @@ public class TimeSeriesDiagram {
 		if(aggregationTimeInterval>0) {
 			diagramMaxTimestamp += aggregationTimeInterval-1;
 		}
-		log.info(TimeConverter.oleMinutesToText(dataMaxTimestamp)+"  "+TimeConverter.oleMinutesToText((long) diagramMaxTimestamp));
+		log.info(TimeUtil.oleMinutesToText(dataMaxTimestamp)+"  "+TimeUtil.oleMinutesToText((long) diagramMaxTimestamp));
 		diagramTimestampRange = diagramMaxTimestamp-diagramMinTimestamp;
 	}
 
@@ -352,7 +352,7 @@ public class TimeSeriesDiagram {
 
 
 		tsp.setColor(150, 150, 150);
-		int start_year = TimeConverter.oleMinutesToLocalDateTime(timestampseries.getFirstTimestamp()).getYear();
+		int start_year = TimeUtil.oleMinutesToLocalDateTime(timestampseries.getFirstTimestamp()).getYear();
 		try {
 			tsp.setFontSmall();
 			tsp.drawText(""+start_year+"", tsp.getMinX(), tsp.getMaxY(), PosHorizontal.LEFT, PosVerical.BOTTOM);
@@ -666,7 +666,7 @@ public class TimeSeriesDiagram {
 					hasPrev = false;
 				} else {
 
-					long check = TimeConverter.DateTimeToOleMinutes(TimeConverter.oleMinutesToLocalDateTime(timestamp));
+					long check = TimeUtil.DateTimeToOleMinutes(TimeUtil.oleMinutesToLocalDateTime(timestamp));
 					if(check!=timestamp) {
 						throw new RuntimeException();
 					}

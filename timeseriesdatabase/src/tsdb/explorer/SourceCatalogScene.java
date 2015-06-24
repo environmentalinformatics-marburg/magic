@@ -31,7 +31,7 @@ import tsdb.component.SourceEntry;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
 import tsdb.remote.VirtualPlotInfo;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsSchema;
 
@@ -91,11 +91,11 @@ public class SourceCatalogScene extends TsdbScene {
 
 		TableColumn<SourceItem,Long> colFirst = new TableColumn<SourceItem,Long>("first");		
 		colFirst.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().sourceEntry.firstTimestamp));
-		colFirst.setCellFactory(createCellFactory(t->TimeConverter.oleMinutesToText(t)));
+		colFirst.setCellFactory(createCellFactory(t->TimeUtil.oleMinutesToText(t)));
 
 		TableColumn<SourceItem,Long> colLast = new TableColumn<SourceItem,Long>("last");		
 		colLast.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().sourceEntry.lastTimestamp));
-		colLast.setCellFactory(createCellFactory(t->TimeConverter.oleMinutesToText(t)));
+		colLast.setCellFactory(createCellFactory(t->TimeUtil.oleMinutesToText(t)));
 
 		TableColumn<SourceItem,String> colStation = new TableColumn<SourceItem,String>("station");		
 		colStation.setCellValueFactory(param->ObjectConstant.valueOf(param.getValue().sourceEntry.stationName));

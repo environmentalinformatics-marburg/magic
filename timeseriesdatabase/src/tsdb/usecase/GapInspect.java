@@ -21,7 +21,7 @@ import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
 import tsdb.util.Interval;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.TsEntry;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
@@ -142,12 +142,12 @@ public class GapInspect {
 
 		System.out.println();
 
-		LocalDateTime dt = TimeConverter.oleMinutesToLocalDateTime(min);
-		int minMonthTimestamp = (int) TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0));
+		LocalDateTime dt = TimeUtil.oleMinutesToLocalDateTime(min);
+		int minMonthTimestamp = (int) TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0));
 
 
 		for(int t=minMonthTimestamp;t<=max;t+=(24*60)) {
-			dt = TimeConverter.oleMinutesToLocalDateTime(t);
+			dt = TimeUtil.oleMinutesToLocalDateTime(t);
 			if(dt.getDayOfMonth()==1) {
 				if(dt.getMonthValue()==1) {
 					tsp.setColor(90, 90, 90);

@@ -3,7 +3,7 @@ package tsdb.component;
 import java.io.Serializable;
 import java.nio.file.Path;
 
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsSchema;
 import tsdb.util.iterator.TimestampSeries;
 
@@ -44,7 +44,7 @@ public class SourceEntry implements Serializable {
 	
 	@Override
 	public String toString() {
-		return filename+"\t"+stationName+"\t"+TimeConverter.oleMinutesToText(firstTimestamp)+"\t"+TimeConverter.oleMinutesToText(lastTimestamp);
+		return filename+"\t"+stationName+"\t"+TimeUtil.oleMinutesToText(firstTimestamp)+"\t"+TimeUtil.oleMinutesToText(lastTimestamp);
 	}
 	
 	public String getStationName() {

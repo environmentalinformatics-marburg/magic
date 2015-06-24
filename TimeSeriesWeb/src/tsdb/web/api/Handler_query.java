@@ -16,7 +16,7 @@ import org.eclipse.jetty.server.Request;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TimestampSeries;
 import tsdb.util.iterator.TsIterator;
@@ -102,8 +102,8 @@ public class Handler_query extends MethodHandler {
 				}
 				String timeMonth = request.getParameter("month");
 				if(timeMonth==null) {
-					startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
-					endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+					startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+					endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 				} else {
 					try {
 						int month = Integer.parseInt(timeMonth);
@@ -113,8 +113,8 @@ public class Handler_query extends MethodHandler {
 							return;
 						}
 						LocalDateTime dateMonth = LocalDateTime.of(year, month, 1, 0, 0);
-						startTime = TimeConverter.DateTimeToOleMinutes(dateMonth);
-						endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
+						startTime = TimeUtil.DateTimeToOleMinutes(dateMonth);
+						endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
 					} catch (Exception e) {
 						log.error(e);
 						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -152,7 +152,7 @@ public class Handler_query extends MethodHandler {
 			TsIterator it = ts.tsIterator();
 			while(it.hasNext()) {
 				TsEntry e = it.next(); 
-				writer.print(TimeConverter.oleMinutesToText(e.timestamp)+";");
+				writer.print(TimeUtil.oleMinutesToText(e.timestamp)+";");
 				float value = e.data[0];
 				if(Float.isNaN(value)) {
 					writer.print("NA");

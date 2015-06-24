@@ -31,7 +31,7 @@ import tsdb.gui.bridge.ComboBridge;
 import tsdb.gui.bridge.TableBridge;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 
@@ -129,8 +129,8 @@ public class NewSourceCatalogInfoDialog extends Dialog {
 		tableViewBridge = new TableBridge<SourceEntry>(tableViewer);
 
 		tableViewBridge.addColumnText("Station Name",100,SourceEntry::getStationName);
-		tableViewBridge.addColumn("First",100,s->TimeConverter.oleMinutesToLocalDateTime(s.firstTimestamp).toString(),s->s.firstTimestamp);
-		tableViewBridge.addColumn("Last",100,s->TimeConverter.oleMinutesToLocalDateTime(s.lastTimestamp).toString(),s->s.lastTimestamp);
+		tableViewBridge.addColumn("First",100,s->TimeUtil.oleMinutesToLocalDateTime(s.firstTimestamp).toString(),s->s.firstTimestamp);
+		tableViewBridge.addColumn("Last",100,s->TimeUtil.oleMinutesToLocalDateTime(s.lastTimestamp).toString(),s->s.lastTimestamp);
 		tableViewBridge.addColumn("Rows",100,s->s.rows);
 		tableViewBridge.addColumn("Time Step",100,s->s.timeStep);
 		tableViewBridge.addColumnText("Filename",100,s->s.filename);

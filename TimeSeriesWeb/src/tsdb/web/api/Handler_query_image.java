@@ -21,7 +21,7 @@ import tsdb.component.SensorCategory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
 import tsdb.util.iterator.TimestampSeries;
@@ -134,8 +134,8 @@ public class Handler_query_image extends MethodHandler {
 				}
 				String timeMonth = request.getParameter("month");
 				if(timeMonth==null) {
-					startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
-					endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+					startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+					endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 				} else {
 					try {
 						int month = Integer.parseInt(timeMonth);
@@ -145,8 +145,8 @@ public class Handler_query_image extends MethodHandler {
 							return;
 						}
 						LocalDateTime dateMonth = LocalDateTime.of(year, month, 1, 0, 0);
-						startTime = TimeConverter.DateTimeToOleMinutes(dateMonth);
-						endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
+						startTime = TimeUtil.DateTimeToOleMinutes(dateMonth);
+						endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
 					} catch (Exception e) {
 						log.error(e);
 						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -164,8 +164,8 @@ public class Handler_query_image extends MethodHandler {
 				startTime = (long) region.viewTimeRange.start;
 				endTime = (long) region.viewTimeRange.end;
 			} else {			
-				startTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
-				endTime = TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
+				startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
+				endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
 			}
 		}
 

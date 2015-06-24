@@ -82,7 +82,7 @@ public class Interval implements Serializable {
 
 	@Override
 	public String toString() {
-		return "["+TimeConverter.oleMinutesToText((long) start)+" .. "+TimeConverter.oleMinutesToText((long) end)+"]";
+		return "["+TimeUtil.oleMinutesToText((long) start)+" .. "+TimeUtil.oleMinutesToText((long) end)+"]";
 	}
 
 	private static class IntervalSerializer implements Serializer<Interval>, Serializable {

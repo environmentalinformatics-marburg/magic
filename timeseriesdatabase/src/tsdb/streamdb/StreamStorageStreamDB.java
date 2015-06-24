@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.util.DataEntry;
 import tsdb.util.DataRow;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimeSeriesMask;
 import tsdb.util.Util;
 import tsdb.util.iterator.TimestampSeries;
@@ -79,7 +79,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public TsIterator getRawIterator(String stationName, String[] sensorNames, Long start, Long end) {
-		log.info("StreamDB get "+stationName+" with "+Util.arrayToString(sensorNames)+"     at "+TimeConverter.oleMinutesToText(start)+" - "+TimeConverter.oleMinutesToText(end));
+		log.info("StreamDB get "+stationName+" with "+Util.arrayToString(sensorNames)+"     at "+TimeUtil.oleMinutesToText(start)+" - "+TimeUtil.oleMinutesToText(end));
 		int minTimestamp;
 		int maxTimestamp;
 		if(start==null) {
@@ -97,7 +97,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public StreamIterator getRawSensorIterator(String stationName, String sensorName, Long start, Long end) {
-		log.info("StreamDB get raw sensor "+stationName+" with "+sensorName+"     at "+TimeConverter.oleMinutesToText(start)+" - "+TimeConverter.oleMinutesToText(end));
+		log.info("StreamDB get raw sensor "+stationName+" with "+sensorName+"     at "+TimeUtil.oleMinutesToText(start)+" - "+TimeUtil.oleMinutesToText(end));
 		int minTimestamp;
 		int maxTimestamp;
 		if(start==null) {

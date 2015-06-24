@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.util.Pair;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.gui.TimeSeriesPainter.PosHorizontal;
 import tsdb.util.gui.TimeSeriesPainter.PosVerical;
@@ -66,7 +66,7 @@ public class TimeSeriesHeatMap {
 		//tsp.drawText(""+start_year+"", xMin, yMax, PosHorizontal.LEFT, PosVerical.BOTTOM);
 
 
-		LocalDate startDate = TimeConverter.oleMinutesToLocalDateTime(start).toLocalDate();
+		LocalDate startDate = TimeUtil.oleMinutesToLocalDateTime(start).toLocalDate();
 		//log.info(startDate);
 
 		try {
@@ -140,7 +140,7 @@ public class TimeSeriesHeatMap {
 			
 			tsp.setFontSmall();
 			tsp.setColor(170, 170, 170);
-			tsp.drawText(""+TimeConverter.oleMinutesToLocalDateTime(ts.entryList.get(0).timestamp).toLocalDate().getYear(), 0, 26, PosHorizontal.LEFT, PosVerical.TOP);
+			tsp.drawText(""+TimeUtil.oleMinutesToLocalDateTime(ts.entryList.get(0).timestamp).toLocalDate().getYear(), 0, 26, PosHorizontal.LEFT, PosVerical.TOP);
 			
 		} finally {
 			tsp.setFontDefault();

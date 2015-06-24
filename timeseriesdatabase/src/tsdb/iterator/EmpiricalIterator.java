@@ -2,7 +2,7 @@ package tsdb.iterator;
 
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 import tsdb.util.TsSchema.Aggregation;
@@ -48,7 +48,7 @@ public class EmpiricalIterator extends TsIterator {
 		boolean hasNext = input_iterator.hasNext();
 		boolean hasNextCompare = compare_iterator.hasNext();
 		if(hasNext&&!hasNextCompare) {
-			throw new RuntimeException("hasNext&&!hasNextCompare  "+TimeConverter.oleMinutesToText(input_iterator.next().timestamp));
+			throw new RuntimeException("hasNext&&!hasNextCompare  "+TimeUtil.oleMinutesToText(input_iterator.next().timestamp));
 		}
 		return hasNext;
 	}

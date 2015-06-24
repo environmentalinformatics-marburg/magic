@@ -126,7 +126,7 @@ public class Table {
 		}
 		public long get(String[] row) {			
 			try {
-				return TimeConverter.parseTimestamp(row[rowIndexDate], row[rowIndexTime], true);				
+				return TimeUtil.parseTimestamp(row[rowIndexDate], row[rowIndexTime], true);				
 			} catch(NumberFormatException e) {
 				log.warn(row[rowIndexDate]+"  "+row[rowIndexTime]+"not parsed");
 				return -1;
@@ -141,7 +141,7 @@ public class Table {
 		}
 		public long get(String[] row) {			
 			try {
-				return TimeConverter.parseTimestampSlashFormat(row[rowIndexDateTime]);				
+				return TimeUtil.parseTimestampSlashFormat(row[rowIndexDateTime]);				
 			} catch(NumberFormatException e) {
 				log.warn(row[rowIndexDateTime]+"  not parsed");
 				return -1;
@@ -156,7 +156,7 @@ public class Table {
 		}
 		public long get(String[] row) {			
 			try {
-				return TimeConverter.parseTimestampMonthNameFormat(row[rowIndexDateTime]);				
+				return TimeUtil.parseTimestampMonthNameFormat(row[rowIndexDateTime]);				
 			} catch(NumberFormatException e) {
 				log.warn(row[rowIndexDateTime]+"  not parsed");
 				return -1;
@@ -174,7 +174,7 @@ public class Table {
 		}
 		public long get(String[] row) {			
 			try {
-				return TimeConverter.parseTimestampDateFullHourFormat(row[columnIndexDate], Integer.parseInt(row[columnIndexFullHour]));		
+				return TimeUtil.parseTimestampDateFullHourFormat(row[columnIndexDate], Integer.parseInt(row[columnIndexFullHour]));		
 			} catch(NumberFormatException e) {
 				log.warn(row[columnIndexDate]+"  not parsed");
 				return -1;
@@ -212,7 +212,7 @@ public class Table {
 					date = date.plusDays(1);
 				}
 				LocalTime time = LocalTime.of(hour,Integer.parseInt(row[columnIndexMinute]));
-				return TimeConverter.DateTimeToOleMinutes(LocalDateTime.of(date,time));		
+				return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(date,time));		
 			} catch(NumberFormatException e) {
 				log.warn(row[columnIndexDate]+"  not parsed");
 				return -1;

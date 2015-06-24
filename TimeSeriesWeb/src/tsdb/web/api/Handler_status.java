@@ -16,7 +16,7 @@ import org.json.JSONWriter;
 
 import tsdb.remote.PlotStatus;
 import tsdb.remote.RemoteTsDB;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 public class Handler_status extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();
@@ -75,9 +75,9 @@ public class Handler_status extends MethodHandler {
 				json_output.key("last_timestamp");
 				json_output.value(i.lastTimestamp);
 				json_output.key("first_datetime");
-				json_output.value(TimeConverter.oleMinutesToText(i.firstTimestamp));
+				json_output.value(TimeUtil.oleMinutesToText(i.firstTimestamp));
 				json_output.key("last_datetime");
-				json_output.value(TimeConverter.oleMinutesToText(i.lastTimestamp));
+				json_output.value(TimeUtil.oleMinutesToText(i.lastTimestamp));
 				if(Float.isFinite(i.voltage)) {
 					json_output.key("voltage");
 					json_output.value(new JSONFloat(i.voltage));					

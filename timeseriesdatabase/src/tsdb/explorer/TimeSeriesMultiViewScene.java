@@ -50,7 +50,7 @@ import tsdb.remote.PlotInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.gui.TimeSeriesDiagram;
 import tsdb.util.gui.TimeSeriesHeatMap;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
@@ -682,8 +682,8 @@ public class TimeSeriesMultiViewScene extends TsdbScene {
 
 			if(!timeText.equals(timeAll)) {
 				int year = Integer.parseInt(timeText);
-				startTimestamp = TimeConverter.ofDateStartHour(year);
-				endTimestamp = TimeConverter.ofDateEndHour(year);
+				startTimestamp = TimeUtil.ofDateStartHour(year);
+				endTimestamp = TimeUtil.ofDateEndHour(year);
 			}
 
 

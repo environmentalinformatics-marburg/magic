@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.UDBFTimestampSeries;
 import tsdb.loader.be.UniversalDataBinFile;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 
 public class DatFileReading {
 
@@ -17,12 +17,12 @@ public class DatFileReading {
 		UDBFTimestampSeries ts = udbf.getUDBFTimeSeries();
 		
 		for (int i = 0; i < ts.time.length; i++) {
-			System.out.println(TimeConverter.oleMinutesToText(ts.time[i])+"   "+ts.data[i][0]);
+			System.out.println(TimeUtil.oleMinutesToText(ts.time[i])+"   "+ts.data[i][0]);
 		}
 	
 		System.out.println("size: "+ts.time.length);
-		System.out.println(TimeConverter.oleMinutesToText(ts.time[0]));
-		System.out.println(TimeConverter.oleMinutesToText(ts.time[ts.time.length-1]));
+		System.out.println(TimeUtil.oleMinutesToText(ts.time[0]));
+		System.out.println(TimeUtil.oleMinutesToText(ts.time[ts.time.length-1]));
 
 		/*DataRow[] rows = udbf.readDataRows();
 

@@ -12,7 +12,7 @@ import tsdb.graph.Interpolated;
 import tsdb.graph.IntervalRemove;
 import tsdb.graph.QueryPlan;
 import tsdb.util.DataQuality;
-import tsdb.util.TimeConverter;
+import tsdb.util.TimeUtil;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
@@ -30,11 +30,11 @@ public class InterpolationAnalysis {
 		String[] schema = new String[]{"Ta_200"};
 		String targetPlot = "SEG29";
 		//String targetPlot = "HEG01";
-		long start = TimeConverter.ofDateStartHour(2014,4);
-		long end = TimeConverter.ofDateEndHour(2014,6);
+		long start = TimeUtil.ofDateStartHour(2014,4);
+		long end = TimeUtil.ofDateEndHour(2014,6);
 		
-		long removeStart = TimeConverter.ofDateStartHour(2014,6);
-		long removeEnd = TimeConverter.ofDateEndHour(2014,6);
+		long removeStart = TimeUtil.ofDateStartHour(2014,6);
+		long removeEnd = TimeUtil.ofDateEndHour(2014,6);
 
 
 		ArrayList<String> result = new ArrayList<String>();
