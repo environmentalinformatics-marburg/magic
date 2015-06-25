@@ -4,8 +4,8 @@ import java.rmi.RemoteException;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Node;
 import tsdb.iterator.ProjectionFillIterator;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;

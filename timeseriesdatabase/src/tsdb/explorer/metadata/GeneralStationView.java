@@ -1,5 +1,11 @@
 package tsdb.explorer.metadata;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.sun.javafx.binding.StringConstant;
+
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -9,17 +15,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import tsdb.component.LoggerType;
+import javafx.scene.layout.HBox;
 import tsdb.component.Region;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.StationInfo;
-
-import com.sun.javafx.binding.StringConstant;
 
 /**
  * Overview of general stations
@@ -34,6 +33,8 @@ public class GeneralStationView {
 	private Node node;
 
 	private final MetadataScene metadataScene;
+
+	private Label lblStatus;
 	
 	public GeneralStationView(MetadataScene metadataScene) {
 		this.metadataScene = metadataScene;
@@ -112,10 +113,17 @@ public class GeneralStationView {
 			}
 		});
 		
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
+		
 		return borderPane;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void collectData(RemoteTsDB tsdb) {
+		TableColumn[] save = tableGeneralStation.getSortOrder().toArray(new TableColumn[0]);
 		ObservableList<GeneralStationInfo> generalList = FXCollections.observableArrayList();
 		try {
 			GeneralStationInfo[] generals = tsdb.getGeneralStations();
@@ -126,8 +134,10 @@ public class GeneralStationView {
 			e.printStackTrace();
 			log.error(e);
 		}
+		generalList.addListener(this::onVirtualPlotListInvalidation);
 		tableGeneralStation.setItems(generalList);
 		tableGeneralStation.sort();
+		tableGeneralStation.getSortOrder().setAll(save);
 	}
 	
 	public void selectGeneralStation(String name) {
@@ -138,6 +148,10 @@ public class GeneralStationView {
 			}
 		}
 		tableGeneralStation.getSelectionModel().clearSelection();
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableGeneralStation.getItems().size()+" entries");
 	}
 
 }

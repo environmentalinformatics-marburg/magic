@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
-import tsdb.graph.Statistics.StatisticsData;
+import tsdb.graph.node.Node;
+import tsdb.graph.processing.Statistics.StatisticsData;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.MiniCSV;
@@ -36,7 +36,7 @@ public class CreateStatistics {
 				if(tsDB.isValidSchema(plotID, schema)) {
 					//Base base = Base.create(tsDB, plotID, schema, QueryPlan.getStationGen(tsDB, DataQuality.EMPIRICAL));
 					Node node = QueryPlan.plot(tsDB, plotID, schema, AggregationInterval.YEAR, DataQuality.EMPIRICAL, false);
-					tsdb.graph.Statistics statistics = tsdb.graph.Statistics.create(node);
+					tsdb.graph.processing.Statistics statistics = tsdb.graph.processing.Statistics.create(node);
 					StatisticsData statisticsData = statistics.get(null, null);
 					if(statisticsData!=null) {
 						if(statisticsData.cnt[0]>0) {

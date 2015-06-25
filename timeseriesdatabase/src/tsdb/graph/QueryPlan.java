@@ -7,6 +7,25 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
 import tsdb.TsDB;
+import tsdb.graph.node.Base;
+import tsdb.graph.node.Continuous;
+import tsdb.graph.node.ContinuousGen;
+import tsdb.graph.node.Node;
+import tsdb.graph.node.NodeGen;
+import tsdb.graph.node.RawSource;
+import tsdb.graph.processing.Aggregated;
+import tsdb.graph.processing.Difference;
+import tsdb.graph.processing.EmpiricalFiltered_NEW;
+import tsdb.graph.processing.Interpolated;
+import tsdb.graph.processing.PeakSmoothed;
+import tsdb.graph.processing.RangeStepFiltered;
+import tsdb.graph.processing.Sunshine;
+import tsdb.graph.processing.Virtual_P_RT_NRT;
+import tsdb.graph.source.BaseFactory;
+import tsdb.graph.source.CacheBase;
+import tsdb.graph.source.StationRawSource;
+import tsdb.graph.source.VirtualPlotStationBase;
+import tsdb.graph.source.VirtualPlotStationRawSource;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.Util;
@@ -117,7 +136,7 @@ public class QueryPlan {
 	public static ContinuousGen getContinuousGen(TsDB tsdb, DataQuality dataQuality) {
 		return (String plotID, String[] schema)->{
 			NodeGen stationGen = getStationGen(tsdb, dataQuality);		
-			Base base = Base.of(tsdb, plotID, schema, stationGen);
+			Base base = BaseFactory.of(tsdb, plotID, schema, stationGen);
 			if(base==null) {
 				return null;
 			}

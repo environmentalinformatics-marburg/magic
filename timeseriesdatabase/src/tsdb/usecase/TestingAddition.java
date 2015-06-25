@@ -2,9 +2,9 @@ package tsdb.usecase;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.Addition;
-import tsdb.graph.Continuous;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Continuous;
+import tsdb.graph.processing.Addition;
 import tsdb.util.DataQuality;
 
 public class TestingAddition {

@@ -1,22 +1,23 @@
 package tsdb.explorer.metadata;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.sun.javafx.binding.StringConstant;
+
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import javafx.scene.layout.HBox;
 import tsdb.component.Region;
-import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
-
-import com.sun.javafx.binding.StringConstant;
 
 /**
  * Overview of regions
@@ -29,6 +30,8 @@ public class RegionView {
 	private TableView<Region> tableRegion;
 	
 	private Node node;
+
+	private Label lblStatus;
 	
 	public RegionView() {
 		node = createContent();
@@ -48,8 +51,10 @@ public class RegionView {
 		TableColumn<Region,String> colName = new TableColumn<Region,String>("name");
 		colName.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().name));
 		colName.setComparator(String.CASE_INSENSITIVE_ORDER);
+		colName.setSortType(SortType.ASCENDING);
 		tableRegion.getColumns().addAll(colName);
-		tableRegion.getSortOrder().setAll(colName);
+		tableRegion.getSortOrder().clear();
+		tableRegion.getSortOrder().add(colName);
 		
 		
 		GridPane detailPane = new GridPane();
@@ -82,10 +87,17 @@ public class RegionView {
 			}
 		});
 		
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
+		
 		return borderPane;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void collectData(RemoteTsDB tsdb) {
+		TableColumn[] save = tableRegion.getSortOrder().toArray(new TableColumn[0]);
 		ObservableList<Region> regionList = FXCollections.observableArrayList();
 		try {
 			Region[] regions = tsdb.getRegions();
@@ -96,8 +108,10 @@ public class RegionView {
 			e.printStackTrace();
 			log.error(e);
 		}
+		regionList.addListener(this::onVirtualPlotListInvalidation);
 		tableRegion.setItems(regionList);
 		tableRegion.sort();
+		tableRegion.getSortOrder().setAll(save);
 	}
 
 	public void selectRegion(String name) {
@@ -108,5 +122,9 @@ public class RegionView {
 			}
 		}
 		tableRegion.getSelectionModel().clearSelection();		
-	}	
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableRegion.getItems().size()+" entries");
+	}
 }

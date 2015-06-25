@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.sun.javafx.binding.StringConstant;
 
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -15,10 +16,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import tsdb.StationProperties;
+import javafx.scene.layout.HBox;
 import tsdb.component.LoggerType;
 import tsdb.explorer.FXUtil;
-import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 
 /**
@@ -34,6 +34,8 @@ public class LoggerView {
 	private Node node;
 	
 	private final MetadataScene metadataScene;
+
+	private Label lblStatus;
 	
 	public LoggerView (MetadataScene metadataScene) {
 		this.metadataScene = metadataScene;
@@ -44,7 +46,7 @@ public class LoggerView {
 		return node;
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Node createContent() {
 		BorderPane borderPane = new BorderPane();
 
@@ -108,6 +110,8 @@ public class LoggerView {
 		detailPane.getChildren().add(tableTranslation);
 
 		tableLogger.getSelectionModel().selectedItemProperty().addListener((s,o,logger)->{
+			TableColumn[] save = tableLoggerSensor.getSortOrder().toArray(new TableColumn[0]);
+			TableColumn[] saveTr = tableTranslation.getSortOrder().toArray(new TableColumn[0]);
 			if(logger!=null) {
 				lblLogger.setText(logger.typeName);
 				tableLoggerSensor.setItems(FXCollections.observableArrayList(logger.sensorNames));
@@ -121,14 +125,23 @@ public class LoggerView {
 			} else {
 				tableTranslation.setItems(null);
 			}
+			tableLoggerSensor.getSortOrder().setAll(save);
+			tableTranslation.getSortOrder().setAll(saveTr);
 		});
 
 		borderPane.setCenter(detailPane);
+		
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
 
 		return borderPane;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void collectData(RemoteTsDB tsdb) {
+		TableColumn[] save = tableLogger.getSortOrder().toArray(new TableColumn[0]);
 		ObservableList<LoggerType> loggerList = FXCollections.observableArrayList();
 		try {
 			LoggerType[] loggers = tsdb.getLoggerTypes();
@@ -138,8 +151,10 @@ public class LoggerView {
 			e.printStackTrace();
 			log.error(e);
 		}
+		loggerList.addListener(this::onVirtualPlotListInvalidation);
 		tableLogger.setItems(loggerList);
 		tableLogger.sort();
+		tableLogger.getSortOrder().setAll(save);
 	}
 
 	public void selectLogger(String name) {
@@ -150,6 +165,10 @@ public class LoggerView {
 			}
 		}
 		tableLogger.getSelectionModel().clearSelection();
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableLogger.getItems().size()+" entries");
 	}
 
 }

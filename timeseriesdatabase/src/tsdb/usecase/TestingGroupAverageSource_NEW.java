@@ -5,9 +5,9 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.GroupAverageSource_NEW;
-import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Node;
+import tsdb.graph.source.GroupAverageSource_NEW;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;

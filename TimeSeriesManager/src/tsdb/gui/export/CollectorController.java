@@ -193,7 +193,6 @@ public class CollectorController {
 							zipOutputStream.putNextEntry(zipEntry);
 							System.out.println(timeseries);
 							
-							@SuppressWarnings("resource")
 							PrintStream csvOut = new PrintStream(zipOutputStream);
 							StringBuilder stringbuilder = new StringBuilder();
 							stringbuilder.append("plotID");

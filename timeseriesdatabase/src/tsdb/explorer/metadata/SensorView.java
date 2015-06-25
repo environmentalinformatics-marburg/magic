@@ -2,6 +2,12 @@ package tsdb.explorer.metadata;
 
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.sun.javafx.binding.StringConstant;
+
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -14,16 +20,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import tsdb.component.LoggerType;
+import javafx.scene.layout.HBox;
 import tsdb.component.Sensor;
 import tsdb.remote.RemoteTsDB;
-import tsdb.remote.StationInfo;
-
-import com.sun.javafx.binding.StringConstant;
 
 /**
  * Overview of sensors
@@ -38,6 +37,8 @@ public class SensorView {
 	private FilteredList<Sensor> filteredSensorList;
 	
 	private Node node;
+
+	private Label lblStatus;
 	
 	private static class DetailEntry {		
 		private final String title;
@@ -153,8 +154,12 @@ public class SensorView {
 
 		checkBoxShowRawSensors = new CheckBox("show raw sensors");
 		checkBoxShowRawSensors.setOnAction(this::updateSensorPredicate);
-		borderPane.setBottom(checkBoxShowRawSensors);
+		borderPane.setTop(checkBoxShowRawSensors);
 
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
 
 		return borderPane;
 
@@ -168,7 +173,9 @@ public class SensorView {
 		}	
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void collectData(RemoteTsDB tsdb) {
+		TableColumn[] save = tableSensor.getSortOrder().toArray(new TableColumn[0]);
 		ObservableList<Sensor> sensorList = FXCollections.observableArrayList();
 		filteredSensorList = new FilteredList<Sensor>(sensorList);
 		updateSensorPredicate(null);
@@ -182,10 +189,11 @@ public class SensorView {
 			log.error(e);
 		}
 		SortedList<Sensor> sorted = new SortedList<>(filteredSensorList);//bugfix for FilteredList with TableView
+		sorted.addListener(this::onVirtualPlotListInvalidation);
 		sorted.comparatorProperty().bind(tableSensor.comparatorProperty());
 		tableSensor.setItems(sorted);
 		tableSensor.sort();
-		
+		tableSensor.getSortOrder().setAll(save);
 	}
 
 	public void selectSensor(String name) {
@@ -196,5 +204,9 @@ public class SensorView {
 			}
 		}
 		tableSensor.getSelectionModel().clearSelection();
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableSensor.getItems().size()+" entries");
 	}
 }

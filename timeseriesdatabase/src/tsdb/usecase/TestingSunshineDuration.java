@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.Node;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Node;
 import tsdb.util.AggregationInterval;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.DataQuality;

@@ -22,6 +22,7 @@ import tsdb.util.processingchain.ProcessingChain;
  *
  */
 public class AverageIterator extends MoveIterator {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	private Map<String, Integer> schemaMap;

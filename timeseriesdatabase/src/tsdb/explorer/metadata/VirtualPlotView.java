@@ -1,24 +1,22 @@
 package tsdb.explorer.metadata;
 
-import javax.swing.SortOrder;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.sun.javafx.binding.ObjectConstant;
+import com.sun.javafx.binding.StringConstant;
+
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
+import javafx.scene.layout.HBox;
 import tsdb.StationProperties;
 import tsdb.explorer.FXUtil;
 import tsdb.remote.GeneralStationInfo;
@@ -26,9 +24,6 @@ import tsdb.remote.RemoteTsDB;
 import tsdb.remote.VirtualPlotInfo;
 import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
-
-import com.sun.javafx.binding.ObjectConstant;
-import com.sun.javafx.binding.StringConstant;
 
 /**
  * Overview of virtual plots
@@ -46,6 +41,8 @@ public class VirtualPlotView {
 
 	private final MetadataScene metadataScene;
 
+	private Label lblStatus;
+
 	public VirtualPlotView(MetadataScene metadataScene) {
 		this.metadataScene = metadataScene;
 		node = createContent();
@@ -55,19 +52,7 @@ public class VirtualPlotView {
 		return node;
 	}
 
-	private static class TimestampTableCell extends TableCell<TimestampInterval<StationProperties>, Long> {
-		@Override
-		protected void updateItem(Long item, boolean empty) {
-			super.updateItem(item, empty);
-			if(empty) {
-				super.setText(null);
-			} else if (item == null) {
-				super.setText("*");
-			} else {
-				super.setText(TimeUtil.oleMinutesToText(item));
-			}
-		}			
-	}
+	
 
 	
 
@@ -127,12 +112,12 @@ public class VirtualPlotView {
 		TableColumn<TimestampInterval<StationProperties>,Long> colIntervalStart = new TableColumn<TimestampInterval<StationProperties>,Long>("Start");
 		colIntervalStart.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().start));
 		colIntervalStart.setMinWidth(150);
-		colIntervalStart.setCellFactory(p->new TimestampTableCell());
+		colIntervalStart.setCellFactory(p->new FXUtil.TimestampTableCell());
 		colIntervalStart.setComparator(TimeUtil.TIMESTAMP_START_ASC_COMPARATOR);
 		TableColumn<TimestampInterval<StationProperties>,Long> colIntervalEnd = new TableColumn<TimestampInterval<StationProperties>,Long>("End");
 		colIntervalEnd.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().end));
 		colIntervalEnd.setMinWidth(150);
-		colIntervalEnd.setCellFactory(p->new TimestampTableCell());
+		colIntervalEnd.setCellFactory(p->new FXUtil.TimestampTableCell());
 		colIntervalEnd.setComparator(TimeUtil.TIMESTAMP_END_ASC_COMPARATOR);
 		TableColumn<TimestampInterval<StationProperties>,String> colIntervalStation = new TableColumn<TimestampInterval<StationProperties>,String>("Station");
 		colIntervalStation.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().value.get_serial()));		
@@ -163,6 +148,8 @@ public class VirtualPlotView {
 
 
 		tableVirtualPlot.getSelectionModel().selectedItemProperty().addListener((s,o,virtualPlot)->{
+			@SuppressWarnings("rawtypes")
+			TableColumn[] save = tableInterval.getSortOrder().toArray(new TableColumn[0]);
 			if(virtualPlot!=null) {
 				lblVirtualPlot.setText(virtualPlot.plotID);
 				lblGeneralStation.setText(virtualPlot.generalStationInfo==null?null:virtualPlot.generalStationInfo.name);
@@ -171,6 +158,7 @@ public class VirtualPlotView {
 				lblElevationTemperature.setText(""+virtualPlot.elevationTemperature);				
 				tableInterval.setItems(FXCollections.observableList(virtualPlot.intervalList));
 				tableInterval.sort();
+				log.info(tableInterval.getSortOrder());
 			} else {
 				lblVirtualPlot.setText(null);
 				lblGeneralStation.setText(null);
@@ -179,12 +167,22 @@ public class VirtualPlotView {
 				lblElevationTemperature.setText(null);
 				tableInterval.setItems(null);
 			}
+			tableInterval.getSortOrder().setAll(save);
 		});
+		
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
 
 		return borderPane;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void collectData(RemoteTsDB tsdb) {
+		@SuppressWarnings("rawtypes")
+		TableColumn[] save = tableVirtualPlot.getSortOrder().toArray(new TableColumn[0]);
+		
 		ObservableList<VirtualPlotInfo> virtualPlotList = FXCollections.observableArrayList();
 
 		try {
@@ -194,9 +192,16 @@ public class VirtualPlotView {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e);
-		}		
+		}
+		
+		virtualPlotList.addListener(this::onVirtualPlotListInvalidation);
 		tableVirtualPlot.setItems(virtualPlotList);
 		tableVirtualPlot.sort();
+		tableVirtualPlot.getSortOrder().setAll(save);
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableVirtualPlot.getItems().size()+" entries");
 	}
 
 }

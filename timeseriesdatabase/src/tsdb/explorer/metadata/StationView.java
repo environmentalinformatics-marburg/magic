@@ -3,6 +3,10 @@ package tsdb.explorer.metadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.sun.javafx.binding.ObjectConstant;
+import com.sun.javafx.binding.StringConstant;
+
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -12,20 +16,19 @@ import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
+import javafx.scene.layout.HBox;
+import tsdb.StationProperties;
 import tsdb.component.LoggerType;
-import tsdb.component.Region;
+import tsdb.explorer.FXUtil;
 import tsdb.remote.GeneralStationInfo;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.StationInfo;
-import tsdb.remote.VirtualPlotInfo;
-
-import com.sun.javafx.binding.StringConstant;
+import tsdb.util.TimeUtil;
+import tsdb.util.TimestampInterval;
 
 /**
  * Overview of stations
@@ -42,6 +45,10 @@ public class StationView {
 	private Node node;
 	
 	private final MetadataScene metadataScene;
+
+	private Label lblStatus;
+
+	private TableView<TimestampInterval<StationProperties>> tableInterval;
 	
 	public StationView(MetadataScene metadataScene) {
 		this.metadataScene = metadataScene;
@@ -72,7 +79,7 @@ public class StationView {
 
 		checkBoxShowPlotStationsOnly = new CheckBox("show stations that are plots only");
 		checkBoxShowPlotStationsOnly.setOnAction(this::updateStationPredicate);
-		borderPane.setBottom(checkBoxShowPlotStationsOnly);
+		borderPane.setTop(checkBoxShowPlotStationsOnly);
 
 		GridPane detailPane = new GridPane();
 		detailPane.setStyle("-fx-border-style:solid;-fx-border-color: transparent;-fx-border-width: 20;");
@@ -110,8 +117,42 @@ public class StationView {
 		Label lblSecondary = new Label();
 		detailPane.add(new Label("Secondary ID"), 0, 4);
 		detailPane.add(lblSecondary, 1, 4);
+		
+		tableInterval = new TableView<TimestampInterval<StationProperties>>();
+		tableInterval.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		TableColumn<TimestampInterval<StationProperties>,Long> colIntervalStart = new TableColumn<TimestampInterval<StationProperties>,Long>("Start");
+		colIntervalStart.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().start));
+		colIntervalStart.setMinWidth(150);
+		colIntervalStart.setCellFactory(p->new FXUtil.TimestampTableCell());
+		colIntervalStart.setComparator(TimeUtil.TIMESTAMP_START_ASC_COMPARATOR);
+		TableColumn<TimestampInterval<StationProperties>,Long> colIntervalEnd = new TableColumn<TimestampInterval<StationProperties>,Long>("End");
+		colIntervalEnd.setCellValueFactory(cdf->ObjectConstant.<Long>valueOf(cdf.getValue().end));
+		colIntervalEnd.setMinWidth(150);
+		colIntervalEnd.setCellFactory(p->new FXUtil.TimestampTableCell());
+		colIntervalEnd.setComparator(TimeUtil.TIMESTAMP_END_ASC_COMPARATOR);
+		TableColumn<TimestampInterval<StationProperties>,String> colIntervalPlot = new TableColumn<TimestampInterval<StationProperties>,String>("Plot");
+		colIntervalPlot.setCellValueFactory(cdf->StringConstant.valueOf(cdf.getValue().value.get_plotid()));		
+		colIntervalPlot.setCellFactory(FXUtil.cellFactoryWithOnClicked(e->{
+			StationProperties stationProperties = tableInterval.getSelectionModel().selectedItemProperty().get().value;
+			String serial = stationProperties.get_serial();
+			metadataScene.selectStation(serial);
+		}));
+		colIntervalPlot.setComparator(String.CASE_INSENSITIVE_ORDER);
+		colIntervalPlot.setMinWidth(150);		
+		tableInterval.getColumns().addAll(colIntervalStart,colIntervalEnd,colIntervalPlot);
+		tableInterval.getSortOrder().clear();
+		tableInterval.getSortOrder().addAll(colIntervalStart,colIntervalEnd,colIntervalPlot);
+
+		GridPane.setRowIndex(tableInterval, 5);
+		GridPane.setColumnIndex(tableInterval, 0);
+		GridPane.setColumnSpan(tableInterval, 2);
+		detailPane.getChildren().add(tableInterval);
+		
+		
 
 		tableStation.getSelectionModel().selectedItemProperty().addListener((s,o,station)->{
+			@SuppressWarnings("rawtypes")
+			TableColumn[] save = tableInterval.getSortOrder().toArray(new TableColumn[0]);
 			if(station!=null) {
 				lblStation.setText(station.stationID);
 				lblLogger.setText(station.loggerType.typeName);
@@ -124,11 +165,20 @@ public class StationView {
 				}
 				lblLocation.setText(loc);
 				lblSecondary.setText(station.alternativeID);
-
+				tableInterval.setItems(FXCollections.observableList(station.intervalList));
+				tableInterval.sort();
+			} else {
+				tableInterval.setItems(null);
 			}
+			tableInterval.getSortOrder().setAll(save);
 		});
 
 		borderPane.setCenter(detailPane);
+		
+		HBox statusPane = new HBox();
+		lblStatus = new Label("status");
+		statusPane.getChildren().addAll(lblStatus);
+		borderPane.setBottom(statusPane);
 
 		return borderPane;
 	}
@@ -141,7 +191,9 @@ public class StationView {
 		}	
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void collectData(RemoteTsDB tsdb) {
+		TableColumn[] save = tableStation.getSortOrder().toArray(new TableColumn[0]);
 		ObservableList<StationInfo> stationList = FXCollections.observableArrayList();
 		filteredStationList = new FilteredList<StationInfo>(stationList);
 		updateStationPredicate(null);
@@ -157,9 +209,11 @@ public class StationView {
 
 		SortedList<StationInfo> sorted = new SortedList<>(filteredStationList);//bugfix for FilteredList with TableView
 		sorted.comparatorProperty().bind(tableStation.comparatorProperty());
+		sorted.addListener(this::onVirtualPlotListInvalidation);
 		tableStation.setItems(sorted);
 		//tableStation.setItems(stationList);
 		tableStation.sort();
+		tableStation.getSortOrder().setAll(save);
 	}
 
 	public void selectStation(String name) {
@@ -169,5 +223,9 @@ public class StationView {
 				return;
 			}
 		}		
+	}
+	
+	private void onVirtualPlotListInvalidation(Observable o) {
+		lblStatus.setText(tableStation.getItems().size()+" entries");
 	}
 }

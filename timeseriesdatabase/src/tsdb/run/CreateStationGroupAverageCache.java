@@ -9,11 +9,11 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDBFactory;
 import tsdb.TsDB;
-import tsdb.graph.Addition;
-import tsdb.graph.Averaged;
-import tsdb.graph.Continuous;
-import tsdb.graph.ContinuousGen;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Continuous;
+import tsdb.graph.node.ContinuousGen;
+import tsdb.graph.processing.Addition;
+import tsdb.graph.processing.Averaged;
 import tsdb.util.DataQuality;
 import tsdb.util.TimeUtil;
 import static tsdb.util.AssumptionCheck.*;

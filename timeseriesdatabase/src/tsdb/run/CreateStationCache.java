@@ -3,9 +3,10 @@ package tsdb.run;
 import tsdb.TsDBFactory;
 import tsdb.Station;
 import tsdb.TsDB;
-import tsdb.graph.Base;
-import tsdb.graph.NodeGen;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.node.Base;
+import tsdb.graph.node.NodeGen;
+import tsdb.graph.source.BaseFactory;
 import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
@@ -23,7 +24,7 @@ public class CreateStationCache {
 			//TimeSeriesIterator input_iterator = RawSource.create(timeSeriesDatabase, stationName, null).get(null, null);
 			if(station.isPlot) {
 				NodeGen stationGen = QueryPlan.getStationGen(timeSeriesDatabase, DataQuality.STEP);
-				input_iterator = Base.of(timeSeriesDatabase, station.stationID, null, stationGen).get(null, null);
+				input_iterator = BaseFactory.of(timeSeriesDatabase, station.stationID, null, stationGen).get(null, null);
 			}
 			if(input_iterator!=null&&input_iterator.hasNext()) {
 				System.out.println(station.stationID);
