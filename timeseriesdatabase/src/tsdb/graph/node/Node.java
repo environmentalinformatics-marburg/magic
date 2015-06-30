@@ -3,8 +3,6 @@ package tsdb.graph.node;
 import static tsdb.util.AssumptionCheck.throwNull;
 
 import tsdb.Plot;
-import tsdb.Plot.Real;
-import tsdb.Plot.Virtual;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;

@@ -15,7 +15,6 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.node.Continuous.Abstract;
 import tsdb.iterator.MiddleIterator;
 import tsdb.util.iterator.TsIterator;
 

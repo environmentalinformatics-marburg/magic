@@ -7,7 +7,6 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
@@ -80,6 +79,6 @@ public class CacheBase extends Base.Abstract {
 	
 	@Override
 	public long[] getTimestampInterval() {//TODO
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 }

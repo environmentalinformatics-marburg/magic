@@ -7,13 +7,11 @@ import static tsdb.util.AssumptionCheck.throwNullText;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tsdb.GeneralStation;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.node.Continuous.Abstract;
 import tsdb.iterator.NanGapIterator;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.TsEntry;
@@ -122,6 +120,6 @@ public class GroupAverageSource_NEW extends Continuous.Abstract {
 	
 	@Override
 	public long[] getTimestampInterval() {//TODO
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 }

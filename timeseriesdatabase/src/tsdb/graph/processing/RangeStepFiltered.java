@@ -1,13 +1,13 @@
 package tsdb.graph.processing;
 
 import static tsdb.util.AssumptionCheck.throwNulls;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.component.Sensor;
 import tsdb.component.iterator.QualityFlagIterator;
 import tsdb.graph.node.Node;
-import tsdb.graph.node.Node.Abstract;
 import tsdb.util.DataQuality;
 import tsdb.util.iterator.LowQualityToNanIterator;
 import tsdb.util.iterator.TsIterator;

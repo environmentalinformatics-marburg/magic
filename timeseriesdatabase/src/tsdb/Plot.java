@@ -2,6 +2,11 @@ package tsdb;
 
 import java.util.stream.Stream;
 
+/**
+ * Interface for common functionality of virtual Plots and stations that are plots.
+ * @author woellauer
+ *
+ */
 public interface Plot {
 	
 	Stream<Plot> getNearestPlots();

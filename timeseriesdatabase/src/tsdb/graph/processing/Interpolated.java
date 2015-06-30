@@ -11,7 +11,6 @@ import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
-import tsdb.graph.node.Continuous.Abstract;
 import tsdb.iterator.BadInterpolatedRemoveIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.Interpolator;
@@ -27,7 +26,7 @@ import tsdb.util.iterator.TsIterator;
  */
 public class Interpolated extends Continuous.Abstract {
 
-	public final static int MIN_STATION_INTERPOLATION_COUNT = 2;
+	public final static int MIN_STATION_INTERPOLATION_COUNT = 2; //multilinear interpolation needs at least two sources
 	public final static int STATION_INTERPOLATION_COUNT = 15;		
 	public final static int TRAINING_TIME_INTERVAL = 60*24*7*4; // in minutes;  four weeks
 
@@ -199,7 +198,8 @@ public class Interpolated extends Continuous.Abstract {
 
 		int interpolatedCount = 0;
 		for(String interpolationName:interpolationSchema) {
-			interpolatedCount += Interpolator.process(interpolationTimeSeries, sourceTimeSeries, interpolationName);
+			//interpolatedCount += Interpolator.processMultiLinear(interpolationTimeSeries, sourceTimeSeries, interpolationName); //TODO
+			interpolatedCount += Interpolator.processLinear(interpolationTimeSeries, sourceTimeSeries, interpolationName); //TODO change interpolatedCount
 		}
 		System.out.println("interpolated: linear: "+linearInterpolatedCount+"   multi linear: "+interpolatedCount+"   sources linear: "+sourcesLinearInterpolationCount);
 		sourceTimeSeries.addToProcessingChain("InterpolateMultiLinear");

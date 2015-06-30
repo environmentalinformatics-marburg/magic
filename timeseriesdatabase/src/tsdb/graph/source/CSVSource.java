@@ -2,8 +2,6 @@ package tsdb.graph.source;
 
 import java.util.Arrays;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.VirtualPlot;
@@ -71,7 +69,7 @@ public class CSVSource implements Node {
 	
 	@Override
 	public long[] getTimestampInterval() {//TODO
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -9,7 +9,6 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.node.Continuous.Abstract;
 import tsdb.graph.source.GroupAverageSource;
 import tsdb.iterator.EmpiricalIterator;
 import tsdb.iterator.ProjectionIterator;

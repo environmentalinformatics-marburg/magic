@@ -1,11 +1,11 @@
 package tsdb.graph.processing;
 
 import static tsdb.util.AssumptionCheck.throwNull;
+
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Node;
-import tsdb.graph.node.Node.Abstract;
 import tsdb.iterator.SunshineIterator;
 import tsdb.util.iterator.TsIterator;
 

@@ -1,14 +1,14 @@
 package tsdb.graph.processing;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import tsdb.Station;
-import static tsdb.util.AssumptionCheck.throwNulls;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.node.Continuous.Abstract;
 import tsdb.graph.source.GroupAverageSource;
 import tsdb.iterator.DifferenceIterator;
 import tsdb.util.Util;

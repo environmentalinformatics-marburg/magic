@@ -1,9 +1,8 @@
 package tsdb.graph.node;
 
 import static tsdb.util.AssumptionCheck.throwNull;
-import tsdb.Station;
+
 import tsdb.TsDB;
-import tsdb.VirtualPlot;
 
 /**
  * This node provides base aggregated data.

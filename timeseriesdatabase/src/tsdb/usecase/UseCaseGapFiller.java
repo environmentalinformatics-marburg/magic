@@ -73,7 +73,7 @@ public class UseCaseGapFiller {
 		System.out.println("start processing gab filling...");
 		
     	//GapFiller.process(sourceStartTimestamp, source, targetStartTimestamp, target, TIMEINTERVAL);
-		Interpolator.process(sourceBaseTimeSeries, targetBaseTimeSeries, "synthetic");
+		Interpolator.processMultiLinear(sourceBaseTimeSeries, targetBaseTimeSeries, "synthetic");
     	
     	System.out.println("write to file...");
     	
