@@ -17,6 +17,7 @@ import tsdb.graph.processing.Aggregated;
 import tsdb.graph.processing.Difference;
 import tsdb.graph.processing.EmpiricalFiltered_NEW;
 import tsdb.graph.processing.Interpolated;
+import tsdb.graph.processing.InterpolatedAverageLinear;
 import tsdb.graph.processing.PeakSmoothed;
 import tsdb.graph.processing.RangeStepFiltered;
 import tsdb.graph.processing.Sunshine;
@@ -56,7 +57,8 @@ public class QueryPlan {
 				ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
 				Continuous continuous;
 				if(interpolated) {
-					continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
+					//continuous = Interpolated.of(tsdb, plotID, schema, continuousGen);
+					continuous = InterpolatedAverageLinear.of(tsdb, plotID, schema, continuousGen); 
 				} else {
 					continuous = continuousGen.get(plotID, schema);
 				}
@@ -157,7 +159,7 @@ public class QueryPlan {
 	 */
 	public static NodeGen getStationGen(TsDB tsdb, DataQuality dataQuality) {
 		return (String stationID, String[] schema)->{
-			log.info("StationGen get "+Arrays.toString(schema));
+			//log.info("StationGen get "+Arrays.toString(schema));
 			Station station = tsdb.getStation(stationID);
 			if(station==null) {
 				throw new RuntimeException("station not found");

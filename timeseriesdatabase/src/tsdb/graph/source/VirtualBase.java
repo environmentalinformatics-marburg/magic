@@ -41,7 +41,7 @@ public class VirtualBase extends Base.Abstract  {
 			throw new RuntimeException("no schema");
 		}
 		if(!Util.isContained(schema, tsdb.getBaseSchema(virtualPlot.getSchema()))) {
-			throw new RuntimeException("schema not valid  "+Arrays.toString(schema)+"  in  "+Arrays.toString(tsdb.getBaseSchema(virtualPlot.getSchema())));
+			throw new RuntimeException("schema not valid  "+Arrays.toString(schema)+"  in  "+virtualPlot.plotID+"   "+Arrays.toString(tsdb.getBaseSchema(virtualPlot.getSchema())));
 		}
 		this.virtualPlot = virtualPlot;
 		this.schema = schema;

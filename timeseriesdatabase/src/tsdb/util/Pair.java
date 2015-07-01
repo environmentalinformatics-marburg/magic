@@ -20,5 +20,13 @@ public class Pair<A,B> {
 	public static <A,B> Pair<A, B> of(A a, B b) {
 		return new Pair<A, B>(a,b);
 	}
+	
+	public static <A,B> A projA(Pair<A,B> p) {
+		return p.a;
+	}
+	
+	public static <A,B> B projB(Pair<A, B> p) {
+		return p.b;
+	}
 
 }

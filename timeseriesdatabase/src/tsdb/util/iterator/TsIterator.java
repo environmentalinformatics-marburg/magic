@@ -66,4 +66,12 @@ public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEn
 	public static TsSchema[] toSchemas(TsIterator[] input_iterators) {
 		return Arrays.stream(input_iterators).map(it->it.getSchema()).toArray(TsSchema[]::new);
 	}
+	
+	public static boolean isLive(TsIterator it) {
+		return it!=null && it.hasNext();
+	}
+	
+	public static boolean isNotLive(TsIterator it) {
+		return it==null || (!it.hasNext());
+	}
 }

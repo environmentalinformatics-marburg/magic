@@ -1,6 +1,7 @@
 package tsdb;
 
 import java.util.stream.Stream;
+import tsdb.util.Util;
 
 /**
  * Interface for common functionality of virtual Plots and stations that are plots.
@@ -10,7 +11,11 @@ import java.util.stream.Stream;
 public interface Plot {
 	
 	Stream<Plot> getNearestPlots();
+	String[] getSensorNames();
 	String getPlotID();
+	default String[] getValidSensorNames(String[] querySchema) {
+		return Util.getValidEntries(querySchema, getSensorNames());
+	}
 	
 	public static Real of(Station station) {
 		return new Real(station);
@@ -33,6 +38,10 @@ public interface Plot {
 		public String getPlotID() {
 			return station.stationID;
 		}
+		@Override
+		public String[] getSensorNames() {
+			return station.getSchema();
+		}
 	}
 		
 	class Virtual implements Plot {		
@@ -47,6 +56,10 @@ public interface Plot {
 		@Override
 		public String getPlotID() {
 			return virtualPlot.plotID;
-		}		
+		}
+		@Override
+		public String[] getSensorNames() {
+			return virtualPlot.getSchema();
+		}
 	}
 }

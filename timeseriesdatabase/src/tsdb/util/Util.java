@@ -536,4 +536,8 @@ public final class Util {
 		}
 	}
 	
+	public static boolean notNull(Object e) {
+		return e!=null;
+	}
+	
 }
