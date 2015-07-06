@@ -11,6 +11,11 @@ import tsdb.remote.ServerTsDB;
 import tsdb.remote.StartServerTsDB;
 import tsdb.util.TsdbThrow;
 
+/**
+ * Start RMI- and Web-Server
+ * @author woellauer
+ *
+ */
 public class Run {
 	public static void main(String[] args) throws RemoteException, InterruptedException {
 

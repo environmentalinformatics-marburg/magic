@@ -1,14 +1,7 @@
 package tsdb.web;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
-
-
-public class MyEchoSocket implements WebSocketListener {
-	private static final Logger log = LogManager.getLogger();
+public class MyEchoSocket /*implements WebSocketListener*/ {
+	/*private static final Logger log = LogManager.getLogger();
 
 	//private Session session;
 	private RemoteEndpoint remote;
@@ -57,5 +50,5 @@ public class MyEchoSocket implements WebSocketListener {
 			log.error(e);
 		}
 
-	}
+	}*/
 }

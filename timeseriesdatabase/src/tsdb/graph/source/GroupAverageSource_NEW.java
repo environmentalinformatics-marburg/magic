@@ -119,7 +119,14 @@ public class GroupAverageSource_NEW extends Continuous.Abstract {
 	}
 	
 	@Override
-	public long[] getTimestampInterval() {//TODO
-		throw new UnsupportedOperationException();
+	public long[] getTimestampInterval() {
+		return tsdb.streamCache.getStationTimeInterval(group);
 	}
+
+	@Override
+	public String getSourceName() {
+		return group;
+	}
+	
+	
 }

@@ -11,8 +11,6 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.websocket.server.WebSocketHandler;
-
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
@@ -101,7 +99,7 @@ public class TestingWebSocket {
 	    };
 	    contextEcho.setHandler(wsHandler);
 	    */
-		contextEcho.setHandler(new WebSocketHandler.Simple(MyEchoSocket.class));
+		//contextEcho.setHandler(new WebSocketHandler.Simple(MyEchoSocket.class));
 	    
 	    
 

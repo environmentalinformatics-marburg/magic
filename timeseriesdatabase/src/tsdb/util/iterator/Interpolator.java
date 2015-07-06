@@ -187,7 +187,7 @@ public class Interpolator {
 		return interpolatedCount;
 	}
 
-	public static int processOneValueGaps(TimeSeries timeSeries) {
+	public static int processOneValueGaps(TimeSeries timeSeries) {//TODO set interpolated flag
 		int interpolatedCount = 0;
 		for(int colIndex=0;colIndex<timeSeries.data.length;colIndex++) {
 			float[] colData = timeSeries.data[colIndex];

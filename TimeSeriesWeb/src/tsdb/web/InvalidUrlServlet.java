@@ -8,8 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.servlet.ServletHolder;
-
 public class InvalidUrlServlet extends HttpServlet {
 	private static final long serialVersionUID = -7066685622900263032L;
 	private final String message;	
@@ -37,5 +35,5 @@ public class InvalidUrlServlet extends HttpServlet {
 		writer.print("</body>");
 		writer.print("</html>");
 	}
-	public static final ServletHolder SERVLET_HOLDER = new ServletHolder(new InvalidUrlServlet("error"));
+	//public static final ServletHolder SERVLET_HOLDER = new ServletHolder(new InvalidUrlServlet("error"));
 }

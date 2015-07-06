@@ -43,6 +43,11 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 		String[] iSchema = Arrays.stream(querySchema)
 				.filter(sensorName -> tsdb.getSensor(sensorName).useInterpolation)
 				.toArray(String[]::new);
+		
+		if(iSchema.length==0) {
+			log.info("no interpolation for "+plotID+"   "+Arrays.toString(querySchema));
+			return source;
+		}
 
 		Continuous trainingTarget = continuousGen.get(plotID, iSchema);
 		String[] interpolationSchema = trainingTarget.getSchema();
@@ -54,7 +59,11 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 					if(validSchema.length==0) {
 						return null;
 					}
-					return continuousGen.get(p.getPlotID(), interpolationSchema);
+					Continuous node = continuousGen.get(p.getPlotID(), validSchema);
+					if(interpolationSchema.length!=validSchema.length) {
+						node = Projected.of(node, interpolationSchema);
+					}
+					return node;
 				})
 				.filter(Util::notNull)
 				.toArray(Continuous[]::new);

@@ -175,7 +175,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			break;
 		}
 		default: {
-			ret = handle_error(response.getWriter(), baseRequest.getUri().toString());
+			ret = handle_error(response.getWriter(), baseRequest.getRequestURI());
 		}
 		}
 

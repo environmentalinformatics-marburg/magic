@@ -8,8 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.servlet.ServletHolder;
-
 public class RobotsTxtServlet extends HttpServlet {
 	private static final long serialVersionUID = -3383614386092827045L;
 	@Override
@@ -21,5 +19,5 @@ public class RobotsTxtServlet extends HttpServlet {
 		writer.println("Disallow: /");
 		//Filter filter = null;
 	}
-	public static final ServletHolder SERVLET_HOLDER = new ServletHolder(new RobotsTxtServlet());
+	//public static final ServletHolder SERVLET_HOLDER = new ServletHolder(new RobotsTxtServlet());
 }

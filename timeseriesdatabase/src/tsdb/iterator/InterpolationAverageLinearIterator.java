@@ -55,6 +55,8 @@ public class InterpolationAverageLinearIterator extends InputIterator {
 			return e;
 		}*/
 		
+		boolean[] interpolated = new boolean[y.length];
+		
 		for(int i=0;i<posIndex.length;i++) {
 			int pos = posIndex[i];
 			if(Float.isNaN(y[pos])) {// try to interpolate
@@ -70,6 +72,7 @@ public class InterpolationAverageLinearIterator extends InputIterator {
 				}
 				//log.info(count);
 				if(count>0) {
+					interpolated[pos] = true;
 					y[pos] = (float) (sum/count);
 					//y[pos] = (float) 20;
 					//targetInterpolationFlags[pos] = true;
@@ -80,7 +83,6 @@ public class InterpolationAverageLinearIterator extends InputIterator {
 			}
 		}
 		
-		
-		return TsEntry.of(e.timestamp, y);
+		return new TsEntry(e.timestamp, y,e.qualityFlag,e.qualityCounter, interpolated);
 	}
 }

@@ -38,7 +38,7 @@ public final class Util {
 	/**
 	 * Default logger
 	 */
-	static final Logger log = LogManager.getLogger("tsdb");
+	public static final Logger log = LogManager.getLogger("tsdb");
 	//private static final PropertiesUtil PROPS = new PropertiesUtil("log4j2.StatusLogger.properties");
 	//public static final Logger log = new SimpleLogger("StatusLogger", Level.ERROR, false, true, false, false, Strings.EMPTY, null, PROPS, System.err);
 

@@ -13,6 +13,7 @@ import tsdb.Station;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
 import tsdb.iterator.MinDiffIterator;
+import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
 
 public class MinDiff implements Continuous {
@@ -22,6 +23,8 @@ public class MinDiff implements Continuous {
 	private final List<Continuous> sources; //not null
 	private final String[] schema; //not null
 	private final boolean _constant_timestep;
+	
+	private final static int MIN_COMPARE_ELEMENTS = 1;
 	
 	public MinDiff(Continuous target, List<Continuous> sources, String[] schema) {
 		throwNull(target);
@@ -58,7 +61,7 @@ public class MinDiff implements Continuous {
 		if(iteratorList.isEmpty()) {
 			return null;
 		}
-		return new MinDiffIterator(schema, target.getExactly(start, end), iteratorList.toArray(new TsIterator[0]),1);		
+		return new MinDiffIterator(schema, target.getExactly(start, end), iteratorList.toArray(new TsIterator[0]),MIN_COMPARE_ELEMENTS);		
 	}
 
 	@Override
@@ -84,7 +87,7 @@ public class MinDiff implements Continuous {
 	@Override
 	public long[] getTimestampInterval() {//maximum interval
 		long[] interval = new long[]{Long.MAX_VALUE,Long.MIN_VALUE};
-		sources.stream().map(s->s.getTimestampInterval()).forEach(i->{
+		sources.stream().map(s->s.getTimestampInterval()).filter(Util::notNull).forEach(i->{
 			if(i[0]<interval[0]) {
 				interval[0] = i[0];
 			}

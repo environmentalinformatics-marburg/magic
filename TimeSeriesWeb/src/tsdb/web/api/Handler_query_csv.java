@@ -163,6 +163,7 @@ public class Handler_query_csv extends MethodHandler {
 
 			response.setStatus(HttpServletResponse.SC_OK);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 			response.getWriter().println(e);
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

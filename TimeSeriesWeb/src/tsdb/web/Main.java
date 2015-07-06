@@ -3,12 +3,18 @@ package tsdb.web;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 
 import javax.imageio.ImageIO;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -17,16 +23,21 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
@@ -36,6 +47,11 @@ import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
 import tsdb.web.api.SupplementHandler;
 
+/**
+ * Start Web-Server
+ * @author woellauer
+ *
+ */
 public class Main {
 	
 	private static final int EXPORT_API_SESSION_TIMEOUT_SECONDS = 2*60*60; // set timeout to 2 hours
@@ -72,7 +88,11 @@ public class Main {
 		httpConfiguration.setSendDateHeader(false);
 		httpConfiguration.setSendXPoweredBy(false);
 		HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
-		ServerConnector serverConnector = new ServerConnector(server,httpConnectionFactory);
+		//SslContextFactory sslContextFactory = new SslContextFactory();
+		//SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "alpn");
+		//ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+		//alpn.setDefaultProtocol("http/1.1");
+		ServerConnector serverConnector = new ServerConnector(server,/*ssl,alpn,*/httpConnectionFactory);
         serverConnector.setPort(TsDBFactory.WEB_SERVER_PORT);
         serverConnector.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
         server.setConnectors(new Connector[]{serverConnector});
@@ -160,7 +180,19 @@ public class Main {
 		ContextHandlerCollection contextCollection = new ContextHandlerCollection();
 		contextCollection.setStopTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
 		contextCollection.setHandlers(contexts);
-		server.setHandler(contextCollection);
+		GzipHandler gzipHandler = new GzipHandler();
+		gzipHandler.setHandler(contextCollection);
+		/*HandlerWrapper mod = new HandlerWrapper() {
+			@Override
+			public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+				response.addHeader("Cache-Control", "max-age=1");
+				super.handle(target, baseRequest, request, response);
+			}
+			
+		};
+		mod.setHandler(gzipHandler);*/
+		server.setHandler(gzipHandler);
+		//contextCollection.add
 		server.setStopTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
 		
 		//SharedBlockingCallback

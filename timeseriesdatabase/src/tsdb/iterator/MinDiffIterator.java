@@ -9,8 +9,8 @@ import tsdb.util.iterator.MoveIterator;
 import tsdb.util.iterator.TsIterator;
 
 /**
- * This iterator outputs elements of average values of input_iterator values.
- * input_iterators need to be in same timestamp per element order.
+ * This iterator outputs minimum difference elements of input_iterators to one target_iterator.
+ * input_iterators and target_iterator need to be in same timestamp per element order.
  * @author woellauer
  *
  */

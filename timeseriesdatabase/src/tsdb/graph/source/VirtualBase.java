@@ -38,9 +38,19 @@ public class VirtualBase extends Base.Abstract  {
 		super(tsdb);
 		throwNulls(virtualPlot, schema, stationGen);
 		if(schema.length==0) {
-			throw new RuntimeException("no schema");
+			throw new RuntimeException("no schema");			
 		}
-		if(!Util.isContained(schema, tsdb.getBaseSchema(virtualPlot.getSchema()))) {
+		
+		String[] virtualPlotSchema = virtualPlot.getSchema();
+		if(virtualPlotSchema==null||virtualPlotSchema.length==0) {
+			throw new RuntimeException("no sensors in virtualplot "+virtualPlot.plotID);
+		}
+		String[] virtualPlotBaseSchema = tsdb.getBaseSchema(virtualPlotSchema);
+		if(virtualPlotBaseSchema==null||virtualPlotBaseSchema.length==0) {
+			throw new RuntimeException("no base sensors in virtualplot "+virtualPlot.plotID);
+		}
+		
+		if(!Util.isContained(schema, virtualPlotBaseSchema)) {
 			throw new RuntimeException("schema not valid  "+Arrays.toString(schema)+"  in  "+virtualPlot.plotID+"   "+Arrays.toString(tsdb.getBaseSchema(virtualPlot.getSchema())));
 		}
 		this.virtualPlot = virtualPlot;
