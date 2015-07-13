@@ -62,11 +62,11 @@ public class AverageDiff {
 			
 			for(String stationName:stationNames) {
 				Continuous source = continuousGen.get(stationName, schema);
-				TsIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
-				if(it!=null&&it.hasNext()) {
+				//TsIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
+				/*if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);
-				}
+				}*/
 			}
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {

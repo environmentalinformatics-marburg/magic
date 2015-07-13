@@ -80,8 +80,6 @@ public class TsDB implements AutoCloseable {
 	 */
 	public StreamStorageStreamDB streamStorage;
 
-	public CacheStorage cacheStorage;
-	
 	public StreamStorageStreamDB streamCache;
 
 	public SourceCatalog sourceCatalog; 
@@ -110,7 +108,6 @@ public class TsDB implements AutoCloseable {
 		ignoreSensorNameSet = new TreeSet<String>();
 		baseAggregationSensorNameSet = new TreeSet<String>();
 
-		this.cacheStorage = new CacheStorage(cachePath);
 		this.streamCache = new StreamStorageStreamDB(streamdbPathPrefix+"__cache");
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
@@ -122,7 +119,6 @@ public class TsDB implements AutoCloseable {
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
-		cacheStorage.clear();
 		streamCache.clear();
 		sourceCatalog.clear();		
 		streamStorage.clear();
@@ -137,11 +133,6 @@ public class TsDB implements AutoCloseable {
 			streamStorage.close();
 		} catch(Exception e) {
 			log.error("error in streamStorage.close: "+e);
-		}
-		try {
-			cacheStorage.close();
-		}  catch(Exception e) {
-			log.error("error in cacheStorage.close: "+e);
 		}
 		try {
 			streamCache.close();

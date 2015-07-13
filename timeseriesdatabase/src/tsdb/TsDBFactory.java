@@ -45,6 +45,8 @@ public class TsDBFactory {
 	//private static final String WEB_SERVER_PREFIX_BASE_URL = "/0123456789abcdef"; //example prefix
 	public static int WEB_SERVER_PORT = 8080;
 	public static boolean WEB_SERVER_LOGIN = false;
+	public static boolean WEB_SERVER_HTTPS = false;
+	public static String WEB_SERVER_HTTPS_KEY_STORE_PASSWORD = "password";
 
 	public static String JUST_ONE_REGION = null;
 	//public static String JUST_ONE_REGION = "BE";
@@ -96,6 +98,9 @@ public class TsDBFactory {
 			WEB_SERVER_LOGIN = getBoolean(pathMap,"WEB_SERVER_LOGIN", WEB_SERVER_LOGIN);
 			HIDE_INTENAL_SENSORS = getBoolean(pathMap,"HIDE_INTENAL_SENSORS",HIDE_INTENAL_SENSORS);
 			JUST_ONE_REGION = getString(pathMap, "JUST_ONE_REGION", JUST_ONE_REGION);			
+			
+			WEB_SERVER_HTTPS = getBoolean(pathMap,"WEB_SERVER_HTTPS",WEB_SERVER_HTTPS);
+			WEB_SERVER_HTTPS_KEY_STORE_PASSWORD = getString(pathMap, "WEB_SERVER_HTTPS_KEY_STORE_PASSWORD", WEB_SERVER_HTTPS_KEY_STORE_PASSWORD);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		

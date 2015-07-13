@@ -3,18 +3,14 @@ package tsdb.web;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import javax.imageio.ImageIO;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -24,6 +20,8 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
@@ -31,8 +29,9 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.handler.ShutdownHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -43,9 +42,9 @@ import tsdb.TsDBFactory;
 import tsdb.remote.RemoteTsDB;
 import tsdb.remote.ServerTsDB;
 import tsdb.util.gui.TimeSeriesPainterGraphics2D;
+import tsdb.web.api.SupplementHandler;
 import tsdb.web.api.TsDBAPIHandler;
 import tsdb.web.api.TsDBExportAPIHandler;
-import tsdb.web.api.SupplementHandler;
 
 /**
  * Start Web-Server
@@ -53,26 +52,28 @@ import tsdb.web.api.SupplementHandler;
  *
  */
 public class Main {
-	
+	private static final Logger log = LogManager.getLogger();
+
 	private static final int EXPORT_API_SESSION_TIMEOUT_SECONDS = 2*60*60; // set timeout to 2 hours
 	private static final long DATA_TRANSFER_TIMEOUT_MILLISECONDS = 2*60*60*1000; // set timeout to 2 hours
-	
+
 	/*private static final long GENERAL_TIMEOUT_MILLISECONDS = 2*60*60*1000; // set timeout to 2 hours	
 	private static final long FILE_DOWNLOAD_TIMEOUT_MILLISECONDS = 2*60*60*1000; // set timeout to 2 hours
 	private static final long TSDB_API_TIMEOUT_MILLISECONDS = 5*60*1000; // set timeout to 5 minutes
 	private static final long EXPORT_API_TIMEOUT_MILLISECONDS = 2*60*60*1000; // set timeout to 2 hours
-	*/
+	 */
 
 	private static final String WEBCONTENT_PART_URL = "/content";
 	private static final String TSDB_API_PART_URL = "/tsdb";
 	private static final String EXPORT_API_PART_URL = "/export";
 	private static final String DOWNLOAD_PART_URL = "/download";
-	
+
 	private static final String SUPPLEMENT_PART_URL = "/supplement";
 	private static final String FILES_PART_URL = "/files";
-
-	private static final Logger log = LogManager.getLogger();
-
+	
+	private static final String WEB_SERVER_LOGIN_PROPERTIES_FILENAME = "realm.properties";
+	private static final String WEB_SERVER_HTTPS_KEY_STORE_FILENAME = "https_keystore.jks";
+	
 	public static void main(String[] args) throws Exception {
 		RemoteTsDB tsdb = new ServerTsDB(TsDBFactory.createDefault());
 		run(tsdb);
@@ -80,28 +81,50 @@ public class Main {
 
 	public static void run(RemoteTsDB tsdb) throws Exception {
 
-		createRainbowScale();
+		final int secure_port = 443;
+		boolean use_https = TsDBFactory.WEB_SERVER_HTTPS;
 		
+
+		createRainbowScale();
+
 		Server server = new Server();
 		HttpConfiguration httpConfiguration = new HttpConfiguration();
+
 		httpConfiguration.setSendServerVersion(false);
 		httpConfiguration.setSendDateHeader(false);
 		httpConfiguration.setSendXPoweredBy(false);
+		httpConfiguration.setSecurePort(secure_port);
+		httpConfiguration.setSecureScheme("https");
+		httpConfiguration.addCustomizer(new SecureRequestCustomizer());
+
 		HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
-		//SslContextFactory sslContextFactory = new SslContextFactory();
-		//SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "alpn");
-		//ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
-		//alpn.setDefaultProtocol("http/1.1");
-		ServerConnector serverConnector = new ServerConnector(server,/*ssl,alpn,*/httpConnectionFactory);
-        serverConnector.setPort(TsDBFactory.WEB_SERVER_PORT);
-        serverConnector.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
-        server.setConnectors(new Connector[]{serverConnector});
+		ServerConnector httpServerConnector = new ServerConnector(server,httpConnectionFactory);
+		httpServerConnector.setPort(TsDBFactory.WEB_SERVER_PORT);
+		httpServerConnector.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
+
+		if(use_https) {
+			if(Files.exists(Paths.get(WEB_SERVER_HTTPS_KEY_STORE_FILENAME))) {
+			SslContextFactory sslContextFactory = new SslContextFactory(WEB_SERVER_HTTPS_KEY_STORE_FILENAME);
+			sslContextFactory.setKeyStorePassword(TsDBFactory.WEB_SERVER_HTTPS_KEY_STORE_PASSWORD);
+			sslContextFactory.setKeyManagerPassword(TsDBFactory.WEB_SERVER_HTTPS_KEY_STORE_PASSWORD);
+			SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory,"http/1.1");
+			ServerConnector sslServerConnector = new ServerConnector(server, sslConnectionFactory, httpConnectionFactory);
+			sslServerConnector.setPort(secure_port);		
+
+			server.setConnectors(new Connector[]{httpServerConnector, sslServerConnector});
+			} else {
+				use_https = false;
+				log.error("key store file for https not found");
+			}
+		} else {
+			server.setConnectors(new Connector[]{httpServerConnector});
+		}
 
 		//Server server = new Server(WEB_SERVER_PORT);
 		//server.setConnectors(connectors);
 
 		/*for(Connector connector : server.getConnectors()) {
-			
+
 			if(connector instanceof ServerConnector) {
 				ServerConnector serverConnector = (ServerConnector) connector;
 				serverConnector.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
@@ -122,9 +145,9 @@ public class Main {
 			} else {
 				log.warn("unknown Connector "+connector);
 			}*/		
-			
-			
-			/*System.out.println("Connector "+y);
+
+
+		/*System.out.println("Connector "+y);
 			ServerConnector sc = (ServerConnector) y;
 			sc.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
 			for(ConnectionFactory x  : y.getConnectionFactories()) {
@@ -135,15 +158,15 @@ public class Main {
 					httpConfiguration.setSendDateHeader(false);
 					httpConfiguration.setSendXPoweredBy(false);
 					Customizer customizer = new Customizer() {
-						
+
 						@Override
 						public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
 							System.out.println(connector.getClass()+"   idle timeout "+connector.getIdleTimeout());
 							ServerConnector sc = (ServerConnector) connector;
 							sc.setIdleTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS); //TODO set earlier !!!
 							System.out.println(connector.getClass()+"   idle timeout "+connector.getIdleTimeout());
-							
-							
+
+
 						}
 					};
 					httpConfiguration.addCustomizer(customizer);
@@ -151,16 +174,16 @@ public class Main {
 			}*/
 		//}
 
-		
+
 
 		ContextHandler contextRedirect = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL);
 		contextRedirect.setHandler(new BaseRedirector(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+WEBCONTENT_PART_URL));
-		
+
 		//ServletContextHandler x = new ServletContextHandler();		
 		//x.addFilter(holder, pathSpec, dispatches);
 		//x.addServlet(RobotsTxtServlet.SERVLET_HOLDER, "/robots.txt");
 		//x.addServlet(InvalidUrlServlet.SERVLET_HOLDER, "/*");
-		
+
 		boolean wrap = TsDBFactory.WEB_SERVER_LOGIN;
 
 		ContextHandler[] contexts = new ContextHandler[] {
@@ -173,6 +196,7 @@ public class Main {
 				contextRedirect,
 				Robots_txt_Handler.CONTEXT_HANDLER,
 				//x,
+				createContextShutdown(),
 				createContextInvalidURL(),
 				//createContextTestingLogin()
 		};
@@ -188,28 +212,43 @@ public class Main {
 				response.addHeader("Cache-Control", "max-age=1");
 				super.handle(target, baseRequest, request, response);
 			}
-			
+
 		};
 		mod.setHandler(gzipHandler);*/
-		server.setHandler(gzipHandler);
+		RequestLogHandler requestLogHandler = new RequestLogHandler();
+		requestLogHandler.setRequestLog((Request request, Response response)->{
+			System.out.println("*** request   "+request.getRequestURL()+"  "+request.getQueryString());
+		});
+		requestLogHandler.setHandler(gzipHandler);
+		server.setHandler(requestLogHandler);
 		//contextCollection.add
 		server.setStopTimeout(DATA_TRANSFER_TIMEOUT_MILLISECONDS);
-		
-		//SharedBlockingCallback
+
 
 		server.start();
 		//server.dumpStdErr();
 		System.out.println();
 		System.out.println();
-		System.out.println("Web Sever started at    ***      http://[HOSTNAME]:"+TsDBFactory.WEB_SERVER_PORT+TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"      ***");
+		System.out.println("to stop Web Server:");
 		System.out.println();
-		System.out.println("stop Web Server with 'Ctrl-C'");
+		System.out.println("- directly:  by pressing 'Ctrl-C'");
+		System.out.println();
+		System.out.println("- at local terminal:  curl --proxy '' --request POST http://localhost:8080/shutdown?token=stop");
+		System.out.println();
+		System.out.println();
+		System.out.println("Web Sever started at    ***      http://[HOSTNAME]:"+TsDBFactory.WEB_SERVER_PORT+TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"      ***");
+		if(use_https) {
+			System.out.println();
+			System.out.println("secure channel    ***      https://[HOSTNAME]"+TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"      ***");
+		}
 		System.out.println();
 		System.out.println("waiting for requests...");
+
 		server.join();
+
 		System.out.println("...Web Sever stopped");		
 	}
-	
+
 	private static ContextHandler wrapLogin(ContextHandler contextHandler, boolean wrap) {
 		if(!wrap) {
 			return contextHandler;
@@ -218,20 +257,20 @@ public class Main {
 		security.setHandler(contextHandler);
 		ContextHandler security_context = new ContextHandler();
 		security_context.setHandler(security);
-		
+
 		Constraint constraint = new Constraint();
-        constraint.setName("auth1");
-        constraint.setAuthenticate(true);
-        constraint.setRoles(new String[] { "user", "admin" });
-        
-		
+		constraint.setName("auth1");
+		constraint.setAuthenticate(true);
+		constraint.setRoles(new String[] { "user", "admin" });
+
+
 		ConstraintMapping mapping = new ConstraintMapping();
-        mapping.setPathSpec("/*");
-        mapping.setConstraint(constraint);
-       
+		mapping.setPathSpec("/*");
+		mapping.setConstraint(constraint);
+
 		security.setConstraintMappings(Collections.singletonList(mapping));
 		security.setAuthenticator(new DigestAuthenticator());
-		HashLoginService loginService = new HashLoginService("Web Server Login", "realm.properties");
+		HashLoginService loginService = new HashLoginService("Web Server Login", WEB_SERVER_LOGIN_PROPERTIES_FILENAME);
 		/*String userName = "uu";
 		Credential credential = new Password("pp");
 		String[] roles = new String[]{"admin"};
@@ -244,25 +283,25 @@ public class Main {
 		ContextHandler context = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+"/login");
 		ConstraintSecurityHandler security = new ConstraintSecurityHandler();
 		context.setHandler(security);
-		
+
 		Constraint constraint = new Constraint();
         constraint.setName("auth");
         constraint.setAuthenticate(true);
         constraint.setRoles(new String[] { "user", "admin" });
-		
+
 		ConstraintMapping mapping = new ConstraintMapping();
         mapping.setPathSpec("/*");
         mapping.setConstraint(constraint);
-		
+
 		security.setConstraintMappings(Collections.singletonList(mapping));
 		security.setAuthenticator(new DigestAuthenticator());
 		HashLoginService loginService = new HashLoginService("Login"/*, "realm.properties"*///);
-		/*String userName = "uu";
+	/*String userName = "uu";
 		Credential credential = new Password("pp");
 		String[] roles = new String[]{"admin"};
 		loginService.putUser(userName, credential, roles);
 		security.setLoginService(loginService);
-		
+
 		ResourceHandler resourceHandler = new ResourceHandler();
 		resourceHandler.setDirectoriesListed(true); // show directory content
 		resourceHandler.setResourceBase(TsDBFactory.WEBDOWNLOAD_PATH);
@@ -313,7 +352,7 @@ public class Main {
 		sessions.setHandler(exportHandler);
 		return contextExport;
 	}
-	
+
 	private static ContextHandler createContextSupplement() {
 		ContextHandler contextSupplement = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+SUPPLEMENT_PART_URL);
 		SupplementHandler handler = new SupplementHandler();
@@ -336,7 +375,7 @@ public class Main {
 		contextHandler.setHandler(handlers);
 		return contextHandler;
 	}
-	
+
 	private static ContextHandler createContextWebFiles() {
 		ContextHandler contextHandler = new ContextHandler(TsDBFactory.WEB_SERVER_PREFIX_BASE_URL+FILES_PART_URL);
 		ResourceHandler resourceHandler = new ResourceHandler();
@@ -359,7 +398,7 @@ public class Main {
 	}
 
 	private static void createRainbowScale() {
-		
+
 		try{
 			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"global_scale_round_rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
@@ -372,8 +411,8 @@ public class Main {
 		} catch(Exception e) {
 			log.error(e);
 		}	
-		
-		
+
+
 		try{
 			BufferedImage rainbow = ImageIO.read(new File(TsDBFactory.CONFIG_PATH,"global_scale_rainbow.png"));
 			Color[] indexedColors = new Color[rainbow.getWidth()];
@@ -387,7 +426,16 @@ public class Main {
 		} catch(Exception e) {
 			log.error(e);
 		}
-		
-					
+
+
 	}
+
+	private static ContextHandler createContextShutdown() {
+		ContextHandler contextShutdown = new ContextHandler();
+		Handler handler = new ShutdownHandler("stop", false, true);
+		contextShutdown.setHandler(handler);
+		return contextShutdown;
+	}
+
+
 }

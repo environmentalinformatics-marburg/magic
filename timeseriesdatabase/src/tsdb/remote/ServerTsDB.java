@@ -119,8 +119,8 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
-	public String[] getCacheSchemaNames(String streamName) {
-		return tsdb.cacheStorage.getSchema(streamName).names;
+	public String[] getCacheSchemaNames(String streamName) {//TODO remove
+		return null;
 	}
 
 	@Override
@@ -264,8 +264,8 @@ public class ServerTsDB implements RemoteTsDB {
 	}
 
 	@Override
-	public String[] cacheStorageGetStreamNames() {
-		return tsdb.cacheStorage.getStreamNames().toArray(String[]::new);
+	public String[] cacheStorageGetStreamNames() { // remove
+		return null;
 	}
 
 	@Override
@@ -457,7 +457,8 @@ public class ServerTsDB implements RemoteTsDB {
 		if(queryType==null||queryType.equals("standard")) {		
 			node = QueryPlan.plot(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
 		} else if(queryType.equals("difference")) {
-			node = QueryPlan.plotDifference(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
+			return null; //TODO remove
+			//node = QueryPlan.plotDifference(tsdb, plotID, columnNames, aggregationInterval, dataQuality, interpolated);
 		} else {
 			log.error("queryType unknown");
 		}
@@ -517,7 +518,8 @@ public class ServerTsDB implements RemoteTsDB {
 
 	@Override
 	public TimestampSeries cache(String streamName, String[] columnNames, AggregationInterval aggregationInterval) {
-		Node node =  QueryPlan.cache(tsdb, streamName, columnNames, aggregationInterval);
+		throw new RuntimeException("not implemted");
+		/*Node node =  QueryPlan.cache(tsdb, streamName, columnNames, aggregationInterval);
 		if(node==null) {
 			return null;
 		}
@@ -525,7 +527,7 @@ public class ServerTsDB implements RemoteTsDB {
 		if(it==null||!it.hasNext()) {
 			return null;
 		}
-		return it.toTimestampSeries(streamName);		
+		return it.toTimestampSeries(streamName);*/		
 	}
 
 	@Override

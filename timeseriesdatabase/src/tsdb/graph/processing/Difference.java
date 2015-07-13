@@ -9,7 +9,6 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.source.GroupAverageSource;
 import tsdb.iterator.DifferenceIterator;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -53,10 +52,6 @@ public class Difference extends Continuous.Abstract {
 		return new Difference(tsdb, source, compareSource, stationName, absoluteDifference);		
 	}
 	
-	public static Continuous createFromGroupAverage(TsDB tsdb, Continuous continuous, String plotID, boolean absoluteDifference) {
-		Continuous compareSource = GroupAverageSource.createFromPlot(tsdb, plotID, continuous.getSchema());		
-		return of(tsdb,continuous,compareSource, plotID, absoluteDifference);
-	}
 
 	@Override
 	public TsIterator getExactly(long start, long end) {

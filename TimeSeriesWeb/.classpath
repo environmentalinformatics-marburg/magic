@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="lib/jetty/servlet-api-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-http-9.3.0.v20150612.jar" sourcepath="lib/source/jetty-http-9.3.0.v20150612-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-server-9.3.0.v20150612.jar" sourcepath="lib/source/jetty-server-9.3.0.v20150612-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jetty/jetty-util-9.3.0.v20150612.jar" sourcepath="lib/source/jetty-util-9.3.0.v20150612.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/jetty-util-9.3.0.v20150612.jar" sourcepath="C:/git_magic/TimeSeriesWeb/lib/source/jetty-util-9.3.0.v20150612-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-security-9.3.0.v20150612.jar" sourcepath="lib/source/jetty-security-9.3.0.v20150612-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-io-9.3.0.v20150612.jar" sourcepath="lib/source/jetty-io-9.3.0.v20150612-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/log/log4j-slf4j-impl-2.0.2.jar" sourcepath="lib/source/log4j-slf4j-impl-2.0.2-sources.jar"/>

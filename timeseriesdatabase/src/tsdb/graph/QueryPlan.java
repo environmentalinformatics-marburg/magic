@@ -1,7 +1,5 @@
 package tsdb.graph;
 
-import java.util.Arrays;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,7 +21,6 @@ import tsdb.graph.processing.RangeStepFiltered;
 import tsdb.graph.processing.Sunshine;
 import tsdb.graph.processing.Virtual_P_RT_NRT;
 import tsdb.graph.source.BaseFactory;
-import tsdb.graph.source.CacheBase;
 import tsdb.graph.source.StationRawSource;
 import tsdb.graph.source.VirtualPlotStationBase;
 import tsdb.graph.source.VirtualPlotStationRawSource;
@@ -116,19 +113,6 @@ public class QueryPlan {
 
 	}
 
-	public static Node plotDifference(TsDB tsdb, String plotID, String[] columnNames, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
-		String[] schema = columnNames;
-		ContinuousGen continuousGen = getContinuousGen(tsdb, dataQuality);
-		Continuous continuous;
-		if(interpolated) {
-			continuous = Interpolated.of(tsdb, plotID, schema, continuousGen); 
-		} else {
-			continuous = continuousGen.get(plotID, schema);
-		}
-		continuous = Difference.createFromGroupAverage(tsdb, continuous, plotID, false);
-		return Aggregated.of(tsdb, continuous, aggregationInterval);		
-	}
-
 	/**
 	 * creaets a generator of a continuous source
 	 * @param tsdb
@@ -189,19 +173,4 @@ public class QueryPlan {
 			return rawSource;
 		};
 	}
-
-	/**
-	 * Creates a graph for a cache source
-	 * @param tsdb
-	 * @param streamName
-	 * @param columnName
-	 * @param aggregationInterval
-	 * @return
-	 */
-	public static Node cache(TsDB tsdb, String streamName, String[] columnNames, AggregationInterval aggregationInterval) {		
-		CacheBase base = CacheBase.of(tsdb, streamName, columnNames);
-		Continuous continuous = Continuous.of(base);
-		return Aggregated.of(tsdb, continuous, aggregationInterval);		
-	}	
-
 }
