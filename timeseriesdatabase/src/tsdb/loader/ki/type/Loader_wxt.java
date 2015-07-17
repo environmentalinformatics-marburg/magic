@@ -17,26 +17,26 @@ import tsdb.util.iterator.TimestampSeries;
  *
  */
 class Loader_wxt extends AbstractLoader {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private enum ProcessingType {NONE,COPY,SWDR_300,SWUR_300,LWDR_300,LWUR_300};
-	
+
 	private ProcessingType[] processingTypes = null;
 
 	private float calib_coefficient_SWDR_300 = Float.NaN;
 	private float calib_coefficient_SWUR_300 = Float.NaN;
 	private float calib_coefficient_LWDR_300 = Float.NaN;
 	private float calib_coefficient_LWUR_300 = Float.NaN;
-	
+
 	private int pos_T_CNR = -1;	
 
 	public Loader_wxt(String[] inputSchema, StationProperties properties, String sourceInfo) {
 		super(inputSchema,properties, sourceInfo);
 	}
 
-	@Override
-	protected void createResultSchema() {
+	/*@Override
+	protected void createResultSchema() {// old processing with fixed sensor order
 		final String PLACE_HOLDER_W_R_300_U = "PLACE_HOLDER_W_R_300_U";
 		resultSchema = new String[inputSchema.length];
 		int PLACE_HOLDER_W_R_300_U_count = 0;
@@ -67,7 +67,111 @@ class Loader_wxt extends AbstractLoader {
 				resultSchema[schemaIndex] = inputSchema[schemaIndex];	
 			}
 		}
+	}*/
+	
+	@Override
+	protected void createResultSchema() { // processing with sensor translation in inventory
+		final String PLACE_HOLDER_W_R_300_U = "PLACE_HOLDER_W_R_300_U";
+		resultSchema = new String[inputSchema.length];
+		int PLACE_HOLDER_W_R_300_U_count = 0;
+		for(int schemaIndex=0;schemaIndex<inputSchema.length;schemaIndex++) {
+			switch(inputSchema[schemaIndex]) {
+			case PLACE_HOLDER_W_R_300_U:
+				PLACE_HOLDER_W_R_300_U_count++;
+				switch(PLACE_HOLDER_W_R_300_U_count) {
+				case 1:
+					translateWithProperty(schemaIndex,"SERIAL_PYR01");
+					break;
+				case 2:
+					translateWithProperty(schemaIndex,"SERIAL_PYR02");
+					break;
+				case 3:
+					translateWithProperty(schemaIndex,"SERIAL_PAR01");
+					break;
+				case 4:
+					translateWithProperty(schemaIndex,"SERIAL_PAR02");
+					break;
+				default:
+					log.warn("no real name for column "+schemaIndex+"  "+inputSchema[schemaIndex]);
+					resultSchema[schemaIndex] = inputSchema[schemaIndex];
+				}
+				break;
+			default:
+				resultSchema[schemaIndex] = inputSchema[schemaIndex];	
+			}
+		}
 	}
+
+	private String mapTitleToName(String title) {
+		switch(title.toLowerCase()) {
+		case "swdr":
+			return "SWDR_300";
+		case "swur":			
+			return "SWUR_300";
+		case "lwdr":
+			return "LWDR_300";
+		case "lwur":
+			return "LWUR_300";
+		default:
+			return null;
+		}
+	}
+
+	private void translateWithProperty(int schemaIndex, String propertyName) {
+		String prop = properties.getProperty(propertyName);
+		String name = mapTitleToName(prop);
+		if(name!=null) {
+			resultSchema[schemaIndex] = name;	
+		} else {
+			log.warn("no real name for column "+schemaIndex+"  "+inputSchema[schemaIndex]+"  propery "+prop+"    "+sourceInfo);
+			resultSchema[schemaIndex] = inputSchema[schemaIndex];
+		}
+	}
+
+	/*@Override
+	protected void createResultSchema() {// processing with two separated source name translations
+		final String PLACE_HOLDER_VOLTAGE_DVM = "PLACE_HOLDER_VOLTAGE_DVM";
+		final String PLACE_HOLDER_VOLTAGE_HI_IMP = "PLACE_HOLDER_VOLTAGE_HI_IMP";
+		resultSchema = new String[inputSchema.length];
+		int PLACE_HOLDER_VOLTAGE_DVM_count = 0;
+		int PLACE_HOLDER_VOLTAGE_HI_IMP_count = 0;
+		for(int schemaIndex=0;schemaIndex<inputSchema.length;schemaIndex++) {
+			switch(inputSchema[schemaIndex]) {
+			case PLACE_HOLDER_VOLTAGE_DVM:
+				PLACE_HOLDER_VOLTAGE_DVM_count++;
+				switch(PLACE_HOLDER_VOLTAGE_DVM_count) {
+				case 1:
+					translateWithProperty(schemaIndex,"SERIAL_PYR01");					
+					break;
+				case 2: {
+					translateWithProperty(schemaIndex,"SERIAL_PYR02");					
+					break;
+				}
+				default:
+					log.warn("no real name for column "+schemaIndex+"  "+inputSchema[schemaIndex]);
+					resultSchema[schemaIndex] = inputSchema[schemaIndex];
+				}
+				break;
+			case PLACE_HOLDER_VOLTAGE_HI_IMP:
+				PLACE_HOLDER_VOLTAGE_HI_IMP_count++;
+				switch(PLACE_HOLDER_VOLTAGE_HI_IMP_count) {
+				case 1: 
+					translateWithProperty(schemaIndex,"SERIAL_PAR01");					
+					break;				
+				case 2: {
+					translateWithProperty(schemaIndex,"SERIAL_PAR02");					
+					break;
+				}
+				default:
+					log.warn("no real name for column "+schemaIndex+"  "+inputSchema[schemaIndex]);
+					resultSchema[schemaIndex] = inputSchema[schemaIndex];
+				}
+				break;
+			default:
+				resultSchema[schemaIndex] = inputSchema[schemaIndex];	
+			}
+		}
+	}*/
 
 	@Override
 	protected void createProcessingTypes() {
