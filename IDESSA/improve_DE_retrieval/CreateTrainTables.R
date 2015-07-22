@@ -1,8 +1,8 @@
 rm(list=ls())
-msgpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
-radarpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
-resultpath="/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results"
-samplesize=0.1 # number of scenes for training
+msgpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/MSGProj/2010/"
+radarpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/RadarProj/2010/"
+resultpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/results/datatables/"
+samplesize=0.10 # number of scenes for training
 y<-2010 # year
 daytime <- c("day","twilight","night")
 
@@ -94,9 +94,9 @@ for (dayt in daytime) {
         if(!paste0(y,i,k,l)%in%trainingscenes) next #use only trainingscenes
         print (paste0("month: ", i, " day:", k, " hour: ", l, " in progress.."))
         setwd(paste0(msgpath,i,"/",k,"/",l))
-        date=getDate(getwd())
+        date=getDate(getwd(),type=".tif")
         ### get sunzenith  #####################################################
-        sunzenith<-tryCatch(getSunzenith(getwd()),error = function(e)e)
+        sunzenith<-tryCatch(getSunzenith(getwd(),type=".tif"),error = function(e)e)
         if(inherits(sunzenith, "error")) {
           print (paste0("month ", i, " day ", k, " scene ", l, 
                         " could not be processed"))
@@ -104,12 +104,22 @@ for (dayt in daytime) {
         }
 #        if(getDaytime(sunzenith)!=dayt) next
         ### get radar ##########################################################
-        radarpathtmp= paste0(radarpath,i,"/",k)
-        tmp=list.files(radarpathtmp,pattern=glob2rx("*.rst"))
-        radardata=raster(paste0(radarpathtmp,"/",tmp[substr(tmp,1,12)==date]))
+        #radarpathtmp= paste0(radarpath,i,"/",k)
+        radarpathtmp= paste0(radarpath,i,"/",k,"/",l)
+        tmp=list.files(radarpathtmp,pattern=glob2rx("*.tif"))
+        #tmp=list.files(radarpathtmp,pattern=glob2rx("*.rst"))
+        #radardata=raster(paste0(radarpathtmp,"/",tmp[substr(tmp,1,12)==date]))
+        radardata=tryCatch(raster(paste0(radarpathtmp,"/",tmp)),error = function(e)e)
+        
+        if(inherits(radardata, "error")) {
+          print (paste0("month ", i, " day ", k, " scene ", l, 
+                        " could not be processed"))
+          next
+        }
+        
         radardata[values(radardata)==-99]=NA
         ### get MSG ###########################################################
-        scenerasters <- tryCatch(getChannels(getwd()),error = function(e)e)
+        scenerasters <- tryCatch(getChannels(getwd(),type=".tif"),error = function(e)e)
         if(inherits(scenerasters, "error")) {
           print (paste0("month ", i, " day ", k, " scene ", l, 
                         " could not be processed"))
