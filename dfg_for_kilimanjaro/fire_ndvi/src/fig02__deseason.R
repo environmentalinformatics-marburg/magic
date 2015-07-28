@@ -49,7 +49,8 @@ p_raw <- spplot(rst_scl_ll[[int_id_feb]], scales = list(draw = TRUE),
                 xlab = "", ylab = "Latitude", 
                 sp.layout = list(
                   list("sp.lines", rasterToContour(rst_dem_ll), col = "grey75"), 
-                  list("sp.text", loc = c(37.05, -2.875), txt = "a)", col = "black", font = 2)
+                  list("sp.text", loc = c(37.05, -2.875), txt = "a)", 
+                       col = "black", font = 2, cex = 1.2)
                 ))
 
 p_mv <- spplot(rst_mv_ll[[1]], scales = list(draw = TRUE), 
@@ -57,7 +58,8 @@ p_mv <- spplot(rst_mv_ll[[1]], scales = list(draw = TRUE),
                xlab = "", ylab = "Latitude", 
                sp.layout = list(
                  list("sp.lines", rasterToContour(rst_dem_ll), col = "grey75"), 
-                 list("sp.text", loc = c(37.05, -2.875), txt = "b)", col = "black", font = 2)
+                 list("sp.text", loc = c(37.05, -2.875), txt = "b)", 
+                      col = "black", font = 2, cex = 1.2)
                ))
 
 p_raw_mv <- latticeCombineGrid(list(p_raw, p_mv), layout = c(2, 1))
@@ -68,22 +70,39 @@ p_anom <- spplot(rst_scl_ll[[int_id_feb]] - rst_mv_ll[[1]],
                  xlab = "Longitude", ylab = "Latitude", at = seq(-.35, .35, .05), 
                  sp.layout = list(
                    list("sp.lines", rasterToContour(rst_dem_ll), col = "grey75"), 
-                   list("sp.text", loc = c(37.025, -2.875), txt = "c)", col = "black", font = 2)
+                   list("sp.text", loc = c(37.025, -2.875), txt = "c)", 
+                        col = "black", font = 2, cex = 1.2)
                  ))
 
 png("publications/paper/detsch_et_al__ndvi_dynamics/figures/fig02__deseason.png", 
-    width = 15, height = 18, units = "cm", pointsize = 15, res = 300)
+    width = 18, height = 18, units = "cm", pointsize = 15, res = 300)
 grid.newpage()
 
-vp_raw <- viewport(x = 0, y = .575, just = c("left", "bottom"), 
-                   width = 1, height = .385)
+# raw and mean february values
+vp_raw <- viewport(x = 0, y = .58, just = c("left", "bottom"), 
+                   width = 1, height = .4)
 pushViewport(vp_raw)
-
 print(p_raw_mv, newpage = FALSE)
 
+# deseasoned february values
 upViewport()
-vp_dsn <- viewport(x = 0, y = 0, just = c("left", "bottom"), 
-                   width = 1, height = .675)
+vp_dsn <- viewport(x = 0, y = .01, just = c("left", "bottom"), 
+                   width = 1, height = .645)
 pushViewport(vp_dsn)
 print(p_anom, newpage = FALSE)
+
+# legend caption (1)
+upViewport()
+vp_legcap1 <- viewport(x = .9, y = .54, just = c("left", "bottom"), 
+                       width = .1, height = .5)
+pushViewport(vp_legcap1)
+grid.text(expression("NDVI"[MODIS]), rot = -90)
+
+# legend caption (2)
+upViewport()
+vp_legcap2 <- viewport(x = .9, y = .04, just = c("left", "bottom"), 
+                       width = .1, height = .64)
+pushViewport(vp_legcap2)
+grid.text(expression(Delta ~ "NDVI"), rot = -90)
+
 dev.off()
