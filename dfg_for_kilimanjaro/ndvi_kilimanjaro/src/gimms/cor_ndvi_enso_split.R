@@ -1,6 +1,6 @@
 # packages
 lib <- c("reshape2", "raster", "remote", "lubridate", "doParallel", 
-         "RColorBrewer", "Rsenal")
+         "RColorBrewer", "Rsenal", "grid", "ggplot2")
 jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
 
 # functions
@@ -162,6 +162,7 @@ ltm_ext[is.na(ltm_ext$y), 2] <- ltm_ext[1:sum(is.na(ltm_ext$y)), 2]
 # ltm_ext$x <- as.numeric(as.character(ltm_ext[, 1]))
 
 # x-axis labels
+span <- 8
 lbl <- rep(c(7:12, 1:6, 7:12, 1:2))
 names(lbl) <- 1:(12+span)
 
@@ -175,16 +176,20 @@ p_nino <- ggplot(aes(x, y, group = group, colour = group, linetype = group),
   scale_colour_manual("", values = plot.colors) + 
   scale_linetype_manual("", values = plot.lty) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
-  labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
-  guides(colour = guide_legend(override.aes = list(size = 1.5, 
-                                                   linetype = plot.lty))) + 
+  labs(x = "\nMonth", y = expression(atop(NDVI[EOT], "\n"))) + 
   theme_bw() + 
-  theme(panel.grid = element_blank(), legend.key.width = unit(2.25, "line"), 
-        legend.key = element_rect(colour = NA))
+  theme(panel.grid = element_blank(), legend.key.width = unit(1.9, "line"), 
+        legend.key = element_rect(colour = NA), 
+        legend.direction = "horizontal", legend.position = c(.5, 1.2)) 
 
-png("vis/cor_ndvi_oni/ts_nino_ndvi_split.png", width = 36, height = 15, 
-    units = "cm", pointsize = 18, res = 300)
-print(p_nino)
+png("vis/cor_ndvi_oni/fig08__ndvi_nino.png", width = 28.8, height = 12, 
+    units = "cm", pointsize = 15, res = 300)
+grid.newpage()
+vp_nino <- viewport(x = 0, y = 0, width = 1, height = .9, 
+                    just = c("left", "bottom"))
+pushViewport(vp_nino)
+print(p_nino, newpage = FALSE)
+
 dev.off()
 
 
@@ -300,14 +305,17 @@ p_nina <- ggplot(aes(x, y, group = group, colour = group, linetype = group),
   scale_colour_manual("", values = plot.colors) + 
   scale_linetype_manual("", values = plot.lty) + 
   scale_x_continuous("\nMonth", breaks = 1:(12+span), labels = lbl) + 
-  labs(x = "\nMonth", y = expression(atop(NDVI[median], "\n"))) + 
-  guides(colour = guide_legend(override.aes = list(size = 1.5, 
-                                                   linetype = plot.lty))) + 
+  labs(x = "\nMonth", y = expression(atop(NDVI[EOT], "\n"))) + 
   theme_bw() + 
-  theme(panel.grid = element_blank(), legend.key.width = unit(2.25, "line"), 
-        legend.key = element_rect(colour = NA))
+  theme(panel.grid = element_blank(), legend.key.width = unit(1.9, "line"), 
+        legend.key = element_rect(colour = NA), 
+        legend.direction = "horizontal", legend.position = c(.49, 1.2)) 
 
-png("vis/cor_ndvi_oni/ts_nina_ndvi_split.png", width = 36, height = 15, 
-    units = "cm", pointsize = 18, res = 300)
-print(p_nina)
+png("vis/cor_ndvi_oni/fig09__ndvi_nina.png", width = 28.8, height = 12, 
+    units = "cm", pointsize = 15, res = 300)
+grid.newpage()
+vp_nina <- viewport(x = 0, y = 0, width = 1, height = .9, 
+                    just = c("left", "bottom"))
+pushViewport(vp_nina)
+print(p_nina, newpage = FALSE)
 dev.off()
