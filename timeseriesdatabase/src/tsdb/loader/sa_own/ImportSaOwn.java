@@ -26,7 +26,7 @@ public class ImportSaOwn {
 
 	private final TsDB tsdb;
 
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		try(TsDB tsdb = TsDBFactory.createDefault()) {		
 			Path rootPath = Paths.get("C:/timeseriesdatabase_source/sa_own");			
 			ImportSaOwn importSaOwn = new ImportSaOwn(tsdb);			
@@ -34,7 +34,7 @@ public class ImportSaOwn {
 		} catch(Exception e) {
 			log.error(e);
 		}
-	}
+	}*/
 
 	public ImportSaOwn(TsDB tsdb) {
 		AssumptionCheck.throwNull(tsdb);
