@@ -141,7 +141,7 @@ rst_ndvi <- stack(fls_ndvi)
 # Temporal subsetting
 st_year <- 1982
 nd_year <- 2011
-n_years <- 10
+n_years <- 15
 n_months <- n_years * 12
 
 rst.st <- rst_ndvi[[1:n_months]]
@@ -152,7 +152,7 @@ rst.har <-  cellHarmonics(st = rst.st,
                           st.start = c(st_year, 1), st.end = c(st_year+n_years-1, 12), 
                           nd.start = c(nd_year-n_years+1, 1), nd.end = c(nd_year, 12), 
                           product = "GIMMS", 
-                          path.out = "data/rst/harmonic", n.cores = 3)
+                          path.out = "data/rst/harmonic_8296_9711", n.cores = 3)
 
 # Start variance (maximum - minimum)
 st_diff_max_min <- rst.har[[1]][[2]]-rst.har[[1]][[4]]
@@ -200,4 +200,28 @@ p_diff_min_x <-
   spplot(diff_min_x, col.regions = cols_div(100), scales = list(draw = TRUE), 
          xlab = "x", ylab = "y", at = seq(-2.5, 2.5, 1),
          sp.layout = list("sp.lines", rasterToContour(dem), col = "grey65"))
+
+
+foreach(i = list(diff_max_x, diff_min_x, diff_max_y, diff_min_y), 
+        j = list("diff_max_x", "diff_min_x", "diff_max_y", "diff_min_y")) %do% 
+  writeRaster(i, paste0("data/rst/harmonic_8296_9711/", j), format = "GTiff", overwrite = TRUE)
+
+### Visualization
+
+# hcl colorspace
+df_hcl <- data.frame(cell = 1:ncell(diff_max_x), 
+                     h = 90 + diff_max_x[] * 10, 
+                     c = 50, # increasing chroma with higher values
+                     l = 50 + diff_max_y[] * 100) # decreasing luminance with higher values
+
+for (i in c(3, 4)) {
+  if (any(df_hcl[, i] < 0))
+    df_hcl[which(df_hcl[, i] < 0), i] <- 0
+}
+
+df_hcl_cc <- df_hcl[complete.cases(df_hcl), ]
+
+template <- rasterToPolygons(diff_max_x)
+plot(template, col = hcl(h = df_hcl_cc[, 2], c = df_hcl_cc[, 3], l = df_hcl_cc[, 4]), 
+     border = "transparent")
 
