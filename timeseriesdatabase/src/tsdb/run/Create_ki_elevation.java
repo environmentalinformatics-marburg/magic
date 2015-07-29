@@ -74,6 +74,7 @@ public class Create_ki_elevation {
 		
 		//destination geo pos projection of geoTiff
 		dst.ImportFromWkt(dataset.GetProjection());
+		log.info(dataset.GetProjection());
 		CoordinateTransformation ct = CoordinateTransformation.CreateCoordinateTransformation(src, dst);		
 		
 		//create csv output file

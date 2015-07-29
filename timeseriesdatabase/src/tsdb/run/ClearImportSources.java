@@ -10,6 +10,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.TimeSeriesLoaderBE;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
+import tsdb.loader.mm.ImportMM;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.loader.sa_own.ImportSaOwn;
@@ -31,6 +32,7 @@ public class ClearImportSources {
 		boolean import_KI_tfi = true;
 		boolean import_SA = true;
 		boolean import_SA_OWN = true;
+		boolean import_MM = true;
 		if(TsDBFactory.JUST_ONE_REGION==null){
 			//all
 		} else {
@@ -39,6 +41,7 @@ public class ClearImportSources {
 			import_KI_tfi = false;
 			import_SA = false;
 			import_SA_OWN = false;
+			import_MM = false;
 			String oneRegion = TsDBFactory.JUST_ONE_REGION.toUpperCase();
 			switch(oneRegion) {
 			case "BE":
@@ -53,7 +56,10 @@ public class ClearImportSources {
 				break;
 			case "SA_OWN":
 				import_SA_OWN = true;
-				break;				
+				break;
+			case "MM":
+				import_MM = true;
+				break;					
 			default:
 				log.error("unknown region "+oneRegion);
 				return;
@@ -86,6 +92,8 @@ public class ClearImportSources {
 		long timeEndSA = 0;
 		long timeStartSA_OWN = 0;
 		long timeEndSA_OWN = 0;
+		long timeStartMM = 0;
+		long timeEndMM = 0;
 
 		System.gc();
 		if(import_BE) { //*** BE
@@ -126,7 +134,7 @@ public class ClearImportSources {
 		}
 		if(import_SA_OWN) { //*** SA_OWN
 			log.info("import SA_OWN");
-			log.info("from "+TsDBFactory.SOURCE_SA_DAT_PATH);
+			log.info("from "+TsDBFactory.SOURCE_SA_OWN_PATH);
 			timeStartSA_OWN = System.currentTimeMillis();
 			new ImportSaOwn(tsdb).load(TsDBFactory.SOURCE_SA_OWN_PATH);
 			try {
@@ -136,6 +144,14 @@ public class ClearImportSources {
 				log.error(e);
 			}
 			timeEndSA_OWN = System.currentTimeMillis();
+			System.gc();
+		}
+		if(import_MM) { //*** MM
+			log.info("import MM");
+			log.info("from "+TsDBFactory.SOURCE_MM_PATH);
+			timeStartMM = System.currentTimeMillis();
+			new ImportMM(tsdb).load(TsDBFactory.SOURCE_MM_PATH);
+			timeEndMM = System.currentTimeMillis();
 			System.gc();
 		}
 
@@ -164,6 +180,7 @@ public class ClearImportSources {
 		log.info(msToText(timeStartKItfi,timeEndKItfi)+" KI tfi import");
 		log.info(msToText(timeStartSA,timeEndSA)+" SA import");
 		log.info(msToText(timeStartSA_OWN,timeEndSA_OWN)+" SA_OWN import");
+		log.info(msToText(timeStartMM,timeEndMM)+" MM import");
 		log.info(msToText(timeStartClose,timeEndClose)+" Close");
 		log.info(msToText(timeStart,timeEnd)+" total import");
 		log.info("");

@@ -82,6 +82,8 @@ public class Main {
 	public static void run(RemoteTsDB tsdb) throws Exception {
 
 		final int secure_port = 443;
+		//final int secure_port = 8443; //?? alternative
+		
 		boolean use_https = TsDBFactory.WEB_SERVER_HTTPS;
 		
 

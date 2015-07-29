@@ -27,11 +27,15 @@ import tsdb.util.iterator.TimestampSeries;
 public class AscParser {
 
 	private static final Logger log = LogManager.getLogger();
-	
+
 	private static final DateTimeFormatter dateFormate = new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("dd.MM.yy")).toFormatter();
 	private static final DateTimeFormatter timeFormater = new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("HH:mm:00")).toFormatter();
 
 	public static TimestampSeries parse(Path filename) throws IOException {
+		return parse(filename,false);
+	}
+	
+	public static TimestampSeries parse(Path filename, boolean ignoreSeconds) throws IOException {
 		BufferedReader bufferedReader = Files.newBufferedReader(filename,Charset.forName("windows-1252"));
 		final String[] lines = bufferedReader.lines().toArray(String[]::new);
 		bufferedReader.close();
@@ -97,6 +101,7 @@ public class AscParser {
 		try {
 			ArrayList<TsEntry> resultList = new ArrayList<TsEntry>(lines.length-currentLineIndex);
 			long prevTimestamp = 0;
+			boolean entrySkipped = false;
 			rowLoop: while(currentLineIndex<lines.length) {
 				String currentLine = lines[currentLineIndex++];
 
@@ -142,7 +147,7 @@ public class AscParser {
 				}
 
 				String[] columns = currentLine.split("(\\s|;)+");
-				
+
 				if(columns.length==0) {
 					//log.info("empty line : "+currentLineIndex+" in "+filename);
 					continue;
@@ -155,7 +160,12 @@ public class AscParser {
 				}
 
 				LocalDate date = LocalDate.parse(columns[0], dateFormate);
-				LocalTime time = LocalTime.parse(columns[1], timeFormater);
+				String timeText = columns[1];
+				if(ignoreSeconds) {
+					timeText = timeText.substring(0, timeText.length()-2)+"00";
+				}				
+				LocalTime time = LocalTime.parse(timeText, timeFormater);
+
 				LocalDateTime datetime = LocalDateTime.of(date, time);
 
 				float[] data = new float[sensorNames.length];
@@ -169,11 +179,20 @@ public class AscParser {
 				}
 
 				long timestamp = TimeUtil.DateTimeToOleMinutes(datetime);
-				if(timestamp<=prevTimestamp) {
-					log.warn("skip row: timestamp<=prevTimestamp  "+filename+"  "+TimeUtil.oleMinutesToText(prevTimestamp, timestamp));
-				} else {
+				if(prevTimestamp<timestamp) {
 					resultList.add(new TsEntry(timestamp, data));
 					prevTimestamp = timestamp;
+				} else if(prevTimestamp==timestamp){
+					if(ignoreSeconds) {
+						if(!entrySkipped) {
+							entrySkipped = true;
+							log.warn("skip row: timestamp==prevTimestamp  "+filename+"  "+TimeUtil.oleMinutesToText(prevTimestamp, timestamp));
+						}
+					} else {
+						log.warn("skip row: timestamp==prevTimestamp  "+filename+"  "+TimeUtil.oleMinutesToText(prevTimestamp, timestamp));
+					}
+				} else {
+					log.warn("skip row: timestamp<prevTimestamp  "+filename+"  "+TimeUtil.oleMinutesToText(prevTimestamp, timestamp));
 				}
 			}
 			return new TimestampSeries(serial, sensorNames, resultList);

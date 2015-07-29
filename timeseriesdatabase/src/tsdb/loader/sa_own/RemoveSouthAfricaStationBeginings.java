@@ -24,6 +24,7 @@ Station 5: bis einschließlich 10.3. löschen
 Station 6: bis einschließlich 11.3. löschen
 Station 7: bis einschließlich 12.3. löschen
 Station 8: bis einschließlich 13.3. löschen
+Station 9: bis einschließlich 15.3. löschen
 Station 10: bis einschließlich 20.3. löschen
 Station 11: bis einschließlich 21.3. löschen
 Station 12: bis einschließlich 22.3. löschen
@@ -43,6 +44,7 @@ Station 15: bis einschließlich 26.3. löschen
 				{"SA06",11},
 				{"SA07",12},
 				{"SA08",13},
+				{"SA09",15},
 				{"SA10",20},
 				{"SA11",21},
 				{"SA12",22},
