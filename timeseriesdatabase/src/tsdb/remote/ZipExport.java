@@ -41,6 +41,11 @@ import tsdb.util.iterator.TimestampSeries;
 public class ZipExport {
 
 	private static final Logger log = LogManager.getLogger();
+	
+	/**
+	 * Platform neutral line separator (windows style)
+	 */
+	private static final String LINE_SEPARATOR = "\r\n";
 
 	private final RemoteTsDB tsdb;
 
@@ -232,31 +237,31 @@ public class ZipExport {
 	}	
 
 	private void write_settings(PrintStream printStream) {
-		printStream.println("Settings that were used to create this time series archive file:");
-		printStream.println();
-		printStream.println("creation date: "+LocalDateTime.now());
-		printStream.println();
-		printStream.println("sensor names ("+sensorNames.length+") : "+Util.arrayToString(sensorNames));
-		printStream.println();
-		printStream.println("plot names ("+plotIDs.length+") : "+Util.arrayToString(plotIDs));
-		printStream.println();
-		printStream.println("time steps : "+aggregationInterval.getText());
-		printStream.println();
-		printStream.println("quality checks : "+dataQuality.getText());
-		printStream.println();
+		printStream.print("Settings that were used to create this time series archive file:"+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
+		printStream.print("creation date: "+LocalDateTime.now()+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
+		printStream.print("sensor names ("+sensorNames.length+") : "+Util.arrayToString(sensorNames)+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
+		printStream.print("plot names ("+plotIDs.length+") : "+Util.arrayToString(plotIDs)+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
+		printStream.print("time steps : "+aggregationInterval.getText()+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
+		printStream.print("quality checks : "+dataQuality.getText()+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
 		if(interpolated) {
-			printStream.println("interpolate missing data");
-			printStream.println();
+			printStream.print("interpolate missing data"+LINE_SEPARATOR);
+			printStream.print(LINE_SEPARATOR);
 		} else {
-			printStream.println("no interpolation used");
-			printStream.println();
+			printStream.print("no interpolation used"+LINE_SEPARATOR);
+			printStream.print(LINE_SEPARATOR);
 		}
 		if(allInOne) {
-			printStream.println("write all plots into one CSV-File");
-			printStream.println();
+			printStream.print("write all plots into one CSV-File"+LINE_SEPARATOR);
+			printStream.print(LINE_SEPARATOR);
 		} else {
-			printStream.println("for each plot write into separate CSV-File");
-			printStream.println();			
+			printStream.print("for each plot write into separate CSV-File"+LINE_SEPARATOR);
+			printStream.print(LINE_SEPARATOR);			
 		}
 
 	}
@@ -308,31 +313,31 @@ public class ZipExport {
 			stringbuilder.append("qualitycounter");
 			isFirst = false;
 		}
-		csvOut.println(stringbuilder);
+		csvOut.print(stringbuilder+LINE_SEPARATOR);
 	}
 
 	private void write_sensor_description(PrintStream printStream) {
-		printStream.println("sensors:\t"+sensorNames.length);
-		printStream.println();
+		printStream.print("sensors:\t"+sensorNames.length+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
 		for(int i=0;i<sensorNames.length;i++) {
-			printStream.println((i+1)+". sensor:\t"+sensorNames[i]);
+			printStream.print((i+1)+". sensor:\t"+sensorNames[i]+LINE_SEPARATOR);
 			try {
 				Sensor sensor = tsdb.getSensor(sensorNames[i]);
 				if(sensor!=null) {
-					printStream.println("description:\t"+sensor.description);
-					printStream.println("unit:\t\t"+sensor.unitDescription);
+					printStream.print("description:\t"+sensor.description+LINE_SEPARATOR);
+					printStream.print("unit:\t\t"+sensor.unitDescription+LINE_SEPARATOR);
 				}
 			} catch (RemoteException e) {
 				log.error(e);
 			}
-			printStream.println();
+			printStream.print(LINE_SEPARATOR);
 		}		
 	}
 
 	private void write_plot_description(PrintStream printStream) {
-		printStream.println("plots:\t"+plotIDs.length);
-		printStream.println("in region:\t"+region.longName);
-		printStream.println();
+		printStream.print("plots:\t"+plotIDs.length+LINE_SEPARATOR);
+		printStream.print("in region:\t"+region.longName+LINE_SEPARATOR);
+		printStream.print(LINE_SEPARATOR);
 
 		try {
 			PlotInfo[] plotInfos = tsdb.getPlots();
@@ -342,24 +347,24 @@ public class ZipExport {
 			}
 
 			for(int i=0;i<plotIDs.length;i++) {
-				printStream.println((i+1)+". plot:\t"+plotIDs[i]);
+				printStream.print((i+1)+". plot:\t"+plotIDs[i]+LINE_SEPARATOR);
 
 				PlotInfo plotInfo = map.get(plotIDs[i]);
 				if(plotInfo!=null) {
-					printStream.println("category:\t"+plotInfo.generalStationInfo.longName);
-					//printStream.println("position:\t"+Util.arrayToString(plotInfo.geoPos));
+					printStream.print("category:\t"+plotInfo.generalStationInfo.longName+LINE_SEPARATOR);
+					//printStream.print("position:\t"+Util.arrayToString(plotInfo.geoPos)+LINE_SEPARATOR);
 					if(Double.isFinite(plotInfo.geoPosLatitude)) {
-						printStream.println("Latitude:\t"+plotInfo.geoPosLatitude);
+						printStream.print("Latitude:\t"+plotInfo.geoPosLatitude+LINE_SEPARATOR);
 					}
 					if(Double.isFinite(plotInfo.geoPosLongitude)) {
-						printStream.println("Longitude:\t"+plotInfo.geoPosLongitude);
+						printStream.print("Longitude:\t"+plotInfo.geoPosLongitude+LINE_SEPARATOR);
 					}
 					if(Float.isFinite(plotInfo.elevation)) {
-						printStream.println("Elevation:\t"+plotInfo.elevation);
+						printStream.print("Elevation:\t"+plotInfo.elevation+LINE_SEPARATOR);
 					}
 				}
 
-				printStream.println();
+				printStream.print(LINE_SEPARATOR);
 			}
 		} catch (RemoteException e) {
 			log.error(e);
@@ -418,95 +423,13 @@ public class ZipExport {
 				s.append(entry.qualityCountersToString());
 				isFirst = false;
 			}
-			csvOut.println(s);
+			s.append(LINE_SEPARATOR);
+			csvOut.print(s);
 			formater.close();			
 		}		
 	}
 
-	/*private void writeTimeseries(TimestampSeries timeseries, String plotID, PrintStream csvOut) {		
-		//printLine(timeseries.toString());
-
-		int[] pos = Util.stringArrayToPositionIndexArray(sensorNames, timeseries.sensorNames, false, false);
-		//printLine("sensorNames "+Arrays.asList(sensorNames));
-		//printLine("schema "+Arrays.asList(timeseries.sensorNames));							
-		//printLine(Util.arrayToString(pos));
-
-
-
-
-
-		for(TsEntry entry:timeseries.entryList) {
-			boolean isFirst = true;
-			StringBuilder s = new StringBuilder();
-			if(col_plotid) {
-				s.append(plotID);
-				isFirst = false;
-			}
-			if(col_timestamp) {
-				if(!isFirst) {
-					s.append(',');
-				}
-				s.append(entry.timestamp);
-				isFirst = false;
-			}
-			if(col_datetime) {
-				if(!isFirst) {
-					s.append(',');
-				}
-				s.append(TimeConverter.oleMinutesToText(entry.timestamp));
-				isFirst = false;
-			}
-
-			Formatter formater = new Formatter(s,Locale.ENGLISH);
-
-			float[] data = entry.data;
-			int[][] qc = entry.qualityCounter;
-			for(int targetIndex=0;targetIndex<sensorNames.length;targetIndex++) {
-				int sourceIndex = pos[targetIndex];
-				if(sourceIndex<0) {
-					if(isFirst) {
-						formater.format("NA");
-						isFirst = false;
-					} else {
-						formater.format(",NA");
-					}
-				} else {
-					float v = data[sourceIndex];
-					if(Float.isNaN(v)) {
-						if(isFirst) {
-							formater.format("NA");
-							isFirst = false;
-						} else {
-							formater.format(",NA");
-						}	
-					} else {
-						if(isFirst) {
-							//formater.format("%3.3f", v);
-							formater.format("%.2f", v);
-							isFirst = false;
-						} else {
-							//formater.format(",%3.3f", v);
-							formater.format(",%.2f", v);
-						}
-					}
-				}
-			}
-
-			if(col_qualitycounter) {
-				if(!isFirst) {
-					s.append(',');
-				}
-				s.append(entry.qualityCountersToString());
-				isFirst = false;
-			}
-
-			csvOut.println(s);
-			formater.close();															
-		}		
-	}*/
-
 	public int getProcessedPlots() {
 		return processedPlots;
 	}
-
 }
