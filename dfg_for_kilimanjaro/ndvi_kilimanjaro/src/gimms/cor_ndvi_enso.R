@@ -1,10 +1,11 @@
 # packages
 lib <- c("reshape2", "raster", "remote", "lubridate", "doParallel", 
-         "RColorBrewer", "Rsenal")
+         "RColorBrewer", "Rsenal", "ggplot2", "grid")
 jnk <- sapply(lib, function(i) library(i, character.only = TRUE))
 
 # functions
 source("importOni.R")
+source("importDmi.R")
 source("extentEnsoSeason.R")
 
 # parallelization
@@ -22,6 +23,12 @@ oni_mlt <- importOni()
 
 
 ## dmi
+
+dat_dmi <- importDmi()
+
+# merge oni, dmi
+dat_oni_dmi <- merge(oni_mlt, dat_dmi, all = TRUE, by = 1)
+
 
 dat_dmi <- read.table("data/dmi/dmi.dat")
 names(dat_dmi) <- c("Year", "Month", "DMI")
@@ -387,43 +394,56 @@ cols_div <- colorRampPalette(rev(brewer.pal(5, "PuOr")))
 
 # dem contours
 source("kiliContours.R")
-p_dem <- kiliContours()
+p_dem <- kiliContours(toLonLat = TRUE)
 
 # oni
-p_ndvi_oni_lag <- spplot(ls_ccf[[1]][[2]], col.regions = cols_div(100), at = -6.5:6.5, 
-                         main = list("Lag (months)", cex = 1.5), 
-                         sp.layout = list("sp.text", c(282500, 9682500), "a)", cex = 1.5, font = "bold"))
+p_ndvi_oni_lag <- spplot(trim(projectRaster(ls_ccf[[1]][[2]], crs = "+init=epsg:4326")), 
+                         col.regions = cols_div(100), at = -6.5:6.5, 
+                         scales = list(draw = TRUE), main = list("Lag (months)"), 
+                         sp.layout = list("sp.text", loc = c(37.025, -3.35), 
+                                          txt = "a)", font = 2, cex = 1.2))
 p_ndvi_oni_lag_dem <- p_ndvi_oni_lag + as.layer(p_dem)
-p_ndvi_oni_lag_dem_env <- envinmrRasterPlot(p_ndvi_oni_lag_dem)
-p_ndvi_oni_r <- spplot(ls_ccf[[1]][[1]], col.regions = reds(100), at = seq(.025, .525, .05), 
-                       sp.layout = list("sp.text", c(282500, 9682500), "b)", cex = 1.5, font = "bold"))
+p_ndvi_oni_lag_dem_env <- envinmrRasterPlot(p_ndvi_oni_lag_dem, rot = 0)
+p_ndvi_oni_r <- spplot(trim(projectRaster(ls_ccf[[1]][[1]], crs = "+init=epsg:4326")), 
+                       col.regions = reds(100), at = seq(.025, .525, .05), 
+                       scales = list(draw = TRUE), 
+                       sp.layout = list("sp.text", loc = c(37.025, -3.35), 
+                                        txt = "b)", font = 2, cex = 1.2))
 p_ndvi_oni_r_dem <- p_ndvi_oni_r + as.layer(p_dem)
-p_ndvi_oni_r_dem_env <- envinmrRasterPlot(p_ndvi_oni_r_dem)
+p_ndvi_oni_r_dem_env <- envinmrRasterPlot(p_ndvi_oni_r_dem, rot = 0)
 
 # dmi
-p_ndvi_dmi_lag <- spplot(ls_ccf[[2]][[2]], col.regions = cols_div(100), at = -6.5:6.5, 
-                         sp.layout = list("sp.text", c(282500, 9682500), "c)", cex = 1.5, font = "bold"))
+p_ndvi_dmi_lag <- spplot(trim(projectRaster(ls_ccf[[2]][[2]], crs = "+init=epsg:4326")), 
+                         col.regions = cols_div(100), at = -6.5:6.5, 
+                         scales = list(draw = TRUE), 
+                         sp.layout = list("sp.text", loc = c(37.025, -3.35), 
+                                          txt = "c)", font = 2, cex = 1.2))
 p_ndvi_dmi_lag_dem <- p_ndvi_dmi_lag + as.layer(p_dem)
-p_ndvi_dmi_lag_dem_env <- envinmrRasterPlot(p_ndvi_dmi_lag_dem)
-p_ndvi_dmi_r <- spplot(ls_ccf[[2]][[1]], col.regions = reds(100), at = seq(.025, .525, .05), 
-                       sp.layout = list("sp.text", c(282500, 9682500), "d)", cex = 1.5, font = "bold"))
+p_ndvi_dmi_lag_dem_env <- envinmrRasterPlot(p_ndvi_dmi_lag_dem, rot = 0)
+p_ndvi_dmi_r <- spplot(trim(projectRaster(ls_ccf[[2]][[1]], crs = "+init=epsg:4326")), 
+                       col.regions = reds(100), at = seq(.025, .525, .05), 
+                       scales = list(draw = TRUE), 
+                       sp.layout = list("sp.text", loc = c(37.025, -3.35), 
+                                        txt = "d)", font = 2, cex = 1.2))
 p_ndvi_dmi_r_dem <- p_ndvi_dmi_r + as.layer(p_dem)
-p_ndvi_dmi_r_dem_env <- envinmrRasterPlot(p_ndvi_dmi_r_dem)
+p_ndvi_dmi_r_dem_env <- envinmrRasterPlot(p_ndvi_dmi_r_dem, rot = 0)
 
 p_comb <- latticeCombineGrid(list(p_ndvi_oni_lag_dem_env, p_ndvi_dmi_lag_dem_env, 
                                   p_ndvi_oni_r_dem_env, p_ndvi_dmi_r_dem_env))
 
-library(grid)
-
-png("vis/cor_ndvi_oni/comb_ccf_lag.png", width = 30, height = 30, units = "cm", 
-    pointsize = 18, res = 600)
+png("vis/cor_ndvi_oni/fig06__ccf_oni_dmi.png", width = 26 * .75, 
+    height = 30 * .75, units = "cm", pointsize = 15, res = 300)
 plot.new()
-print(p_comb)
 
-downViewport(trellis.vpname(name = "figure"))
-vp1 <- viewport(x = 0.5, y = -.05,
-                height = 0.07, width = 1,
-                just = c("centre", "top"),
+vp0 <- viewport(x = 0, y = .05, width = 1, height = .95, 
+                just = c("left", "bottom"), name = "figure.vp")
+pushViewport(vp0)
+print(p_comb, newpage = FALSE)
+
+
+vp1 <- viewport(x = .5, y = .065,
+                height = 0.07, width = .8,
+                just = c("center", "bottom"),
                 name = "key.vp")
 pushViewport(vp1)
 draw.colorkey(key = list(col = reds(100), width = 1, height = .5,
@@ -431,6 +451,6 @@ draw.colorkey(key = list(col = reds(100), width = 1, height = .5,
                          at = seq(.025, .525, .05), 
                          space = "bottom"), draw = TRUE)
 grid.text("r", x = 0.5, y = -.05, just = c("centre", "top"), 
-          gp = gpar(font = "bold", cex = 1.5))
+          gp = gpar(font = 2, cex = 1))
 
 dev.off()
