@@ -178,7 +178,7 @@ public class AscParser {
 					}
 				}
 
-				long timestamp = TimeUtil.DateTimeToOleMinutes(datetime);
+				long timestamp = TimeUtil.dateTimeToOleMinutes(datetime);
 				if(prevTimestamp<timestamp) {
 					resultList.add(new TsEntry(timestamp, data));
 					prevTimestamp = timestamp;

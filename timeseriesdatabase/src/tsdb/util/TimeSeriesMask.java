@@ -16,9 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mapdb.Serializer;
 
-public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
-	//private static final long serialVersionUID = -5310913775843602700L;
-	@SuppressWarnings("unused")
+public class TimeSeriesMask implements Externalizable {
 	private static final Logger log = LogManager.getLogger();
 
 	private ArrayList<Interval> intervals;
@@ -37,6 +35,8 @@ public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
 	}
 
 	public void addInterval(Interval interval) {
+		log.info("add "+interval);
+		log.info("in "+intervals);
 		throwNull(interval);
 		ArrayList<Interval> result = new ArrayList<Interval>(intervals.size()+1);
 		Iterator<Interval> it = intervals.iterator();
@@ -85,7 +85,7 @@ public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
 			}
 		}		
 		intervals = result;
-		System.out.println("intervals "+intervals.size());
+		log.info("intervals "+intervals.size());
 	}
 
 	public Iterator<Interval> getIterator() {
@@ -95,14 +95,6 @@ public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
 	public boolean isEmpty() {
 		return intervals.isEmpty();
 	}
-
-	/*private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-		SERIALIZER.serialize(out, this);
-	}
-	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-		TimeSeriesMask tsm = SERIALIZER.deserialize(in, -1);
-		this.intervals = tsm.intervals;
-	}*/
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
@@ -145,5 +137,10 @@ public class TimeSeriesMask implements /*Serializable,*/ Externalizable {
 		}
 	};
 
-	public static final Serializer<TimeSeriesMask> SERIALIZER = new TimeSeriesMaskSerializer();	
+	public static final Serializer<TimeSeriesMask> SERIALIZER = new TimeSeriesMaskSerializer();
+	
+	@Override
+	public String toString() {
+		return "TimeSeriesMask [intervals=" + intervals + "]";
+	}
 }

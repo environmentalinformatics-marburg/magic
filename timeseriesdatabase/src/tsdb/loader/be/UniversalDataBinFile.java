@@ -94,12 +94,12 @@ public class UniversalDataBinFile {
 		byte isBigEndian = mappedByteBuffer.get();
 		//System.out.println(isBigEndian+"\tisBigEndian");
 		if(isBigEndian!=1) {
-			throw new RuntimeException("no valid Universal-Data-Bin-File header");
+			throw new RuntimeException("no readable Universal-Data-Bin-File header: not big endian: "+isBigEndian);
 		}		
 		short version = mappedByteBuffer.getShort();
 		//System.out.println(version+"\tversion");
 		if(version!=107) {
-			throw new RuntimeException("just Universal-Data-Bin-File version 1.07 implemented");
+			throw new RuntimeException("just Universal-Data-Bin-File version 1.07 implemented: "+version);
 		}
 		short typeVendorLen  = mappedByteBuffer.getShort();
 		//System.out.println(typeVendorLen+"\ttypeVendorLen");
@@ -112,7 +112,7 @@ public class UniversalDataBinFile {
 		short moduleAdditionalDataLen = mappedByteBuffer.getShort();
 		//System.out.println(moduleAdditionalDataLen+"\tmoduleAdditionalDataLen");
 		if(moduleAdditionalDataLen>0) {
-			throw new RuntimeException("reading of additional optional data in header not implemented");
+			throw new RuntimeException("reading of additional optional data in header not implemented: "+moduleAdditionalDataLen);
 		}
 		double startTimeToDayFactor = mappedByteBuffer.getDouble();
 		//System.out.println(startTimeToDayFactor+"\tstartTimeToDayFactor");

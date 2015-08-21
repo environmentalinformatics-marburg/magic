@@ -57,7 +57,7 @@ public class TimeScale {
 	}
 
 	public int calcTimeMark(int year,int month,int day,int hour, int minute) {
-		long timestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, minute));
+		long timestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, minute));
 		return calcDiagramX(timestamp);
 	}	
 
@@ -68,7 +68,7 @@ public class TimeScale {
 		this.lineY0 = lineY0;
 		this.lineY1 = lineY1;
 		this.posY = posY;
-		yearStep = calcDiagramX(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-calcDiagramX(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
+		yearStep = calcDiagramX(TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-calcDiagramX(TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
 		/*if(yearStep/2>=minGap) {
 			drawHalfYearScale(tsp);
 		}*/

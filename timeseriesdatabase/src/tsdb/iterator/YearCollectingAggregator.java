@@ -22,7 +22,7 @@ public class YearCollectingAggregator extends AbstractCollectingAggregator {
 		LocalDateTime datetime = TimeUtil.oleMinutesToLocalDateTime(timestamp);
 		int year = datetime.getYear();
 		LocalDateTime aggregationDatetime = LocalDateTime.of(year,Month.JANUARY,1,0,0);
-		return TimeUtil.DateTimeToOleMinutes(aggregationDatetime);		
+		return TimeUtil.dateTimeToOleMinutes(aggregationDatetime);		
 	}
 
 	@Override

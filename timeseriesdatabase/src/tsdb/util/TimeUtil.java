@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.Locale;
 
@@ -19,9 +20,9 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public final class TimeUtil implements Serializable {
-	
+
 	private TimeUtil(){}
-	
+
 	private static final long serialVersionUID = 4232805611076305334L;
 	private static final Logger log = LogManager.getLogger();	
 
@@ -40,7 +41,7 @@ public final class TimeUtil implements Serializable {
 		return Duration.ofMinutes(minutes);
 	}
 
-	public static long DateTimeToOleMinutes(LocalDateTime datetime) {
+	public static long dateTimeToOleMinutes(LocalDateTime datetime) {
 		return Duration.between(OLE_AUTOMATION_TIME_START, datetime).toMinutes();
 	}
 
@@ -110,7 +111,7 @@ public final class TimeUtil implements Serializable {
 	 */
 	public static long parseTimestampSlashFormat(String dateTimeText) {		
 		LocalDateTime dt = LocalDateTime.parse(dateTimeText, DATE_TIME_FORMATER_SLASH);
-		return TimeUtil.DateTimeToOleMinutes(dt);
+		return TimeUtil.dateTimeToOleMinutes(dt);
 	}
 
 	private static final DateTimeFormatter DATE_TIME_FORMATER_MONTH_NAME_ONE_HOUR_DIGIT =  DateTimeFormatter.ofPattern("dd-MMM-yyyy   H:mm").withLocale(Locale.ENGLISH);
@@ -129,7 +130,7 @@ public final class TimeUtil implements Serializable {
 			dtf = DATE_TIME_FORMATER_MONTH_NAME_ONE_HOUR_DIGIT;
 		}		
 		LocalDateTime dt = LocalDateTime.parse(dateTimeText, dtf);
-		return TimeUtil.DateTimeToOleMinutes(dt);
+		return TimeUtil.dateTimeToOleMinutes(dt);
 	}
 
 
@@ -143,7 +144,7 @@ public final class TimeUtil implements Serializable {
 	public static long parseTimestampDateFullHourFormat(String dateText, int fullHour) {
 		LocalDate date = LocalDate.parse(dateText, DateTimeFormatter.ISO_DATE);
 		LocalDateTime dt = LocalDateTime.of(date, LocalTime.of(fullHour-1, 0));
-		return TimeUtil.DateTimeToOleMinutes(dt);
+		return TimeUtil.dateTimeToOleMinutes(dt);
 	}
 
 	public static long parseTimestamp(String dateText, String timeText, boolean isISOdate) {		
@@ -181,42 +182,42 @@ public final class TimeUtil implements Serializable {
 		}
 
 		LocalDateTime datetime = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second);
-		return TimeUtil.DateTimeToOleMinutes(datetime);
+		return TimeUtil.dateTimeToOleMinutes(datetime);
 	}
 
 	public static int roundLowerYear(int timestamp) {
 		LocalDateTime datetime = oleMinutesToLocalDateTime(timestamp);
-		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear(),1,1,0,0));
+		return (int) dateTimeToOleMinutes(LocalDateTime.of(datetime.getYear(),1,1,0,0));
 	}
 
 	public static int roundNextYear(int timestamp) {
 		LocalDateTime datetime = oleMinutesToLocalDateTime(timestamp);
-		return (int) DateTimeToOleMinutes(LocalDateTime.of(datetime.getYear()+1,1,1,0,0));
+		return (int) dateTimeToOleMinutes(LocalDateTime.of(datetime.getYear()+1,1,1,0,0));
 	}
 
 	public static long ofDateStartHour(int year) { // at hour
-		return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+		return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
 	}
 
 	public static long ofDateEndHour(int year) { // at hour
-		return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+		return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 	}
 
 	public static long ofDateStartHour(int year,int month) { // at hour
-		return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 1, 0, 0));
+		return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 1, 0, 0));
 	}
 
 	public static long ofDateEndHour(int year,int month) { // at hour  TODO remove exceptions
 		try {
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 31, 23, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 31, 23, 0));
 		} catch (DateTimeException e31) {
 			try {
-				return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 30, 23, 0));
+				return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 30, 23, 0));
 			} catch (DateTimeException e30) {
 				try {
-					return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 29, 23, 0));
+					return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 29, 23, 0));
 				} catch (DateTimeException e29) {
-					return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 28, 23, 0));
+					return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 28, 23, 0));
 				}
 			}
 		}
@@ -245,7 +246,7 @@ public final class TimeUtil implements Serializable {
 			}
 		}
 	};
-	
+
 	public final static Comparator<Long> TIMESTAMP_END_ASC_COMPARATOR = (a,b) -> {
 		if(a==null) {
 			if(b==null) {
@@ -261,4 +262,78 @@ public final class TimeUtil implements Serializable {
 			}
 		}
 	};
+
+	public static int parseStartTimestamp(String text) {
+		String s = text.trim();
+
+		switch(text.length()) {
+		case 1: {
+			if(text.charAt(0)=='*') {
+				return Integer.MIN_VALUE;
+			} else {
+				throw new RuntimeException("unknown timestamp "+text);
+			}
+		}
+		case 4: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-01-01T00:00"));
+		}
+		case 7: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-01T00:00"));
+		}
+		case 10: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"T00:00"));
+		}
+		case 13: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+":00"));
+		}
+		case 16: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text));
+		}
+		default:
+			throw new RuntimeException("unknown timestamp "+text);
+		}
+	}
+
+	public static int parseEndTimestamp(String text) {
+		String s = text.trim();
+
+		switch(text.length()) {
+		case 1: {
+			if(text.charAt(0)=='*') {
+				return Integer.MAX_VALUE;
+			} else {
+				throw new RuntimeException("unknown timestamp "+text);
+			}
+		}
+		case 4: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-12-31T23:59"));
+		}
+		case 7: {
+			try {
+				return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-31T23:59"));
+			} catch (DateTimeParseException e) {
+				try {
+					return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-30T23:59"));
+				} catch (DateTimeParseException e1) {
+					try {
+						return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-29T23:59"));
+					} catch (DateTimeParseException e2) {
+						return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"-28T23:59"));
+					}
+				}
+			}
+		}
+		case 10: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+"T23:59"));
+		}
+		case 13: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text+":59"));
+		}
+		case 16: {
+			return (int) dateTimeToOleMinutes(LocalDateTime.parse(text));
+		}
+		default:
+			throw new RuntimeException("unknown timestamp "+text);
+		}
+	}
 }

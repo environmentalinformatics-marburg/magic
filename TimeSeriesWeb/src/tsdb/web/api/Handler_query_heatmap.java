@@ -90,8 +90,8 @@ public class Handler_query_heatmap extends MethodHandler {
 				}
 				String timeMonth = request.getParameter("month");
 				if(timeMonth==null) {
-					startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
-					endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+					startTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+					endTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 				} else {
 					try {
 						int month = Integer.parseInt(timeMonth);
@@ -101,8 +101,8 @@ public class Handler_query_heatmap extends MethodHandler {
 							return;
 						}
 						LocalDateTime dateMonth = LocalDateTime.of(year, month, 1, 0, 0);
-						startTime = TimeUtil.DateTimeToOleMinutes(dateMonth);
-						endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
+						startTime = TimeUtil.dateTimeToOleMinutes(dateMonth);
+						endTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
 					} catch (Exception e) {
 						log.error(e);
 						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -120,8 +120,8 @@ public class Handler_query_heatmap extends MethodHandler {
 				startTime = (long) region.viewTimeRange.start;
 				endTime = (long) region.viewTimeRange.end;
 			} else {			
-				startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
-				endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
+				startTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2008, 1, 1, 0, 0)); ////TODO !!!!!!!!!!!! fixed start and end time
+				endTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2015, 12, 31, 23, 0)); ///TODO !!!!!!!!!!!!!!!
 			}
 		}
 

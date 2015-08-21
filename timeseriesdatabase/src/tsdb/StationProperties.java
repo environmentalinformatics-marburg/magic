@@ -88,7 +88,7 @@ public class StationProperties implements Serializable{
 		}
 		LocalDate startDate = LocalDate.parse(startText,DateTimeFormatter.ISO_DATE);
 		LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(00, 00));
-		return TimeUtil.DateTimeToOleMinutes(startDateTime);
+		return TimeUtil.dateTimeToOleMinutes(startDateTime);
 	}
 
 	private static Long parseConfigDateEnd(String endText) {
@@ -97,7 +97,7 @@ public class StationProperties implements Serializable{
 		}
 		LocalDate endDate = LocalDate.parse(endText,DateTimeFormatter.ISO_DATE);
 		LocalDateTime endDateTime = LocalDateTime.of(endDate, LocalTime.of(23, 59));
-		return TimeUtil.DateTimeToOleMinutes(endDateTime);
+		return TimeUtil.dateTimeToOleMinutes(endDateTime);
 	}
 
 	public Long get_date_start() {

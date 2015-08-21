@@ -41,7 +41,7 @@ public class TimeScalePainter {
 	}
 
 	private void drawMark(GC gc,Color lineColor, Color textColor, String text,int year,int month,int day,int hour) {
-		long timestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
+		long timestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
 		int x = timestampToGraph(timestamp);
 		gc.setForeground(lineColor);
 		gc.drawLine(x , yStart, x, yEnd);
@@ -69,7 +69,7 @@ public class TimeScalePainter {
 		LocalDateTime maxDateTime = timestampToDataTime(maxTimestamp);
 
 
-		int yearStep = timestampToGraph(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-timestampToGraph(TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
+		int yearStep = timestampToGraph(TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2001, 1, 1, 0, 0)))-timestampToGraph(TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2000, 1, 1, 0, 0)));
 
 
 

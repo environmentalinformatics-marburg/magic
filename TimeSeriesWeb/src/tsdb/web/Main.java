@@ -320,7 +320,7 @@ public class Main {
 		ResourceHandler resource_handler = new ResourceHandler();
 		//resource_handler.setStopTimeout(FILE_DOWNLOAD_TIMEOUT_MILLISECONDS);
 		//resource_handler.setMinAsyncContentLength(-1); //no async
-		//resource_handler.setMinMemoryMappedContentLength(-1); // not memory mapped
+		resource_handler.setMinMemoryMappedContentLength(-1); // not memory mapped to prevent file locking
 		//resource_handler.setDirectoriesListed(true);
 		resource_handler.setDirectoriesListed(false); // don't show directory content
 		//resource_handler.setWelcomeFiles(new String[]{ "helllo.html" });

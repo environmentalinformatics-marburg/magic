@@ -666,7 +666,7 @@ public class TimeSeriesDiagram {
 					hasPrev = false;
 				} else {
 
-					long check = TimeUtil.DateTimeToOleMinutes(TimeUtil.oleMinutesToLocalDateTime(timestamp));
+					long check = TimeUtil.dateTimeToOleMinutes(TimeUtil.oleMinutesToLocalDateTime(timestamp));
 					if(check!=timestamp) {
 						throw new RuntimeException();
 					}

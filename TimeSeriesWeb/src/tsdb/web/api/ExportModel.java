@@ -114,12 +114,12 @@ public class ExportModel{
 		case ALL:
 			break;
 		case YEAR:
-			startTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(timespanYear, 1, 1, 0, 0));
-			endTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(timespanYear, 12, 31, 23, 0));
+			startTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(timespanYear, 1, 1, 0, 0));
+			endTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(timespanYear, 12, 31, 23, 0));
 			break;
 		case YEARS:
-			startTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(timespanYearsFrom, 1, 1, 0, 0));
-			endTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(timespanYearsTo, 12, 31, 23, 0));
+			startTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(timespanYearsFrom, 1, 1, 0, 0));
+			endTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(timespanYearsTo, 12, 31, 23, 0));
 			break;
 		case DATES:
 			startTimestamp = parseDateFrom(timespanDatesFrom);
@@ -139,14 +139,14 @@ public class ExportModel{
 			//0123456789012
 			//2014
 			int year = Integer.parseInt(text);
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
 		}
 		if(text.matches("\\d{4}-\\d{2}")) {
 			//0123456
 			//2014-01
 			int year = Integer.parseInt(text.substring(0, 4));
 			int month = Integer.parseInt(text.substring(5, 7));
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 1, 0, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 1, 0, 0));
 		}
 		if(text.matches("\\d{4}-\\d{2}-\\d{2}")) {
 			//0123456789
@@ -154,7 +154,7 @@ public class ExportModel{
 			int year = Integer.parseInt(text.substring(0, 4));
 			int month = Integer.parseInt(text.substring(5, 7));
 			int day = Integer.parseInt(text.substring(8, 10));
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, 0, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, 0, 0));
 		}
 		if(text.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}")) {
 			//0123456789012
@@ -163,7 +163,7 @@ public class ExportModel{
 			int month = Integer.parseInt(text.substring(5, 7));
 			int day = Integer.parseInt(text.substring(8, 10));
 			int hour = Integer.parseInt(text.substring(11, 13));
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
 		}
 		throw new RuntimeException("unknown from date");
 	}
@@ -176,7 +176,7 @@ public class ExportModel{
 			//0123456789012
 			//2014
 			int year = Integer.parseInt(text);
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 		}
 		if(text.matches("\\d{4}-\\d{2}")) {
 			//0123456
@@ -184,15 +184,15 @@ public class ExportModel{
 			int year = Integer.parseInt(text.substring(0, 4));
 			int month = Integer.parseInt(text.substring(5, 7));
 			try {
-				return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 31, 23, 0));
+				return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 31, 23, 0));
 			} catch(Exception e0) {
 				try {
-					return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 30, 23, 0));
+					return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 30, 23, 0));
 				} catch(Exception e1) {
 					try {
-						return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 29, 23, 0));
+						return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 29, 23, 0));
 					} catch(Exception e2) {
-						return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, 28, 23, 0));
+						return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, 28, 23, 0));
 					}
 				}
 			}
@@ -203,7 +203,7 @@ public class ExportModel{
 			int year = Integer.parseInt(text.substring(0, 4));
 			int month = Integer.parseInt(text.substring(5, 7));
 			int day = Integer.parseInt(text.substring(8, 10));
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, 23, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, 23, 0));
 		}
 		if(text.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}")) {
 			//0123456789012
@@ -212,7 +212,7 @@ public class ExportModel{
 			int month = Integer.parseInt(text.substring(5, 7));
 			int day = Integer.parseInt(text.substring(8, 10));
 			int hour = Integer.parseInt(text.substring(11, 13));
-			return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
+			return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, day, hour, 0));
 		}
 		throw new RuntimeException("unknown from date");
 	}	

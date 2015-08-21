@@ -16,6 +16,7 @@ import tsdb.graph.processing.Difference;
 import tsdb.graph.processing.EmpiricalFiltered_NEW;
 import tsdb.graph.processing.Interpolated;
 import tsdb.graph.processing.InterpolatedAverageLinear;
+import tsdb.graph.processing.Mask;
 import tsdb.graph.processing.PeakSmoothed;
 import tsdb.graph.processing.RangeStepFiltered;
 import tsdb.graph.processing.Sunshine;
@@ -156,6 +157,10 @@ public class QueryPlan {
 				}
 			}
 			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
+			log.info("get raw source");
+			if(DataQuality.Na!=dataQuality && DataQuality.NO!=dataQuality) {
+				rawSource = Mask.of(tsdb, rawSource);
+			}
 			if(virtual_P_RT_NRT) {
 				//log.info("add virtual_P_RT_NRT in "+stationID);
 				rawSource = Virtual_P_RT_NRT.of(tsdb, rawSource);

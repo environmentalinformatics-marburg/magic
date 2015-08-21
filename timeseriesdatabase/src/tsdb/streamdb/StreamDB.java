@@ -585,4 +585,14 @@ public class StreamDB {
 		}
 	}
 
+	public void clearMaskOfStation(String stationName) {
+		StationMeta stationMeta = getStationMeta(stationName, false);
+		if(stationMeta==null) {
+			//log.warn("station not found "+stationName);
+			return;
+		}
+		BTreeMap<String, TimeSeriesMask> maskMap = db.getTreeMap(stationMeta.db_name_sensor_time_series_mask_map);
+		maskMap.clear();		
+	}
+
 }

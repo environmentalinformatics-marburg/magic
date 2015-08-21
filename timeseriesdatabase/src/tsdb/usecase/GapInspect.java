@@ -143,7 +143,7 @@ public class GapInspect {
 		System.out.println();
 
 		LocalDateTime dt = TimeUtil.oleMinutesToLocalDateTime(min);
-		int minMonthTimestamp = (int) TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0));
+		int minMonthTimestamp = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(dt.getYear(), dt.getMonthValue(), 1, 0, 0));
 
 
 		for(int t=minMonthTimestamp;t<=max;t+=(24*60)) {

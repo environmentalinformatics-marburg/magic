@@ -104,8 +104,8 @@ public class Handler_query_csv extends MethodHandler {
 				}
 				String timeMonth = request.getParameter("month");
 				if(timeMonth==null) {
-					startTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
-					endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
+					startTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 1, 1, 0, 0));
+					endTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, 12, 31, 23, 0));
 				} else {
 					try {
 						int month = Integer.parseInt(timeMonth);
@@ -115,8 +115,8 @@ public class Handler_query_csv extends MethodHandler {
 							return;
 						}
 						LocalDateTime dateMonth = LocalDateTime.of(year, month, 1, 0, 0);
-						startTime = TimeUtil.DateTimeToOleMinutes(dateMonth);
-						endTime = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
+						startTime = TimeUtil.dateTimeToOleMinutes(dateMonth);
+						endTime = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(year, month, dateMonth.toLocalDate().lengthOfMonth(), 23, 0));
 					} catch (Exception e) {
 						log.error(e);
 						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -29,10 +29,10 @@ public class UseCaseGapFiller {
 		final int TARGET_VALUE_COUNT = 24*7*20;
 		
 		
-		long sourceStartTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2013,01,01,0,0));
+		long sourceStartTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2013,01,01,0,0));
 		
 		float[][] source = new float[INTERPOLATION_STATION_COUNT][SOURCE_VALUE_COUNT];
-		long targetStartTimestamp = TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(2013,03,01,0,0));
+		long targetStartTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2013,03,01,0,0));
 		float[] target = new float[TARGET_VALUE_COUNT];
 		final int TIMEINTERVAL = 60;
 		

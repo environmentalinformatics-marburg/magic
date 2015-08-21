@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVReader;
+import tsdb.util.Table.ColumnReaderIntFunc.IntegerParser;
 
 /**
  * Helper class to read csv files and get data as a table
@@ -94,20 +96,20 @@ public class Table {
 		}
 		public int get(String[] row) {
 			return Integer.parseInt(row[rowIndex]);
-			/*try {
-				String textValue = row[rowIndex];
-				if(!warnIfEmpty&&textValue.isEmpty()) {
-					return Float.NaN;
-				}
-				return Float.parseFloat(row[rowIndex]);
-			} catch(NumberFormatException e) {
-				if(row[rowIndex].toLowerCase().equals("na")) {
-					return Float.NaN;
-				} else {
-					log.warn(row[rowIndex]+" not parsed");
-					return Float.NaN;
-				}
-			}*/
+		}
+	}
+	
+	public static class ColumnReaderIntFunc extends ColumnReader {
+		private final IntegerParser parser;
+		public ColumnReaderIntFunc(int rowIndex, IntegerParser parser) {
+			super(rowIndex);
+			this.parser = parser;
+		}
+		public int get(String[] row) {
+			return parser.parse(row[rowIndex]);
+		}
+		public interface IntegerParser {
+			int parse(String text);
 		}
 	}
 	
@@ -212,7 +214,7 @@ public class Table {
 					date = date.plusDays(1);
 				}
 				LocalTime time = LocalTime.of(hour,Integer.parseInt(row[columnIndexMinute]));
-				return TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(date,time));		
+				return TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(date,time));		
 			} catch(NumberFormatException e) {
 				log.warn(row[columnIndexDate]+"  not parsed");
 				return -1;
@@ -356,6 +358,14 @@ public class Table {
 		}
 		return new ColumnReaderInt(columnIndex);
 	}
+	
+	public ColumnReaderIntFunc createColumnReaderInt(String name, IntegerParser parser) {
+		int columnIndex = getColumnIndex(name);
+		if(columnIndex<0) {
+			return null;
+		}
+		return new ColumnReaderIntFunc(columnIndex, parser);
+	}
 
 	public ColumnReaderTimestampTwoCols createColumnReaderTimestamp(String colDate, String colTime) {
 		int columnIndexDate = getColumnIndex(colDate);
@@ -414,6 +424,22 @@ public class Table {
 		}
 		return new ColumnReaderDateHourWrapMinuteTimestamp(columnIndexDate,columnIndexHourWrap,columnIndexMinute);
 	}
-
-
+	
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		for(String name:names) {
+			s.append(name);
+			s.append(' ');
+		}
+		s.append('\n');
+		for(String[] row:rows) {
+			for(String cell:row) {
+				s.append(cell);
+				s.append(' ');
+			}
+			s.append('\n');
+		}
+		return s.toString();
+	}
 }

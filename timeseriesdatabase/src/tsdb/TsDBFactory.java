@@ -19,7 +19,7 @@ import tsdb.util.Util;
  * @author woellauer
  *
  */
-public class TsDBFactory {
+public final class TsDBFactory {
 	private static final Logger log = LogManager.getLogger();
 
 	private static final String PATH_CONFIG_FILENAME = "tsdb_paths.ini";
@@ -55,6 +55,8 @@ public class TsDBFactory {
 	//public static String JUST_ONE_REGION = "SA";
 
 	public static boolean HIDE_INTENAL_SENSORS = true;
+	
+	private TsDBFactory(){}
 
 	static {
 		initPaths();

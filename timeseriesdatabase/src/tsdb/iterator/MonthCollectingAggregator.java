@@ -23,7 +23,7 @@ public class MonthCollectingAggregator extends AbstractCollectingAggregator {
 		int year = datetime.getYear();
 		Month month = datetime.getMonth();
 		LocalDateTime aggregationDatetime = LocalDateTime.of(year,month,1,0,0);
-		return TimeUtil.DateTimeToOleMinutes(aggregationDatetime);
+		return TimeUtil.dateTimeToOleMinutes(aggregationDatetime);
 	}
 	
 	@Override

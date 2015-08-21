@@ -180,4 +180,8 @@ public class StreamStorageStreamDB implements StreamStorage {
 		return streamdb.getStationNames();		
 	}
 
+	public void clearMaskOfStation(String stationName) {
+		streamdb.clearMaskOfStation(stationName);		
+	}
+
 }

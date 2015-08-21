@@ -962,8 +962,8 @@ public class ConfigLoader {
 					Interval interval = Interval.parse(range);
 					if(interval!=null) {
 						if(interval.start>=1900&&interval.start<=2100&&interval.end>=1900&&interval.end<=2100) {
-							int startTime = (int) TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(interval.start, 1, 1, 0, 0));
-							int endTime = (int) TimeUtil.DateTimeToOleMinutes(LocalDateTime.of(interval.end, 12, 31, 23, 0));
+							int startTime = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(interval.start, 1, 1, 0, 0));
+							int endTime = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(interval.end, 12, 31, 23, 0));
 							Region region = tsdb.getRegion(regionName);
 							if(region!=null) {
 								region.viewTimeRange = Interval.of(startTime,endTime);
@@ -1249,5 +1249,5 @@ public class ConfigLoader {
 			tsdb.insertStation(station);
 			virtualPlot.addStationEntry(station, stationProperties);
 		}
-	}
+	}	
 }
