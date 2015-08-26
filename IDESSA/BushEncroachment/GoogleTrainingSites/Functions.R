@@ -111,12 +111,14 @@ VarFromRGB <- function (rgb){
   
   # Enviromental Variables (Mean, SD)
   rgb_fcmu3<-Mean3(rgb)
-  rgb_fcmu5<-Mean5(rgb)
+  #rgb_fcmu5<-Mean5(rgb)
   rgb_fcsd3<-SD3(rgb)
-  rgb_fcsd5<-SD5(rgb)
+  #rgb_fcsd5<-SD5(rgb)
   
+
   ## assemble relevant raster data
-  google_all <- stack(rgb, rgb_fcmu3, rgb_fcmu5, 
-                      rgb_fcsd3, rgb_fcsd5)
+  google_all <- stack(rgb,rgb_fcmu3, rgb_fcsd3)
+ 
   return (google_all)
 }
+

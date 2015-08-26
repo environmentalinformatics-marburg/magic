@@ -7,9 +7,6 @@ set.seed(3456)
 trainIndex <- createDataPartition(valuetable.df$class, p = .25,
                                   list = FALSE, times = 1)
 
-#trainIndex <- createDataPartition(valuetable.df$class, p = .05,
-#                                  list = FALSE, times = 1)
-
 train <- valuetable.df[ trainIndex,]
 test <- valuetable.df[-trainIndex,]
 
@@ -41,4 +38,5 @@ results<-train(class ~ .,
                trControl=trControl, 
                metric="ROC", 
                tuneLength=10)
+
 save(results,file="results.RData")

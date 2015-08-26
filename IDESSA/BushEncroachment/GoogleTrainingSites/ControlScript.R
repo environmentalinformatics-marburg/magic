@@ -9,16 +9,19 @@
 #Scripts
 rm(list=ls())
 ################### USER SETTINGS ##############################################
-#working_directory <- "G:/FinaleDaten_Suedafrika/"
-working_directory <- "/home/hanna/Documents/Presentations/Google Images/FinaleDaten_Suedafrika/final"
+working_directory <- "/home/hanna/Documents/Presentations/LudwigEtAl2015_GoogleImages/final/"
+#working_directory <- "/home/dogbert/Documents/final/"
 allowParallel=FALSE
 ################################################################################
 
-lib <- c("caret", "randomForest", "rgdal","Rsenal","raster", "cluster", 
-         "satellite","RColorBrewer", "sp","maptools",
-         "plotKML","rgeos","dismo","maps",
+lib <- c("caret", "randomForest", "rgdal","Rsenal","raster", 
+         #"cluster", 
+         #"satellite","RColorBrewer", 
+         "sp","maptools",
+         #"plotKML",
+         "rgeos","dismo","maps",
          #"MODIS",
-         "gdistance", "RCurl","rgeos","gdalUtils","plyr")
+         "gdistance", "RCurl","gdalUtils","plyr", "pROC")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 
