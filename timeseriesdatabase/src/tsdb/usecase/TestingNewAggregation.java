@@ -3,6 +3,7 @@ package tsdb.usecase;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.iterator.DayAggregationIterator;
 import tsdb.iterator.MonthAggregationIterator;
 import tsdb.iterator.YearAggregationIterator;
@@ -16,7 +17,7 @@ public class TestingNewAggregation {
 		
 		TsDB tsdb = TsDBFactory.createDefault();
 		
-		TsIterator it = QueryPlan.getContinuousGen(tsdb, DataQuality.NO).get("HEG01", new String[]{"Ta_200"}).get(null, null);
+		TsIterator it = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.NO).get("HEG01", new String[]{"Ta_200"}).get(null, null);
 		it = new DayAggregationIterator(tsdb, it);
 		//it = new WeekAggregationIterator(tsdb, it);
 		it = new MonthAggregationIterator(tsdb, it);

@@ -13,6 +13,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.graph.processing.Difference;
@@ -33,7 +34,7 @@ public class AverageDiff {
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
+		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.STEP);
 
 		//String sensorName="Ta_200"; {
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {

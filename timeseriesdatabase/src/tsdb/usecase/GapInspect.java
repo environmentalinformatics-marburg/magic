@@ -19,6 +19,7 @@ import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.util.DataQuality;
 import tsdb.util.Interval;
 import tsdb.util.TimeUtil;
@@ -75,7 +76,7 @@ public class GapInspect {
 				if(sensorNames!=null&&sensorNames.length>0) {
 					//StreamIterator it = tsdb.streamStorage.getRawSensorIterator(station.stationID, "Ta_200", null, null);
 					//TsIterator it = tsdb.streamStorage.getRawIterator(station.stationID, sensorNames, null, null, null);
-					TsIterator it = QueryPlan.getStationGen(tsdb, DataQuality.Na).get(station.stationID, sensorNames).get(null, null);
+					TsIterator it = QueryPlanGenerators.getStationGen(tsdb, DataQuality.Na).get(station.stationID, sensorNames).get(null, null);
 					StationGapInfo stationGapInfo = new StationGapInfo(station.stationID);
 					if(it==null||!it.hasNext()) {
 

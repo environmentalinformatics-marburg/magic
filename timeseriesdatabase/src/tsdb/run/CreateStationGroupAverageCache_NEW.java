@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.graph.processing.Addition;
@@ -61,7 +62,7 @@ public class CreateStationGroupAverageCache_NEW {
 
 		long startRunTime = System.currentTimeMillis();
 
-		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
+		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.STEP);
 
 		for(String group:tsdb.getGeneralStationGroups()) {
 			List<String> list = tsdb.getStationAndVirtualPlotNames(group).collect(Collectors.toList());

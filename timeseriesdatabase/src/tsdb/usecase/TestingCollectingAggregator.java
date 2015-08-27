@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Node;
 import tsdb.iterator.DayCollectingAggregator;
 import tsdb.iterator.EvaluatingAggregationIterator;
@@ -20,7 +21,7 @@ public class TestingCollectingAggregator {
 	public static void main(String[] args) {
 		TsDB tsdb = TsDBFactory.createDefault();
 
-		Node node = QueryPlan.getStationGen(tsdb, DataQuality.STEP).get("HEG01", new String[]{"Ta_200"});
+		Node node = QueryPlanGenerators.getStationGen(tsdb, DataQuality.STEP).get("HEG01", new String[]{"Ta_200"});
 		//node.writeConsole(null, null);
 
 		TsIterator it = node.get(null, null);

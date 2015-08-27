@@ -98,4 +98,8 @@ public enum AggregationInterval {
 			return null;
 		}		
 	}
+	
+	public boolean isDay() {
+		return this==AggregationInterval.DAY;
+	}
 }

@@ -7,6 +7,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.graph.processing.Interpolated;
@@ -25,7 +26,7 @@ public class InterpolationAnalysis {
 		
 		TsDB tsdb = TsDBFactory.createDefault();
 
-		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.STEP);
+		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.STEP);
 
 		String[] schema = new String[]{"Ta_200"};
 		String targetPlot = "SEG29";

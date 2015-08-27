@@ -12,6 +12,7 @@ import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.iterator.InterpolationAverageLinearIterator;
+import tsdb.util.AggregationInterval;
 import tsdb.util.Pair;
 import tsdb.util.TimeUtil;
 import tsdb.util.Util;
@@ -21,23 +22,36 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 	private static final Logger log = LogManager.getLogger();
 
 	private static final int MAX_TRAINING_PLOT_COUNT = 15;
-	private static final int MIN_TRAINING_VALUE_COUNT = 4*7*24; // four weeks with one hour time interval
+	private static final int MIN_TRAINING_VALUE_COUNT_HOUR = 4*7*24; // four weeks with one hour time interval
+	private static final int MIN_TRAINING_VALUE_COUNT_DAY = 4*7;
 	private static final double MAX_MSE = 7d;
 
 	private final Continuous source;
 	private final Continuous trainingTarget;
 	private Continuous[] trainingSources;
 	private final String[] interpolationSchema;
+	private final int MIN_TRAINING_VALUE_COUNT;
 
-	protected InterpolatedAverageLinear(TsDB tsdb, Continuous source, Continuous trainingTarget, Continuous[] trainingSources, String[] interpolationSchema) {
+	protected InterpolatedAverageLinear(TsDB tsdb, Continuous source, Continuous trainingTarget, Continuous[] trainingSources, String[] interpolationSchema, AggregationInterval sourceAgg) {
 		super(tsdb);
 		this.source = source;
 		this.trainingTarget = trainingTarget;
 		this.trainingSources = trainingSources;
 		this.interpolationSchema = interpolationSchema;
+		
+		switch(sourceAgg) {
+		case HOUR:
+			MIN_TRAINING_VALUE_COUNT = MIN_TRAINING_VALUE_COUNT_HOUR;
+			break;
+		case DAY:
+			MIN_TRAINING_VALUE_COUNT = MIN_TRAINING_VALUE_COUNT_DAY;
+			break;
+		default:
+			throw new RuntimeException("unknown aggregation for interpolation "+sourceAgg);
+		}
 	}
 
-	public static Continuous of(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen continuousGen) {
+	public static Continuous of(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen continuousGen, AggregationInterval sourceAgg) {
 		Continuous source = continuousGen.get(plotID, querySchema);
 
 		String[] iSchema = Arrays.stream(querySchema)
@@ -73,7 +87,7 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 			return source;
 		}		
 
-		return new InterpolatedAverageLinear(tsdb, source, trainingTarget, trainingSources, interpolationSchema);
+		return new InterpolatedAverageLinear(tsdb, source, trainingTarget, trainingSources, interpolationSchema, sourceAgg);
 	}
 
 	@Override

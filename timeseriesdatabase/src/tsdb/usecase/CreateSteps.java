@@ -13,6 +13,7 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
 import tsdb.graph.QueryPlan;
+import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.graph.processing.Differential;
@@ -28,7 +29,7 @@ public class CreateSteps {
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		ContinuousGen continuousGen = QueryPlan.getContinuousGen(tsdb, DataQuality.PHYSICAL);
+		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.PHYSICAL);
 
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {
 			System.out.println("process: "+sensorName);
