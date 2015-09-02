@@ -7,27 +7,32 @@ library(Rainfall)
 library(Rsenal)
 datasetTime<-"day"
 responseName<-"Rain"
-pc="hanna"
+pc="183"
 
-if (pc=="hanna"){
-  resultpath<-"/media/hanna/ubt_kdata_0005/improve_DE_retrieval/"
-  radarpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
-  msgpath <- "/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
-  rasterpathout <- "/media/hanna/ubt_kdata_0005/improve_DE_retrieval/predictions/Rain"
+#if (pc=="hanna"){
+#  resultpath<-"/media/hanna/ubt_kdata_0005/improve_DE_retrieval/"
+#  radarpath<-"/media/hanna/ubt_kdata_0005/pub_rapidminer/radar/radolan_rst_SGrid/2010/"
+#  msgpath <- "/media/hanna/ubt_kdata_0005/pub_rapidminer/mt09s_agg1h/2010/"
+#  rasterpathout <- paste0("/media/hanna/ubt_kdata_0005/improve_DE_retrieval/predictions/Rain",
+#                          datasetTime,"_",responseName)
+#}
+if (pc=="183"){
+  resultpath<-  "/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/results/"
+  radarpath<-  "/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/RadarProj/2010/"
+  msgpath<-  "/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/MSGProj/2010/"
+  rasterpathout <- paste0("/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/results/predictions/",
+                          datasetTime,"_",responseName)
 }
-if (pc=="ui183"){
-  resultpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/"
-  radarpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/Radar/2010/"
-  msgpath<-  "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/MSG/2010/"
-  rasterpathout <- "/media/memory18201/casestudies/hmeyer/Improve_DE_retrieval/results/predictions/Rain"
-}
 
-
+dir.create(rasterpathout)
 ################################################################################
-load(paste0(resultpath,"/trainedModel_",datasetTime,"_",responseName,".Rdata"))
-load(paste0(resultpath,"/rainevents.RData"))
+load(paste0(resultpath,"/trainedModels/trainedModel_",datasetTime,"_",responseName,".Rdata"))
+load(paste0(resultpath,"/datatables/rainevents.RData"))
 rainevents <- rainevents[rainevents$daytime==datasetTime,]
-load(paste0(resultpath,"trainingscenes.RData"))
+load(paste0(resultpath,"datatables/trainingscenes.RData"))
+
+trID<-1
+if (datasetTime!="day"){trID<-2}
 
 ### set global min/max values for each channel
 min_x <- c(0.08455839,0.05533640,0.02237568,156.625000,210.00000000,208.75000000,
@@ -59,8 +64,8 @@ for (i in 1:nrow(rainevents)){
   time=rainevents[i,3]
   exacttime=paste0(time,"50")
   
-  reference=raster(paste0(radarpath,"/",month,"/",day,"/2010",
-                          month,day,exacttime,"_radolan_SGrid.rst"))
+  reference=raster(paste0(radarpath,"/",month,"/",day,"/",time,"/2010",
+                          month,day,exacttime,"_raa01_rw.tif"))
   values(reference)[values(reference<0.06)]=NA
   
   #plot(reference)
@@ -68,33 +73,26 @@ for (i in 1:nrow(rainevents)){
                                                     day,"/",time,"/"),
                         rainmask=reference,min_x=min_x,max_x=max_x)
   
-  ###test:only mean:
-#  pred<-reference
-#  values(pred)<-1.633273
-#  pred<-mask(pred,reference)
-  ###
   
-  reference[reference<0.06]<-NA
+#  reference[reference<0.06]<-NA
   pred[reference<0.06]<-NA
   reference=mask(reference,pred)
   
-  #  writeRaster(pred, filename=paste0(rasterpathout,"/prediction_",
-  #                                          responseName,"2010",month,
-  #                                          day,time,".tif"), 
-  #                    datatype='GTiff', overwrite=TRUE)
-  
-  
-  
+    writeRaster(pred, filename=paste0(rasterpathout,"/prediction_",
+                                            responseName,"2010",month,
+                                            day,time,".tif"), 
+                      datatype='GTiff', overwrite=TRUE)
+
   
   
   #for training scenes:
-  if (paste0("2010",month,day,time)%in%trainingsc[[1]]) {
+  if (paste0("2010",month,day,time)%in%trainingsc[[trID]]) {
     evaluation_training=rbind(evaluation_training,cbind("scene"=paste0("2010",month,day,time),validate(obs=reference,pred=pred)))
     comp_training<-rbind(comp_training,data.frame("pred"=values(pred)[
       !is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
   }
   #and non training scenes:
-  if (!paste0("2010",month,day,time)%in%trainingsc[[1]]) {
+  if (!paste0("2010",month,day,time)%in%trainingsc[[trID]]) {
     evaluation_validation=rbind(evaluation_validation,cbind("scene"=paste0("2010",month,day,time),validate(obs=reference,pred=pred)))
     comp_validation<-rbind(comp_validation,data.frame("pred"=values(pred)[
       !is.na(values(pred))],"obs"=values(reference)[!is.na(values(reference))]))
@@ -108,11 +106,11 @@ comp_training<-comp_training[-1,]
 comp_validation<-comp_validation[-1,]
 
 ### save evaluation
-save(evaluation_validation,file=paste0(resultpath,"/evaluation_validation_20_",datasetTime,
+save(evaluation_validation,file=paste0(resultpath,"validation/evaluation_validation_",datasetTime,
                                        "_",responseName,".Rdata"))
-save(evaluation_training,file=paste0(resultpath,"/evaluation_training_20_",datasetTime,
+save(evaluation_training,file=paste0(resultpath,"/validation/evaluation_training_",datasetTime,
                                      "_",responseName,".Rdata"))
 
-save(comp_training,file=paste0(resultpath,"/globalComp_training20.RData"))
-save(comp_validation,file=paste0(resultpath,"globalComp_validation20.RData"))
+save(comp_training,file=paste0(resultpath,"/validation/globalComp_training.RData"))
+save(comp_validation,file=paste0(resultpath,"validation/globalComp_validation.RData"))
 

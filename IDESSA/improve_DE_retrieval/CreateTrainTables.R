@@ -2,14 +2,18 @@ rm(list=ls())
 msgpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/MSGProj/2010/"
 radarpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/RadarProj/2010/"
 resultpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/results/datatables/"
-samplesize=0.10 # number of scenes for training
+#samplesize=0.1 # number of scenes for training
+samplesize=100 # number of scenes for training
 y<-2010 # year
-daytime <- c("day","twilight","night")
-
+#daytime <- c("day","twilight","night")
+daytime <- c("day","night")
 library(Rainfall)
+library(raster)
+library(rgdal)
 
 
 load(paste0(resultpath,"/rainevents.RData"))
+rainevents$daytime[rainevents$daytime=="twilight"]="night"
 trsc=1
 trainingsc<-list()
 for (dayt in daytime) {
@@ -20,8 +24,10 @@ for (dayt in daytime) {
   
   ###neu:
   ts <- rainevents[rainevents$daytime==dayt,]
+  
   set.seed(20)
-  ts <- ts[sample(nrow(ts),samplesize*nrow(ts)),]
+  ts <- ts[sample(nrow(ts),samplesize),]
+  #ts <- ts[sample(nrow(ts),samplesize*nrow(ts)),]
   trainingscenes <- as.vector(paste0(y,ts[,1],ts[,2],ts[,3]))
   print (paste0("trainingscenes for ", dayt,": "))
   print (trainingscenes)
@@ -70,7 +76,10 @@ for (dayt in daytime) {
   }
   
   
-  texture<- expand.grid(spectral,c("mean", "variance", "homogeneity", 
+#  texture<- expand.grid(spectral,c("mean", "variance", "homogeneity", 
+#                                   "contrast", "dissimilarity", 
+#                                   "entropy","second_moment"),c(3,5))
+  texture<- expand.grid(spectral,c("homogeneity", 
                                    "contrast", "dissimilarity", 
                                    "entropy","second_moment"),c(3,5))
   filterstat<-expand.grid(spectral,c("mean", "sd", "min", "max"),c(3,5))
@@ -94,12 +103,12 @@ for (dayt in daytime) {
         if(!paste0(y,i,k,l)%in%trainingscenes) next #use only trainingscenes
         print (paste0("month: ", i, " day:", k, " hour: ", l, " in progress.."))
         setwd(paste0(msgpath,i,"/",k,"/",l))
-        date=getDate(getwd(),type=".tif")
+        date=getDate(getwd(),type="tif")
         ### get sunzenith  #####################################################
-        sunzenith<-tryCatch(getSunzenith(getwd(),type=".tif"),error = function(e)e)
+        sunzenith<-tryCatch(getSunzenith(getwd(),type="tif"),error = function(e)e)
         if(inherits(sunzenith, "error")) {
           print (paste0("month ", i, " day ", k, " scene ", l, 
-                        " could not be processed"))
+                        " could not be processed. error in sunzenith"))
           next
         }
 #        if(getDaytime(sunzenith)!=dayt) next
@@ -113,16 +122,16 @@ for (dayt in daytime) {
         
         if(inherits(radardata, "error")) {
           print (paste0("month ", i, " day ", k, " scene ", l, 
-                        " could not be processed"))
+                        " could not be processed. error in radar data"))
           next
         }
         
-        radardata[values(radardata)==-99]=NA
+        radardata[values(radardata)<0]=NA
         ### get MSG ###########################################################
-        scenerasters <- tryCatch(getChannels(getwd(),type=".tif"),error = function(e)e)
+        scenerasters <- tryCatch(getChannels(getwd(),type="tif"),error = function(e)e)
         if(inherits(scenerasters, "error")) {
           print (paste0("month ", i, " day ", k, " scene ", l, 
-                        " could not be processed"))
+                        " could not be processed. error in msg data"))
           next
         }
         

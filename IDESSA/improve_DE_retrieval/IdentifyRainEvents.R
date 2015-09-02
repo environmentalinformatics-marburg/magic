@@ -50,7 +50,7 @@ for (i in months){
       }
       radardata[values(radardata)==-99]=NA
       rainpixels <- sum(values(radardata)>0.06,na.rm=T)
-      if (rainpixels > 2500){
+      if (rainpixels > 3000){
         rainevents=rbind(rainevents,c(i,k,l,act_daytime) )       
       }
     }
