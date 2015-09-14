@@ -276,6 +276,10 @@ function getPlotList(func) {
 		plotQuery = "generalstation="+generalName;
 	}
 	
+	if(time_year_select.val()!=0) {
+		plotQuery += "&comment="+time_year_text[time_year_select.val()];
+	}
+	
 	$.get(url_plot_list+"?"+plotQuery).done(function(data) {
 		var rows = splitData(data);
 		func(rows);
@@ -310,6 +314,9 @@ function visualise(plots) {
 				addTagText(tableRow,"td",plot[0]);
 				var tableContent = addTag(tableRow,"td");
 				addHeatmap(tableRow, tableContent, plot[0],sensor_row[0]);
+				if(plot[3] != undefined) {
+					addTagText(tableRow,"td",plot[3]);
+				}
 			});
 			break;
 		default:
