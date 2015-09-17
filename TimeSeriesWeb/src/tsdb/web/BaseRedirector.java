@@ -25,5 +25,4 @@ public class BaseRedirector extends AbstractHandler
 			baseRequest.setHandled(true);
 		}
 	}
-
 }
