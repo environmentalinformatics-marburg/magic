@@ -1,5 +1,5 @@
 panel.smoothconts <- function(x, y, z, col = "grey30", 
-                              contours = TRUE, 
+                              contours = TRUE, cex = 1.8, labcex = 1,
                               zlevs.conts = seq(500, 6000, 500),
                               ...)
 {
@@ -24,11 +24,11 @@ panel.smoothconts <- function(x, y, z, col = "grey30",
     contour(as.double(do.breaks(range(as.numeric(rownames(z))), nrow(z) - 1)),
             as.double(do.breaks(range(as.numeric(colnames(z))), ncol(z) - 1)),
             z, levels = as.double(zlevs.conts), 
-            add = TRUE, cex = 1.8,
+            add = TRUE, cex = cex,
             axes = FALSE, lwd = 0.5,
             col = col, # color of the lines
             drawlabels = TRUE, # add labels or not
-            labcex = 1, 
+            labcex = labcex, 
             ...
     )
 }
