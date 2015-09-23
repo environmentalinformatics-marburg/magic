@@ -3,6 +3,7 @@ package tsdb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -648,6 +649,20 @@ public class TsDB implements AutoCloseable {
 				}
 				additionalSensorNames.add("sunshine");
 			}
+			if(name.equals("Ta_200")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("Ta_200_min");
+				additionalSensorNames.add("Ta_200_max");
+			}
+			if(name.equals("rH_200")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("rH_200_min");
+				additionalSensorNames.add("rH_200_max");
+			}
 		}
 		if(additionalSensorNames==null) {
 			return schema;
@@ -662,12 +677,29 @@ public class TsDB implements AutoCloseable {
 		}
 		
 		Map<String, Integer> schemaMap = Util.stringArrayToMap(schema);
-		ArrayList<String> additionalSensorNames = new ArrayList<String>();
+		//ArrayList<String> additionalSensorNames = new ArrayList<String>();
+		LinkedHashSet<String> additionalSensorNames = new LinkedHashSet<>(); // no duplicates
 		if(schemaMap.containsKey("WD")&&!schemaMap.containsKey("WV")) {
 			additionalSensorNames.add("WV");
 		}
 		if(schemaMap.containsKey("sunshine")&&!schemaMap.containsKey("Rn_300")) {
 			additionalSensorNames.add("Rn_300");
+		}
+		
+		if(schemaMap.containsKey("Ta_200_min")&&!schemaMap.containsKey("Ta_200")) {
+			additionalSensorNames.add("Ta_200");
+		}
+		
+		if(schemaMap.containsKey("Ta_200_max")&&!schemaMap.containsKey("Ta_200")) {
+			additionalSensorNames.add("Ta_200");
+		}
+		
+		if(schemaMap.containsKey("rH_200_min")&&!schemaMap.containsKey("rH_200")) {
+			additionalSensorNames.add("rH_200");
+		}
+		
+		if(schemaMap.containsKey("rH_200_max")&&!schemaMap.containsKey("rH_200")) {
+			additionalSensorNames.add("rH_200");
 		}
 
 		if(additionalSensorNames.isEmpty()) {

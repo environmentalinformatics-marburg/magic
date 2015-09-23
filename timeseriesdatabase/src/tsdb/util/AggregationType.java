@@ -10,7 +10,8 @@ public enum AggregationType {
 	AVERAGE,
 	SUM,
 	AVERAGE_WIND_DIRECTION, // special aggregation for wind direction
-	AVERAGE_WIND_VELOCITY,  // helper tag for calculation of AVERAGE_WIND_DIRECTION 
+	AVERAGE_WIND_VELOCITY,  // helper tag for calculation of AVERAGE_WIND_DIRECTION
+	MINIMUM,
 	MAXIMUM,
 	AVERAGE_ZERO, //average aggregation type, NaN values are interpreted as 0
 	AVERAGE_ALBEDO,
@@ -26,6 +27,8 @@ public enum AggregationType {
 			return AVERAGE_WIND_DIRECTION;
 		case "average_wind_velocity":
 			return AVERAGE_WIND_VELOCITY;
+		case "minimum":
+			return MINIMUM;
 		case "maximum":
 			return MAXIMUM;
 		case "average_zero":

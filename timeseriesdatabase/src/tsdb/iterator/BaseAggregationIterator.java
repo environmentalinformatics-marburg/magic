@@ -39,6 +39,7 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 
 	int[] aggCnt;
 	float[] aggSum;
+	float[] aggMin;
 	float[] aggMax;
 	float wind_u_sum;
 	float wind_v_sum;
@@ -93,6 +94,7 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 		aggQuality = new DataQuality[schema.length];
 		aggCnt = new int[schema.length];
 		aggSum = new float[schema.length];
+		aggMin = new float[schema.length];
 		aggMax = new float[schema.length];		
 		columnEntryCounter = new int[schema.length];
 		for(int i=0;i<schema.length;i++) {
@@ -108,6 +110,7 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 			}
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
+			aggMin[i] = Float.POSITIVE_INFINITY;
 			aggMax[i] = Float.NEGATIVE_INFINITY;
 		}
 		wind_u_sum=0;
@@ -172,6 +175,9 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 					if(!Float.isNaN(value)){
 						aggCnt[i] ++;					
 						aggSum[i] += value;
+						if(value<aggMin[i]) {
+							aggMin[i] = value;
+						}
 						if(value>aggMax[i]) {
 							aggMax[i] = value;
 
@@ -189,6 +195,10 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 				if(!Float.isNaN(value)){
 					aggCnt[i] ++;					
 					aggSum[i] += value;
+					if(value<aggMin[i]) {
+						aggMin[i] = value;
+
+					}
 					if(value>aggMax[i]) {
 						aggMax[i] = value;
 
@@ -231,6 +241,11 @@ public class BaseAggregationIterator extends InputProcessingIterator {
 					break;
 				case SUM:
 					resultData[i] = aggSum[i];
+					validValueCounter++;
+					columnEntryCounter[i]++;
+					break;
+				case MINIMUM:
+					resultData[i] = aggMin[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
 					break;

@@ -194,7 +194,9 @@ public class ZipExport {
 							}
 						}
 					} catch (Exception e) {
+						e.printStackTrace();
 						log.error(e);
+						printLine("ERROR "+e);
 					}
 					processedPlots++;
 				}
@@ -222,6 +224,7 @@ public class ZipExport {
 					} catch (Exception e) {
 						e.printStackTrace();
 						log.error(e);
+						printLine("ERROR "+e);
 					}
 					processedPlots++;
 				}				
@@ -232,6 +235,7 @@ public class ZipExport {
 			return true;
 		} catch (IOException e) {
 			log.warn(e);
+			printLine("ERROR "+e);
 			return false;
 		}		
 	}	

@@ -32,6 +32,7 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 	private int[] aggCnt;
 	private float[] aggSum;
 	private float[] aggMax;
+	private float[] aggMin;
 	private float wind_u_sum;
 	private float wind_v_sum;
 	private int wind_cnt;
@@ -131,7 +132,8 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 		aggQualityCounter = new int[schema.length][QUALITY_COUNTERS];
 		aggCnt = new int[schema.length];
 		aggSum = new float[schema.length];
-		aggMax = new float[schema.length];		
+		aggMin = new float[schema.length];
+		aggMax = new float[schema.length];
 		columnEntryCounter = new int[schema.length];
 		for(int i=0;i<schema.length;i++) {
 			columnEntryCounter[i] = 0;
@@ -152,6 +154,7 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			}
 			aggCnt[i] = 0;
 			aggSum[i] = 0;
+			aggMin[i] = Float.POSITIVE_INFINITY;
 			aggMax[i] = Float.NEGATIVE_INFINITY;
 		}
 		wind_u_sum=0f;
@@ -176,6 +179,9 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 			if(!Float.isNaN(value)){
 				aggCnt[i] ++;					
 				aggSum[i] += value;
+				if(value<aggMin[i]) {
+					aggMin[i] = value;
+				}
 				if(value>aggMax[i]) {
 					aggMax[i] = value;
 				}
@@ -241,6 +247,11 @@ public abstract class AbstractAggregationIterator extends InputProcessingIterato
 				case SUM:
 				case SUM_SUNSHINE:
 					resultData[i] = aggSum[i];
+					validValueCounter++;
+					columnEntryCounter[i]++;
+					break;
+				case MINIMUM:
+					resultData[i] = aggMin[i];
 					validValueCounter++;
 					columnEntryCounter[i]++;
 					break;

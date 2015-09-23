@@ -1,5 +1,8 @@
 package tsdb.graph;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,6 +14,7 @@ import tsdb.graph.node.ContinuousGen;
 import tsdb.graph.node.Node;
 import tsdb.graph.node.NodeGen;
 import tsdb.graph.processing.Aggregated;
+import tsdb.graph.processing.ElementCopy;
 import tsdb.graph.processing.EmpiricalFiltered_NEW;
 import tsdb.graph.processing.Mask;
 import tsdb.graph.processing.PeakSmoothed;
@@ -19,6 +23,8 @@ import tsdb.graph.processing.Sunshine;
 import tsdb.graph.processing.Virtual_P_RT_NRT;
 import tsdb.graph.source.BaseFactory;
 import tsdb.graph.source.StationRawSource;
+import tsdb.iterator.ElementCopyIterator;
+import tsdb.iterator.ElementCopyIterator.Action;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
 import tsdb.util.Util;
@@ -26,7 +32,7 @@ import tsdb.util.Util;
 public final class QueryPlanGenerators {
 	private static final Logger log = LogManager.getLogger();	
 	private QueryPlanGenerators(){} 
-	
+
 	/**
 	 * creates a generator of a station raw data with quality check
 	 * @param tsdb
@@ -63,10 +69,40 @@ public final class QueryPlanGenerators {
 			if(Util.containsString(schema, "sunshine")) {
 				rawSource = Sunshine.of(tsdb, rawSource);
 			}
+			//rawSource = elementCopy(rawSource, schema);
 			return rawSource;
 		};
 	}
-	
+
+	/**
+	 * Copy elements for virtual sensors.
+	 * @param schema 
+	 * @param source 
+	 * @return 
+	 */
+	public static Continuous elementCopy(Continuous source, String[] schema) {
+		if(Util.containsString(schema, "Ta_200_min") 
+				|| Util.containsString(schema, "Ta_200_max")
+				|| Util.containsString(schema, "rH_200_min") 
+				|| Util.containsString(schema, "rH_200_max")) {
+			List<Action> actions = new ArrayList<>();
+			if(Util.containsString(schema, "Ta_200_min")) {
+				actions.add(Action.of(schema, "Ta_200", "Ta_200_min"));
+			}
+			if(Util.containsString(schema, "Ta_200_max")) {
+				actions.add(Action.of(schema, "Ta_200", "Ta_200_max"));
+			}
+			if(Util.containsString(schema, "rH_200_min")) {
+				actions.add(Action.of(schema, "rH_200", "rH_200_min"));
+			}
+			if(Util.containsString(schema, "rH_200_max")) {
+				actions.add(Action.of(schema, "rH_200", "rH_200_max"));
+			}				
+			source = ElementCopy.of(source, actions.toArray(new Action[0]));
+		}
+		return source;
+	}
+
 	/**
 	 * Creates a generator of a continuous source.
 	 * @param tsdb
@@ -87,7 +123,7 @@ public final class QueryPlanGenerators {
 			return continuous;
 		};
 	}
-	
+
 	/**
 	 * Creates a generator of a continuous source with day aggregated values.
 	 * not interpolated

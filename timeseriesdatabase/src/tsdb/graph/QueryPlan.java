@@ -89,26 +89,30 @@ public final class QueryPlan {
 	}
 
 	private static Node plotWithoutSubStation(TsDB tsdb, String plotID, String[] schema, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
-		if(aggregationInterval.isDay()) {
+		/*if(aggregationInterval.isDay()) {
 			ContinuousGen dayGen = QueryPlanGenerators.getDayAggregationGen(tsdb, dataQuality);
 			if(interpolated) {
 				//continuous = Interpolated.of(tsdb, plotID, schema, dayGen);
-				return InterpolatedAverageLinear.of(tsdb, plotID, schema, dayGen, AggregationInterval.DAY); 
+				Continuous interpolatedNode = InterpolatedAverageLinear.of(tsdb, plotID, schema, dayGen, AggregationInterval.DAY);
+				return QueryPlanGenerators.elementCopy(interpolatedNode, schema);
 			} else {
-				return dayGen.get(plotID, schema);
+				Continuous dayNode = dayGen.get(plotID, schema);
+				return QueryPlanGenerators.elementCopy(dayNode, schema);
 			}
-		} else {
+		} else {*/
 
-			ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, dataQuality);
-			Continuous continuous;
-			if(interpolated) {
-				//continuous = Interpolated.of(tsdb, plotID, schema, continuousGen);
-				continuous = InterpolatedAverageLinear.of(tsdb, plotID, schema, continuousGen, AggregationInterval.HOUR); 
-			} else {
-				continuous = continuousGen.get(plotID, schema);
-			}
-			return Aggregated.of(tsdb, continuous, aggregationInterval);
+		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, dataQuality);
+		Continuous continuous;
+		if(interpolated) {
+			//continuous = Interpolated.of(tsdb, plotID, schema, continuousGen);
+			continuous = InterpolatedAverageLinear.of(tsdb, plotID, schema, continuousGen, AggregationInterval.HOUR);
+			continuous = QueryPlanGenerators.elementCopy(continuous, schema);
+		} else {
+			continuous = continuousGen.get(plotID, schema);
+			continuous = QueryPlanGenerators.elementCopy(continuous, schema);
 		}
+		return Aggregated.of(tsdb, continuous, aggregationInterval);
+		//}
 	}
 
 	private static Node plotWithSubStation(TsDB tsdb, String plotID, String stationID, String[] schema, AggregationInterval aggregationInterval, DataQuality dataQuality) {
@@ -118,6 +122,7 @@ public final class QueryPlan {
 			return null;
 		}
 		Continuous continuous = Continuous.of(base);
+		continuous = QueryPlanGenerators.elementCopy(continuous, schema);
 		return Aggregated.of(tsdb, continuous, aggregationInterval);
 	}
 
