@@ -5,8 +5,8 @@ library(raster)
 library(caret)
 library(Rainfall)
 library(Rsenal)
-datasetTimes<-c("day","night")
-responseNames<-c("Rain","RInfo")
+datasetTimes<-c("night","day")
+responseNames<-c("RInfo")
 pc="183"
 onlySpectral=FALSE
 
@@ -90,27 +90,26 @@ for (datasetTime in datasetTimes){
         pred<-predictRainfall(model=model, inpath= paste0(msgpath,"/",month,"/",
                                                           day,"/",time,"/"),
                               rainmask=reference,min_x=min_x,max_x=max_x)
-        pred[reference<0.06]<-NA
+        #pred[reference<0.06]<-NA
+        pred<-mask(pred,reference)
         reference=mask(reference,pred)
       }
       if(type=="classification"){ 
-        #tmp=reference 
-        
-        #reference(tmp<0)=NA
-        # values(reference)<-factor(values(reference))
         pred<-predictRainfall(model=model, inpath= paste0(msgpath,"/",month,"/",
                                                           day,"/",time,"/"),
                               min_x=min_x,max_x=max_x) 
-        values(reference)[values(reference< -5)]=NA
-        reference[reference<0.06]=0
+        values(reference)[values(reference< -2)]=NA
         reference[reference>=0.06]=1
-        pred[pred==2]=0
-        reference <- mask(reference,pred)
+        reference[reference<0.06]=2
+  
+        #pred[pred==2]=0
         pred=mask(pred,reference)
+        reference <- mask(reference,pred)
         
-        if(sum(values(pred),na.rm=T)==0||sum(values(reference),na.rm=T)==0){next}
-       #  print(summary(pred))
-      #    print(summary(reference))
+        #print(summary(pred))
+        #print(summary(reference))
+        if(!any(values(pred)==1,na.rm=T)||!any(values(reference)==1,na.rm=T)){next}
+        
         
       }
       if(sum(is.na(values(pred)))==ncell(pred)){next}
