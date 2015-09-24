@@ -18,8 +18,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
-public class NanGapIterator extends InputProcessingIterator {
-	
+public class NanGapIterator extends InputProcessingIterator {	
 	private static final Logger log = LogManager.getLogger();
 
 	/**

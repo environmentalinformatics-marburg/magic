@@ -17,7 +17,7 @@ import tsdb.util.iterator.TimestampSeries;
  *
  */
 class Loader_rug extends AbstractLoader {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private enum ProcessingType {NONE,COPY};
@@ -32,10 +32,10 @@ class Loader_rug extends AbstractLoader {
 	protected void createResultSchema() {
 		resultSchema = new String[inputSchema.length];
 		for(int schemaIndex=0;schemaIndex<inputSchema.length;schemaIndex++) {
-			switch(inputSchema[schemaIndex]) {
-			default:
-				resultSchema[schemaIndex] = inputSchema[schemaIndex];	
-			}
+			//switch(inputSchema[schemaIndex]) {
+			//default:
+			resultSchema[schemaIndex] = inputSchema[schemaIndex];	
+			//}
 		}
 	}
 
@@ -43,10 +43,10 @@ class Loader_rug extends AbstractLoader {
 	protected void createProcessingTypes() {
 		processingTypes = new ProcessingType[resultSchema.length];
 		for(int schemaIndex=0; schemaIndex<resultSchema.length; schemaIndex++) {
-			switch(resultSchema[schemaIndex]) {
-			default:
-				processingTypes[schemaIndex] = ProcessingType.COPY;
-			}
+			//switch(resultSchema[schemaIndex]) {
+			//default:
+			processingTypes[schemaIndex] = ProcessingType.COPY;
+			//}
 		}		
 
 	}

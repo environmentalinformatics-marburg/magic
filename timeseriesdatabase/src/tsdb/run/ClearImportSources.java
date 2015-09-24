@@ -165,10 +165,10 @@ public class ClearImportSources {
 
 		log.info("end import");
 		
-		ClearLoadMasks.main(null);
+		ClearLoadMasks.main(new String[0]);
 
 		long timeStartAvg = System.currentTimeMillis();
-		CreateStationGroupAverageCache_NEW.main(null);
+		CreateStationGroupAverageCache_NEW.main(new String[0]);
 		long timeEndAvg = System.currentTimeMillis();
 		System.gc();
 		long timeStartCompact = System.currentTimeMillis();

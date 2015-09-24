@@ -59,6 +59,7 @@ public class VirtualPlotStationBase extends Base.Abstract  {
 
 	public static VirtualPlotStationBase of(TsDB tsdb, VirtualPlot virtualPlot, Station station, String[] querySchema, NodeGen stationGen) {	
 		String[] rawSensorNames = tsdb.streamStorage.getSensorNames(station.stationID);
+		rawSensorNames = tsdb.includeVirtualSensorNames(rawSensorNames);
 		if(rawSensorNames==null || rawSensorNames.length==0) {
 			return null;
 		}		

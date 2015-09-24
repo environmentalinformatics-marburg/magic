@@ -105,7 +105,7 @@ public class UniversalDataBinFile {
 		//System.out.println(typeVendorLen+"\ttypeVendorLen");
 		byte[] typeVendorBytes = new byte[typeVendorLen]; 
 		mappedByteBuffer.get(typeVendorBytes);
-		/*String typeVendor =*/ new String(typeVendorBytes);
+		///*String typeVendor =*/ new String(typeVendorBytes);
 		//System.out.println(typeVendor+"\ttypeVendor");
 		/*byte withCheckSum =*/ mappedByteBuffer.get();
 		//System.out.println(withCheckSum+"\twithCheckSum");

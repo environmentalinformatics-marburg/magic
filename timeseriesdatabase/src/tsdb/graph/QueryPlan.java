@@ -106,10 +106,10 @@ public final class QueryPlan {
 		if(interpolated) {
 			//continuous = Interpolated.of(tsdb, plotID, schema, continuousGen);
 			continuous = InterpolatedAverageLinear.of(tsdb, plotID, schema, continuousGen, AggregationInterval.HOUR);
-			continuous = QueryPlanGenerators.elementCopy(continuous, schema);
+			continuous = QueryPlanGenerators.elementCopy(continuous);
 		} else {
 			continuous = continuousGen.get(plotID, schema);
-			continuous = QueryPlanGenerators.elementCopy(continuous, schema);
+			continuous = QueryPlanGenerators.elementCopy(continuous);
 		}
 		return Aggregated.of(tsdb, continuous, aggregationInterval);
 		//}
@@ -122,7 +122,7 @@ public final class QueryPlan {
 			return null;
 		}
 		Continuous continuous = Continuous.of(base);
-		continuous = QueryPlanGenerators.elementCopy(continuous, schema);
+		continuous = QueryPlanGenerators.elementCopy(continuous);
 		return Aggregated.of(tsdb, continuous, aggregationInterval);
 	}
 

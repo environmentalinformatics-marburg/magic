@@ -43,11 +43,11 @@ public class ZipExportProxy {
 			File downloadDir = new File(TsDBFactory.WEBDOWNLOAD_PATH);
 			downloadDir.mkdirs();
 			tempFile = File.createTempFile("result_", ".zip", downloadDir);
+			log.info(tempFile.getName());
 		} catch (IOException e) {
 			tempFile = null;
 			log.info(e);
 		}
-		log.info(tempFile.getName());
 	}
 
 	public void startExport() {

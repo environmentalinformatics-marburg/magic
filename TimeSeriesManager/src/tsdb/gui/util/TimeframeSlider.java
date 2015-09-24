@@ -330,11 +330,11 @@ public class TimeframeSlider extends Canvas {
 	public void setSelectedRange(long selectedMin,long selectedMax) {
 		this.selectedMin = selectedMin;
 		this.selectedMax = selectedMax;
-		if(selectedMin<min) {
-			selectedMin = min;
+		if(this.selectedMin<min) {
+			this.selectedMin = min;
 		}
-		if(selectedMax>max) {
-			selectedMax = max;
+		if(this.selectedMax>max) {
+			this.selectedMax = max;
 		}
 		this.redraw();
 	}

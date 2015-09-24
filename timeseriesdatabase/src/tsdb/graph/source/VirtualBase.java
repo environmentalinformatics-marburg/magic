@@ -18,6 +18,7 @@ import tsdb.graph.node.Base;
 import tsdb.graph.node.Node;
 import tsdb.graph.node.NodeGen;
 import tsdb.iterator.MergeIterator;
+import tsdb.iterator.ProjectionFillIterator;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
 import tsdb.util.iterator.TsIterator;
@@ -42,6 +43,7 @@ public class VirtualBase extends Base.Abstract  {
 		}
 		
 		String[] virtualPlotSchema = virtualPlot.getSchema();
+		virtualPlotSchema = tsdb.includeVirtualSensorNames(virtualPlotSchema);
 		if(virtualPlotSchema==null||virtualPlotSchema.length==0) {
 			throw new RuntimeException("no sensors in virtualplot "+virtualPlot.plotID);
 		}
@@ -95,8 +97,15 @@ public class VirtualBase extends Base.Abstract  {
 		if(processing_iteratorList.isEmpty()) {
 			return null;
 		}
-		if(processing_iteratorList.size()==1) {
-			return processing_iteratorList.get(0);
+		if(processing_iteratorList.size()==1) {			
+			TsIterator it = processing_iteratorList.get(0);
+			if(Arrays.equals(it.getSchema().names,schema)) {
+				//log.info("one iterator no projection");
+				return it;
+			} else {
+				//log.info("one iterator with projection");
+				return new ProjectionFillIterator(it, schema);
+			}
 		}
 		MergeIterator virtual_iterator = new MergeIterator(schema, processing_iteratorList, virtualPlot.plotID);			
 		if(virtual_iterator==null||!virtual_iterator.hasNext()) {

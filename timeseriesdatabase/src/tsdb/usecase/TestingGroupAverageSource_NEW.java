@@ -36,8 +36,8 @@ public class TestingGroupAverageSource_NEW {
 				TsEntry e = it.next();
 				System.out.println(e);
 			}
+			log.info(it.getProcessingChain().getText());
 		}
-		log.info(it.getProcessingChain().getText());
 
 	}
 

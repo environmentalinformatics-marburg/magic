@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import tsdb.component.CacheStorage;
 import tsdb.component.LoggerType;
 import tsdb.component.Region;
 import tsdb.component.Sensor;
@@ -637,6 +636,11 @@ public class TsDB implements AutoCloseable {
 		return result;
 	}
 	
+	/**
+	 * add appropriate virtual sensors to given schema
+	 * @param schema (nullable) (if null returns null)
+	 * @return expanded schema (nullable)
+	 */
 	public String[] includeVirtualSensorNames(String[] schema) {
 		if(schema==null) {
 			return null;

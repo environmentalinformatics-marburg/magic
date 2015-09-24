@@ -407,12 +407,13 @@ public class ServerTsDB implements RemoteTsDB {
 
 	// ------------------------------------ console
 
-	Long command_counter=0l;
+	private final Object command_counter_sync_object = new Object();
+	long command_counter=0L;
 
 	Map<Long,Pair<Thread,ConsoleRunner>> commandThreadMap = new ConcurrentHashMap<Long,Pair<Thread,ConsoleRunner>>();
 
 	private long createCommandThreadId() {
-		synchronized (command_counter) {
+		synchronized (command_counter_sync_object) {
 			final long commandThreadId = command_counter;
 			command_counter++;
 			return commandThreadId;

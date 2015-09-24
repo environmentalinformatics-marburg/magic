@@ -42,7 +42,7 @@ public class VirtualPlotStationRawSource extends RawSource.Abstract {
 		if(this.sensorNames.length==0) {
 			throw new RuntimeException("no schema");
 		}
-		if(!station.isValidSchema(sensorNames)) {
+		if(!station.isValidSchema(sensorNames)) { // no virtual sensors in raw !
 			throw new RuntimeException("not valid schema: "+Util.arrayToString(sensorNames)+" in "+Util.arrayToString(station.getSchema())); 
 		}
 	}

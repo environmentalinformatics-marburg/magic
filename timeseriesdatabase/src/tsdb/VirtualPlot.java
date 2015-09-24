@@ -310,6 +310,15 @@ public class VirtualPlot {
 		}
 		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, schema));
 	}
+	
+	public boolean isValidSchemaWithVirtualSensors(String[] querySchema) {
+		throwNull((Object)querySchema);
+		String[] schema = getSchema();
+		if(schema==null) {
+			return false;
+		}
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, tsdb.includeVirtualSensorNames(schema)));		
+	}
 
 	public boolean isValidBaseSchema(String[] querySchema) {
 		if(!isValidSchema(querySchema)) {

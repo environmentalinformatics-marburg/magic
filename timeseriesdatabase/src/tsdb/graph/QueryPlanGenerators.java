@@ -1,6 +1,7 @@
 package tsdb.graph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -53,7 +54,7 @@ public final class QueryPlanGenerators {
 				}
 			}
 			Node rawSource = StationRawSource.of(tsdb, stationID, schema);
-			log.info("get raw source");
+			log.info("get raw source "+Arrays.toString(schema));
 			if(DataQuality.Na!=dataQuality && DataQuality.NO!=dataQuality) {
 				rawSource = Mask.of(tsdb, rawSource);
 			}
@@ -80,7 +81,8 @@ public final class QueryPlanGenerators {
 	 * @param source 
 	 * @return 
 	 */
-	public static Continuous elementCopy(Continuous source, String[] schema) {
+	public static Continuous elementCopy(Continuous source) {
+		String[] schema = source.getSchema();
 		if(Util.containsString(schema, "Ta_200_min") 
 				|| Util.containsString(schema, "Ta_200_max")
 				|| Util.containsString(schema, "rH_200_min") 

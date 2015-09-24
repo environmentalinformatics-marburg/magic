@@ -18,7 +18,7 @@ import tsdb.util.iterator.TimestampSeries;
  */
 @Deprecated
 class Loader_tfi extends AbstractLoader {
-	
+
 	private static final Logger log = LogManager.getLogger();
 
 	private enum ProcessingType {NONE,COPY,B,RAINFALL,FOG};
@@ -38,10 +38,10 @@ class Loader_tfi extends AbstractLoader {
 	protected void createResultSchema() {
 		resultSchema = new String[inputSchema.length];
 		for(int schemaIndex=0;schemaIndex<inputSchema.length;schemaIndex++) {
-			switch(inputSchema[schemaIndex]) {
-			default:
-				resultSchema[schemaIndex] = inputSchema[schemaIndex];	
-			}
+			//switch(inputSchema[schemaIndex]) {
+			//default:
+			resultSchema[schemaIndex] = inputSchema[schemaIndex];	
+			//}
 		}
 	}
 
