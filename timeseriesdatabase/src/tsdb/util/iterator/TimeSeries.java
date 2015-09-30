@@ -161,6 +161,7 @@ public class TimeSeries implements TsIterable, ProcessingChainEntry, ProcessingC
 
 		if(timestampSeries.timeinterval==null) {
 			log.error("TimeSeries needs to be aggregated for BaseTimeSeries creation");
+			return null;
 		}		
 		int timeStep = timestampSeries.timeinterval;
 		if(endTimestamp<startTimestamp) {

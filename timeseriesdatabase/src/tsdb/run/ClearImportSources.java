@@ -172,7 +172,7 @@ public class ClearImportSources {
 		long timeEndAvg = System.currentTimeMillis();
 		System.gc();
 		long timeStartCompact = System.currentTimeMillis();
-		RunCompact.main(null);
+		RunCompact.main(new String[0]);
 		long timeEndCompact = System.currentTimeMillis();
 
 		log.info(msToText(timeStartClear,timeEndClear)+" Clear");
