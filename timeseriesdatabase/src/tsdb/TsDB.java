@@ -19,6 +19,7 @@ import tsdb.component.Sensor;
 import tsdb.component.SourceCatalog;
 import tsdb.streamdb.StreamStorageStreamDB;
 import tsdb.util.AggregationType;
+import tsdb.util.AssumptionCheck;
 import tsdb.util.BaseAggregationTimeUtil;
 import tsdb.util.Util;
 
@@ -174,6 +175,16 @@ public class TsDB implements AutoCloseable {
 			}
 		}
 		return sensors;
+	}
+	
+	/**
+	 * Get stream of sensors.
+	 * @param names
+	 * @return stream of sensors (or null elements if sensor not exists).
+	 */
+	public Stream<Sensor> getSensorStream(String[] names) {
+		AssumptionCheck.throwNullArray(names);
+		return Arrays.stream(names).map(name->sensorMap.get(name));
 	}
 
 	public void updateGeneralStations() {

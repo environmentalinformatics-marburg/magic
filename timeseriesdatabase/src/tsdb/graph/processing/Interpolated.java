@@ -24,6 +24,7 @@ import tsdb.util.iterator.TsIterator;
  * @author woellauer
  *
  */
+@Deprecated
 public class Interpolated extends Continuous.Abstract {
 
 	public final static int MIN_STATION_INTERPOLATION_COUNT = 2; //multilinear interpolation needs at least two sources

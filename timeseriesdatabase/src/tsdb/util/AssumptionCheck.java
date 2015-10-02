@@ -106,6 +106,11 @@ public final class AssumptionCheck {
 		}
 	}
 	
+	/**
+	 * Throws an exception if array or elements are null. 
+	 * No nested array check.
+	 * @param a
+	 */
 	public static <T> void throwNullArray(T[] a) {
 		if(a==null) {
 			throwText("null");

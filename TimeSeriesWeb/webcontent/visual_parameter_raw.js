@@ -385,8 +385,10 @@ function addHeatmap(anchor, root, plotName, sensorName) {
 	}
 	var magnificationFactor = magnification_select.val();
 	incTask();
+	var a = document.createElement('a');
+	sensorResult.appendChild(a);
 	var image = new Image();
-	sensorResult.appendChild(image);
+	a.appendChild(image);
 	image.onload = function() {
 		image.width = image.naturalWidth*magnificationFactor;
 		image.height = image.naturalHeight*magnificationFactor;
@@ -397,7 +399,10 @@ function addHeatmap(anchor, root, plotName, sensorName) {
 		anchor.parentNode.removeChild(anchor);
 		decTask();
 	}
-	image.src = url_query_heatmap+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
+	var queryText = "?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
+	a.title = "click to detail view "+plotName;
+	a.href = "../files/vis.html"+queryText;
+	image.src = url_query_heatmap+queryText;
 	decTask();	
 }
 

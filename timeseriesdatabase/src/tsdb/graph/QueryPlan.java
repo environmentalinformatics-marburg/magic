@@ -88,6 +88,16 @@ public final class QueryPlan {
 		}
 	}
 
+	/**
+	 * Default processing for plot as station of virtual plot with station merge.
+	 * @param tsdb
+	 * @param plotID
+	 * @param schema
+	 * @param aggregationInterval
+	 * @param dataQuality
+	 * @param interpolated
+	 * @return
+	 */
 	private static Node plotWithoutSubStation(TsDB tsdb, String plotID, String[] schema, AggregationInterval aggregationInterval, DataQuality dataQuality, boolean interpolated) {
 		/*if(aggregationInterval.isDay()) {
 			ContinuousGen dayGen = QueryPlanGenerators.getDayAggregationGen(tsdb, dataQuality);
@@ -115,6 +125,16 @@ public final class QueryPlan {
 		//}
 	}
 
+	/**
+	 * Processing for virtual plot with one specific station.
+	 * @param tsdb
+	 * @param plotID
+	 * @param stationID
+	 * @param schema
+	 * @param aggregationInterval
+	 * @param dataQuality
+	 * @return
+	 */
 	private static Node plotWithSubStation(TsDB tsdb, String plotID, String stationID, String[] schema, AggregationInterval aggregationInterval, DataQuality dataQuality) {
 		NodeGen stationGen = QueryPlanGenerators.getStationGen(tsdb, dataQuality);
 		Base base = VirtualPlotStationBase.of(tsdb, plotID, stationID, schema, stationGen);

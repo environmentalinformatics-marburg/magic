@@ -908,6 +908,20 @@ public class ConfigLoader {
 					log.warn("interpolation config: sensor not found: "+name);
 				}
 			}
+			
+			for(Entry<String, String> entry:section.entrySet()) {
+				Sensor sensor = tsdb.getSensor(entry.getKey());
+				if(sensor!=null) {
+					sensor.useInterpolation = true;
+					try {
+						sensor.maxInterpolationMSE = Double.parseDouble(entry.getValue());
+					} catch (Exception e) {
+						log.warn("could not read max MSE for sensor "+entry.getKey()+"   "+entry.getValue()+"   "+e);
+					}
+				} else {
+					log.warn("interpolation config: sensor not found: "+entry.getKey());
+				}
+			}
 
 		} catch (Exception e) {
 			log.error(e);

@@ -61,6 +61,8 @@ public class Sensor implements Serializable {
 	
 	public boolean internal;
 	
+	public double maxInterpolationMSE;
+	
 	public Sensor(String name) {
 		this.name = name;
 		physicalMin = -Float.MAX_VALUE;
@@ -72,6 +74,7 @@ public class Sensor implements Serializable {
 		empiricalDiff = null;
 		category = SensorCategory.OTHER;
 		internal = false;
+		maxInterpolationMSE = 1f;
 	}
 	
 	/**
@@ -124,4 +127,10 @@ public class Sensor implements Serializable {
 	public boolean isAggregable() {
 		return baseAggregationType!= AggregationType.NONE;
 	}
+	
+	public double getMaxInterpolationMSE() {
+		return maxInterpolationMSE;
+	}
+	
+	
 }

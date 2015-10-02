@@ -1,6 +1,8 @@
 package tsdb.graph.processing;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.VirtualPlot;
+import tsdb.component.Sensor;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;
 import tsdb.iterator.InterpolationAverageLinearIterator;
@@ -23,16 +26,18 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 
 	private static final int MAX_TRAINING_PLOT_COUNT = 15;
 	private static final int MIN_TRAINING_VALUE_COUNT_HOUR = 4*7*24; // four weeks with one hour time interval
-	private static final int MIN_TRAINING_VALUE_COUNT_DAY = 4*7;
-	private static final double MAX_MSE = 7d;
+	private static final int MIN_TRAINING_VALUE_COUNT_DAY = 4*7; // four weeks with one day time interval
+	//private static final double MAX_MSE = 7d; // 7 for temperature
+	//private static final double MAX_MSE = 100d; // 100 for humidity
 
 	private final Continuous source;
 	private final Continuous trainingTarget;
 	private Continuous[] trainingSources;
 	private final String[] interpolationSchema;
 	private final int MIN_TRAINING_VALUE_COUNT;
+	private final double[] maxMSEs;
 
-	protected InterpolatedAverageLinear(TsDB tsdb, Continuous source, Continuous trainingTarget, Continuous[] trainingSources, String[] interpolationSchema, AggregationInterval sourceAgg) {
+	protected InterpolatedAverageLinear(TsDB tsdb, Continuous source, Continuous trainingTarget, Continuous[] trainingSources, String[] interpolationSchema, AggregationInterval sourceAgg, double[] maxMSEs) {
 		super(tsdb);
 		this.source = source;
 		this.trainingTarget = trainingTarget;
@@ -49,6 +54,8 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 		default:
 			throw new RuntimeException("unknown aggregation for interpolation "+sourceAgg);
 		}
+		
+		this.maxMSEs = maxMSEs;
 	}
 
 	public static Continuous of(TsDB tsdb, String plotID, String[] querySchema, ContinuousGen continuousGen, AggregationInterval sourceAgg) {
@@ -85,9 +92,11 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 		if(trainingSources.length==0) {
 			log.info("no interpolation");
 			return source;
-		}		
+		}
+		
+		double[] maxMSEs = tsdb.getSensorStream(interpolationSchema).mapToDouble(Sensor::getMaxInterpolationMSE).toArray();
 
-		return new InterpolatedAverageLinear(tsdb, source, trainingTarget, trainingSources, interpolationSchema, sourceAgg);
+		return new InterpolatedAverageLinear(tsdb, source, trainingTarget, trainingSources, interpolationSchema, sourceAgg, maxMSEs);
 	}
 
 	@Override
@@ -143,6 +152,7 @@ public class InterpolatedAverageLinear extends Continuous.Abstract {
 			SimpleRegression[] regs = simpleRegressions[trainingIndex];
 			for(int column=0;column<interpolationSchema.length;column++) {
 				SimpleRegression reg = regs[column];
+				final double MAX_MSE = maxMSEs[column];
 				if(reg.getN()<MIN_TRAINING_VALUE_COUNT || MAX_MSE<reg.getMeanSquareError()) {
 					intercepts[trainingIndex][column] = Double.NaN;
 					slopes[trainingIndex][column] = Double.NaN;
