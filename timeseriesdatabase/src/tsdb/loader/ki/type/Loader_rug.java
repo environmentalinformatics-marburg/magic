@@ -20,7 +20,7 @@ class Loader_rug extends AbstractLoader {
 
 	private static final Logger log = LogManager.getLogger();
 
-	private enum ProcessingType {NONE,COPY};
+	private enum ProcessingType {NONE,COPY,COPY_RH_200};
 
 	private ProcessingType[] processingTypes = null;
 
@@ -43,10 +43,13 @@ class Loader_rug extends AbstractLoader {
 	protected void createProcessingTypes() {
 		processingTypes = new ProcessingType[resultSchema.length];
 		for(int schemaIndex=0; schemaIndex<resultSchema.length; schemaIndex++) {
-			//switch(resultSchema[schemaIndex]) {
-			//default:
-			processingTypes[schemaIndex] = ProcessingType.COPY;
-			//}
+			switch(resultSchema[schemaIndex]) {
+			case "rH_200":
+				processingTypes[schemaIndex] = ProcessingType.COPY_RH_200;
+				break;				
+			default:
+				processingTypes[schemaIndex] = ProcessingType.COPY;
+			}
 		}		
 
 	}
@@ -65,6 +68,17 @@ class Loader_rug extends AbstractLoader {
 					case COPY:
 						eventData[schemaIndex] = entry.data[sourceIndex];
 						break;
+					case COPY_RH_200: {
+						final float NAN_1 = 0.0f;
+						final float NAN_2 = 2.32831E-10f;
+						final float v = entry.data[sourceIndex];
+						if(v==NAN_1||v==NAN_2) {
+							eventData[schemaIndex] = Float.NaN;
+						} else {
+							eventData[schemaIndex] = v;
+						}
+						break;
+					}						
 					default:
 						log.warn("processingType unknown: "+processingTypes[sourceIndex]);
 						eventData[schemaIndex] = Float.NaN;

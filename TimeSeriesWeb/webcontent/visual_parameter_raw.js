@@ -10,6 +10,8 @@ var url_query_heatmap = url_base + "tsdb/query_heatmap";
 var url_heatmap_scale = url_base + "tsdb/heatmap_scale";
 var url_query_csv = url_base + "tsdb/query_csv";
 
+var url_detail_visualisation = "../files/vis.html";
+
 var time_year_text = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
 var time_month_text = ["year","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 var aggregation_text = ["raw","hour","day","week","month","year"];
@@ -401,7 +403,8 @@ function addHeatmap(anchor, root, plotName, sensorName) {
 	}
 	var queryText = "?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter;
 	a.title = "click to detail view "+plotName;
-	a.href = "../files/vis.html"+queryText;
+	a.target = "_blank";
+	a.href = url_detail_visualisation+queryText;
 	image.src = url_query_heatmap+queryText;
 	decTask();	
 }

@@ -174,7 +174,7 @@ public class TimeSeriesHeatMap {
 
 
 
-		System.out.println(min+"  "+max+"  "+(min+max)+"   "+(min+max)/2);
+		//log.info(min+"  "+max+"  "+(min+max)+"   "+(min+max)/2);
 
 		tsp.setColor(0, 0, 0);
 
