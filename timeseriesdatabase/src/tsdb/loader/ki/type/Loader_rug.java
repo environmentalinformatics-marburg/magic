@@ -89,7 +89,4 @@ class Loader_rug extends AbstractLoader {
 		}
 		return eventList;
 	}
-
-
-
 }

@@ -265,6 +265,8 @@ public class TimeSeriesHeatMap {
 		tsp.setColorScale("rainbow");
 		switch(sensorName) {
 		case "Ta_200":
+		case "Ta_200_min":
+		case "Ta_200_max":
 		case "Ta_10":
 		case "Tgnd":
 		case "Trad":
@@ -286,6 +288,8 @@ public class TimeSeriesHeatMap {
 			tsp.setIndexedColorRange(0.1f, 0.3f);
 			break;
 		case "rH_200":
+		case "rH_200_min":
+		case "rH_200_max":
 		case "rh_1000":
 		case "rh_2000":
 		case "rh_3000":
