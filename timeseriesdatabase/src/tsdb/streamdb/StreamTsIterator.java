@@ -16,6 +16,7 @@ import tsdb.util.iterator.TsIterator;
  *
  */
 public class StreamTsIterator extends TsIterator {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 	
 	private final Iterator<DataEntry> input_iterator;

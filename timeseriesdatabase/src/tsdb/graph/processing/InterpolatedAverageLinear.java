@@ -1,8 +1,6 @@
 package tsdb.graph.processing;
 
 import java.util.Arrays;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.logging.log4j.LogManager;

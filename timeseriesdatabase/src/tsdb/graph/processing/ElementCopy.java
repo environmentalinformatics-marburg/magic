@@ -5,7 +5,6 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import tsdb.Station;
 import tsdb.VirtualPlot;
 import tsdb.graph.node.Continuous;
-import tsdb.graph.node.Node;
 import tsdb.iterator.ElementCopyIterator;
 import tsdb.iterator.ElementCopyIterator.Action;
 import tsdb.util.iterator.TsIterator;

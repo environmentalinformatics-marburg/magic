@@ -24,7 +24,6 @@ import tsdb.graph.processing.Sunshine;
 import tsdb.graph.processing.Virtual_P_RT_NRT;
 import tsdb.graph.source.BaseFactory;
 import tsdb.graph.source.StationRawSource;
-import tsdb.iterator.ElementCopyIterator;
 import tsdb.iterator.ElementCopyIterator.Action;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;

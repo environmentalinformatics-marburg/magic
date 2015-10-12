@@ -2,7 +2,6 @@ package tsdb.usecase;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.QueryPlan;
 import tsdb.graph.QueryPlanGenerators;
 import tsdb.iterator.DayAggregationIterator;
 import tsdb.iterator.MonthAggregationIterator;

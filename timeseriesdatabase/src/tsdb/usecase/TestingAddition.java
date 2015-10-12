@@ -2,7 +2,6 @@ package tsdb.usecase;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.QueryPlan;
 import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.processing.Addition;

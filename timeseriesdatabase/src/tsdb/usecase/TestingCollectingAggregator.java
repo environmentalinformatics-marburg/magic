@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.QueryPlan;
 import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Node;
 import tsdb.iterator.DayCollectingAggregator;

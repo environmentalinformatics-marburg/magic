@@ -6,7 +6,6 @@ import java.util.Arrays;
 import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.QueryPlan;
 import tsdb.graph.QueryPlanGenerators;
 import tsdb.graph.node.Continuous;
 import tsdb.graph.node.ContinuousGen;

@@ -100,8 +100,8 @@ public class DirectoryDuplicateDataChecker {
 			if(!baseMap.containsKey(md5)) {
 				if(!compareMap.containsKey(md5)) {
 					compareMap.put(md5, filename);	
-					String f = filename.getFileName().toString();
-					String targetFile = targetDir+'/'+f;
+					//String f = filename.getFileName().toString();
+					//String targetFile = targetDir+'/'+f;
 				} else {
 					log.info("skip duplicate "+filename);
 				}

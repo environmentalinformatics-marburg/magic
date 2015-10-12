@@ -12,12 +12,6 @@ import tsdb.Station;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.graph.QueryPlan;
-import tsdb.graph.QueryPlanGenerators;
-import tsdb.graph.node.Continuous;
-import tsdb.graph.node.ContinuousGen;
-import tsdb.graph.processing.Difference;
-import tsdb.util.DataQuality;
 import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 import tsdb.util.iterator.TsIteratorIterator;
@@ -34,7 +28,7 @@ public class AverageDiff {
 	public static void main(String[] args) throws FileNotFoundException {
 		System.out.println("start...");
 		TsDB tsdb = TsDBFactory.createDefault();
-		ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.STEP);
+		//ContinuousGen continuousGen = QueryPlanGenerators.getContinuousGen(tsdb, DataQuality.STEP);
 
 		//String sensorName="Ta_200"; {
 		for(String sensorName:tsdb.getBaseAggregationSensorNames()) {
@@ -61,14 +55,14 @@ public class AverageDiff {
 			
 			List<String> insertedNames = new ArrayList<String>();
 			
-			for(String stationName:stationNames) {
-				Continuous source = continuousGen.get(stationName, schema);
+			//for(String stationName:stationNames) {
+				//Continuous source = continuousGen.get(stationName, schema);
 				//TsIterator it = Difference.createFromGroupAverage(tsdb, source, stationName,true).get(null, null);
 				/*if(it!=null&&it.hasNext()) {
 					iterator_list.add(it);
 					insertedNames.add(stationName);
 				}*/
-			}
+			//}
 			System.out.println("included stations("+insertedNames.size()+"): "+insertedNames);
 			if(!iterator_list.isEmpty()) {
 				TsIteratorIterator result_iterator = new TsIteratorIterator(iterator_list,schema);

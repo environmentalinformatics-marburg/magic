@@ -12,6 +12,7 @@ import tsdb.util.DataQuality;
 import tsdb.util.iterator.TsIterator;
 
 public class TestingInterpolatedAverageLinear {
+	@SuppressWarnings("unused")
 	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) {

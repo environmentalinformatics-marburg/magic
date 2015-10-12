@@ -79,7 +79,7 @@ public class TimeSeriesLoaderKiLi {
 		try {
 			if(Files.exists(kiliPath)) {
 				DirectoryStream<Path> stream = Files.newDirectoryStream(kiliPath);
-				log.info("read directory of files:    "+kiliPath);
+				//log.info("read directory of files:    "+kiliPath);
 				for(Path path:stream) {
 					String filename = path.getName(path.getNameCount()-1).toString();
 					int ascIndex = filename.toLowerCase().indexOf(".asc");
@@ -99,7 +99,7 @@ public class TimeSeriesLoaderKiLi {
 						if(!excluded) {
 							String fileKey = filename.substring(0, ascIndex);
 							if(ascCollectorMap.containsKey(fileKey)) {
-								log.warn("file already inserted in map "+fileKey);
+								log.warn("file already inserted in map "+fileKey+"   "+ascCollectorMap.get(fileKey)+"   "+path);
 							}
 							ascCollectorMap.putIfAbsent(fileKey, path);
 						}

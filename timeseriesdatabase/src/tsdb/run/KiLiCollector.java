@@ -12,10 +12,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -35,13 +36,36 @@ import tsdb.util.iterator.TimestampSeries;
 /**
  * This class preprocesses new KiLi-data files.
  * 1. read all old data files
- * 2. read all new data files
- * 3. compare old to new
+ * 2. read all files to exclude
+ * 3. read all new data files
+ * 4. remove excluded files in new data files
+ * 5. compare old to new
+ * 6. copy files to processed directories
  * @author woellauer
  *
  */
 public class KiLiCollector {
 	private static final Logger log = LogManager.getLogger();
+
+	//private static final  String PREPROCESS_PATH = "c:/timeseriesdatabase_preprocess_temp";
+	private static final  String PREPROCESS_PATH = "c:/timeseriesdatabase_preprocess";
+	
+	private static final String LOG_PATH = PREPROCESS_PATH+"/preprocessed_log";
+	private static final String BASE_PATH = PREPROCESS_PATH+"/ki_tsm";
+	private static final String EXCLUDED_PATH = PREPROCESS_PATH+"/ki_excluded";
+	private static final String SOURCE_PATH = PREPROCESS_PATH+"/source";
+	//private static final String EMPTY_PATH = PREPROCESS_PATH+"/empty";
+
+	private static final String PREPROCESSED_PATH = PREPROCESS_PATH+"/preprocessed";
+	private static final String PREPROCESSED_EMPTY_PATH = PREPROCESS_PATH+"/preprocessed_empty";
+	private static final String PREPROCESSED_ERROR_PATH = PREPROCESS_PATH+"/preprocessed_error";
+	private static final String PREPROCESSED_NO_PLOT_PATH = PREPROCESS_PATH+"/preprocessed_no_plot";
+	private static final String PREPROCESSED_REMOVED_PATH = PREPROCESS_PATH+"/preprocessed_removed";
+
+	private static final String pathLogAllFiles = LOG_PATH+"/"+"all_files.csv";
+	private static final String pathLogNewFiles = LOG_PATH+"/"+"new_files.csv";
+	private static final String pathLogNewDuplicateFiles = LOG_PATH+"/"+"new_duplicate_files.csv";
+	private static final String pathLogNewEmptyFiles = LOG_PATH+"/"+"new_empty_files.csv";
 
 	private final TsDB tsdb;	
 	private final TimeSeriesLoaderKiLi timeseriesloaderKiLi;
@@ -68,6 +92,8 @@ public class KiLiCollector {
 			this.filesize = null;
 			this.md5 = null;
 		}
+		
+		public static String CSV_HEADER = "plot"+","+"logger"+","+"station"+","+"firstTimestamp"+","+"lastTimestamp"+","+"status"+","+"md5"+","+"filesize"+","+"filename";
 
 		public String toCSVRow() {
 			return plot+","+logger+","+station+","+TimeUtil.oleMinutesToText((long) firstTimestamp)+","+TimeUtil.oleMinutesToText((long) lastTimestamp)+","+status+","+md5+","+filesize+","+filename;
@@ -93,76 +119,84 @@ public class KiLiCollector {
 		this.timeseriesloaderKiLi = new TimeSeriesLoaderKiLi(tsdb);		
 	}
 
+	private static void writeLogFile(String filename, List<String> logs) {
+		try {
+			if(!logs.isEmpty()) {
+				Util.createDirectoriesOfFile(filename);
+				PrintStream out = new PrintStream(new FileOutputStream(filename));
+				out.println(CollectorEntry.CSV_HEADER);
+				for(String v:logs) {
+					out.println(v);
+				}
+				out.close();
+			}
+		} catch (FileNotFoundException e) {
+			log.error(e);
+		}
+	}
+
 	public static void main(String[] args) throws FileNotFoundException {
-
-		final  String PREPROCESS_PATH = "c:/timeseriesdatabase_preprocess";
-
-		final String station_scan_path = "c:/timeseriesdatabase_preprocess"+"/"+"preprocessed_log";
 
 		System.out.println("start...");
 
 		TsDB tsdb = TsDBFactory.createDefault();
 		KiLiCollector kiliCollector = new KiLiCollector(tsdb);
 
-		//HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/empty"));
-		HashMap<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/ki_tsm"));
+		//Map<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_asc_recursive(Paths.get(EMPTY_PATH));
+		Map<String, CollectorEntry> collectorMapBasis = kiliCollector.readDirectory_with_asc_recursive(Paths.get(BASE_PATH));
 		TreeMap<String, List<CollectorEntry>> md5MapBasis = createMD5Map(collectorMapBasis);
 
-		HashMap<String, CollectorEntry> collectorMapToAdd1 = kiliCollector.readDirectory_with_stations_flat(Paths.get("c:/timeseriesdatabase_preprocess/source"));
+		Map<String, CollectorEntry> collectorMapExcluded = kiliCollector.readDirectory_with_asc_recursive(Paths.get(EXCLUDED_PATH));
+		TreeMap<String, List<CollectorEntry>> md5MapExcluded = createMD5Map(collectorMapExcluded);		
 
+		Map<String, CollectorEntry> collectorMapToAdd = kiliCollector.readDirectory_with_asc_recursive(Paths.get(SOURCE_PATH));
+		TreeMap<String, List<CollectorEntry>> md5MapToAdd = createMD5Map(collectorMapToAdd);
 
-
-		String pathLogAllFiles = station_scan_path+"/"+"all_files.csv";
-		Util.createDirectoriesOfFile(pathLogAllFiles);
-		PrintStream outAllFiles = new PrintStream(new FileOutputStream(pathLogAllFiles));
-		for(CollectorEntry entry:collectorMapToAdd1.values()) {
-			outAllFiles.println(entry.toCSVRow());
+		for(CollectorEntry entry:collectorMapToAdd.values()) {
+			if(md5MapExcluded.containsKey(entry.md5)) {
+				//log.info("exclude "+entry.filename);
+				entry.status = "removed";
+			}
 		}
-		outAllFiles.close();
 
+		List<String> allFilesLog = collectorMapToAdd.values().stream().map(CollectorEntry::toCSVRow).collect(Collectors.toList());
+		writeLogFile(pathLogAllFiles, allFilesLog);
 
+		ArrayList<String> newFilesLog = new ArrayList<String>();
+		ArrayList<String> newDublicateFilesLog = new ArrayList<String>();
 
-
-
-
-		TreeMap<String, List<CollectorEntry>> md5MapToAdd = createMD5Map(collectorMapToAdd1);
-
-		String pathLogNewFiles = station_scan_path+"/"+"new_files.csv";
-		Util.createDirectoriesOfFile(pathLogNewFiles);
-		PrintStream outNewFiles = new PrintStream(new FileOutputStream(pathLogNewFiles));
-		String pathLogNewDuplicateFiles = station_scan_path+"/"+"new_duplicate_files.csv";
-		Util.createDirectoriesOfFile(pathLogNewDuplicateFiles);
-		PrintStream outNewDuplicateFiles = new PrintStream(new FileOutputStream(pathLogNewDuplicateFiles));
-		HashMap<String, CollectorEntry> collectorMapProcessed = new HashMap<String, CollectorEntry>();
+		Map<String, CollectorEntry> collectorMapProcessed = new TreeMap<String, CollectorEntry>();
 		for(Entry<String, List<CollectorEntry>> entry:md5MapToAdd.entrySet()) {
 			String md5Key = entry.getKey();
 			if(!md5MapBasis.containsKey(md5Key)) {
 				CollectorEntry toAddEntry = entry.getValue().get(0);
 				collectorMapProcessed.put(toAddEntry.filename,toAddEntry);
-				outNewFiles.println(toAddEntry.toCSVRow());
+				if(!toAddEntry.status.equals("removed")) {
+					newFilesLog.add(toAddEntry.toCSVRow());
+				}
 
 				if(entry.getValue().size()>1) {
 					for(CollectorEntry e:entry.getValue()) {
-						outNewDuplicateFiles.println(e.toCSVRow());
+						newDublicateFilesLog.add(e.toCSVRow());
 					}
-					outNewDuplicateFiles.println();
+					newDublicateFilesLog.add("");
 				}
 
 			} else {
-				System.out.println("duplicate "+entry.getValue().get(0).filename);
+				for(CollectorEntry e:entry.getValue()) {
+					e.status = "base duplicate"; 
+				}
 			}
 		}
-		outNewFiles.close();
-		outNewDuplicateFiles.close();
 
-		String PREPROCESSED_PATH = Paths.get(PREPROCESS_PATH,"preprocessed").toString();
-		String PREPROCESSED_EMPTY_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_empty").toString();
-		String PREPROCESSED_ERROR_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_error").toString();
-		String PREPROCESSED_NO_PLOT_PATH = Paths.get(PREPROCESS_PATH,"preprocessed_no_plot").toString();
+		writeLogFile(pathLogNewFiles, newFilesLog);
+		writeLogFile(pathLogNewDuplicateFiles, newDublicateFilesLog);
 
-		String pathLogNewEmptyFiles = station_scan_path+"/"+"new_empty_files.csv";
-		Util.createDirectoriesOfFile(pathLogNewEmptyFiles);
-		PrintStream outNewEmptyFiles = new PrintStream(new FileOutputStream(pathLogNewEmptyFiles));
+
+
+		//Util.createDirectoriesOfFile(pathLogNewEmptyFiles);
+		//PrintStream outNewEmptyFiles = new PrintStream(new FileOutputStream(pathLogNewEmptyFiles));
+		ArrayList<String> NewEmptyFilesLog = new ArrayList<String>();
 
 		for(CollectorEntry collectorEntry:collectorMapProcessed.values()) {			
 			try {
@@ -172,49 +206,44 @@ public class KiLiCollector {
 				String targetRoot = PREPROCESSED_ERROR_PATH;
 				switch(collectorEntry.status) {
 				case "ok":
-					//targetRoot = Paths.get(PREPROCESSED_PATH,collectorEntry.plot).toString();
 					targetRoot = Paths.get(PREPROCESSED_PATH).toString();
 					filename = collectorEntry.createNewFilename();
 					break;			
 				case "empty":
 					targetRoot = PREPROCESSED_EMPTY_PATH;
-					outNewEmptyFiles.println();
+					NewEmptyFilesLog.add(collectorEntry.toCSVRow());
 					break;
 				case "no properties found in station":
 					targetRoot = PREPROCESSED_NO_PLOT_PATH;
 					break;
+				case "removed":
+					targetRoot = PREPROCESSED_REMOVED_PATH;
+					break;
 				default:
-					//nothing
+					//nothing: targetRoot --> PREPROCESSED_ERROR_PATH
 				}
-
-				if(filename.equals("sav0_wxt_80031130066__2013_01_16__2013_01_26.asc")) {
-					System.out.println(collectorEntry.filename);
-				}
-
 
 				Path target = Paths.get(targetRoot, filename);
 				CopyOption options = StandardCopyOption.COPY_ATTRIBUTES;
 				Util.createDirectoriesOfFile(target.toString());
 				Files.copy(source, target, options);
-				//System.out.println(target);
 			} catch(Exception e) {
 				log.error(e+"  "+collectorEntry.filename);
 			}
 		}
 
-		outNewEmptyFiles.close();
-
+		writeLogFile(pathLogNewEmptyFiles, NewEmptyFilesLog);
 
 		System.out.println("collectorMapBasis "+collectorMapBasis.size());
 		System.out.println("md5MapBasis "+md5MapBasis.size());
-		System.out.println("collectorMapToAdd1 "+collectorMapToAdd1.size());
+		System.out.println("collectorMapToAdd1 "+collectorMapToAdd.size());
 		System.out.println("md5MapToAdd "+md5MapToAdd.size());
 		System.out.println("collectorMapProcessed "+collectorMapProcessed.size());
 
 		System.out.println("...finished");
 	}
 
-	public HashMap<String, CollectorEntry> readDirectory_with_stations_flat(Path root) {
+	public Map<String, CollectorEntry> readDirectory_with_stations_flat(Path root) {
 		log.info("load directory with directories of files:      "+root);		
 		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();		
 		try {
@@ -234,8 +263,8 @@ public class KiLiCollector {
 	}
 
 
-	public HashMap<String, CollectorEntry> readDirectory_with_asc_recursive(Path root) {
-		log.info("load directory with directories of files:      "+root);		
+	public Map<String, CollectorEntry> readDirectory_with_asc_recursive(Path root) {
+		log.info("load directory of files recursive:      "+root);		
 		TreeMap<String,Path> ascCollectorMap = new TreeMap<String,Path>();
 		readDirectory_with_asc_recursive_internal(root,ascCollectorMap);
 		return readWithAscCollectorMap(ascCollectorMap);
@@ -275,7 +304,7 @@ public class KiLiCollector {
 							if(!ascCollectorMap.containsKey(fileKey)) {
 								ascCollectorMap.put(fileKey, path);		
 							} else {
-								log.error("file key already present: "+fileKey);
+								log.error("file key already present: "+fileKey+"     "+ascCollectorMap.get(fileKey)+"   "+path);
 							}										
 						} else {
 							int binIndex = filename.toLowerCase().indexOf(".bin");
@@ -306,19 +335,11 @@ public class KiLiCollector {
 		}
 	}
 
-	public HashMap<String, CollectorEntry> readWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
-
-		HashMap<String, CollectorEntry> collectorMap = new HashMap<String,CollectorEntry>();
-
+	public Map<String, CollectorEntry> readWithAscCollectorMap(TreeMap<String,Path> ascCollectorMap) {
+		Map<String, CollectorEntry> collectorMap = new TreeMap<String,CollectorEntry>();
 		String currentInfoPrefix = "";
 
-		//int counter = 0;
 		for(Entry<String, Path> ascMapEntry:ascCollectorMap.entrySet()) {
-
-			/*if(counter>100) {
-				break;
-			}*/
-			//counter++;
 
 			String infoFilename = ascMapEntry.getKey();
 			Path ascPath = ascMapEntry.getValue();
@@ -398,7 +419,6 @@ public class KiLiCollector {
 
 			} catch (Exception e) {
 				collectorEntry.status = "error";
-				e.printStackTrace();
 				log.error(e+"  in  "+infoFilename);
 			}
 		}
@@ -406,9 +426,8 @@ public class KiLiCollector {
 		return collectorMap;
 	}
 
-	private static TreeMap<String, List<CollectorEntry>> createMD5Map(HashMap<String, CollectorEntry> collectorMap) {
+	private static TreeMap<String, List<CollectorEntry>> createMD5Map(Map<String, CollectorEntry> collectorMap) {
 		TreeMap<String, List<CollectorEntry>> md5Map = new TreeMap<String,List<CollectorEntry>>();
-
 		for(CollectorEntry collectorEntry : collectorMap.values()) {
 			String key = collectorEntry.md5;
 			if(key==null) {
@@ -421,7 +440,6 @@ public class KiLiCollector {
 			}
 			entryList.add(collectorEntry);
 		}
-
 		return md5Map;
 	}
 

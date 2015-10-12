@@ -1,16 +1,12 @@
 package tsdb.usecase;
 
-import java.util.concurrent.TimeUnit;
-
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.graph.QueryPlan;
 import tsdb.graph.node.Node;
 import tsdb.util.AggregationInterval;
 import tsdb.util.DataQuality;
-import tsdb.util.Interval;
 import tsdb.util.TimeSeriesMask;
-import tsdb.util.TimeUtil;
 
 public class Mask {
 

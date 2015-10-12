@@ -264,7 +264,7 @@ public final class TimeUtil implements Serializable {
 	};
 
 	public static int parseStartTimestamp(String text) {
-		String s = text.trim();
+		text = text.trim();
 
 		switch(text.length()) {
 		case 1: {
@@ -295,7 +295,7 @@ public final class TimeUtil implements Serializable {
 	}
 
 	public static int parseEndTimestamp(String text) {
-		String s = text.trim();
+		text = text.trim();
 
 		switch(text.length()) {
 		case 1: {

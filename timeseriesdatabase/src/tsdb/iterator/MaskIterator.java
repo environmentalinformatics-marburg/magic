@@ -14,6 +14,7 @@ import tsdb.util.iterator.InputIterator;
 import tsdb.util.iterator.TsIterator;
 
 public class MaskIterator extends InputIterator {
+		@SuppressWarnings("unused")
 		private static final Logger log = LogManager.getLogger();
 
 		private Iterator<Interval>[] maskIterators;

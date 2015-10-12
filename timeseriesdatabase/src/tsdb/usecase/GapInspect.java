@@ -18,7 +18,6 @@ import tsdb.Station;
 import tsdb.StationProperties;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.graph.QueryPlan;
 import tsdb.graph.QueryPlanGenerators;
 import tsdb.util.DataQuality;
 import tsdb.util.Interval;
