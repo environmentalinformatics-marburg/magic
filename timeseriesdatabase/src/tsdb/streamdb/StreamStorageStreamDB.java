@@ -164,7 +164,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	}
 
-	public void insertDataEntyArray(String stationName, String sensorName, DataEntry[] dataEntries) {
+	public void insertDataEntryArray(String stationName, String sensorName, DataEntry[] dataEntries) {
 		log.info("streamDB insert DataEntyArray "+stationName+"/"+sensorName);
 		if(dataEntries!=null&&dataEntries.length>0) {
 			streamdb.insertSensorData(stationName, sensorName, dataEntries);

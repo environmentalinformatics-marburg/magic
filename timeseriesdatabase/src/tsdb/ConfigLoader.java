@@ -120,6 +120,7 @@ public class ConfigLoader {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 		}		
 	}
@@ -1221,7 +1222,7 @@ public class ConfigLoader {
 
 	}
 
-	public void readSaOwnStationInventory(String configFile) {
+	public void readGenericStationInventory(String configFile) {
 		Table table = Table.readCSV(configFile,',');
 		ColumnReaderString cr_plot = table.createColumnReader("plot");
 		ColumnReaderString cr_logger = table.createColumnReader("logger");
@@ -1263,5 +1264,33 @@ public class ConfigLoader {
 			tsdb.insertStation(station);
 			virtualPlot.addStationEntry(station, stationProperties);
 		}
-	}	
+	}
+	
+	public void readBaPlotInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_general = table.createColumnReader("general");		
+		ColumnReaderFloat cr_easting = table.createColumnReaderFloat("easting");
+		ColumnReaderFloat cr_northing = table.createColumnReaderFloat("northing");
+		ColumnReaderFloat cr_elevation = table.createColumnReaderFloat("elevation");
+
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String generalStationName = cr_general.get(row);
+			float easting = cr_easting.get(row,true);
+			float northing = cr_northing.get(row,true);
+			float elevation = cr_elevation.get(row,true); 
+			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+			if(generalStation==null) {
+				log.error("GeneralStation not found "+generalStationName);
+				continue;
+			}
+
+			boolean isFocalPlot = false;
+			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, easting, northing, isFocalPlot);
+			virtualPlot.elevation = elevation;
+			tsdb.insertVirtualPlot(virtualPlot);
+		}
+
+	}
 }

@@ -20,12 +20,12 @@ import tsdb.util.iterator.TimestampSeries;
  * @author woellauer
  *
  */
-public class ImportMM {
+public class ImportGenericASC {
 	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb;
 
-	public ImportMM(TsDB tsdb) {
+	public ImportGenericASC(TsDB tsdb) {
 		AssumptionCheck.throwNull(tsdb);
 		this.tsdb = tsdb;
 	}
@@ -70,6 +70,9 @@ public class ImportMM {
 
 	public void loadFile(Path filePath) {
 		try {
+			if(filePath.toString().toLowerCase().endsWith(".bin")) { // skip file
+				return;
+			}
 			log.info("load file "+filePath);
 			TimestampSeries timestampseries = AscParser.parse(filePath,true);
 			if(timestampseries==null) {
@@ -101,7 +104,7 @@ public class ImportMM {
 						data = corrected_data;
 					}						
 					if(data!=null&&data.length>0) {
-						tsdb.streamStorage.insertDataEntyArray(timestampseries.name, targetName, data);
+						tsdb.streamStorage.insertDataEntryArray(timestampseries.name, targetName, data);
 					}
 				} else {
 					log.warn("sensor not found   "+sensorName+"     at logger "+station.loggerType.typeName+"   station "+station.stationID+"    "+filePath);

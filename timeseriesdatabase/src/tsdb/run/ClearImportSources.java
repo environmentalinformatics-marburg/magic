@@ -10,7 +10,7 @@ import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.loader.be.TimeSeriesLoaderBE;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi_manual_tfi;
-import tsdb.loader.mm.ImportMM;
+import tsdb.loader.mm.ImportGenericASC;
 import tsdb.loader.ki.TimeSeriesLoaderKiLi;
 import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.loader.sa_own.ImportSaOwn;
@@ -33,6 +33,7 @@ public class ClearImportSources {
 		boolean import_SA = true;
 		boolean import_SA_OWN = true;
 		boolean import_MM = true;
+		boolean import_BA = true;
 		if(TsDBFactory.JUST_ONE_REGION==null){
 			//all
 		} else {
@@ -59,7 +60,10 @@ public class ClearImportSources {
 				break;
 			case "MM":
 				import_MM = true;
-				break;					
+				break;
+			case "BA":
+				import_BA = true;
+				break;				
 			default:
 				log.error("unknown region "+oneRegion);
 				return;
@@ -92,8 +96,10 @@ public class ClearImportSources {
 		long timeEndSA = 0;
 		long timeStartSA_OWN = 0;
 		long timeEndSA_OWN = 0;
-		long timeStartMM = 0;
+		long timeStartMM = 0;		
 		long timeEndMM = 0;
+		long timeStartBA = 0;
+		long timeEndBA = 0;		
 
 		System.gc();
 		if(import_BE) { //*** BE
@@ -150,8 +156,18 @@ public class ClearImportSources {
 			log.info("import MM");
 			log.info("from "+TsDBFactory.SOURCE_MM_PATH);
 			timeStartMM = System.currentTimeMillis();
-			new ImportMM(tsdb).load(TsDBFactory.SOURCE_MM_PATH);
+			new ImportGenericASC(tsdb).load(TsDBFactory.SOURCE_MM_PATH);
 			timeEndMM = System.currentTimeMillis();
+			System.gc();
+		}
+		if(import_BA) { //*** BA
+			log.info("import BA");
+			log.info("from "+TsDBFactory.SOURCE_BA_PATH);
+			timeStartBA = System.currentTimeMillis();
+			new ImportGenericASC(tsdb).load(TsDBFactory.SOURCE_BA_PATH);
+			log.info("from "+TsDBFactory.SOURCE_BA_REF_PATH);
+			new ImportGenericCSV(tsdb).load(TsDBFactory.SOURCE_BA_REF_PATH);			
+			timeEndBA = System.currentTimeMillis();
 			System.gc();
 		}
 
@@ -183,6 +199,7 @@ public class ClearImportSources {
 		log.info(msToText(timeStartSA,timeEndSA)+" SA import");
 		log.info(msToText(timeStartSA_OWN,timeEndSA_OWN)+" SA_OWN import");
 		log.info(msToText(timeStartMM,timeEndMM)+" MM import");
+		log.info(msToText(timeStartBA,timeEndBA)+" BA import");		
 		log.info(msToText(timeStartClose,timeEndClose)+" Close");
 		log.info(msToText(timeStart,timeEnd)+" total import");
 		log.info("");

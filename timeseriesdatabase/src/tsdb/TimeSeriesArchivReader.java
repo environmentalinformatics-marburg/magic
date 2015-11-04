@@ -237,7 +237,7 @@ public class TimeSeriesArchivReader {
 				@Override
 				public void readDataEntries(String stationName, String sensorName, DataEntry[] dataEntries) {
 					//log.info(stationName+" "+sensorName+" "+dataEntries.length);
-					tsdb.streamStorage.insertDataEntyArray(stationName, sensorName, dataEntries);
+					tsdb.streamStorage.insertDataEntryArray(stationName, sensorName, dataEntries);
 				}
 				@Override
 				public void readTimestampSeries(TimestampSeries timestampSeries) {

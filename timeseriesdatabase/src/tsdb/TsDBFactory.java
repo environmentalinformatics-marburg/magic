@@ -35,6 +35,8 @@ public final class TsDBFactory {
 	public static String SOURCE_SA_DAT_PATH = "source/sa_dat";
 	public static String SOURCE_SA_OWN_PATH = "source/sa_own";
 	public static String SOURCE_MM_PATH = "source/mm";
+	public static String SOURCE_BA_PATH = "source/ba";
+	public static String SOURCE_BA_REF_PATH = "source/ba_ref";	
 
 	public static String WEBCONTENT_PATH = "webcontent";
 	public static String WEBDOWNLOAD_PATH = "webDownload";
@@ -92,6 +94,8 @@ public final class TsDBFactory {
 			SOURCE_SA_DAT_PATH = getString(pathMap, "SOURCE_SA_DAT_PATH", SOURCE_SA_DAT_PATH);
 			SOURCE_SA_OWN_PATH = getString(pathMap, "SOURCE_SA_OWN_PATH", SOURCE_SA_OWN_PATH);
 			SOURCE_MM_PATH = getString(pathMap, "SOURCE_MM_PATH", SOURCE_MM_PATH);
+			SOURCE_BA_PATH = getString(pathMap, "SOURCE_BA_PATH", SOURCE_BA_PATH);
+			SOURCE_BA_REF_PATH = getString(pathMap, "SOURCE_BA_REF_PATH", SOURCE_BA_REF_PATH);			
 			WEBCONTENT_PATH = getString(pathMap, "WEBCONTENT_PATH", WEBCONTENT_PATH);
 			WEBDOWNLOAD_PATH = getString(pathMap, "WEBDOWNLOAD_PATH", WEBDOWNLOAD_PATH);
 			WEBFILES_PATH = getString(pathMap, "WEBFILES_PATH", WEBFILES_PATH);
@@ -212,7 +216,7 @@ public final class TsDBFactory {
 				configLoader.readLoggerTypeSchema(prefix+"sa_own_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
 				configLoader.readGeneralStation(prefix+"sa_own_general_stations.ini"); // [create GENERAL_STATION]
 				configLoader.readSaOwnPlotInventory(prefix+"sa_own_plot_inventory.csv");
-				configLoader.readSaOwnStationInventory(prefix+"sa_own_station_inventory.csv");
+				configLoader.readGenericStationInventory(prefix+"sa_own_station_inventory.csv");
 				configLoader.readSensorTranslation(prefix+"sa_own_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations				
 			}
 			
@@ -223,8 +227,19 @@ public final class TsDBFactory {
 				configLoader.readLoggerTypeSchema(prefix+"mm_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
 				configLoader.readGeneralStation(prefix+"mm_general_stations.ini"); // [create GENERAL_STATION]
 				configLoader.readSaOwnPlotInventory(prefix+"mm_plot_inventory.csv");
-				configLoader.readSaOwnStationInventory(prefix+"mm_station_inventory.csv");
+				configLoader.readGenericStationInventory(prefix+"mm_station_inventory.csv");
 				configLoader.readSensorTranslation(prefix+"mm_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations				
+			}
+			
+			if(JUST_ONE_REGION==null||JUST_ONE_REGION.toUpperCase().equals("BA")) {  //*** BA
+				String prefix = configDirectory+"ba/";
+
+				configLoader.readRegion(prefix+"ba_region.ini");
+				configLoader.readLoggerTypeSchema(prefix+"ba_logger_type_schema.ini"); // [create LOGGER_TYPE] read schema of logger types and create: logger type objects, sensor objects (if new)
+				configLoader.readGeneralStation(prefix+"ba_general_stations.ini"); // [create GENERAL_STATION]
+				configLoader.readBaPlotInventory(prefix+"ba_plot_inventory.csv");
+				configLoader.readGenericStationInventory(prefix+"ba_station_inventory.csv");
+				configLoader.readSensorTranslation(prefix+"ba_sensor_translation.ini"); // read sensor translation and insert it into existing logger types, general stations and stations				
 			}
 
 			//*** global config start

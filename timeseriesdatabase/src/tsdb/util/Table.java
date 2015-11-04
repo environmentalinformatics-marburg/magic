@@ -3,6 +3,7 @@ package tsdb.util;
 import static tsdb.util.AssumptionCheck.throwFalse;
 
 import java.io.FileReader;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -237,6 +238,10 @@ public class Table {
 	public String[][] rows;
 
 	private Table() {}
+	
+	public static Table readCSV(Path filename, char separator) {
+		return readCSV(filename.toString(),separator);
+	}
 
 	/**
 	 * create a Table Object from CSV-File

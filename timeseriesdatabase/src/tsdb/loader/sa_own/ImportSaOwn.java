@@ -129,7 +129,7 @@ public class ImportSaOwn {
 							//System.out.println("insert in station "+stationName+" sensor "+sensorName+"  elements "+data.length);
 							//streamdb.insertSensorData(stationName, sensorName, data);
 							//log.info("insert in station "+timestampseries.name+" sensor "+targetName+"  elements "+data.length);
-							tsdb.streamStorage.insertDataEntyArray(timestampseries.name, targetName, data);
+							tsdb.streamStorage.insertDataEntryArray(timestampseries.name, targetName, data);
 							
 							if(targetName.equals("DecagonECH2O")) {
 								log.info("DecagonECH2O translated");
@@ -140,7 +140,7 @@ public class ImportSaOwn {
 									//log.info(y);
 									transformed_data[i] = new DataEntry(data[i].timestamp,y);
 								}
-								tsdb.streamStorage.insertDataEntyArray(timestampseries.name, "SM_10", transformed_data);
+								tsdb.streamStorage.insertDataEntryArray(timestampseries.name, "SM_10", transformed_data);
 							}
 						}
 					}
