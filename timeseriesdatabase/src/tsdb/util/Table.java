@@ -2,7 +2,10 @@ package tsdb.util;
 
 import static tsdb.util.AssumptionCheck.throwFalse;
 
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +29,9 @@ import tsdb.util.Table.ColumnReaderIntFunc.IntegerParser;
 public class Table {
 
 	private static final Logger log = LogManager.getLogger();
+	
+	private static final Charset UTF8 = Charset.forName("UTF-8");
+	private static final String UTF8_BOM = "\uFEFF";
 
 	public static class ColumnReader {
 		public final int rowIndex;
@@ -252,10 +258,21 @@ public class Table {
 		try {
 			Table table = new Table();
 
-			CSVReader reader = new CSVReader(new FileReader(filename),separator);
+			//CSVReader reader = new CSVReader(new FileReader(filename),separator);
+			InputStreamReader in = new InputStreamReader(new FileInputStream(filename),UTF8);
+			CSVReader reader = new CSVReader(in,separator);
+			
 			List<String[]> list = reader.readAll();
 
 			table.names = list.get(0);
+			
+			if(table.names.length>0) { // filter UTF8 BOM
+				if(table.names[0].startsWith(UTF8_BOM)) {
+					table.names[0] = table.names[0].substring(1, table.names[0].length());
+				}
+			}
+			
+			//log.info("names: "+Arrays.toString(table.names)+"   in "+filename);
 
 			table.nameMap = new HashMap<String, Integer>();
 

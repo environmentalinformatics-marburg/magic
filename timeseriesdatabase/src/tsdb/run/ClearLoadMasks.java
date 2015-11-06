@@ -56,6 +56,11 @@ public class ClearLoadMasks {
 			String fileName = path+"/mm/"+cf;
 			loadMask(tsdb, fileName);
 		}
+		
+		if(TsDBFactory.JUST_ONE_REGION==null||TsDBFactory.JUST_ONE_REGION.toUpperCase().equals("BA")) {  //*** BA
+			String fileName = path+"/ba/"+cf;
+			loadMask(tsdb, fileName);
+		}
 
 
 
