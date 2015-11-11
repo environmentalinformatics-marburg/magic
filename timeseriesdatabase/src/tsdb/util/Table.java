@@ -27,7 +27,6 @@ import tsdb.util.Table.ColumnReaderIntFunc.IntegerParser;
  *
  */
 public class Table {
-
 	private static final Logger log = LogManager.getLogger();
 	
 	private static final Charset UTF8 = Charset.forName("UTF-8");
