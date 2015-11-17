@@ -7,15 +7,13 @@ library(caret)
 resultpath="/media/memory01/casestudies/hmeyer/Improve_DE_retrieval/results"
 
 
-#for (dt in c("day","night")){
-for (dt in c("night")){
+for (dt in c("day","night")){
   datasetTime<-dt
-# for (rn in c("Rain","RInfo")){    
   for (rn in c("Rain","RInfo")){  
     responseName<-rn
     sampsize=0.05
     if(responseName=="Rain"){
-      sampsize=0.25#0.25
+      sampsize=0.25
     }
     
     ############################################################################

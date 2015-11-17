@@ -6,7 +6,7 @@ library(caret)
 library(Rainfall)
 library(Rsenal)
 datasetTimes<-c("night","day")
-responseNames<-c("RInfo")
+responseNames<-c("RInfo","Rain")
 pc="183"
 onlySpectral=FALSE
 
