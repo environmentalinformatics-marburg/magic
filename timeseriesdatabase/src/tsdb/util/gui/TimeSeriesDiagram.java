@@ -20,7 +20,7 @@ import tsdb.util.gui.TimeSeriesPainter.PosVerical;
 import tsdb.util.iterator.TimestampSeries;
 
 public class TimeSeriesDiagram {
-	
+
 	private static final int ELEMENT_INDEX_MIN = 0;
 	private static final int ELEMENT_INDEX_MAX = 6;
 	private static final int ELEMENT_INDEX_W_MIN = 1;
@@ -54,10 +54,10 @@ public class TimeSeriesDiagram {
 	@SuppressWarnings("unused")
 	private long dataTimestampRange;
 
-	private static final float borderTop = 5;
-	private static final float borderBottom = 15;
-	private static final float borderLeft = 40;
-	private static final float borderRight = 5;
+	private float borderTop = 5;
+	private float borderBottom = 15;
+	private float borderLeft = 40;
+	private float borderRight = 5;
 
 	private float diagramMinX;
 	private float diagramMinY;
@@ -74,8 +74,16 @@ public class TimeSeriesDiagram {
 	private double diagramValueRange;
 	private double diagramTimestampFactor;
 	private double diagramValueFactor;
+	
+	private boolean scale_right = true;
+	
 
 	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType, boolean boxplot) {
+		
+		if(scale_right) {
+			borderRight = 40;
+		}
+		
 		throwNulls(timestampseries,aggregationInterval);
 		this.boxplot = boxplot;
 		this.timestampseries = timestampseries;
@@ -383,10 +391,6 @@ public class TimeSeriesDiagram {
 		diagramTimestampRange = max-min;
 	}
 
-
-
-
-
 	public float getDataMinValue() {
 		return dataMinValue;
 	}
@@ -436,7 +440,7 @@ public class TimeSeriesDiagram {
 	}
 
 	private void drawBoxplot(TimeSeriesPainter tsp) { // 0:min 1:dmin 2:q1 3:median 4:q3 5:dmax 6:max
-		
+
 		/*switch(diagramType) {
 		case TEMPERATURE:
 			tsp.setColor(180,220,180);
@@ -450,7 +454,7 @@ public class TimeSeriesDiagram {
 		default:
 			log.error("unknown diagram type: "+diagramType);
 		}*/
-		
+
 		tsp.setColor(100,220,100);
 
 		for(TsEntry entry:timestampseries) {
@@ -474,8 +478,8 @@ public class TimeSeriesDiagram {
 			}
 
 		}
-		
-		
+
+
 
 		switch(diagramType) {
 		case TEMPERATURE:
@@ -512,7 +516,7 @@ public class TimeSeriesDiagram {
 			}
 
 		}
-		
+
 		switch(diagramType) {
 		case TEMPERATURE:
 			tsp.setColor(220, 100, 100);
@@ -565,8 +569,8 @@ public class TimeSeriesDiagram {
 		default:
 			log.error("unknown diagram type: "+diagramType);
 		}
-		
-		
+
+
 
 		for(TsEntry entry:timestampseries) {
 			if(entry.timestamp<diagramMinTimestamp) {
@@ -823,6 +827,9 @@ public class TimeSeriesDiagram {
 			}			
 			tsp.setColorYScaleText();
 			tsp.drawText(valueText,pos,y,posType,PosVerical.CENTER);
+			if(scale_right) {
+				tsp.drawText(valueText,diagramMaxX+2,y,PosHorizontal.LEFT,PosVerical.CENTER);
+			}
 			line+=lineStep;
 		}		
 	}

@@ -14,7 +14,6 @@ import org.influxdb.dto.QueryResult.Series;
 
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
-import tsdb.streamdb.StreamIterator;
 
 public class InfluxDBDataReader {
 	private static final Logger log = LogManager.getLogger();
@@ -62,15 +61,15 @@ public class InfluxDBDataReader {
 	}
 
 	private void readSeries(String stationName, String sensorName) {
-		QueryResult queryResult = influxDB.query(new Query("select * from \""+stationName+'/'+sensorName+'\"',"testing"));
+		QueryResult queryResult = influxDB.query(new Query("select * from \""+stationName+'/'+sensorName+'\"',InfluxDBDataWriter.dbName));
 		List<Result> resultList = queryResult.getResults();
 		for(Result result:resultList) {
-			log.info("result");
+			//log.info("result");
 			List<Series> seriesList = result.getSeries();
 			for(Series series:seriesList) {
-				log.info("series");
-				log.info("columns "+series.getColumns());
-				log.info("tags "+series.getTags());
+				log.info("series "+series.getName());
+				//log.info("columns "+series.getColumns());
+				//log.info("tags "+series.getTags());
 				//log.info("values "+series.getValues());
 				List<List<Object>> valueList = series.getValues();
 				for(List<Object> value:valueList) {

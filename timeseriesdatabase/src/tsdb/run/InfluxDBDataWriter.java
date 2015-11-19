@@ -24,13 +24,15 @@ public class InfluxDBDataWriter {
 
 	private final TsDB tsdb;
 
+	public static String dbName = "testing_1";
+
 	private FileWriter writer = null;
 	private InfluxDB influxDB = null;
 
 	public static void main(String[] args) {
-		
-		String dbName = "testing";
-		
+
+
+
 		TsDB tsdb = TsDBFactory.createDefault();
 		InfluxDBDataWriter influxDBDataWriter = new InfluxDBDataWriter(tsdb);			
 		//influxDBDataWriter.writeAllStationsToFile("c:/temp/data.txt");		
@@ -46,6 +48,10 @@ public class InfluxDBDataWriter {
 	public void writeAllStationsToDB(String dbName) {
 		try {
 			influxDB = InfluxDBFactory.connect("http://localhost:8086", "root", "root");
+			int actions = 1000000;
+			int flushDuration = 1;
+			TimeUnit flushDurationTimeUnit = TimeUnit.MINUTES;
+			influxDB.enableBatch(actions, flushDuration, flushDurationTimeUnit);
 			influxDB.deleteDatabase(dbName);
 			//if(true)return;
 			influxDB.createDatabase(dbName);
@@ -61,7 +67,15 @@ public class InfluxDBDataWriter {
 							StreamIterator it = tsdb.streamStorage.getRawSensorIterator(stationName, sensorName, null, null);
 							if(it!=null&&it.hasNext()) {
 								//log.info(it);
-								writeItDB(dbName, stationName, sensorName, it);
+								boolean written = false;
+								while(!written) {
+									try {
+										writeItDB(dbName, stationName, sensorName, it);
+										written = true;
+									} catch(Exception e) {
+										log.warn("retry "+stationName+'/'+sensorName+": "+e.getMessage());
+									}
+								}
 							}
 						}
 					} catch(Exception e) {
@@ -87,7 +101,7 @@ public class InfluxDBDataWriter {
 		}
 
 	}
-	
+
 	public void writeAllStationsToFile(String filename) {
 		try {
 			writer = new FileWriter(filename);
@@ -128,20 +142,20 @@ public class InfluxDBDataWriter {
 		}
 
 	}
-	
+
 	long t = 0;
-	
+
 	//00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970
 	public static final long INFLUXDB_TIME_START_OLE_MINUTES = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(1970,01,01,0,0));
-	
+
 	public void writeItDB(String dbName, String stationName, String sensorName, StreamIterator it) throws IOException {		
 		BatchPoints batchPoints = BatchPoints
-                .database(dbName)
-                //.tag("async", "true")
-                //.retentionPolicy("default")
-                //.consistency(ConsistencyLevel.ALL)
-                .build();
-		
+				.database(dbName)
+				//.tag("async", "true")
+				//.retentionPolicy("default")
+				//.consistency(ConsistencyLevel.ALL)
+				.build();
+
 		while(it.hasNext()) {			
 			DataEntry e = it.next();
 			long t = ((long)e.timestamp)-INFLUXDB_TIME_START_OLE_MINUTES;
@@ -151,13 +165,13 @@ public class InfluxDBDataWriter {
 		}	
 
 		influxDB.write(batchPoints);
-		
+
 		/*while(it.hasNext()) {			
 			DataEntry e = it.next();			
 			Point point = Point.measurement(it.stationName).field(it.sensorName, e.value).build();
 			influxDB.write(dbName, "default", point);
 		}*/
-		
+
 		log.info("write "+it.stationName+" "+it.sensorName);
 
 	}

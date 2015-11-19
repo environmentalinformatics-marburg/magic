@@ -26,8 +26,14 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	private StreamDB streamdb;
 
+	private boolean logging;
+
 	public StreamStorageStreamDB(String streamdbPathPrefix) {		
 		this.streamdb = new StreamDB(streamdbPathPrefix);
+	}
+	
+	public void setLogging(boolean logging) {
+		this.logging = logging;
 	}
 
 	@Override
@@ -165,7 +171,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 	}
 
 	public void insertDataEntryArray(String stationName, String sensorName, DataEntry[] dataEntries) {
-		log.info("streamDB insert DataEntyArray "+stationName+"/"+sensorName);
+		if(logging) log.info("streamDB insert DataEntyArray "+stationName+"/"+sensorName);
 		if(dataEntries!=null&&dataEntries.length>0) {
 			streamdb.insertSensorData(stationName, sensorName, dataEntries);
 		}

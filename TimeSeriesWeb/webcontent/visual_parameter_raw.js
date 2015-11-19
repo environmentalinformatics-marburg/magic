@@ -304,7 +304,9 @@ function visualise(plots) {
 			boxplot = true;		
 		case "graph":
 			getID("div_result").innerHTML = getSensorTable([sensor_row]);
-			$.each(plots, function(i,plot) {addDiagram(plot[0],sensor_row[0],boxplot);})
+			var width = getID("div_result").clientWidth - 30;
+			var height = 400;
+			$.each(plots, function(i,plot) {addDiagram(plot[0],sensor_row[0],boxplot,width,height);})
 			break;
 		case "heatmap":
 			getID("div_result").innerHTML = getSensorTable([sensor_row]);
@@ -332,7 +334,7 @@ function onVisualiseClick() {
 	getPlotList(visualise);
 }
 
-function addDiagram(plotName, sensorName, boxplot) {
+function addDiagram(plotName, sensorName, boxplot, width, height) {
 	incTask();
 	var sensorResult = getID("div_result").appendChild(document.createElement("div"));
 	var sensorResultTitle = sensorResult.appendChild(document.createElement("div"));
@@ -362,7 +364,8 @@ function addDiagram(plotName, sensorName, boxplot) {
 		sensorResult.removeChild(image);
 		decTask();
 	}
-	image.src = url_query_diagram+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter+"&boxplot="+boxplot;
+	var bounds = "&width="+width+"&height="+height;
+	image.src = url_query_diagram+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter+"&boxplot="+boxplot+bounds;
 	decTask();	
 }
 

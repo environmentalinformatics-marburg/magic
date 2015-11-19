@@ -293,6 +293,9 @@ function onVisualiseClick() {
 	incTask();
 	getID("div_result").innerHTML = "query...";
 	
+	var width = getID("div_result").clientWidth - 30;
+	var height = 400;
+	
 	var boxplot = false;
 	var plotName = plot_select.val();
 	var sensorQuery = "plot="+plotName;
@@ -312,7 +315,7 @@ function onVisualiseClick() {
 			case "graph":
 				$.each(sensor_rows, function(i,row) {
 					if(aggregationName=="raw" || row[3]!="NONE") {
-						addDiagram(plotName,row[0],row[1],row[2],boxplot);
+						addDiagram(plotName,row[0],row[1],row[2],boxplot,width,height);
 					}
 				});
 				break;
@@ -357,7 +360,7 @@ function onVisualiseClick() {
 			case "boxplot":
 				boxplot = true;			
 			case "graph":
-				addDiagram(plotName,row[0],row[1],row[2],boxplot);
+				addDiagram(plotName,row[0],row[1],row[2],boxplot,width,height);
 				break;
 			case "heatmap":
 				addHeatmap(plotName,row[0],row[1],row[2]);
@@ -381,7 +384,7 @@ function onVisualiseClick() {
 	}
 }
 
-function addDiagram(plotName, sensorName, sensorDesc, sensorUnit, boxplot) {
+function addDiagram(plotName, sensorName, sensorDesc, sensorUnit, boxplot, width, height) {
 	incTask();
 	var sensorResult = getID("div_result").appendChild(document.createElement("div"));
 	var sensorResultTitle = sensorResult.appendChild(document.createElement("div"));
@@ -411,7 +414,8 @@ function addDiagram(plotName, sensorName, sensorDesc, sensorUnit, boxplot) {
 		sensorResult.removeChild(image);
 		decTask();
 	}
-	image.src = url_query_diagram+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter+"&boxplot="+boxplot;
+	var bounds = "&width="+width+"&height="+height;
+	image.src = url_query_diagram+"?plot="+plotName+"&sensor="+sensorName+"&aggregation="+aggregationName+"&quality="+qualityName+"&interpolated="+interpolatedName+timeParameter+"&boxplot="+boxplot+bounds;
 	decTask();	
 }
 
