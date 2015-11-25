@@ -1,5 +1,15 @@
 package tsdb.util;
 
+/**
+ * tuple of four entries
+ * immutable if a, b, c and d are immutable
+ * @author woellauer
+ *
+ * @param <A>
+ * @param <B>
+ * @param <C>
+ * @param <D>
+ */
 public class Quadruple<A,B,C,D> {
 	public final A a;
 	public final B b;

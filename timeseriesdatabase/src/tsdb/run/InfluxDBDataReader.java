@@ -25,7 +25,7 @@ public class InfluxDBDataReader {
 
 	public static void main(String[] args) {		
 		TsDB tsdb = TsDBFactory.createDefault();
-		InfluxDB influxDB = InfluxDBFactory.connect("http://localhost:8086", "root", "root");
+		InfluxDB influxDB = InfluxDBFactory.connect(InfluxDBDataWriter.dbHost, "root", "root");
 		InfluxDBDataReader influxDBDataReader = new InfluxDBDataReader(tsdb, influxDB);
 		influxDBDataReader.readAll();
 		tsdb.close();		

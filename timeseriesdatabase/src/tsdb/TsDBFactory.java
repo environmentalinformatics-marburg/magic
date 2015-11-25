@@ -17,7 +17,6 @@ import tsdb.util.Util;
  * Factory for TimeSeriesDatabase.
  * Creates tsdb object and loads tsdb config data from config files.
  * @author woellauer
- *
  */
 public final class TsDBFactory {
 	private static final Logger log = LogManager.getLogger();
@@ -115,7 +114,7 @@ public final class TsDBFactory {
 	}
 
 	/**
-	 * Read boolean parameter from ini file. If it not exists set to defaul.
+	 * Read boolean parameter from ini file. If it not exists set to default.
 	 * @param map map of ini-file-section
 	 * @param key parameter
 	 * @param defaultValue default
@@ -137,7 +136,7 @@ public final class TsDBFactory {
 	}
 
 	/**
-	 * Read String parameter from ini file. If it not exists set to defaul.
+	 * Read String parameter from ini file. If it not exists set to default.
 	 * @param map map of ini-file-section
 	 * @param key parameter
 	 * @param defaultValue default

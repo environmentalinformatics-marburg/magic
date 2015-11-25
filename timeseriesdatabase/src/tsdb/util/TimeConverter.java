@@ -3,7 +3,13 @@ package tsdb.util;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public class TimeConverter {
+/**
+ * Converter of timestamps with reference to file time data.
+ * immutable
+ * @author woellauer
+ *
+ */
+public final class TimeConverter {
 	
 	private final double dActTimeToSecondFactor;
 	private final double startTime;

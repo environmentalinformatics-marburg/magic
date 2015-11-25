@@ -8,8 +8,8 @@ import org.mapdb.Serializer;
 
 /**
  * Metadat of station
+ * immutable (Fields should not be changed.)
  * @author woellauer
- *
  */
 public class StationMeta {
 

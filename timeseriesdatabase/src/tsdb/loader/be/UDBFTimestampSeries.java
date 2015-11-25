@@ -1,13 +1,14 @@
 package tsdb.loader.be;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import tsdb.util.TimeConverter;
 
 /**
  * contains relevant data of a UDBF-File.
+ * immutable (Field values should not be changed.) 
  * @author woellauer
- *
  */
 public class UDBFTimestampSeries {
 	
@@ -32,5 +33,9 @@ public class UDBFTimestampSeries {
 		}
 		return headerNames;
 	}
-
+	
+	@Override
+	public String toString() {
+		return Arrays.toString(sensorHeaders)+" "+filename;
+	}
 }

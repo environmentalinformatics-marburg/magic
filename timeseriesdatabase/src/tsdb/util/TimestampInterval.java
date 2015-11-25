@@ -5,6 +5,12 @@ import java.util.Comparator;
 
 import static tsdb.util.AssumptionCheck.*;
 
+/**
+ * (open) interval of time with value object.
+ * immutable if value is immutable
+ * @param <T> Type of value 
+ * @author woellauer
+ */
 public class TimestampInterval<T extends Serializable> implements Serializable {
 
 	private static final long serialVersionUID = 1733091691391404002L;

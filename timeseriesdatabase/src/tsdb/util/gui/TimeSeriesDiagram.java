@@ -56,7 +56,7 @@ public class TimeSeriesDiagram {
 
 	private float borderTop = 5;
 	private float borderBottom = 15;
-	private float borderLeft = 40;
+	private float borderLeft = 50;
 	private float borderRight = 5;
 
 	private float diagramMinX;
@@ -81,7 +81,7 @@ public class TimeSeriesDiagram {
 	public TimeSeriesDiagram(TimestampSeries timestampseries, AggregationInterval aggregationInterval, SensorCategory diagramType, boolean boxplot) {
 		
 		if(scale_right) {
-			borderRight = 40;
+			borderRight = 50;
 		}
 		
 		throwNulls(timestampseries,aggregationInterval);

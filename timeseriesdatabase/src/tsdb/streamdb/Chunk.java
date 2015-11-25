@@ -14,8 +14,8 @@ import tsdb.util.DataEntry;
 
 /**
  * Chunk of time series data
+ * immutable (Entries of data should not be changed.)
  * @author woellauer
- *
  */
 public class Chunk {
 	public final DataEntry[] data;

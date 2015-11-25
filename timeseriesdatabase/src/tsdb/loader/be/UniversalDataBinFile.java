@@ -312,6 +312,10 @@ public class UniversalDataBinFile {
 			if(dataRows[i].id<0) {
 				continue;
 			}
+			if(dataRows[i].id>10000000) { //invalid id at AEW40: 134220377 and 134220378
+				log.warn("invalid id "+dataRows[i].id);
+				continue;
+			}
 			if(dataRows[i].id==prevCheckID) {
 				DataRow prevRow = tempRowList.get(tempRowList.size()-1);
 				if(prevRow.id==prevCheckID) {

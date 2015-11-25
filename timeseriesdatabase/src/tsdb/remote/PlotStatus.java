@@ -5,8 +5,8 @@ import java.util.Comparator;
 
 /**
  * Serializable plot status
+ * immutable
  * @author woellauer
- *
  */
 public class PlotStatus implements Serializable {
 	private static final long serialVersionUID = 7104450052055571808L;

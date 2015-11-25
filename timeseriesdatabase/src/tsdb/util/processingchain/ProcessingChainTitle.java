@@ -2,8 +2,8 @@ package tsdb.util.processingchain;
 
 /**
  * Simple processing chain entry with a title.
+ * immutable
  * @author woellauer
- *
  */
 public class ProcessingChainTitle implements ProcessingChainEntry {
 	

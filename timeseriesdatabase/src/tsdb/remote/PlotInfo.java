@@ -10,8 +10,8 @@ import tsdb.VirtualPlot;
 
 /**
  * Serializable plot info
+ * immutable
  * @author woellauer
- *
  */
 public class PlotInfo implements Serializable {	
 	private static final long serialVersionUID = -304301220496293360L;

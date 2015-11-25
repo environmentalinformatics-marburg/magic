@@ -5,8 +5,17 @@ import java.io.IOException;
 
 import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
+import org.mapdb.Serializer;
 
-public class DataEntry {
+/**
+ * Storage entry of time series data.
+ * It consist of a timestamp and a measurement value.
+ * immutable value class
+ * @author woellauer
+ *
+ */
+public final class DataEntry implements Comparable<DataEntry> {
+
 	public final int timestamp;
 	public final float value;
 
@@ -18,6 +27,37 @@ public class DataEntry {
 	@Override
 	public String toString() {
 		return timestamp+" "+TimeUtil.oleMinutesToText((long) timestamp)+" "+value;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * timestamp + Float.floatToIntBits(value);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		DataEntry other = (DataEntry) obj;
+		if (timestamp != other.timestamp) return false;
+		return Float.floatToIntBits(value) == Float.floatToIntBits(other.value);
+	}
+	
+	public boolean equals(DataEntry o) {
+		if (this == o) return true;
+		if (o == null) return false;
+		if (timestamp != o.timestamp) return false;
+		return Float.floatToIntBits(value) == Float.floatToIntBits(o.value);
+	}
+	
+	@Override
+	public int compareTo(DataEntry o) {
+		int c = Integer.compare(this.timestamp, o.timestamp);
+		if(c!=0) {
+			return c;
+		}
+		return Float.compare(this.value, o.value);
 	}
 
 	private static class TimeSeriesArchivDataEntryArraySerializer implements org.mapdb.Serializer<DataEntry[]> {
@@ -74,5 +114,8 @@ public class DataEntry {
 		}
 	}
 	
-	public static final org.mapdb.Serializer<DataEntry[]> TIMESERIESARCHIV_SERIALIZER = new TimeSeriesArchivDataEntryArraySerializer();
+	/**
+	 * Serializer of array with DataEntries for time series archive format.
+	 */
+	public static final Serializer<DataEntry[]> TIMESERIESARCHIV_SERIALIZER = new TimeSeriesArchivDataEntryArraySerializer();
 }

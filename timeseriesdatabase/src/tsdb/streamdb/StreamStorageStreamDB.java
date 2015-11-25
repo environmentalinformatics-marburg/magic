@@ -1,6 +1,7 @@
 package tsdb.streamdb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeMap;
@@ -31,7 +32,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 	public StreamStorageStreamDB(String streamdbPathPrefix) {		
 		this.streamdb = new StreamDB(streamdbPathPrefix);
 	}
-	
+
 	public void setLogging(boolean logging) {
 		this.logging = logging;
 	}
@@ -48,6 +49,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 
 	@Override
 	public void insertData(String streamName, TreeMap<Long, DataRow> eventMap, String[] sensorNames) {
+		log.info(Arrays.toString(sensorNames));
 		ArrayList<DataEntry> sensorData = new ArrayList<DataEntry>(eventMap.size());
 		for(int i=0;i<sensorNames.length;i++) {
 			sensorData.clear();
@@ -131,7 +133,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 		}
 		return new long[]{interval[0],interval[1]};
 	}
-	
+
 	public int[] getSensorTimeInterval(String stationName, String sensorName) {
 		return streamdb.getSensorTimeInterval(stationName, sensorName);
 	}
@@ -176,7 +178,7 @@ public class StreamStorageStreamDB implements StreamStorage {
 			streamdb.insertSensorData(stationName, sensorName, dataEntries);
 		}
 	}
-	
+
 	@Override
 	public void removeInterval(String stationName, int start, int end) {
 		streamdb.removeInterval(stationName, start, end);

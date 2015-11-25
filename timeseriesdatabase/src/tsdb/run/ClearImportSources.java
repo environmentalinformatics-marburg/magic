@@ -43,6 +43,7 @@ public class ClearImportSources {
 			import_SA = false;
 			import_SA_OWN = false;
 			import_MM = false;
+			import_BA = false;
 			String oneRegion = TsDBFactory.JUST_ONE_REGION.toUpperCase();
 			switch(oneRegion) {
 			case "BE":

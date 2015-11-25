@@ -9,8 +9,8 @@ import tsdb.component.Region;
 
 /**
  * Serializable general station info
+ * immutable
  * @author woellauer
- *
  */
 public class GeneralStationInfo implements Serializable {	
 	private static final long serialVersionUID = -5021875538014695128L;

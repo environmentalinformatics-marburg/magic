@@ -10,6 +10,7 @@ import tsdb.util.Util;
 
 /**
  * Serializable virtual plot info
+ * immutable (Fields should not be changed.)
  * @author woellauer
  *
  */

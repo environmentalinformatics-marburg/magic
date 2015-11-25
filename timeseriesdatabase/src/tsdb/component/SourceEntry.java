@@ -9,8 +9,8 @@ import tsdb.util.iterator.TimestampSeries;
 
 /**
  * Info about an imported data-file
+ * immutable (Fields should not be changed.)
  * @author woellauer
- *
  */
 public class SourceEntry implements Serializable {
 	private static final long serialVersionUID = 8603819733815550502L;

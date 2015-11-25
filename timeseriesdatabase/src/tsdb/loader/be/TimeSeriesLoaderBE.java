@@ -101,6 +101,7 @@ public class TimeSeriesLoaderBE {
 				log.info("no files in "+stationPath);
 			}
 		} catch(Exception e) {
+			e.printStackTrace();
 			log.error("load directory of station:  "+station+"  "+stationPath+"  "+e);
 		}
 	}

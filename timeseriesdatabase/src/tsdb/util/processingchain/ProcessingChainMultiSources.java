@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 /**
  * Processing chain with multiple chains as source and one additional entry
+ * immutable (Fields should not be changed.)
  * @author woellauer
- *
  */
 public class ProcessingChainMultiSources implements ProcessingChain {	
 	public final ProcessingChain[] sources;

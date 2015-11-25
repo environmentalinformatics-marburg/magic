@@ -2,8 +2,8 @@ package tsdb.util.processingchain;
 
 /**
  * Processing chain with one chain as source and one additional entry
+ * immutable
  * @author woellauer
- *
  */
 public class ProcessingChainOneSource implements ProcessingChain {	
 	public final ProcessingChain source;

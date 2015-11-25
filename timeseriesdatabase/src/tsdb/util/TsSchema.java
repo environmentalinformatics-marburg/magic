@@ -8,10 +8,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-
-
-
-
+/**
+ * Schema of time series (TsEntries)
+ * immutable (Field values should not be changed.)
+ * @author woellauer
+ */
 public class TsSchema implements Serializable {
 	private static final long serialVersionUID = 755267163534504899L;
 	

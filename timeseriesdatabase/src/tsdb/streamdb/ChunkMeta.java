@@ -11,8 +11,8 @@ import org.mapdb.Serializer;
 
 /**
  * Metadata of chunk
+ * immutable
  * @author woellauer
- *
  */
 public class ChunkMeta {
 	public final int firstTimestamp;

@@ -3,9 +3,9 @@ package tsdb.util;
 import java.io.Serializable;
 
 /**
- * entry in TimestampSeries
+ * Entry of a time series with timestamp, data values, quality flags and counters and interpolation flag.
+ * immutable (Field values should not be changed.)
  * @author woellauer
- *
  */
 public class TsEntry implements Serializable {
 	private static final long serialVersionUID = -4568612556987905958L;

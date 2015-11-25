@@ -11,6 +11,7 @@ import org.mapdb.Serializer;
 
 /**
  * Interval of time with start and end timestamps.
+ * immutable
  * @author woellauer
  *
  */

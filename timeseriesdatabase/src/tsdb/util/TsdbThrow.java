@@ -3,6 +3,11 @@ package tsdb.util;
 import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * Helper class for Exceptions.
+ * @author woellauer
+ *
+ */
 public class TsdbThrow {
 
 	@SuppressWarnings("unused")
@@ -63,5 +68,4 @@ public class TsdbThrow {
 		}
 		System.err.println(s);
 	}
-
 }

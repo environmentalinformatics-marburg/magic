@@ -24,7 +24,10 @@ public class InfluxDBDataWriter {
 
 	private final TsDB tsdb;
 
-	public static String dbName = "testing_1";
+	public static String dbHost = "http://192.168.191.183:8086";
+
+	
+	public static String dbName = "testing_1a";
 
 	private FileWriter writer = null;
 	private InfluxDB influxDB = null;
@@ -47,7 +50,8 @@ public class InfluxDBDataWriter {
 
 	public void writeAllStationsToDB(String dbName) {
 		try {
-			influxDB = InfluxDBFactory.connect("http://localhost:8086", "root", "root");
+			log.info("open connection to InfluxDB "+dbHost);
+			influxDB = InfluxDBFactory.connect(dbHost, "root", "root");
 			int actions = 1000000;
 			int flushDuration = 1;
 			TimeUnit flushDurationTimeUnit = TimeUnit.MINUTES;
@@ -162,8 +166,8 @@ public class InfluxDBDataWriter {
 			//System.out.println(t);
 			Point point = Point.measurement(it.stationName+"/"+it.sensorName).time(t, TimeUnit.MINUTES).field("value", e.value).build();
 			batchPoints.point(point);
-		}	
-
+		}
+		
 		influxDB.write(batchPoints);
 
 		/*while(it.hasNext()) {			

@@ -11,6 +11,7 @@ import tsdb.util.Util;
 
 /**
  * Serializable station info
+ * immutable (Fields should not be changed.)
  * @author woellauer
  *
  */

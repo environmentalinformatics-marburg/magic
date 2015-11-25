@@ -510,10 +510,7 @@ public final class Util {
 			}
 		}
 		return true;
-	}
-	
-
-	
+	}	
 
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());

@@ -36,7 +36,7 @@ class SensorHeader implements Serializable {
 	
 	@Override
 	public String toString() {
-		return name+" "+unit+" "+dataType;
+		return name+":"+unit+":"+dataType;
 	}
 
 }

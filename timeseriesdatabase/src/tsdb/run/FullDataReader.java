@@ -23,6 +23,7 @@ public class FullDataReader {
 	private final TsDB tsdb;
 	
 	private long total_count = 0;
+	private long series_count = 0;
 
 	public static void main(String[] args) {		
 		TsDB tsdb = TsDBFactory.createDefault();
@@ -55,12 +56,13 @@ public class FullDataReader {
 			log.error(e);
 		}
 		long timeEndImport = System.currentTimeMillis();
-		log.info((timeEndImport-timeStartImport)/1000+" s Export "+(timeEndImport-timeStartImport)+" ms Export "+total_count+" count");
+		log.info((timeEndImport-timeStartImport)/1000+" s Export "+(timeEndImport-timeStartImport)+" ms Export "+total_count+" total_count    "+series_count+" series_count");
 	}
 
 	private void readSeries(String stationName, String sensorName) {
 		
 		StreamIterator it = tsdb.streamStorage.getRawSensorIterator(stationName, sensorName, null, null);
+		series_count++;
 		
 		while(it.hasNext()) {
 			DataEntry e = it.next();
