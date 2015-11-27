@@ -31,6 +31,7 @@ public class Terminal {
 	static {
 		addCommand("full_read",FullDataReader::main);
 		addCommand("influxdb_import",InfluxDBDataWriter::main);
+		addCommand("influxdb_full_read",InfluxDBDataReader::main);
 		addCommand("clear_import",ClearImportSources::main);
 	}
 

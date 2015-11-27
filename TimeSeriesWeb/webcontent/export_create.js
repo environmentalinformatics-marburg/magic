@@ -45,7 +45,7 @@ $.get(url_export_create_get_output+"?id="+id)
 			window.setTimeout(function() {get_output();}, 500);
 		} else {
 			getID("status").innerHTML = "ready";
-			handle_download(data.filename);			
+			handle_download(data);			
 		}
 	}).fail(function() {
 		append_output("\nerror");
@@ -58,14 +58,19 @@ function append_output(text) {
 	getID("output").scrollTop = getID("output").scrollTopMax;
 }
 
-function handle_download(filename) {
+function handle_download(data) {
 	getID("download").innerHTML = "plots processed ";
 	var a = document.createElement('a');
 	var dl = document.createElement('h2');
 	dl.appendChild(document.createTextNode("click to download"));	
 	a.appendChild(dl);
 	a.title = "link to resulting zip file";
-	a.href = url_download+"/"+filename;
+	a.href = url_download+"/"+data.filename;
+	var pref = data.filename;
+	if(data.title !== undefined) {
+		pref = data.title+data.id+".zip";
+	}
+	a.download = pref;
 	getID("download").appendChild(a);
 }
 

@@ -50,6 +50,7 @@ public class InfluxDBDataReader {
 						readSeries(stationName,sensorName);
 					}
 				} catch(Exception e) {
+					e.printStackTrace();
 					log.error(e);
 				}
 			}
@@ -66,6 +67,10 @@ public class InfluxDBDataReader {
 		for(Result result:resultList) {
 			//log.info("result");
 			List<Series> seriesList = result.getSeries();
+			if(seriesList==null) {
+				log.warn("no series "+stationName+" "+sensorName);
+				continue;
+			}
 			for(Series series:seriesList) {
 				log.info("series "+series.getName());
 				//log.info("columns "+series.getColumns());

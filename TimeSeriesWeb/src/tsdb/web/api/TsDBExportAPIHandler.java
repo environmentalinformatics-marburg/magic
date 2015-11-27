@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -136,14 +138,14 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}
 		case "/create_get_output": {
 			try {
-				long id = Long.parseLong(request.getParameter("id"));			
+				long id = fromJsonID(request.getParameter("id"));
 				ret = handle_create_get_output(response,model,id);
 			} catch(Exception e) {
 				log.error(e);
 			}
 			break;
 		}
-		case "/create.zip": {
+		/*case "/create.zip": {
 			try {
 				long id = Long.parseLong(request.getParameter("id"));			
 				ret = handle_create_download(response,model,id);
@@ -151,7 +153,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 				log.error(e);
 			}
 			break;
-		}
+		}*/
 		case "/settings": {
 			ret = handle_settings(response.getWriter(),model);
 			break;
@@ -436,31 +438,36 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}	
 	}
 
-	private long counter = 1000000001;
+	private SecureRandom random = new SecureRandom();
+	//private long counter = 1000000001;
 	private HashMap<Long,ZipExportProxy> zipExportProxyMap = new HashMap<Long,ZipExportProxy>();
 
-	private long createID() {
-		synchronized (zipExportProxyMap) {
-			return counter++;
+	private long storeEntry(ZipExportProxy zipExportProxy) {
+		synchronized (zipExportProxyMap) {			
+			long id = random.nextLong();
+			while(/*id<0 ||*/ zipExportProxyMap.containsKey(id)) {
+				id = random.nextLong();
+			}
+			zipExportProxyMap.put(id, zipExportProxy);	
+			return id;
 		}
 	}
 
 	private boolean handle_create(HttpServletResponse response, ExportModel model) {
 		try {
 			//System.out.println(SecureRandom.getInstanceStrong().nextLong());
-			final long id = createID();
-
-			log.info("new export create id: "+id);
-
-
 			ZipExportProxy zipExportProxy = new ZipExportProxy(tsdb,model);
-			zipExportProxyMap.put(id, zipExportProxy);			
+			final long id = storeEntry(zipExportProxy);
+
+			log.info("new export create id: "+toJsonID(id));
+
+			//zipExportProxyMap.put(id, zipExportProxy);			
 
 			response.setContentType("application/json");			
 			JSONWriter json = new JSONWriter(response.getWriter());
 			json.object();
 			json.key("id");
-			json.value(id);
+			json.value(toJsonID(id));
 			json.key("plots");
 			json.value(model.plots.length);
 			json.endObject();
@@ -473,11 +480,27 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			return false;
 		}
 	}
+	
+	public static String toJsonID(long id) {
+		return Long.toHexString(id);
+	}
+	
+	/**
+	 * Throws exception if wrong format
+	 * @param text
+	 * @return
+	 */
+	public static long fromJsonID(String text) {
+		//long id = Long.parseLong(text);
+		//long id = Long.parseLong(text, 16);
+		return new BigInteger(text, 16).longValue();		
+	}
 
 	private boolean handle_create_get_output(HttpServletResponse response, ExportModel model, final long id) {
 		try {
 			ZipExportProxy zipExportProxy = zipExportProxyMap.get(id);
 			if(zipExportProxy==null) {
+				log.info("id not found "+id);
 				return false;
 			}
 
@@ -490,7 +513,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			JSONWriter json = new JSONWriter(response.getWriter());
 			json.object();
 			json.key("id");
-			json.value(id/*+111*/);
+			json.value(toJsonID(id));
 
 			json.key("finished");
 			json.value(finished);
@@ -508,6 +531,9 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			if(finished) {
 				json.key("filename");
 				json.value(zipExportProxy.getFilename());
+				
+				json.key("title");
+				json.value(zipExportProxy.getTitle());
 			}
 
 			json.endObject();
@@ -518,7 +544,7 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 		}		
 	}
 
-	@Deprecated
+	/*@Deprecated
 	private boolean handle_create_download(HttpServletResponse response, ExportModel model, long id) {
 		try {
 			response.setContentType("application/zip");
@@ -527,5 +553,5 @@ public class TsDBExportAPIHandler extends AbstractHandler {
 			log.error(e);
 			return false;
 		}
-	}
+	}*/
 }

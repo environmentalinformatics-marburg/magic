@@ -49,15 +49,15 @@ public class Handler_status extends MethodHandler {
 			return;
 		}
 		try {
-			ArrayList<PlotStatus> tsl = null;
+			ArrayList<PlotStatus> statusList = null;
 			if(generalstationName==null&&regionName==null) {
-				tsl = tsdb.getPlotStatuses();
+				statusList = tsdb.getPlotStatuses();
 			} else if(generalstationName!=null&&regionName==null){
-				tsl = tsdb.getPlotStatusesOfGeneralStation(generalstationName);
+				statusList = tsdb.getPlotStatusesOfGeneralStation(generalstationName);
 			} else if(generalstationName==null&&regionName!=null){
-				tsl = tsdb.getPlotStatusesOfRegion(regionName);				
+				statusList = tsdb.getPlotStatusesOfRegion(regionName);				
 			}
-			if(tsl==null) {
+			if(statusList==null) {
 				log.error("tsl null");
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);				
 				return;
@@ -66,21 +66,21 @@ public class Handler_status extends MethodHandler {
 			PrintWriter writer = response.getWriter();
 			JSONWriter json_output = new JSONWriter(writer);
 			json_output.array();
-			for(PlotStatus i:tsl) {
+			for(PlotStatus status:statusList) {
 				json_output.object();
 				json_output.key("plot");
-				json_output.value(i.plotID);
+				json_output.value(status.plotID);
 				json_output.key("first_timestamp");
-				json_output.value(i.firstTimestamp);
+				json_output.value(status.firstTimestamp);
 				json_output.key("last_timestamp");
-				json_output.value(i.lastTimestamp);
+				json_output.value(status.lastTimestamp);
 				json_output.key("first_datetime");
-				json_output.value(TimeUtil.oleMinutesToText(i.firstTimestamp));
+				json_output.value(TimeUtil.oleMinutesToText(status.firstTimestamp));
 				json_output.key("last_datetime");
-				json_output.value(TimeUtil.oleMinutesToText(i.lastTimestamp));
-				if(Float.isFinite(i.voltage)) {
+				json_output.value(TimeUtil.oleMinutesToText(status.lastTimestamp));
+				if(Float.isFinite(status.voltage)) {
 					json_output.key("voltage");
-					json_output.value(new JSONFloat(i.voltage));					
+					json_output.value(new JSONFloat(status.voltage));					
 					//json_output.value(i.voltage);
 				}
 				json_output.endObject();
