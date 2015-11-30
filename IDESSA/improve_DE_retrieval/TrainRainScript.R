@@ -10,13 +10,19 @@ responseName<-c("Rain", "RInfo")
 for (i in 1:length(datasetTime)){
   for (k in 1:length(responseName)){
     sampsize=0.05
-    if(responseName=="Rain"){
+    if(responseName[k]=="Rain"){
       sampsize=0.25
     }
-    useSpecOnly=TRUE
+    ###either one of these
+    useTexture=FALSE
+    useSpecOnly=FALSE
+    useOneSD=TRUE
+    
+    if(sum(useTexture,useSpecOnly,useOneSD)>1){
+      stop("specify only one type of predictors")}
     
     ### load rfe and data.table
-    if (!useSpecOnly){
+    if (useTexture||useOneSD){
       load(paste0(resultpath,"/RFEModels/rfeModel_",datasetTime[i],"_",responseName[k],".Rdata"))
     }
     load(paste0(resultpath,"/datatables/datatable_",datasetTime[i],".RData"))
@@ -28,8 +34,11 @@ for (i in 1:length(datasetTime)){
                                                    "T7.3_12.0","T8.7_10.8","T10.8_12.0", "T3.9_7.3",
                                                    "T3.9_10.8")]
     }
-    if(!useSpecOnly){
+    if(useTexture){
       predictors<-datatable[,rfeModel$optVariables]
+    }
+    if (useOneSD){
+      predictors<-datatable[,names(varsRfeCV(rfeModel))]
     }
     #predictors=predictors[,-which(names(predictors)=="jday")]
     #predictors<-datatable[,names(varsRfeCV(rfeModel))]
@@ -49,11 +58,14 @@ for (i in 1:length(datasetTime)){
     
     
     ### save model
-    if (!useSpecOnly){
+    if (useTexture){
       save(model,file=paste0(resultpath,"/trainedModels/trainedModel_",datasetTime[i],"_",responseName[k],".Rdata"))
     }
     if (useSpecOnly){
       save(model,file=paste0(resultpath,"/trainedModels/trainedModel_OnlySpec_",datasetTime[i],"_",responseName[k],".Rdata"))
+    }
+    if (useOneSD){
+      save(model,file=paste0(resultpath,"/trainedModels/trainedModel_oneSD_",datasetTime[i],"_",responseName[k],".Rdata"))
     }
   }
 }
