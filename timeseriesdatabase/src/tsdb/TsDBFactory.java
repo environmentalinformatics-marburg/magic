@@ -29,6 +29,7 @@ public final class TsDBFactory {
 	public static String STORAGE_PATH = "storage";
 
 	public static String SOURCE_BE_TSM_PATH = "source/be_tsm";
+	public static String SOURCE_BE_GEN_PATH = "source/be_gen";
 	public static String SOURCE_KI_TSM_PATH = "source/ki_tsm";
 	public static String SOURCE_KI_TFI_PATH = "source/ki_tfi";
 	public static String SOURCE_SA_DAT_PATH = "source/sa_dat";
@@ -88,6 +89,7 @@ public final class TsDBFactory {
 			CONFIG_PATH = getString(pathMap, "CONFIG_PATH", CONFIG_PATH);
 			STORAGE_PATH = getString(pathMap, "STORAGE_PATH", STORAGE_PATH);
 			SOURCE_BE_TSM_PATH = getString(pathMap, "SOURCE_BE_TSM_PATH", SOURCE_BE_TSM_PATH);
+			SOURCE_BE_GEN_PATH = getString(pathMap, "SOURCE_BE_GEN_PATH", SOURCE_BE_GEN_PATH);
 			SOURCE_KI_TSM_PATH = getString(pathMap, "SOURCE_KI_TSM_PATH", SOURCE_KI_TSM_PATH);
 			SOURCE_KI_TFI_PATH = getString(pathMap, "SOURCE_KI_TFI_PATH", SOURCE_KI_TFI_PATH);
 			SOURCE_SA_DAT_PATH = getString(pathMap, "SOURCE_SA_DAT_PATH", SOURCE_SA_DAT_PATH);

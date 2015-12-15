@@ -17,6 +17,14 @@ import tsdb.util.DataEntry;
 import tsdb.util.Table;
 import tsdb.util.TimeUtil;
 
+/**
+ * import generic CSV data into database.
+ * Beginning of filename is station name e.g. mystation_2014_new.csv  ==> station: mystation
+ * first column name: datetime   format: ISO_8601  e.g. YYYY-MM-DDThh:mm
+ * fllowing columns: database sensor names  
+ * @author woellauer
+ *
+ */
 public class ImportGenericCSV {
 	private static final Logger log = LogManager.getLogger();
 
@@ -69,35 +77,47 @@ public class ImportGenericCSV {
 			if(datetimeIndex!=0) {
 				throw new RuntimeException("wrong format");
 			}
-			
+
 			String filename = filePath.getFileName().toString();
 
 			String stationName = filename.substring(0, filename.indexOf('_'));
-			
+
 			log.info("station "+stationName);
 
 			final int sensors = table.names.length-1;
-			
+
 			@SuppressWarnings("unchecked")
 			ArrayList<DataEntry>[] data = new ArrayList[sensors];
 			for(int i=0;i<sensors;i++) {
 				data[i] = new ArrayList<DataEntry>(table.rows.length);
 			}
 
+			int prevTimestamp = -1;
 			for(String[] row:table.rows) {				
 				//log.info(Arrays.toString(row));
 				int timestamp = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.parse(row[0]));
-				
+
+				if(timestamp==prevTimestamp) {
+					log.warn("skip duplicate timestamp "+row[0]+" "+filePath);
+					continue;
+				}
+
 				for(int i=0;i<sensors;i++) {
-					if(row[i+1].isEmpty()) {
+					if(row[i+1].isEmpty() || row[i+1].equals("NA")) {
 						continue;
 					}
-					float value = Float.parseFloat(row[i+1]);
-					if(Float.isFinite(value)) {
-						DataEntry entry = new DataEntry(timestamp, value);
-						data[i].add(entry);
+					try {
+						float value = Float.parseFloat(row[i+1]);
+						if( Float.isFinite(value) && value!= -9999 ) {
+							DataEntry entry = new DataEntry(timestamp, value);
+							data[i].add(entry);
+						}
+					} catch(Exception e) {
+						log.error(e+"   "+filePath);
 					}
 				}
+
+				prevTimestamp = timestamp;
 			}
 
 			for(int i=0;i<sensors;i++) {

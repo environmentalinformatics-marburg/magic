@@ -395,7 +395,8 @@ public class TimeSeriesHeatMap {
 			tsp.setIndexedColorRange(0, 20);
 			break;						
 		case "p_QNH":
-			tsp.setIndexedColorRange(980, 1040);
+			//tsp.setIndexedColorRange(980, 1040);
+			tsp.setIndexedColorRange(800, 1040);
 			break;
 		case "P_RT_NRT_01": //few data?
 		case "P_RT_NRT_02": //few data?

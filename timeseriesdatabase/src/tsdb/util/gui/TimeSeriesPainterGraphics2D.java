@@ -47,6 +47,8 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 		
 		fontDefault = gc.getFont();
 		fontSmall = fontDefault.deriveFont(9f);
+		
+		this.indexedColors = firstIndexedColors;
 	}
 	
 	@Override
@@ -283,22 +285,23 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
 	private float minValue = -10f;
 	private float maxValue = 30f;
-	private static Color[] indexedColors;
+	private static Color[] firstIndexedColors;
+	private Color[] indexedColors;
 	static {
-		indexedColors = new Color[6*256];
-		for(int i=0;i<indexedColors.length;i++) {
+		firstIndexedColors = new Color[6*256];
+		for(int i=0;i<firstIndexedColors.length;i++) {
 			
-			float v = ((float)i)/((float)(indexedColors.length-1));
+			float v = ((float)i)/((float)(firstIndexedColors.length-1));
 			
-			indexedColors[i] = getSpectraColor(v);
+			firstIndexedColors[i] = getSpectraColor(v);
 			
 		}
-		colorScaleMap.put("default",indexedColors);
+		colorScaleMap.put("default", firstIndexedColors);
 	}
 	
 	public static void setIndexedColors(String name, Color[] indexedColors) {		
 		colorScaleMap.put(name, indexedColors);		
-		TimeSeriesPainterGraphics2D.indexedColors = indexedColors;
+		firstIndexedColors = indexedColors;
 		
 		/*Color[] c = new Color[indexedColors.length*2];
 		for(int i=0;i<indexedColors.length;i++) {

@@ -110,6 +110,8 @@ public class ClearImportSources {
 			long minTimestamp = TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(2008, 01, 01, 00, 00));
 			TimeSeriesLoaderBE timeseriesloaderBE = new TimeSeriesLoaderBE(tsdb, minTimestamp);
 			timeseriesloaderBE.loadDirectory_with_stations_flat(Paths.get(TsDBFactory.SOURCE_BE_TSM_PATH));
+			log.info("from "+TsDBFactory.SOURCE_BE_GEN_PATH);
+			new ImportGenericCSV(tsdb).load(TsDBFactory.SOURCE_BE_GEN_PATH);	
 			timeEndBE = System.currentTimeMillis();
 			System.gc();
 		}
