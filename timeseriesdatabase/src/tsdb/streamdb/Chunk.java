@@ -26,8 +26,13 @@ public class Chunk {
 		AssumptionCheck.throwEmpty(array);
 		return new Chunk(array);
 	}
+	
+	public static Chunk of(DataEntry[] data) {
+		AssumptionCheck.throwEmpty(data);
+		return new Chunk(data);
+	}
 
-	public Chunk(DataEntry[] data) {
+	Chunk(DataEntry[] data) {
 		this.data = data;
 	}
 

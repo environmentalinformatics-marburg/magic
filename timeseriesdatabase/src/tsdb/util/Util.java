@@ -537,4 +537,12 @@ public final class Util {
 		return e!=null;
 	}
 	
+	public static String msToText(long start, long end) {
+		long diff = end-start;
+		long h = diff%1000/100;
+		long z = diff%100/10;
+		long e = diff%10;
+		return diff/1000+"."+h+z+e+" s";
+	}
+	
 }

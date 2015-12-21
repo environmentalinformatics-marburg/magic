@@ -355,7 +355,7 @@ public class StreamDB {
 		//ChunkMeta oldChunkMeta = chunkMetaMap.get(timestamp_chunk);
 		ChunkMeta oldChunkMeta = getChunkMeta(chunkMetaMap, entryList.get(0).timestamp);
 		if(oldChunkMeta==null) {
-			insertChunk(chunkMetaMap,chunkMap,new Chunk(entryList.toArray(new DataEntry[0])));
+			insertChunk(chunkMetaMap, chunkMap, Chunk.of(entryList));
 		} else {
 			Chunk oldChunk = chunkMap.get(oldChunkMeta.firstTimestamp);
 			Iterator<DataEntry> oldIt = Arrays.stream(oldChunk.data).iterator();
@@ -389,8 +389,8 @@ public class StreamDB {
 				}				
 			}
 
-			removeChunk(chunkMetaMap,chunkMap,oldChunkMeta);
-			insertChunk(chunkMetaMap,chunkMap,new Chunk(resultList.toArray(new DataEntry[0])));
+			removeChunk(chunkMetaMap, chunkMap, oldChunkMeta);
+			insertChunk(chunkMetaMap, chunkMap, Chunk.of(resultList));
 		}
 	}
 

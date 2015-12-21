@@ -170,6 +170,10 @@ public final class AssumptionCheck {
 		}
 	}
 	
+	/**
+	 * Throws if array is null or empty
+	 * @param array
+	 */
 	public static void throwEmpty(Object[] array) {
 		if(array==null||array.length==0) {
 			throw new RuntimeException("array empty");

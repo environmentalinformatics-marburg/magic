@@ -16,6 +16,7 @@ import tsdb.loader.sa.SouthAfricaImport;
 import tsdb.loader.sa_own.ImportSaOwn;
 import tsdb.loader.sa_own.RemoveSouthAfricaStationBeginings;
 import tsdb.util.TimeUtil;
+import static tsdb.util.Util.msToText;
 
 /**
  * first creates empty database
@@ -210,11 +211,5 @@ public class ClearImportSources {
 		log.info(msToText(timeStartCompact,timeEndCompact)+" compact streamDB");
 	}
 
-	private static String msToText(long start, long end) {
-		long diff = end-start;
-		long h = diff%1000/100;
-		long z = diff%100/10;
-		long e = diff%10;
-		return diff/1000+"."+h+z+e+" s";
-	}
+
 }

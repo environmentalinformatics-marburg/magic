@@ -46,10 +46,29 @@ public final class DataEntry implements Comparable<DataEntry> {
 	
 	public boolean equals(DataEntry o) {
 		if (this == o) return true;
-		if (o == null) return false;
-		if (timestamp != o.timestamp) return false;
+		if (o == null || timestamp != o.timestamp) return false;
 		return Float.floatToIntBits(value) == Float.floatToIntBits(o.value);
 	}
+	
+	public static boolean equals(DataEntry a, DataEntry b) {
+		if (a == b) return true;
+		if (a == null || b == null || a.timestamp != b.timestamp) return false;
+		return Float.floatToIntBits(a.value) == Float.floatToIntBits(b.value);
+	}
+	
+	public static boolean equals(DataEntry[] a, DataEntry[] b) {
+		if (a == b) return true;
+		if (a == null || b == null) return false;
+		final int SIZE = a.length;
+		if (SIZE != b.length) return false;		
+		for (int i = 0; i < SIZE; i++) {
+			if(!equals(a[i],b[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	
 	@Override
 	public int compareTo(DataEntry o) {

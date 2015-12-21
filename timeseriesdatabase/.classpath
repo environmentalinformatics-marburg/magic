@@ -21,5 +21,6 @@
 	<classpathentry kind="lib" path="lib/influx/okhttp-2.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/influx/gson-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/influx/okio-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/JavaFastPFOR-0.1.6.jar" sourcepath="lib/source/JavaFastPFOR-0.1.6-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

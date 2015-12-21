@@ -10,6 +10,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 
@@ -279,7 +281,7 @@ public class TimeSeriesPainterGraphics2D implements TimeSeriesPainter {
 	
 	
 	
-	private static HashMap<String,Color[]> colorScaleMap = new HashMap<String,Color[]>();
+	private static Map<String,Color[]> colorScaleMap = new ConcurrentHashMap<String,Color[]>();
 
 	
 

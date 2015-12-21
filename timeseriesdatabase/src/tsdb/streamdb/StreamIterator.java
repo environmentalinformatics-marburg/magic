@@ -1,5 +1,6 @@
 package tsdb.streamdb;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -172,6 +173,15 @@ public class StreamIterator implements Iterator<DataEntry>, ProcessingChainEntry
 	@Override
 	public ProcessingChain getProcessingChain() {
 		return ProcessingChain.of(this);
+	}
+	
+	public DataEntry[] remainingToArray() {
+		ArrayList<DataEntry> data = new ArrayList<DataEntry>();
+		while(hasNext()) {
+			DataEntry e = next();
+			data.add(e);
+		}
+		return data.toArray(new DataEntry[0]);
 	}
 	
 	
