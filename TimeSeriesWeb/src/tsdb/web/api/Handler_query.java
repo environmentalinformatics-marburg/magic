@@ -95,7 +95,7 @@ public class Handler_query extends MethodHandler {
 		if(timeYear!=null) {
 			try {
 				int year = Integer.parseInt(timeYear);
-				if(year<2008||year>2015) {
+				if(year<Handler_query_image.MIN_YEAR||year>Handler_query_image.MAX_YEAR) {
 					log.error("year out of range "+year);
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 					return;

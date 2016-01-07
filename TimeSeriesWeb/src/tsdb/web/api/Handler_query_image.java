@@ -28,6 +28,9 @@ import tsdb.util.iterator.TimestampSeries;
 
 public class Handler_query_image extends MethodHandler {	
 	private static final Logger log = LogManager.getLogger();
+	
+	public static final int MIN_YEAR = 1900;
+	public static final int MAX_YEAR = 2100;
 
 	private static final boolean USE_COMPARE_TIMESERIES = false;
 
@@ -127,7 +130,7 @@ public class Handler_query_image extends MethodHandler {
 		if(timeYear!=null) {
 			try {
 				int year = Integer.parseInt(timeYear);
-				if(year<2008||year>2015) {
+				if(year<MIN_YEAR||year>MAX_YEAR) {
 					log.error("year out of range "+year);
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 					return;
