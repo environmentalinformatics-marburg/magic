@@ -12,7 +12,7 @@ var url_query_csv = url_base + "tsdb/query_csv";
 
 var url_detail_visualisation = "../files/vis.html";
 
-var time_year_text = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015"];
+var time_year_text = ["[all]","2008","2009","2010","2011","2012","2013","2014","2015","2016"];
 var time_month_text = ["year","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 var aggregation_text = ["raw","hour","day","week","month","year"];
 var aggregation_raw_text = ["raw"];
