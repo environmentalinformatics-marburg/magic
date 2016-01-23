@@ -1,7 +1,7 @@
 library(raster)
 library(rgdal)
 library(Rainfall)
-year=2010
+year=2012
 datapath <- "/media/memory01/data/data01/msg-out-hanna/"
 cloudmaskpath <- "/media/memory01/data/data01/CM_SAF_CMa/"
 stationpath <- "/media/memory01/data/IDESSA/"

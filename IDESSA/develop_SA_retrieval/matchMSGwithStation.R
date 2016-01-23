@@ -1,8 +1,11 @@
-setwd("/media/hanna/data/Rainfall4SA/")
+year= 2010
+
+setwd("/media/memory01/data/IDESSA/")
+outpath<-"/media/memory01/data/IDESSA/"
 
 files<- list.files(path="statdat",pattern=".csv")
 filenames<- substr(files,1,nchar(files)-4)
-MSG_extract<- get(load("ExtractedData_2010.RData"))
+MSG_extract<- get(load(paste0("ExtractedData_",year,".RData")))
 names(MSG_extract)[2]="Station"
 MSG_extract=MSG_extract[order(MSG_extract$Station, MSG_extract$date),]
 MSG_extract$Station<-as.character(MSG_extract$Station)
@@ -29,3 +32,4 @@ for (i in 1:length(unique(MSG_extract$Station))){
 }
 
 
+save(rainfall,file=paste0(outpath,"StationMatch_",year,".RData"))
