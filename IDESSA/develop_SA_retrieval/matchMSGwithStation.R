@@ -5,7 +5,7 @@ outpath<-"/media/memory01/data/IDESSA/"
 
 files<- list.files(path="statdat",pattern=".csv")
 filenames<- substr(files,1,nchar(files)-4)
-MSG_extract<- get(load(paste0("ExtractedData_",year,".RData")))
+MSG_extract<- get(load(paste0("ExtractedData_agg_",year,".RData")))
 names(MSG_extract)[2]="Station"
 MSG_extract=MSG_extract[order(MSG_extract$Station, MSG_extract$date),]
 MSG_extract$Station<-as.character(MSG_extract$Station)
