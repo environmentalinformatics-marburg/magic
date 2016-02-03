@@ -35,9 +35,12 @@ map <-   spplot(wc2,col.regions =map.colors(1000),colorkey=list(space="right"),c
 
 pdf("map.pdf",width=8,height=6)
 print(map)
-trellis.focus("toplevel")
+trellis.focus("toplevel",highlight = FALSE)
 panel.text(0.889, 0.5, "Average Yearly Precipitation (mm). Source: WorldClim", 
            cex = 0.8,srt=90)
+panel.text(0.50, 0.14, "____",col="red")
+panel.text(0.60, 0.13, "Model Domain",cex=0.9)
+trellis.unfocus()
 dev.off()
 
 
