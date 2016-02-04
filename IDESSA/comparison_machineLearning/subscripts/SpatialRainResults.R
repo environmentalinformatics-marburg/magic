@@ -151,21 +151,6 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
 
 
 
-########################################################################################
-# DIFFs
-########################################################################################
-diff[[i]]=datc[[1]]-datc[[i+1]]
-diffp[[i]] <- spplot(diff[[i]], mm= mm, maxpixels = 400000, colorkey = list(space = "top", width = 0.5), main = " ",
-                      col.regions = colorRampPalette(c("blue","white","red")),
-                      at = seq(-max(abs(values(diff[[i]])),na.rm=T), max(values(diff[[i]]),na.rm=T), 0.1),
-                      panel = function(...) {
-                        panel.abline(h = yat, v = xat,
-                                     col = "grey80", lwd = 0.8, lty = 3)
-                        panel.levelplot(...)
-                        panel.polygon(mm$x, mm$y, border = "grey30", lwd = 0.7)
-                      }, scales = list(x = list(at = xat, labels = xlabs), 
-                                       y = list(at = yat, labels = ylabs))
-)
 
 
 
@@ -180,61 +165,21 @@ datp[[1]]=update(datp[[1]],strip = strip.custom(bg = "grey20",
                             substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
 )
 
+
+
 datp[[2]]=update(datp[[2]],strip = strip.custom(bg = "grey20", 
-                                                factor.levels =paste0(model,"[mm/1h]"),
+                                                factor.levels =paste0(c(model,"observed"),"[mm/1h]"),
                                                 par.strip.text = list(
                                                   col = "white", font = 2, cex = 1)),
-                 main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
-                            substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
-)
-
-
-
-diffp[[1]]=update(diffp[[1]],strip = strip.custom(bg = "grey20", 
-                                                  factor.levels =paste0(model,"[mm/1h]"),
-                                                  par.strip.text = list(
-                                                    col = "white", font = 2, cex = 1)),
-                  main=paste(substr(tmpdate,1,4),"-",substr(tmpdate,5,6),"-",
-                             substr(tmpdate,7,8)," ",substr(tmpdate,9,10),":",substr(tmpdate,11,12),sep="")
-)
-
-tmp=datp[[1]]+ as.layer(lmplot, under = T)
-for (i in 2:(length(model)+1)){
-  tmp=c(tmp,datp[[i]]+ as.layer(lmplot, under = T))
-}
-
-tmp3=datp[[2]]+ as.layer(lmplot, under = T)
-for (i in 3:(length(model)+1)){
-  tmp3=c(tmp3,datp[[i]]+ as.layer(lmplot, under = T))
-}
-
-tmp2=diffp[[1]]+ as.layer(lmplot, under = T)
-for (i in 2:length(model)){
-  tmp2=c(tmp2,diffp[[i]]+ as.layer(lmplot, under = T))
-}
-
-  comb <- c(tmp, 
-            x.same=T, y.same=T, layout = c(5, 1))
-  png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
-            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
-   print(comb)
+                 main="")
+  comb <- c(datp[[2]]+ as.layer(lmplot, under = T),datp[[3]]+ as.layer(lmplot, under = T), 
+            datp[[4]]+ as.layer(lmplot, under = T),datp[[5]]+ as.layer(lmplot, under = T),
+            datp[[1]]+ as.layer(lmplot, under = T),
+            x.same=T, y.same=T, layout = c(2,3))
+  tiff(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+            unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],"pub.tiff",sep=""),
+       width=12,height=12,units = "in",res=400,compression = "lzw")
+  print(comb)
   dev.off()
-
-combV2 <- c(tmp3, 
-              x.same=T, y.same=T, layout = c(3, 1))
-
-png(paste(resultpath,"/Spatial_comp/SpatialComparison_OnlyPred_",
-          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
-print(combV2)
-dev.off()
-
-  combDiff <- c(tmp2, 
-                x.same=T, y.same=T, layout = c(3, 1))
-
-  png(paste(resultpath,"/Spatial_comp/Diff_",
-          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
-  print(combDiff)
-  dev.off()
-}
 
 

@@ -5,6 +5,7 @@ import static tsdb.util.AssumptionCheck.throwNull;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,19 +15,25 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
-import tsdb.aggregated.AggregationType;
+import tsdb.component.LoggerType;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
+import tsdb.component.SensorCategory;
+import tsdb.util.AggregationType;
+import tsdb.util.Interval;
 import tsdb.util.Table;
+import tsdb.util.Table.ColumnReaderDouble;
 import tsdb.util.Table.ColumnReaderFloat;
 import tsdb.util.Table.ColumnReaderString;
+import tsdb.util.TimeUtil;
 import tsdb.util.Util;
 import tsdb.util.Util.FloatRange;
 import au.com.bytecode.opencsv.CSVReader;
-import de.umr.jepc.Attribute;
-import de.umr.jepc.Attribute.DataType;
-import static tsdb.util.Util.log;
 
 /**
  * Reads config files and inserts meta data into TimeSeriesDatabase
@@ -34,6 +41,8 @@ import static tsdb.util.Util.log;
  *
  */
 public class ConfigLoader {
+
+	private static final Logger log = LogManager.getLogger();
 
 	private final TsDB tsdb; //not null
 
@@ -68,7 +77,7 @@ public class ConfigLoader {
 	 * reads names of used general stations
 	 * @param configFile
 	 */
-	public void readGeneralStationConfig(String configFile) {		
+	public void readGeneralStation(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
 			TreeMap<String, GeneralStationBuilder> creationMap = new TreeMap<String,GeneralStationBuilder>();
@@ -111,6 +120,7 @@ public class ConfigLoader {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e);
 		}		
 	}
@@ -120,7 +130,7 @@ public class ConfigLoader {
 	 * This method creates LoggerType Objects
 	 * @param configFile
 	 */
-	public void readLoggerSchemaConfig(String configFile) {
+	public void readLoggerTypeSchema(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
 			for(String typeName:ini.keySet()) {
@@ -130,20 +140,16 @@ public class ConfigLoader {
 					names.add(name);
 				}
 				String[] sensorNames = new String[names.size()];
-				//Attribute[] schema = new Attribute[names.size()+1];  // TODO: remove "sampleRate"?   //removed !!!
-				Attribute[] schema = new Attribute[names.size()];
 				for(int i=0;i<names.size();i++) {
 					String sensorName = names.get(i);
 					sensorNames[i] = sensorName;
-					schema[i] =  new Attribute(sensorName,DataType.FLOAT);
 					if(tsdb.sensorExists(sensorName)) {
 						// log.info("sensor already exists: "+sensorName+" new in "+typeName);
 					} else {
 						tsdb.insertSensor(new Sensor(sensorName));
 					}
 				}
-				//schema[sensorNames.length] = new Attribute("sampleRate",DataType.SHORT);  // TODO: remove "sampleRate"?   //removed !!!
-				tsdb.insertLoggerType(new LoggerType(typeName, sensorNames,schema));
+				tsdb.insertLoggerType(new LoggerType(typeName, sensorNames));
 			}
 		} catch (Exception e) {
 			log.error(e);
@@ -154,7 +160,7 @@ public class ConfigLoader {
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
 	 */
-	public void readStationConfig(String configFile) {
+	public void readStation(String configFile) {
 		Map<String,List<StationProperties>> plotIdMap = readStationConfigInternal(configFile);
 
 		for(Entry<String, List<StationProperties>> entryMap:plotIdMap.entrySet()) {
@@ -164,8 +170,12 @@ public class ConfigLoader {
 				String plotID = entryMap.getKey();
 				String generalStationName = plotID.substring(0, 3);
 				GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+				if(generalStation==null&&generalStationName.charAt(2)=='T') {
+					generalStationName = ""+generalStationName.charAt(0)+generalStationName.charAt(1)+'W'; // AET06 and SET39 ==> AEW and SEW
+					generalStation = tsdb.getGeneralStation(generalStationName);					
+				}
 				if(generalStation==null) {
-					log.warn("general station not found: "+generalStation);
+					log.warn("general station not found: "+generalStationName+" of "+plotID);
 				}
 				LoggerType loggerType = tsdb.getLoggerType(entryMap.getValue().get(0).get_logger_type_name()); 
 				if(loggerType!=null) {
@@ -233,10 +243,90 @@ public class ConfigLoader {
 		}
 	}
 
+	public void readSensorTranslation(String iniFile) {
+		try {
+			Wini ini = new Wini(new File(iniFile));
+			for(Section section:ini.values()) {
+				String sectionName = section.getName();
+				int index = sectionName.indexOf("_logger_type_sensor_translation");
+				if(index>-1) {
+					readLoggerTypeSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				index = sectionName.indexOf("_generalstation_sensor_translation");
+				if(index>-1) {
+					readGeneralStationSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				index = sectionName.indexOf("_station_sensor_translation");
+				if(index>-1) {
+					readStationSensorTranslation(sectionName.substring(0,index),section);
+					continue;
+				}
+				log.warn("section unknown: "+sectionName);
+			}
+		} catch (Exception e) {
+			log.error(e);
+		}
+	}
+
+	private void readLoggerTypeSensorTranslation(String loggerTypeName, Section section) {
+		LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
+		if(loggerType==null) {
+			log.error("logger not found: "+loggerTypeName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(loggerType.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			if(entry.getKey().equals(entry.getValue())) {
+				log.info("redundant entry "+entry+" in "+section.getName());
+			}
+			loggerType.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	private void readGeneralStationSensorTranslation(String generalStationName, Section section) {
+		GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+		if(generalStation==null) {
+			log.error("generalStation not found: "+generalStationName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(generalStation.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			if(entry.getKey().equals(entry.getValue())) {
+				log.info("redundant entry "+entry+" in "+section.getName());
+			}
+			generalStation.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	private void readStationSensorTranslation(String stationName, Section section) {
+		Station station = tsdb.getStation(stationName);
+		if(station==null) {
+			log.error("station not found: "+stationName);
+			return;
+		}
+		Map<String, String> translationMap = Util.readIniSectionMap(section);
+		for(Entry<String, String> entry:translationMap.entrySet()) {
+			if(station.sensorNameTranlationMap.containsKey(entry.getKey())) {
+				log.warn("overwriting");
+			}
+			station.sensorNameTranlationMap.put(entry.getKey(), entry.getValue());
+		}
+	}
+
+
 	/**
 	 * reads config for translation of input sensor names to database sensor names
 	 * @param configFile
 	 */
+	@Deprecated
 	public void readSensorNameTranslationConfig(String configFile) {		
 		final String SENSOR_NAME_CONVERSION_HEADER_SUFFIX = "_header_0000";		
 		try {
@@ -247,7 +337,7 @@ public class ConfigLoader {
 				if(section!=null) {
 					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
 				} else {
-					log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
+					log.trace("logger type name tranlation not found:\t"+loggerType.typeName);
 				}
 			}
 
@@ -285,7 +375,7 @@ public class ConfigLoader {
 	 * 2. calculate ordered list for each station of stations nearest to current station within same general station
 	 * @param config_file
 	 */
-	public void readStationGeoPositionConfig(String config_file) {
+	public void readStationGeoPosition(String config_file) {
 		try{		
 			Table table = Table.readCSV(config_file,',');		
 			int plotidIndex = table.getColumnIndex("PlotID");
@@ -300,7 +390,7 @@ public class ConfigLoader {
 						try {					
 							double lon = Double.parseDouble(row[lonIndex]);
 							double lat = Double.parseDouble(row[latIndex]);					
-							station.geoPoslongitude = lon;
+							station.geoPosLongitude = lon;
 							station.geoPosLatitude = lat;					
 						} catch(Exception e) {
 							log.warn("geo pos not read: "+plotID);
@@ -318,19 +408,25 @@ public class ConfigLoader {
 		} catch(Exception e) {
 			log.error(e);
 		}		
-		calcNearestStations();		
+		//calcNearestStations();		
 	}
 
 	public void calcNearestStations() {
 		tsdb.updateGeneralStations();
 		for(Station station:tsdb.getStations()) {
-			double[] geoPos = transformCoordinates(station.geoPoslongitude,station.geoPosLatitude);
+
+			if(!station.isPlot) {
+				continue;
+			}
+
+			double[] geoPos = transformCoordinates(station.geoPosLongitude,station.geoPosLatitude);
 			List<Object[]> differenceList = new ArrayList<Object[]>();
+
 			List<Station> stationList = station.generalStation.stationList;
 			//System.out.println(station.plotID+" --> "+stationList);
 			for(Station targetStation:stationList) {
 				if(station!=targetStation) { // reference compare
-					double[] targetGeoPos = transformCoordinates(targetStation.geoPoslongitude,targetStation.geoPosLatitude);
+					double[] targetGeoPos = transformCoordinates(targetStation.geoPosLongitude,targetStation.geoPosLatitude);
 					double difference = getDifference(geoPos, targetGeoPos);
 					differenceList.add(new Object[]{difference,targetStation});
 				}
@@ -398,27 +494,7 @@ public class ConfigLoader {
 		return Math.sqrt((source.geoPosEasting-target.geoPosEasting)*(source.geoPosEasting-target.geoPosEasting)+(source.geoPosNorthing-target.geoPosNorthing)*(source.geoPosNorthing-target.geoPosNorthing));
 	}
 
-	public void readLoggerTypeSensorTranslationConfig(String configFile) {		
-		String SENSOR_TRANSLATION_HEADER_SUFFIX = "_sensor_translation";
-		try {
-			Wini ini = new Wini(new File(configFile));
-			for(LoggerType loggerType:tsdb.getLoggerTypes()) {
-				log.trace("read config for "+loggerType.typeName);
-				Section section = ini.get(loggerType.typeName+SENSOR_TRANSLATION_HEADER_SUFFIX);
-				if(section!=null) {
-					//System.out.println("read "+section.getName());
-					loggerType.sensorNameTranlationMap = Util.readIniSectionMap(section);
-				} else {
-					//not all logger types may be defined in in this file
-					//log.warn("logger type name tranlation not found:\t"+loggerType.typeName);
-				}
-			}
-		} catch (IOException e) {
-			log.error(e);
-		}		
-	}
-
-	public void readVirtualPlotConfig(String config_file) {
+	public void readVirtualPlot(String config_file) {
 		try{
 
 			Table table = Table.readCSV(config_file,',');
@@ -435,6 +511,18 @@ public class ConfigLoader {
 
 					if(generalStationName.equals("sun")) {//correct sun -> cof
 						generalStationName = "cof";
+					}
+
+					if(generalStationName.equals("mcg")) {
+						generalStationName = "flm";
+					}
+
+					if(generalStationName.equals("mch")) {
+						generalStationName = "fpo";
+					}
+
+					if(generalStationName.equals("mwh")) {
+						generalStationName = "fpd";
 					}
 
 					GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);					
@@ -547,7 +635,7 @@ public class ConfigLoader {
 	 * reads properties of stations and creates Station Objects
 	 * @param configFile
 	 */
-	public void readKiLiStationConfig(String configFile) { //  KiLi
+	public void readKiStation(String configFile) { //  KiLi
 		Map<String, List<StationProperties>> serialNameMap = readKiLiStationConfigInternal(configFile);
 		for(Entry<String, List<StationProperties>> entry:serialNameMap.entrySet()) {
 			String serialName = entry.getKey();
@@ -572,10 +660,40 @@ public class ConfigLoader {
 				}
 				if(loggerType!=null) {
 					Station station = new Station(tsdb,null,serialName,loggerType,propertiesList, false);
-					tsdb.insertStation(station);				
+					tsdb.insertStation(station);					
 					for(StationProperties properties:propertiesList) {
 						String virtualPlotID = properties.get_plotid();
 						VirtualPlot virtualPlot = tsdb.getVirtualPlot(virtualPlotID);
+						if(virtualPlot==null) {
+							if(virtualPlotID.length()==4) {
+								String generalStationName = virtualPlotID.substring(0, 3);
+
+								if(generalStationName.equals("sun")) {//correct sun -> cof
+									generalStationName = "cof";
+								}
+
+								if(generalStationName.equals("mcg")) {
+									generalStationName = "flm";
+								}
+
+								if(generalStationName.equals("mch")) {
+									generalStationName = "fpo";
+								}
+
+								if(generalStationName.equals("mwh")) {
+									generalStationName = "fpd";
+								}
+
+								GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+								if(generalStation!=null) {
+									virtualPlot = new VirtualPlot(tsdb, virtualPlotID, generalStation, Float.NaN, Float.NaN, false);
+									log.trace("insert missing virtual plot "+virtualPlotID+" with "+generalStationName);
+									tsdb.insertVirtualPlot(virtualPlot);
+								} else {
+									log.warn("generalstation not found: "+generalStationName+"   from  "+virtualPlotID);
+								}
+							}
+						}
 						if(virtualPlot!=null) {
 							virtualPlot.addStationEntry(station, properties);
 						} else {
@@ -700,7 +818,7 @@ public class ConfigLoader {
 	 * reads names of input sensors, that should not be included in database
 	 * @param configFile
 	 */
-	public void readIgnoreSensorNameConfig(String configFile) {		
+	public void readIgnoreSensorName(String configFile) {		
 		try {
 			Wini ini = new Wini(new File(configFile));
 			Section section = ini.get("ignore_sensors");
@@ -759,10 +877,14 @@ public class ConfigLoader {
 				for(String sensorName:section.keySet()) {
 					String aggregateTypeText = section.get(sensorName);					
 					AggregationType aggregateType = AggregationType.getAggregationType(aggregateTypeText);
-					if(aggregateType!=null) {
+					if(aggregateType!=null&&aggregateType!=AggregationType.NONE) {
 						tsdb.insertBaseAggregation(sensorName, aggregateType);
 					} else {
-						log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
+						if(aggregateType!=null&&aggregateType==AggregationType.NONE) {
+							tsdb.insertRawSensor(sensorName);
+						} else {
+							log.warn("aggregate type unknown: "+aggregateTypeText+"\tin\t"+sensorName);
+						}
 					}
 				}
 			}
@@ -785,6 +907,20 @@ public class ConfigLoader {
 					sensor.useInterpolation = true;
 				} else {
 					log.warn("interpolation config: sensor not found: "+name);
+				}
+			}
+			
+			for(Entry<String, String> entry:section.entrySet()) {
+				Sensor sensor = tsdb.getSensor(entry.getKey());
+				if(sensor!=null) {
+					sensor.useInterpolation = true;
+					try {
+						sensor.maxInterpolationMSE = Double.parseDouble(entry.getValue());
+					} catch (Exception e) {
+						log.warn("could not read max MSE for sensor "+entry.getKey()+"   "+entry.getValue()+"   "+e);
+					}
+				} else {
+					log.warn("interpolation config: sensor not found: "+entry.getKey());
 				}
 			}
 
@@ -816,7 +952,7 @@ public class ConfigLoader {
 		}		
 	}
 
-	public void readRegionConfig(String configFile) {
+	public void readRegion(String configFile) {
 		try {
 			Wini ini = new Wini(new File(configFile));
 
@@ -830,6 +966,32 @@ public class ConfigLoader {
 				}
 			} else {
 				log.warn("region section not found");
+			}
+
+			section = ini.get("region_view_time_range");
+			if(section!=null) {
+				Map<String, String> regionNameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:regionNameMap.entrySet()) {
+					String regionName = entry.getKey();
+					String range = entry.getValue();
+					Interval interval = Interval.parse(range);
+					if(interval!=null) {
+						if(interval.start>=1900&&interval.start<=2100&&interval.end>=1900&&interval.end<=2100) {
+							int startTime = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(interval.start, 1, 1, 0, 0));
+							int endTime = (int) TimeUtil.dateTimeToOleMinutes(LocalDateTime.of(interval.end, 12, 31, 23, 0));
+							Region region = tsdb.getRegion(regionName);
+							if(region!=null) {
+								region.viewTimeRange = Interval.of(startTime,endTime);
+							} else {
+								log.warn("region not found: "+regionName);
+							}
+						} else {
+							log.warn("region_view_time_range section invalid year range "+range);
+						}
+					}
+				}
+			} else {
+				log.warn("region_view_time_range section not found");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -886,6 +1048,49 @@ public class ConfigLoader {
 		}
 	}
 
+	public void readSensorCategoryConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+
+			Section section = ini.get("sensor_category");
+			if(section!=null) {
+				Map<String, String> nameMap = Util.readIniSectionMap(section);
+				for(Entry<String, String> entry:nameMap.entrySet()) {
+					String sensorName = entry.getKey();
+					String sensorCategory = entry.getValue();
+					Sensor sensor = tsdb.getSensor(sensorName);
+					if(sensor!=null) {
+						sensor.category = SensorCategory.parse(sensorCategory);
+					} else {
+						log.warn("read sensor category; sensor not found: "+sensorName);
+					}
+				}
+			} else {
+				log.warn("sensor_unit section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * mark sensors in config-file as internal
+	 * @param configFile
+	 */
+	public void readSensorInternalConfig(String configFile) {
+		try {
+			Wini ini = new Wini(new File(configFile));
+			Section section = ini.get("internal_sensors");
+			if(section!=null) {
+				section.keySet().forEach(sensorName->tsdb.getOrCreateSensor(sensorName).internal = true);
+			} else {
+				log.warn("internal_sensors section not found");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}	
+
 	public static String loggerPropertyKiLiToLoggerName(String s) {
 		if((s.charAt(0)>='0'&&s.charAt(0)<='9')&&(s.charAt(1)>='0'&&s.charAt(1)<='9')&&(s.charAt(2)>='0'&&s.charAt(2)<='9')){
 			return s.substring(3);
@@ -894,14 +1099,8 @@ public class ConfigLoader {
 		}
 	}
 
-	public void readVirtualPlotElevationConfig(String configFile) {
+	public void readVirtualPlotElevation(String configFile) {
 		Table table = Table.readCSV(configFile,',');
-		/*int plotidIndex = table.getColumnIndex("PlotID");
-		int elevationIndex = table.getColumnIndex("Elevation");
-		if(plotidIndex<0||elevationIndex<0) {
-			log.error("readVirtualPlotElevationConfig: columns not found");
-			return;
-		}*/
 
 		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
 		ColumnReaderFloat elevationReader = table.createColumnReaderFloat("Elevation");
@@ -912,7 +1111,7 @@ public class ConfigLoader {
 
 		for(String[] row:table.rows) {
 			String plotID = plotidReader.get(row);
-			float elevation = elevationReader.get(row);
+			float elevation = elevationReader.get(row,true);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
 				log.warn("plotID not found: "+plotID);
@@ -922,59 +1121,176 @@ public class ConfigLoader {
 		}
 	}
 
-	public void readUpdatedPlotGeoPosConfig(String configFile) {
+	public void readVirtualPlotGeoPosition(String configFile) { //overwriting old geo pos
 		Table table = Table.readCSV(configFile,',');
 		ColumnReaderString plotidReader = table.createColumnReader("PlotID");
 		ColumnReaderFloat eastingReader = table.createColumnReaderFloat("Easting");
 		ColumnReaderFloat northingReader = table.createColumnReaderFloat("Northing");
+		ColumnReaderDouble latReader = table.createColumnReaderDouble("Lat");
+		ColumnReaderDouble lonReader = table.createColumnReaderDouble("Lon");
 		for(String[] row:table.rows) {
 			String plotID = plotidReader.get(row);
 			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
 			if(virtualPlot==null) {
-				log.warn("plotID not found: "+plotID);
+				log.trace("virtual plotID not found: "+plotID+"  in "+configFile);
 				continue;
 			}
-			float easting = eastingReader.get(row);
-			float northing = northingReader.get(row);
+			float easting = eastingReader.get(row,true);
+			float northing = northingReader.get(row,true);
 			virtualPlot.geoPosEasting = easting;
 			virtualPlot.geoPosNorthing = northing;
+			double lat = latReader.get(row, true);
+			double lon = lonReader.get(row, true);
+			virtualPlot.geoPosLatitude = lat;
+			virtualPlot.geoPosLongitude = lon;
 		}
 	}
 
-	/*public void readKiLiStationGeoPositionConfig(String config_file) {  //TODO
-	try{		
-		Table table = Table.readCSV(config_file);		
-		int plotidIndex = table.getColumnIndex("PlotID");
-		int epplotidIndex = table.getColumnIndex("EP_Plotid"); 
-		int lonIndex = table.getColumnIndex("Lon");
-		int latIndex = table.getColumnIndex("Lat");			
+	public void readSaStation(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_stationID = table.createColumnReader("station");
+		ColumnReaderString cr_general = table.createColumnReader("general");
+
+		ColumnReaderFloat cr_lat = table.createColumnReaderFloat("lat");
+		ColumnReaderFloat cr_lon = table.createColumnReaderFloat("lon");
+
+
 		for(String[] row:table.rows) {
-			String plotID = row[epplotidIndex];
-			if(!plotID.endsWith("_canceled")) { // ignore plotid canceled positions
-				Station station = stationMap.get(plotID);
-				if(station!=null) {					
-					try {					
-						double lon = Double.parseDouble(row[lonIndex]);
-						double lat = Double.parseDouble(row[latIndex]);					
-						station.geoPoslongitude = lon;
-						station.geoPosLatitude = lat;					
-					} catch(Exception e) {
-						log.warn("geo pos not read: "+plotID);
-					}
-					if(plotidIndex>-1) {
-						station.serialID = row[plotidIndex];
-					}
-				} else {
-					log.warn("station not found: "+row[epplotidIndex]+"\t"+row[lonIndex]+"\t"+row[latIndex]);
-				}
+			String stationID = cr_stationID.get(row);
+			String generalStationName = cr_general.get(row);
+			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+			if(generalStation==null) {
+				log.error("general station not found: "+generalStationName+"  at "+stationID);
+				continue;
+			}
+			String loggerTypeName = generalStationName+"_logger";
+			LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
+			if(loggerType==null) {
+				log.error("logger type not found: "+loggerTypeName+"  at "+stationID);
+				continue;
 			}
 
+			Map<String, String> propertyMap = new TreeMap<String, String>();
+			propertyMap.put("PLOTID", stationID);
+			propertyMap.put("DATE_START","1999-01-01");
+			propertyMap.put("DATE_END","2099-12-31");
+			StationProperties stationProperties = new StationProperties(propertyMap);			
+			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
+			propertyList.add(stationProperties);
+
+			Station station = new Station(tsdb, generalStation, stationID, loggerType, propertyList, true);
+
+			try {
+				float lat = cr_lat.get(row,true);
+				float lon = cr_lon.get(row,true);
+				station.geoPosLatitude = lat;
+				station.geoPosLongitude = lon;
+			} catch(Exception e) {
+				log.error(e);
+			}
+
+			tsdb.insertStation(station);
+		}
+	}
+
+	public void readSaOwnPlotInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_general = table.createColumnReader("general");		
+		ColumnReaderFloat cr_lat = table.createColumnReaderFloat("lat");
+		ColumnReaderFloat cr_lon = table.createColumnReaderFloat("lon");
+
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String generalStationName = cr_general.get(row);
+			float lat = cr_lat.get(row,true);
+			float lon = cr_lon.get(row,true);
+			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+			if(generalStation==null) {
+				log.error("GeneralStation not found "+generalStationName);
+				continue;
+			}
+
+			float geoPosEasting = Float.NaN;
+			float geoPosNorthing = Float.NaN;
+			boolean isFocalPlot = false;
+			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, geoPosEasting, geoPosNorthing, isFocalPlot);
+			virtualPlot.geoPosLatitude = lat;
+			virtualPlot.geoPosLongitude = lon;
+			tsdb.insertVirtualPlot(virtualPlot);
 		}
 
-	} catch(Exception e) {
-		log.error(e);
-	}		
-	calcNearestStations();		
-}*/
+	}
 
+	public void readGenericStationInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_logger = table.createColumnReader("logger");
+		ColumnReaderString cr_serial = table.createColumnReader("serial");
+		ColumnReaderString cr_start = table.createColumnReader("start");
+		ColumnReaderString cr_end = table.createColumnReader("end");
+
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String loggerTypeName = cr_logger.get(row);
+			String serial = cr_serial.get(row);
+			String startText = cr_start.get(row);
+			String endText = cr_end.get(row);
+
+			VirtualPlot virtualPlot = tsdb.getVirtualPlot(plotID);
+			if(virtualPlot==null) {
+				log.error("virtualPlot not found "+plotID);
+				continue;
+			}
+
+			LoggerType loggerType = tsdb.getLoggerType(loggerTypeName);
+			if(loggerType==null) {
+				log.error("logger not found "+loggerTypeName);
+				continue;
+			}
+
+			Map<String, String> propertyMap = new TreeMap<String, String>();
+			propertyMap.put(StationProperties.PROPERTY_PLOTID, plotID);
+			propertyMap.put(StationProperties.PROPERTY_LOGGER, loggerTypeName);
+			propertyMap.put(StationProperties.PROPERTY_SERIAL, serial);
+			propertyMap.put(StationProperties.PROPERTY_START,startText);
+			propertyMap.put(StationProperties.PROPERTY_END,endText);
+			StationProperties stationProperties = new StationProperties(propertyMap);			
+			ArrayList<StationProperties> propertyList = new ArrayList<StationProperties>();
+			propertyList.add(stationProperties);
+
+			//new Station(tsdb, generalStation, stationID, loggerType, propertyMapList, false);
+			Station station = new Station(tsdb,null,serial,loggerType,propertyList, false);
+			tsdb.insertStation(station);
+			virtualPlot.addStationEntry(station, stationProperties);
+		}
+	}
+	
+	public void readBaPlotInventory(String configFile) {
+		Table table = Table.readCSV(configFile,',');
+		ColumnReaderString cr_plot = table.createColumnReader("plot");
+		ColumnReaderString cr_general = table.createColumnReader("general");		
+		ColumnReaderFloat cr_easting = table.createColumnReaderFloat("easting");
+		ColumnReaderFloat cr_northing = table.createColumnReaderFloat("northing");
+		ColumnReaderFloat cr_elevation = table.createColumnReaderFloat("elevation");
+
+		for(String[] row:table.rows) {
+			String plotID = cr_plot.get(row);
+			String generalStationName = cr_general.get(row);
+			float easting = cr_easting.get(row,true);
+			float northing = cr_northing.get(row,true);
+			float elevation = cr_elevation.get(row,true); 
+			GeneralStation generalStation = tsdb.getGeneralStation(generalStationName);
+			if(generalStation==null) {
+				log.error("GeneralStation not found "+generalStationName);
+				continue;
+			}
+
+			boolean isFocalPlot = false;
+			VirtualPlot virtualPlot = new VirtualPlot(tsdb, plotID, generalStation, easting, northing, isFocalPlot);
+			virtualPlot.elevation = elevation;
+			tsdb.insertVirtualPlot(virtualPlot);
+		}
+
+	}
 }

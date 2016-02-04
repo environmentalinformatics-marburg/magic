@@ -1,5 +1,5 @@
 # Required packages
-lib <- c("Rsenal", "doParallel", "MODIS")
+lib <- c("Rsenal", "doParallel", "MODIS", "remote")
 sapply(lib, function(x) library(x, character.only = TRUE))
 
 source("aggregateGimms.R")
@@ -107,6 +107,28 @@ ls_gimms_agg <- lapply(seq(nlayers(rst_gimms_agg)), function(i) {
 #                             full.names = TRUE)
 # ls_gimms_agg <- lapply(fls_gimms_agg, raster)
 rst_gimms_agg <- stack(ls_gimms_agg)
+
+
+## Deseasoning
+
+fls_gimms_aggmax <- list.files("data/rst/whittaker", pattern = "_aggmax.tif$", 
+                            full.names = TRUE)
+fls_gimms_aggmax <- 
+  fls_gimms_aggmax[grep("1982", fls_gimms_aggmax)[1]:length(fls_gimms_aggmax)]
+rst_gimms_aggmax <- stack(fls_gimms_aggmax)
+
+rst_gimms_aggmax_dsn <- deseason(rst_gimms_aggmax)
+
+# Outnames
+dir_out <- unique(dirname(fls_gimms_aggmax))
+fls_out <- paste0(dir_out, "/", names(rst_gimms_aggmax), "_dsn")
+
+ls_gimms_aggmax_dsn <- lapply(1:nlayers(rst_gimms_aggmax_dsn), function(i) {
+  writeRaster(rst_gimms_aggmax_dsn[[i]], filename = fls_out[i], 
+              format = "GTiff", overwrite = TRUE) 
+})
+
+rst_gimms_aggmax_dsn <- stack(ls_gimms_aggmax_dsn)
 
 # Deregister parallel backend
 stopCluster(cl)

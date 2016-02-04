@@ -5,19 +5,13 @@ kifiAggData <- function(data,
                         over.fun = sum, 
                         dsn = ".",
                         out.str = "data",
-                        out.proj = NULL, 
-                        n.cores = 2,
                         ...) {
   
   # Required packages
-  lib <- c("doParallel", "raster")
-  sapply(lib, function(...) stopifnot(require(..., character.only = T)))
-  
-  # Parallelization
-  registerDoParallel(cl <- makeCluster(n.cores))
+  library(raster)
   
   # Loop through single years
-  tmp.ts.agg <- foreach(h = years) %do% {
+  tmp.ts.agg <- lapply(years, function(h) {
     
     if (h == -999) {
       tmp.ts <- data[, date.col]
@@ -26,33 +20,28 @@ kifiAggData <- function(data,
     }
     
     # Aggregate every n layers of each year or whole time span
-    tmp.ts.agg <- foreach(i = seq(1, nrow(tmp.ts), n), .packages = lib) %dopar% {
+    tmp.ts.agg <- lapply(seq(1, nrow(tmp.ts), n), function(i) {
       if (length(na.omit(tmp.ts[i:(i+7), 2])) > 0) {
-        tmp <- stack(na.omit(tmp.ts[i:(i+7), 2]))
+        tmp <- stack(as.character(na.omit(tmp.ts[i:(i+7), 2])))
       } else {
         tmp <- NA
       }
       
       if (class(tmp) != "logical") {
         
-        # Output projection
-        if (!is.null(out.proj)) 
-          # Crop projected raster by projected extent -> avoids edge NAs
-          tmp <- crop(projectRaster(tmp, crs = out.proj, method = "ngb"), 
-                      projectExtent(tmp, crs = out.proj))
-        
         # Aggregation
-        overlay(tmp, fun = over.fun, unstack = TRUE, 
-                filename = paste(dsn, out.str, "_", strftime(tmp.ts[i, date.col], format = "%Y%j"), sep = ""), ...)
+        time_out <- strftime(tmp.ts[i, date.col], format = "%Y%j")
+        file_out <- paste(dsn, "/", out.str, "_", time_out, sep = "")
+        overlay(tmp, fun = over.fun, unstack = TRUE, filename = file_out, ...)
       } else {
         NA
       }
-    }
+    })
+    
     return(tmp.ts.agg)
-  }
+  })
   
-  # Deregister parallel backend and return output
-  stopCluster(cl)
+  # Return output
   return(tmp.ts.agg)
 }
 

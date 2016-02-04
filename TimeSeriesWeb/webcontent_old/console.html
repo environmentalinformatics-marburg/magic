@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Console</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
+<script src="jquery-2.1.1.min.js"></script>
+<script src="util.js"></script>
+<script type="text/javascript">
+
+var execute = function(input_line) {
+	if(input_line==="clear") {
+		$("#output").val("");
+	} else {
+	getID("status").innerHTML = "processing command: "+input_line;
+	document.getElementById("button_execute").disabled = true; 
+	$("#output").val($("#output").val()+"\ntsdb:$ "+input_line);
+	$.postJSONJSON("../tsdb/execute_console_command",{"input_line":input_line})
+	 .done(function(data) {
+		var commandThreadId = +data.commandThreadId;
+		window.setTimeout(function() {get_output(commandThreadId);}, 100);
+	}).fail(function() {	
+		$("#output").val("error");
+		document.getElementById("button_execute").disabled = false;
+		getID("status").innerHTML = "ready";	
+	});
+	}
+}
+
+var append_output = function(text) {
+	$("#output").val($("#output").val()+text);
+	getID("output").scrollTop = getID("output").scrollTopMax;
+}
+
+var get_output = function(commandThreadId) {
+	$.get("../tsdb/console_comand_get_output?commandThreadId="+commandThreadId).done(function(data) {
+		var output_lines = data.output_lines;
+		var running = data.running;
+		if(output_lines.length>0) {
+			var out = "";
+			for(i in output_lines) {
+				out += output_lines[i]+"\n";
+			}
+			append_output("\n"+out);
+		}		
+		if(running) {
+			window.setTimeout(function() {get_output(commandThreadId);}, 100);
+		} else {
+			document.getElementById("button_execute").disabled = false;
+			getID("status").innerHTML = "ready";			
+		}
+	}).fail(function() {
+		append_output("\nerror");
+		document.getElementById("button_execute").disabled = false;
+		getID("status").innerHTML = "ready";		
+	});
+}
+
+var appendCommandButton = function(text) {
+	appendButton(getID("command_buttons"),text).onclick = function(){execute(text);};
+}
+
+var appendFillTextButton = function(element,text,filltext) {
+	var b = appendButton(element,text);
+	b.onclick = function(){getID('command').value=filltext};
+}
+
+$(document).ready(function(){
+	appendCommandButton("help");
+	appendCommandButton("clear");
+	appendCommandButton("commands");
+	appendCommandButton("plots");
+	appendCommandButton("sensors");
+	appendCommandButton("stations");
+	appendCommandButton("create-empirical-reference");
+	
+	appendFillTextButton(getID('template_buttons'),"query","query plot: sensors:[]");
+	
+	appendFillTextButton(getID('example_buttons'),"query","query plot:HEG01 sensors:[Ta_200,rH_200]");
+	
+	
+	$("#output").val("");
+	getID("status").innerHTML = "ready";
+	execute("intro");
+});
+
+</script>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+</head>
+
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="index.html">back to Start Page<a><p>
+<h1 style="text-align:center">Console</h1>
+<div>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+</div>
+<hr/>
+</div>
+
+<div id="command_buttons">commands: </div>
+<textarea id="output" cols="100" rows="30" wrap="soft" readonly="readonly">init...</textarea>
+<div>
+<label for="command">tsdb:$</label>
+<input type="text" id="command" size="100" value="" onkeypress="if(event.keyCode==13){document.getElementById('button_execute').click();}">
+<button id="button_execute" onclick="execute(document.getElementById('command').value)">execute</button>
+<div>
+<div id="template_buttons">templates:</div>
+<div id="example_buttons">examples:</div>
+
+
+</body>
+</html>

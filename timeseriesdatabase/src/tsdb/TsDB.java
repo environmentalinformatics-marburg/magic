@@ -1,25 +1,35 @@
 package tsdb;
 
-import static tsdb.util.Util.log;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import tsdb.aggregated.AggregationType;
-import tsdb.aggregated.BaseAggregationTimeUtil;
-import tsdb.catalog.SourceCatalog;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import tsdb.component.LoggerType;
+import tsdb.component.Region;
+import tsdb.component.Sensor;
+import tsdb.component.SourceCatalog;
+import tsdb.streamdb.StreamStorageStreamDB;
+import tsdb.util.AggregationType;
+import tsdb.util.AssumptionCheck;
+import tsdb.util.BaseAggregationTimeUtil;
+import tsdb.util.Util;
 
 /**
  * This is the main class of the timeseries database.
  * @author woellauer
  *
  */
-public class TsDB {
+public class TsDB implements AutoCloseable {
+	private static final Logger log = LogManager.getLogger();
 
 	/**
 	 * map regionName -> Region
@@ -63,19 +73,15 @@ public class TsDB {
 
 
 	private Map<String,VirtualPlot> virtualplotMap;
-	
-	//Map PlotID -> Plot Object
-	private Map<String,Plot> plotMap;
-
 
 	//*** begin persistent information ***
 
 	/**
-	 * EventStore is the storage of all time series
+	 * storage of all time series
 	 */
-	public StreamStorage streamStorage;
+	public StreamStorageStreamDB streamStorage;
 
-	public CacheStorage cacheStorage;
+	public StreamStorageStreamDB streamCache;
 
 	public SourceCatalog sourceCatalog; 
 
@@ -88,14 +94,14 @@ public class TsDB {
 	 * create a new TimeSeriesDatabase object and connects to stored database files
 	 * @param databasePath
 	 * @param evenstoreConfigFile
+	 * @param streamdbPathPrefix 
 	 */
-	public TsDB(String databasePath, String evenstoreConfigFile, String cachePath) {		
-		log.trace("create TimeSeriesDatabase");		
+	public TsDB(String databasePath, String cachePath, String streamdbPathPrefix) {		
+		log.info("open tsdb...");		
 
 		this.regionMap = new TreeMap<String,Region>();
 
-		this.streamStorage = new StreamStorageEventStore(databasePath, evenstoreConfigFile);
-		//this.streamStorage = new StreamStorageMapDB(databasePath);
+		this.streamStorage = new StreamStorageStreamDB(streamdbPathPrefix);
 		loggerTypeMap = new TreeMap<String, LoggerType>();
 		stationMap = new TreeMap<String,Station>();
 		generalStationMap = new TreeMap<String, GeneralStation>();
@@ -103,34 +109,18 @@ public class TsDB {
 		ignoreSensorNameSet = new TreeSet<String>();
 		baseAggregationSensorNameSet = new TreeSet<String>();
 
-		this.cacheStorage = new CacheStorage(cachePath);
+		this.streamCache = new StreamStorageStreamDB(streamdbPathPrefix+"__cache");
 
 		this.virtualplotMap = new TreeMap<String, VirtualPlot>();
-		
-		this.plotMap = new TreeMap<String,Plot>();
 
 		this.sourceCatalog = new SourceCatalog(databasePath);
 	}	
 
 	/**
-	 * registers streams for all containing stations (with stream name == plotID)
-	 */
-	public void registerStreams() {
-		for(Station station:getStations()) {
-			if(station.loggerType!=null) {
-				log.info("register stream "+station.stationID+" with schema of "+station.loggerType.typeName);
-				streamStorage.registerStream(station.stationID, station.loggerType.schema);
-			} else {
-				log.error("stream not registered: "+station.stationID+"   logger type not found");
-			}
-		}
-	}
-
-	/**
 	 * clears all stream data in EventStore; deletes all database files
 	 */
 	public void clear() {
-		cacheStorage.clear();
+		streamCache.clear();
 		sourceCatalog.clear();		
 		streamStorage.clear();
 	}
@@ -138,6 +128,7 @@ public class TsDB {
 	/**
 	 * close EventStore, all pending stream data is written to disk
 	 */
+	@Override
 	public void close() {
 		try {
 			streamStorage.close();
@@ -145,9 +136,9 @@ public class TsDB {
 			log.error("error in streamStorage.close: "+e);
 		}
 		try {
-			cacheStorage.close();
+			streamCache.close();
 		}  catch(Exception e) {
-			log.error("error in cacheStorage.close: "+e);
+			log.error("error in streamCache.close: "+e);
 		}
 		try {
 			sourceCatalog.close();
@@ -184,6 +175,16 @@ public class TsDB {
 			}
 		}
 		return sensors;
+	}
+	
+	/**
+	 * Get stream of sensors.
+	 * @param names
+	 * @return stream of sensors (or null elements if sensor not exists).
+	 */
+	public Stream<Sensor> getSensorStream(String[] names) {
+		AssumptionCheck.throwNullArray(names);
+		return Arrays.stream(names).map(name->sensorMap.get(name));
 	}
 
 	public void updateGeneralStations() {
@@ -259,7 +260,7 @@ public class TsDB {
 			end = it.next().getTimestamp();
 		}
 		return new long[]{start,end};*/
-		return streamStorage.getTimeInterval(stationName);
+		return streamStorage.getStationTimeInterval(stationName);
 	}
 
 	/**
@@ -325,8 +326,14 @@ public class TsDB {
 		return set;
 	}
 
-	public Stream<String> getStationAndVirtualPlotNames(String group) {
+	public Stream<String> getStationAndVirtualPlotNames(String group) {		
 		return getGeneralStationsOfGroup(group).flatMap(gs->gs.getStationAndVirtualPlotNames());
+	}
+
+	public Stream<String> getPlotNames() {
+		Stream<String> stationStream = stationMap.values().stream().filter(s->s.isPlot).map(s->s.stationID);
+		Stream<String> virtualPlotStream = virtualplotMap.keySet().stream();
+		return Stream.concat(stationStream,virtualPlotStream);
 	}
 
 	//*********************************************** end GeneralStation *************************************************
@@ -346,6 +353,17 @@ public class TsDB {
 
 	public Sensor getSensor(String sensorName) {
 		return sensorMap.get(sensorName);
+	}
+	
+	public Sensor getOrCreateSensor(String sensorName) {
+		Sensor sensor = sensorMap.get(sensorName);
+		if(sensor==null) {
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+			return sensor;
+		} else {
+			return sensor;
+		}
 	}
 
 	public Collection<Sensor> getSensors() {
@@ -476,16 +494,30 @@ public class TsDB {
 
 	public void insertBaseAggregation(String sensorName, AggregationType aggregateType) {
 		Sensor sensor = getSensor(sensorName);
-		if(sensor!=null) {
-			if(baseAggregationExists(sensorName)) {
-				log.warn("base aggregation already exists: "+sensorName);
-			} else {
-				baseAggregationSensorNameSet.add(sensorName);
-			}
-			sensor.baseAggregationType = aggregateType;
+		if(sensor==null) {
+			log.trace("created new sensor "+sensorName);
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+		}			
+		if(baseAggregationExists(sensorName)) {
+			log.warn("base aggregation already exists: "+sensorName);
 		} else {
-			log.warn("sensor does not exist; base aggregation not inserted: "+sensorName);
+			baseAggregationSensorNameSet.add(sensorName);
 		}
+		sensor.baseAggregationType = aggregateType;
+	}
+	
+	public void insertRawSensor(String sensorName) {
+		Sensor sensor = getSensor(sensorName);
+		if(sensor==null) {
+			log.trace("created new sensor "+sensorName);
+			sensor = new Sensor(sensorName);
+			insertSensor(sensor);
+		}			
+		if(baseAggregationExists(sensorName)) {
+			log.error("base aggregation for raw exists: "+sensorName);
+		}
+		sensor.baseAggregationType = AggregationType.NONE;		
 	}
 
 	public String[] getBaseSchema(String[] rawSchema) {
@@ -495,7 +527,7 @@ public class TsDB {
 				sensorNames.add(name);
 			}
 		}
-		if(sensorNames.size()==0) {
+		if(sensorNames.isEmpty()) {
 			return null;
 		}
 		return sensorNames.toArray(new String[0]);
@@ -504,11 +536,41 @@ public class TsDB {
 	public Set<String> getBaseAggregationSensorNames() {
 		return baseAggregationSensorNameSet;
 	}
+	
+	public boolean isBaseSchema(String[] schema) {
+		for(String sensorName:schema) {
+			if(!baseAggregationSensorNameSet.contains(sensorName)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	//*********************************************** end base aggregation *************************************************************************
 
+	public String[] getSensorNamesOfPlot(String plotID) {
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.getSchema();
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.getSchema();
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
+		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getSchema();
+		}
+		
+		return null;
+	}
+	
+	
 	public String[] getValidSchema(String plotID, String[] schema) {
-
 		VirtualPlot virtualPlot = getVirtualPlot(plotID);
 		if(virtualPlot!=null) {
 			return virtualPlot.getValidSchemaEntries(schema);
@@ -516,7 +578,37 @@ public class TsDB {
 		Station station = getStation(plotID);
 		if(station!=null) {
 			return station.getValidSchemaEntries(schema);
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
 		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getValidSchemaEntries(schema);
+		}
+		
+		throw new RuntimeException("plotID not found: "+plotID);
+	}
+	
+	public String[] getValidSchemaWithVirtualSensors(String plotID, String[] schema) {
+		VirtualPlot virtualPlot = getVirtualPlot(plotID);
+		if(virtualPlot!=null) {
+			return virtualPlot.getValidSchemaEntriesWithVirtualSensors(schema);
+		}
+		Station station = getStation(plotID);
+		if(station!=null) {
+			return station.getValidSchemaEntriesWithVirtualSensors(schema);
+		}		
+		String[] parts = plotID.split(":"); // structure plotID:stationID
+		if(parts.length!=2) {
+			throw new RuntimeException("plotID not found: "+plotID);
+		}
+		station = getStation(parts[1]);
+		if(station!=null) {
+			return station.getValidSchemaEntriesWithVirtualSensors(schema);
+		}
+		
 		throw new RuntimeException("plotID not found: "+plotID);
 	}
 
@@ -533,25 +625,6 @@ public class TsDB {
 		throw new RuntimeException("plotID not found: "+plotID);
 	}
 
-	public void createPlotMap() {
-		for(VirtualPlot virtualPlot:getVirtualPlots()) {
-			if(!plotMap.containsKey(virtualPlot.plotID)) {
-				plotMap.put(virtualPlot.plotID, new Plot(virtualPlot.plotID));
-			} else {
-				log.warn("plot exists already: "+virtualPlot.plotID);
-			}
-		}
-		for(Station station:getStations()) {
-			if(station.isPlot) {
-				if(!plotMap.containsKey(station.stationID)) {
-					plotMap.put(station.stationID, new Plot(station.stationID));
-				} else {
-					log.warn("plot exists already: "+station.stationID);
-				}
-			}
-		}
-	}
-	
 	/**
 	 * Get an array of reference values of sensors at plotID.
 	 * @param plotID
@@ -573,8 +646,81 @@ public class TsDB {
 		}
 		return result;
 	}
+	
+	/**
+	 * add appropriate virtual sensors to given schema
+	 * @param schema (nullable) (if null returns null)
+	 * @return expanded schema (nullable)
+	 */
+	public String[] includeVirtualSensorNames(String[] schema) {
+		if(schema==null) {
+			return null;
+		}
+		ArrayList<String> additionalSensorNames = null;
+		for(String name:schema) {
+			if(name.equals("Rn_300")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("sunshine");
+			}
+			if(name.equals("Ta_200")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("Ta_200_min");
+				additionalSensorNames.add("Ta_200_max");
+			}
+			if(name.equals("rH_200")) {
+				if(additionalSensorNames==null) {
+					additionalSensorNames = new ArrayList<String>();
+				}
+				additionalSensorNames.add("rH_200_min");
+				additionalSensorNames.add("rH_200_max");
+			}
+		}
+		if(additionalSensorNames==null) {
+			return schema;
+		} else {
+			return Stream.concat(Arrays.stream(schema), additionalSensorNames.stream()).toArray(String[]::new);			
+		}
+	}
+	
+	public String[] supplementSchema(String... schema) {
+		if(schema==null) {
+			return null;
+		}
+		
+		Map<String, Integer> schemaMap = Util.stringArrayToMap(schema);
+		//ArrayList<String> additionalSensorNames = new ArrayList<String>();
+		LinkedHashSet<String> additionalSensorNames = new LinkedHashSet<>(); // no duplicates
+		if(schemaMap.containsKey("WD")&&!schemaMap.containsKey("WV")) {
+			additionalSensorNames.add("WV");
+		}
+		if(schemaMap.containsKey("sunshine")&&!schemaMap.containsKey("Rn_300")) {
+			additionalSensorNames.add("Rn_300");
+		}
+		
+		if(schemaMap.containsKey("Ta_200_min")&&!schemaMap.containsKey("Ta_200")) {
+			additionalSensorNames.add("Ta_200");
+		}
+		
+		if(schemaMap.containsKey("Ta_200_max")&&!schemaMap.containsKey("Ta_200")) {
+			additionalSensorNames.add("Ta_200");
+		}
+		
+		if(schemaMap.containsKey("rH_200_min")&&!schemaMap.containsKey("rH_200")) {
+			additionalSensorNames.add("rH_200");
+		}
+		
+		if(schemaMap.containsKey("rH_200_max")&&!schemaMap.containsKey("rH_200")) {
+			additionalSensorNames.add("rH_200");
+		}
 
-
-
-
+		if(additionalSensorNames.isEmpty()) {
+			return schema;
+		} else {
+			return Stream.concat(Arrays.stream(schema), additionalSensorNames.stream()).toArray(String[]::new);			
+		}		
+	}
 }

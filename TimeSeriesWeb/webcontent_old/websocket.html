@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Testing WebSocket</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
+
+<script src="jquery-2.1.1.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+
+
+$.get("/export/region").done(function(data) {
+ws = new WebSocket("ws://127.0.0.1:8080/echo");
+
+ws.onopen = function() {
+    document.getElementById("result").innerHTML += "onopen <br>";
+	ws.send("start process");
+	
+};
+
+ws.onmessage = function (evt) {
+    document.getElementById("result").innerHTML += "onmessage <br>";
+};
+
+ws.onclose = function() {
+    document.getElementById("result").innerHTML += "onclose <br>";
+};
+
+ws.onerror = function(err) {
+    document.getElementById("result").innerHTML += "onerror <br>";
+};
+
+});		
+
+});
+
+
+
+
+
+
+
+</script>
+
+
+
+<style type="text/css">
+
+
+
+
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Testing WebSocket</h1>
+
+<div id="result"></div>
+</div>
+
+
+</body>
+
+</html>

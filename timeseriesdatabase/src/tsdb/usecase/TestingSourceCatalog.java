@@ -2,7 +2,7 @@ package tsdb.usecase;
 
 import tsdb.TsDBFactory;
 import tsdb.TsDB;
-import tsdb.catalog.SourceEntry;
+import tsdb.component.SourceEntry;
 
 public class TestingSourceCatalog {
 

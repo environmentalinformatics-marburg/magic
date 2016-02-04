@@ -1,0 +1,206 @@
+The following shows SP1 station set up as of May 2015
+========================================================
+
+```{r}
+### environmental stuff
+
+# packages
+lib <- c("raster", "rgdal", "grid", "latticeExtra", "zoo")
+jnk <- sapply(lib, function(x) library(x, character.only = TRUE, quietly = TRUE))
+
+# paths and files
+dirpath <- "/mnt/windows/Permanent/kilimanjaro/coordinates/coords/"
+mstrdat <- "ki_station_master_20150430"
+demdat <- "DEM_ARC1960_30m_Hemp.tif"
+
+
+### data import
+
+# research sites
+mstr <- readOGR(dsn = dirpath, layer = mstrdat)
+
+# dem
+dem <- raster(paste(dirpath, demdat, sep ="/"))
+demxyz <- data.frame(coordinates(dem), z = getValues(dem))
+
+# process relevant columns (plot equipment)
+cols <- c("Ta_200", "P_RT_NRT", "SWDR_300", "TF", "F_RT_NRT", "p_200")
+ls_datsp <- lapply(cols, function(i) {
+  val <- mstr@data[, i]
+  instl <- val == "INSTALLED"
+  dat <- mstr[instl, ]
+  datsp <- data.frame(coordinates(dat), dat$Z_DEM_HMP)
+  names(datsp) <- c("x", "y", "z")
+  return(datsp)
+})
+
+# split datasets according to
+ta200sp <- ls_datsp[[1]] # temperature, relative humidity
+prcpsp <- ls_datsp[[2]]  # rainfall
+swdrsp <- ls_datsp[[3]]  # radiation
+tfsp <- ls_datsp[[4]]    # through-fall
+fogsp <- ls_datsp[[5]]   # fog
+awssp <- ls_datsp[[6]]   # advanced setup
+
+
+### visualization
+
+# color palette
+shade.col.fun <- trellis.par.get("shade.colors")$palette 
+shade.colors <- shade.col.fun(0.6, 0.6, seq(0, 1, length = 100))
+
+# automated output filename and figure title
+ch_dt <- format(Sys.Date(), "%Y%m%d")
+ch_yrmn <- as.yearmon(Sys.Date())
+ch_png_out <- paste("station_locations3d", ch_dt, "hires.png", sep = "_")
+
+# 3d terrain model
+png(paste(dirpath, ch_png_out, sep = "/"), 
+    width = 1024*3, height = 0.4*1024*3, res = 300)
+
+wireframe(z ~ x * y, data = demxyz, shade = TRUE, panel.aspect = 0.4, 
+          scales = list(draw = FALSE), aspect = c(1, 0.15), as.table = TRUE,
+          zoom = 2.1, screen = list(z = 50, x = -65, y = 0), 
+          main = paste0("SP1 meteorological observation network (", ch_yrmn, ")"),
+          colorkey = list(col = shade.colors, space = "right", 
+                          height = 0.8, width = 1,
+                          at = do.breaks(range(na.exclude(demxyz$z)), 100)),
+          pts = ta200sp, par.box = list(col = NA), ylab = "", xlab = "", zlab = "",
+          panel.3d.wireframe = 
+            function(x, y, z,
+                     xlim, ylim, zlim,
+                     xlim.scaled, ylim.scaled, zlim.scaled,
+                     pts,
+                     ...) {
+              grid.rect(gp = gpar(col = NA, fill = "grey50"))
+              panel.3dwire(x = x, y = y, z = z,
+                           xlim = xlim,
+                           ylim = ylim,
+                           zlim = zlim,
+                           xlim.scaled = xlim.scaled,
+                           ylim.scaled = ylim.scaled,
+                           zlim.scaled = zlim.scaled,
+                           col = NA, 
+                           ...)
+              xxxxx <-
+                xlim.scaled[1] + diff(xlim.scaled) *
+                (awssp$x - xlim[1]) / diff(xlim)
+              yyyyy <-
+                ylim.scaled[1] + diff(ylim.scaled) *
+                (awssp$y - ylim[1]) / diff(ylim)
+              zzzzz <-
+                zlim.scaled[1] + diff(zlim.scaled) *
+                (awssp$z - zlim[1]) / diff(zlim)
+              panel.3dscatter(x = xxxxx,
+                              y = yyyyy,
+                              z = zzzzz,
+                              xlim = xlim,
+                              ylim = ylim,
+                              zlim = zlim,
+                              xlim.scaled = xlim.scaled,
+                              ylim.scaled = ylim.scaled,
+                              zlim.scaled = zlim.scaled,
+                              pch = 24, cex = 2.5, col = "black", fill = "grey",
+                              ...)
+              x <-
+                xlim.scaled[1] + diff(xlim.scaled) *
+                (fogsp$x - xlim[1]) / diff(xlim)
+              y <-
+                ylim.scaled[1] + diff(ylim.scaled) *
+                (fogsp$y - ylim[1]) / diff(ylim)
+              z <-
+                zlim.scaled[1] + diff(zlim.scaled) *
+                (fogsp$z - zlim[1]) / diff(zlim)
+              panel.3dscatter(x = x,
+                              y = y,
+                              z = z,
+                              xlim = xlim,
+                              ylim = ylim,
+                              zlim = zlim,
+                              xlim.scaled = xlim.scaled,
+                              ylim.scaled = ylim.scaled,
+                              zlim.scaled = zlim.scaled,
+                              pch = 22, cex = 2, col = "black", 
+                              fill = "grey30",
+                              ...)
+              xxxx <-
+                xlim.scaled[1] + diff(xlim.scaled) *
+                (prcpsp$x - xlim[1]) / diff(xlim)
+              yyyy <-
+                ylim.scaled[1] + diff(ylim.scaled) *
+                (prcpsp$y - ylim[1]) / diff(ylim)
+              zzzz <-
+                zlim.scaled[1] + diff(zlim.scaled) *
+                (prcpsp$z - zlim[1]) / diff(zlim)
+              panel.3dscatter(x = xxxx,
+                              y = yyyy,
+                              z = zzzz,
+                              xlim = xlim,
+                              ylim = ylim,
+                              zlim = zlim,
+                              xlim.scaled = xlim.scaled,
+                              ylim.scaled = ylim.scaled,
+                              zlim.scaled = zlim.scaled,
+                              pch = 21, cex = 1.8, col = "black", fill = "blue",
+                              ...)
+              xxx <-
+                xlim.scaled[1] + diff(xlim.scaled) *
+                (tfsp$x - xlim[1]) / diff(xlim)
+              yyy <-
+                ylim.scaled[1] + diff(ylim.scaled) *
+                (tfsp$y - ylim[1]) / diff(ylim)
+              zzz <-
+                zlim.scaled[1] + diff(zlim.scaled) *
+                (tfsp$z - zlim[1]) / diff(zlim)
+              panel.3dscatter(x = xxx,
+                              y = yyy,
+                              z = zzz,
+                              xlim = xlim,
+                              ylim = ylim,
+                              zlim = zlim,
+                              xlim.scaled = xlim.scaled,
+                              ylim.scaled = ylim.scaled,
+                              zlim.scaled = zlim.scaled,
+                              pch = 21, cex = 1.5, col = "black", 
+                              fill = "mediumseagreen",
+                              ...)
+              xx <-
+                xlim.scaled[1] + diff(xlim.scaled) *
+                (ta200sp$x - xlim[1]) / diff(xlim)
+              yy <-
+                ylim.scaled[1] + diff(ylim.scaled) *
+                (ta200sp$y - ylim[1]) / diff(ylim)
+              zz <-
+                zlim.scaled[1] + diff(zlim.scaled) *
+                (ta200sp$z - zlim[1]) / diff(zlim)
+              panel.3dscatter(x = xx,
+                              y = yy,
+                              z = zz,
+                              xlim = xlim,
+                              ylim = ylim,
+                              zlim = zlim,
+                              xlim.scaled = xlim.scaled,
+                              ylim.scaled = ylim.scaled,
+                              zlim.scaled = zlim.scaled,
+                              pch = 21, cex = 0.8, col = "black", 
+                              fill = "red2",
+                              ...)
+              
+              draw.key(list(text = list(c("AWS", "PRCP", "FOG", "TF", "T/RH"), 
+                                        cex = 0.9),
+                            columns = 1, rows = 5, 
+                            points = list(pch = c(24, 21, 22, 21, 21), 
+                                          cex = 1,
+                                          col = "black",
+                                          fill = c("grey", "blue", "grey30", 
+                                                   "mediumseagreen", "red2")),
+                            background = "white", border = TRUE,
+                            padding.text = 2),
+                       draw = TRUE, 
+                       vp = viewport(x = unit(0.1, "npc"), 
+                                     y = unit(0.72, "npc"),
+                                     just = "centre"))
+             })
+
+dev.off()
+```

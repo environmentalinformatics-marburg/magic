@@ -5,10 +5,14 @@ import static tsdb.util.AssumptionCheck.throwNulls;
 import java.io.Serializable;
 
 import tsdb.GeneralStation;
-import tsdb.Region;
+import tsdb.component.Region;
 
-public class GeneralStationInfo implements Serializable {
-	
+/**
+ * Serializable general station info
+ * immutable
+ * @author woellauer
+ */
+public class GeneralStationInfo implements Serializable {	
 	private static final long serialVersionUID = -5021875538014695128L;
 	
 	public final String name;

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Time Series Status</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
+
+<style type="text/css">
+#top_line {display: table; width: 100%; }
+#top_line_left {display: table-cell; text-align: left; }
+#top_line_right {display: table-cell; text-align: right; }
+h1 {margin-bottom: 40px; text-align:center;}
+</style>
+
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+<script src="jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="util.js"></script>
+<script src="status.js"></script>
+
+
+
+<style type="text/css">
+
+#timeMarkOneMonth {
+	background-color: #ff0000;
+}
+
+#timeMarkOneWeek {
+	background-color: #ffff00;
+}
+
+#timeMarkTwoWeeks {
+	background-color: #ff9900;
+}
+
+#timeMarkNow {
+	background-color: #ffffff;
+}
+
+
+</style>
+
+</head>
+
+<body>
+<div class="bg">
+
+<div id="top_line">
+<div id="top_line_left">
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+</div>
+<div id="top_line_right">
+<a href="..">main-page</a>
+<button onclick="var h=$('#div_help')[0].style;h.display=(h.display=='none')?'inline':'none'">?</button>
+</div> 
+</div>
+<h1 style="text-align:center">Time Series Status</h1>
+
+
+
+
+<div class="input_elements">
+
+<div style="display:inline-block" id="div_region_select">
+<label for="region_select">Region</label>
+<select id="region_select" class="blockable"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="generalstation_select">General Station</label>
+<select id="generalstation_select" class="blockable"></select>
+</div>
+
+<div style="display:inline-block">
+<button id="query_button" class="blockable">query</button>
+</div>
+
+</div>
+<hr>
+</div>
+<div id="div_help" style="display:none">
+<h3>Help</h3>
+On this page you can view the time span of data that each plot contains.
+<br>
+<br>
+First choose a set of plots and then click "query" to get the time spans of the plots.
+<br>
+The plots are sorted at time span end-date. Oldest end-dates are first. The entry at the right of each row ("x days") means the time span of day between this time span end-date and the latest end-date of this set plots. 
+<br>
+When there are long time spans between this plot end-date and the latest plot end-date the row is colored yellow, orange or red.
+
+<hr/>
+</div>
+
+<div id="result">
+
+</div>
+
+</body>
+
+</html>

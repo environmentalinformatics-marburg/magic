@@ -4,17 +4,17 @@ import static tsdb.util.AssumptionCheck.throwNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import tsdb.aggregated.AggregationType;
-import tsdb.raw.iterator.EventConverterIterator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import tsdb.component.LoggerType;
+import tsdb.util.AggregationType;
+import tsdb.util.TimeUtil;
 import tsdb.util.TimestampInterval;
 import tsdb.util.Util;
-import tsdb.util.iterator.TsIterator;
-import de.umr.jepc.store.Event;
-import static tsdb.util.Util.log;
 
 /**
  * This class contains metadata that is associated with a station (plotID).
@@ -22,14 +22,15 @@ import static tsdb.util.Util.log;
  *
  */
 public class Station {
-	
+	private static final Logger log = LogManager.getLogger();
+
 	private final TsDB tsdb; //not null
-	
+
 	/**
 	 * Stream name of this station
 	 */
 	public final String stationID;
-	
+
 	public final LoggerType loggerType;	
 
 	/**
@@ -43,10 +44,10 @@ public class Station {
 	 * This map contains only entries that are specific for this Station (or plotID)
 	 */
 	public Map<String,String> sensorNameTranlationMap;
-	
+
 	//*** start of fields that are used if this station is identical to one plot ***
 	public final boolean isPlot;
-	public double geoPoslongitude;
+	public double geoPosLongitude;
 	public double geoPosLatitude;
 	/**
 	 * The general name of this plotID for example HEG03 it is HEG
@@ -58,14 +59,14 @@ public class Station {
 	 * list of stations of same general station id ordered by position difference to this station
 	 */
 	public List<Station> nearestStations;
-	
+
 	/**
 	 * serial number of station: A19557, A2277, ...
 	 * not used currently - station is identified with plotID
 	 */
 	public String alternativeID = null;
 	//*** end of fields that are used if this station is identical to one plot ***
-	
+
 	public Station(TsDB tsdb, GeneralStation generalStation, String stationID, LoggerType loggerType, List<StationProperties> propertyMapList, boolean isPlot) {
 		throwNull(tsdb);
 		this.tsdb = tsdb;
@@ -73,7 +74,7 @@ public class Station {
 		this.generalStation = generalStation;
 		this.stationID = stationID;
 		this.propertiesList = StationProperties.createIntervalList(propertyMapList);
-		this.geoPoslongitude = Float.NaN;
+		this.geoPosLongitude = Float.NaN;
 		this.geoPosLatitude = Float.NaN;
 		this.loggerType = loggerType;
 		sensorNameTranlationMap = new HashMap<String, String>();
@@ -135,19 +136,6 @@ public class Station {
 		return stationID+"("+loggerType.typeName+")";
 	}
 
-	public TsIterator queryRaw(String[] querySchema, Long start, Long end) {		
-		Iterator<Event> rawEventIterator = tsdb.streamStorage.queryRawEvents(stationID,start,end);
-		if(rawEventIterator==null) {
-			return null;
-		}		
-		String[] inputSchema = loggerType.sensorNames;		
-		if(querySchema==null) {
-			return new EventConverterIterator(inputSchema, rawEventIterator, inputSchema);
-		} else {			
-			return new EventConverterIterator(inputSchema, rawEventIterator, querySchema);
-		}
-	}
-
 	/*public String[] getValidSchemaEntries(String[] querySchema) {
 		Map<String, Integer> schemaMap = Util.stringArrayToMap(loggerType.sensorNames);
 		ArrayList<String> resultList = new ArrayList<String>();
@@ -161,15 +149,27 @@ public class Station {
 		}
 		return resultList.toArray(new String[0]);
 	}*/
-	
+
 	public String[] getValidSchemaEntries(String[] querySchema) {		
-		return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		//return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		return Util.getValidEntries(querySchema, getSchema());
 	}
 	
+	public String[] getValidSchemaEntriesWithVirtualSensors(String[] querySchema) {		
+		//return Util.getValidEntries(querySchema, loggerType.sensorNames);
+		return Util.getValidEntries(querySchema, tsdb.includeVirtualSensorNames(getSchema()));
+	}
+
 	public boolean isValidSchema(String[] querySchema) {
-		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		//return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, getSchema()));
 	}
 	
+	public boolean isValidSchemaWithVirtualSensors(String[] querySchema) {
+		//return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, loggerType.sensorNames));
+		return !(querySchema==null||querySchema.length==0||!Util.isContained(querySchema, tsdb.includeVirtualSensorNames(getSchema())));
+	}
+
 	public boolean isValidBaseSchema(String[] querySchema) {
 		if(!isValidSchema(querySchema)) {
 			return false;
@@ -194,24 +194,29 @@ public class Station {
 		}
 		return result;
 	}
-	
+
 	public StationProperties getProperties(long intervalStart, long intervalEnd) {
 		StationProperties properties = null;
 		for(TimestampInterval<StationProperties> interval:propertiesList) {
 			if((interval.start==null || interval.start<=intervalStart) && (interval.end==null || intervalEnd<=interval.end)) {
 				if(properties!=null) {
-					log.warn("multiple properties for one time interval: "+intervalStart+" "+intervalEnd);
+					log.warn("multiple properties for one time interval in station   "+stationID+"  of  "+TimeUtil.oleMinutesToText(intervalStart)+" "+TimeUtil.oleMinutesToText(intervalEnd));
 				}
 				properties = interval.value;
 			}
 		}
 		return properties;
 	}
-	
+
 	public String[] getSchema() {
-		return loggerType.sensorNames;
+		String[] sensorSet = tsdb.streamStorage.getSensorNames(stationID);
+		if(sensorSet!=null) {
+			return sensorSet;
+		} else {
+			return loggerType.sensorNames;
+		}
 	}
-	
+
 	public boolean isVIP() {
 		if(!isPlot) {
 			return false;

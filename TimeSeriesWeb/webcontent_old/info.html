@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>tsdb Info</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+
+<script src="jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="util.js"></script>
+
+<script type="text/javascript">
+
+var tasks = 0;
+
+var incTask = function() {
+	runDisabled(true);
+	tasks++;	
+	getID("status").innerHTML = "busy ("+tasks+")...";
+}
+
+var decTask = function() {
+	tasks--;
+	if(tasks===0) {
+		getID("status").innerHTML = "ready";
+		runDisabled(false);
+	} else if(tasks<0){
+		getID("status").innerHTML = "error";
+	} else {
+		getID("status").innerHTML = "busy ("+tasks+")...";
+	}
+}
+
+function runDisabled(disabled) {
+	$(".blockable").prop( "disabled",disabled);
+}
+
+function runPlots() {
+	incTask();
+	$.getJSON("/tsdb/plot_info").done(function(rows) {
+		decTask();
+		updateTablePlots(rows);
+	}).fail(function() {decTask();});
+}
+
+function updateTablePlots(rows) {
+	var result = getID("result");
+	var eTable = newTable(result);
+	var eHeader = newTableRow(eTable);
+	newTableHeaderEntry(eHeader,"plotID");
+	newTableHeaderEntry(eHeader,"general");
+	for(i in rows) {
+		var eRow = newTableRow(eTable);
+		newTableEntry(eRow,rows[i].name);
+		newTableEntry(eRow,rows[i].general);
+	}
+}
+
+$(document).ready(function(){
+	incTask();
+	$("button").button();	
+	getID("plots_button").onclick = runPlots;
+	decTask();	
+});
+
+
+</script>
+
+<style type="text/css">
+
+
+
+</style>
+
+</head>
+
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="index.html">back to main menu</a></p>
+<h1 style="text-align:center">tsdb Info</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+<hr/>
+</div>
+
+<div>
+<button id="plots_button" onclick="">plots</button>
+</div>
+
+<div id="result">
+</div>
+
+
+</body>
+
+</html>

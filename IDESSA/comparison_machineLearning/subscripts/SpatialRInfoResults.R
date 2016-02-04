@@ -123,7 +123,7 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
                  #auto.key = list(text=c("TN","TP","FP","FN"), points=FALSE,space="right",rectangles=TRUE), #columns=4
                  auto.key = list(text=c("reference: no rain, prediction: no rain","reference: rain, prediction: rain",
                                         "reference: no rain, prediction: rain","reference: rain, prediction: no rain"), 
-                                 points=FALSE,space="top",rectangles=TRUE,columns=4), #columns=4
+                                 points=FALSE,space="top",rectangles=TRUE,columns=2), #columns=4
                  strip = strip.custom(bg = "grey20", 
                                       factor.levels =model,
                                       par.strip.text = list(
@@ -137,12 +137,18 @@ for (scene in 1:length(unique(eval(parse(text=paste("prediction_",model[1],"$chD
   }
   comb <- c(tmp, 
           x.same=T, y.same=T, layout = c(3, 1))
-#  comb <- c(datp[[1]]+ as.layer(lmplot, under = T), 
-#            datp[[2]]+ as.layer(lmplot, under = T),
-#            datp[[3]]+ as.layer(lmplot, under = T), 
-#            x.same=T, y.same=T, layout = c(3, 1))
+ comb22 <- c(tmp, 
+          x.same=T, y.same=T, layout = c(2, 2))
+
   png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
-          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),width=15,height=4.5,units = "in",res=300)
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],".png",sep=""),
+      width=15,height=4.5,units = "in",res=300)
    print(comb)
   dev.off()
+
+png(paste(resultpath,"/Spatial_comp/SpatialComparison_",
+          unique(eval(parse(text=paste("prediction_",model[1],"$chDate",sep=""))))[scene],"_22.png",sep=""),
+    width=12,height=8,units = "in",res=300)
+print(comb22)
+dev.off()
 }

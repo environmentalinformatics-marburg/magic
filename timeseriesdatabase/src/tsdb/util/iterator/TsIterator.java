@@ -3,14 +3,13 @@ package tsdb.util.iterator;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import tsdb.aggregated.TimeSeries;
-import tsdb.raw.TimeSeriesEntry;
-import tsdb.raw.TimestampSeries;
-import tsdb.util.CSV;
-import tsdb.util.ProcessingChainEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
+import tsdb.util.processingchain.ProcessingChain;
+import tsdb.util.processingchain.ProcessingChainEntry;
+import tsdb.util.processingchain.ProcessingChainSupplier;
 
-public abstract class TsIterator implements Iterator<TimeSeriesEntry>, ProcessingChainEntry {
+public abstract class TsIterator implements Iterator<TsEntry>, ProcessingChainEntry, ProcessingChainSupplier {
 
 	protected final TsSchema schema;
 	
@@ -35,8 +34,9 @@ public abstract class TsIterator implements Iterator<TimeSeriesEntry>, Processin
 		return simpleName;
 	}
 	
-	public NewProcessingChain getProcessingChain() {
-		return new NewProcessingChainSource(this);
+	@Override
+	public ProcessingChain getProcessingChain() {
+		return ProcessingChain.of(this);
 	}
 	
 	@Override
@@ -50,7 +50,7 @@ public abstract class TsIterator implements Iterator<TimeSeriesEntry>, Processin
 	
 	public void writeConsole() {
 		while(this.hasNext()) {
-			TimeSeriesEntry e = this.next();
+			TsEntry e = this.next();
 			System.out.println(e);
 		}		
 	}
@@ -59,11 +59,19 @@ public abstract class TsIterator implements Iterator<TimeSeriesEntry>, Processin
 		return TimeSeries.create(this);
 	}
 	
-	public TimestampSeries toTimestampSeries() {
-		return TimestampSeries.create(this);
+	public TimestampSeries toTimestampSeries(String name) {
+		return TimestampSeries.create(this,name);
 	}
 	
 	public static TsSchema[] toSchemas(TsIterator[] input_iterators) {
 		return Arrays.stream(input_iterators).map(it->it.getSchema()).toArray(TsSchema[]::new);
+	}
+	
+	public static boolean isLive(TsIterator it) {
+		return it!=null && it.hasNext();
+	}
+	
+	public static boolean isNotLive(TsIterator it) {
+		return it==null || (!it.hasNext());
 	}
 }

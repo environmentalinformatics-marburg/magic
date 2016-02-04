@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
 public class TsIteratorIterator extends MoveIterator {
@@ -45,7 +45,7 @@ public class TsIteratorIterator extends MoveIterator {
 	}
 
 	@Override
-	protected TimeSeriesEntry getNext() {			
+	protected TsEntry getNext() {			
 		if(current_iterator==null) {
 			if(input_iterator.hasNext()) {
 				TsIterator next = input_iterator.next();

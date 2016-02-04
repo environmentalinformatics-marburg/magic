@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Query Plots</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<script src="jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="util.js"></script>
+<script src="queryplots.js"></script>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="table.css">
+<link rel="stylesheet" type="text/css" href="querytimeseries.css">
+</head>
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="index.html">back to Start Page<a><p>
+<h1 style="text-align:center">Query Plots</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+<div style="text-align:right"> <button id="button_instructions" onclick="show_instructions()">Show Instructions</button></div>
+<hr/>
+</div>
+
+<div id="div_instructions" style="display:none">
+<script type="text/javascript">
+function show_instructions() {
+	if(document.getElementById("div_instructions").style.display==="none") {
+		document.getElementById("div_instructions").style.display = "inline";
+		document.getElementById("button_instructions").innerHTML = "Hide Instructions";
+	} else {
+		document.getElementById("div_instructions").style.display = "none";
+		document.getElementById("button_instructions").innerHTML = "Show Instructions";
+	}
+}
+</script>
+<h3>Instructions</h3>
+On this page you can view the time series of all sensors of one plot as a series of diagrams.
+<br>
+<br>
+First choose the characteristics of your requested set of time series of one plot and then click "query plot" to view the time series as diagrams.
+<hr/>
+</div>
+
+<div class="input_elements">
+
+<div style="display:inline-block">
+<label for="region_select">Region</label>
+<select id="region_select" class="blockable"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="generalstation_select">General Station</label>
+<select id="generalstation_select" class="blockable"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="plot_select">Plot</label>
+<select id="plot_select" class="blockable"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="time_select">Time</label>
+<select id="time_select" class="blockable"></select>
+<select id="time_month_select" class="blockable"></select>
+</div>
+
+
+
+<div style="display:inline-block">
+<label for="aggregation_select">Aggregation</label>
+<select id="aggregation_select" class="blockable"></select>
+</div>
+
+<div id="div_quality_select" style="display:inline-block">
+<label for="quality_select">Quality Check</label>
+<select id="quality_select" class="blockable"></select>
+</div>
+
+<div id="div_interpolated" style="display:inline-block">
+<input type="checkbox" id="interpolated" class="blockable">Interpolated</input>
+</div>
+
+<div style="display:inline-block">
+<button id="query_plot" class="blockable">query plot</button>
+</div>
+
+</div>
+
+<div id="result"></div>
+
+</body>
+</html>

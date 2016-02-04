@@ -1,12 +1,12 @@
 package tsdb.util.iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.util.TsEntry;
 import tsdb.util.TsSchema;
 
 public abstract class MoveIterator extends TsIterator {
 
-	private TimeSeriesEntry current = null;
-	protected boolean closed = false;
+	private TsEntry current = null;
+	private boolean closed = false;
 	
 	public MoveIterator(TsSchema schema) {
 		super(schema);
@@ -20,7 +20,7 @@ public abstract class MoveIterator extends TsIterator {
 			if(current==null) {
 				current = getNext();
 				if(current==null) {
-					closed=true;
+					closed = true;
 					return false;
 				} 
 			}				
@@ -29,14 +29,24 @@ public abstract class MoveIterator extends TsIterator {
 	}
 
 	@Override
-	public final TimeSeriesEntry next() {
+	public final TsEntry next() {
 		hasNext();
-		TimeSeriesEntry result = current;
+		TsEntry result = current;
 		current = null;
 		hasNext();
 		return result;
 	}
 
-	protected abstract TimeSeriesEntry getNext();
+	/**
+	 * returns null if no more elements
+	 * Guaranteed to not be called again when it first returns null
+	 * Should not be called from deriving classes
+	 */
+	protected abstract TsEntry getNext();
+	
+	public void close() {
+		current = null;		
+		closed = true;
+	}
 
 }

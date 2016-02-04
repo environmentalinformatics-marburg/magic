@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Query Time Series</title>
+<meta name="robots" content="noindex" />
+<meta charset="utf-8">
+<script src="/static/jquery-2.1.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
+<script src="/static/util.js"></script>
+<script src="/static/querytimeseries.js"></script>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="jquery-ui.css">
+<style>
+select {
+	width: 220px;
+}
+</style>
+</head>
+
+<body>
+<div class="bg">
+<p style="text-align:right"><a href="/static/index.html">back to main menu<a><p>
+<h1 style="text-align: center">Query Time Series</h1>
+<div style="display:inline-block">status:</div>
+<div id="status" style="display:inline-block">init...</div>
+<hr/>
+</div>
+
+<div class="input_elements ui-widget-header ui-corner-all">
+
+<div style="display:inline-block">
+<label for="region_input">Region</label>
+<select id="region_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="generalstation_input">General Station</label>
+<select id="generalstation_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="plot_input">Plot</label>
+<select id="plot_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="sensor_input">Sensor</label>
+<select id="sensor_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="aggregation_input">Aggregation</label>
+<select id="aggregation_input"></select>
+</div>
+
+<div style="display:inline-block">
+<label for="query_button">Aggregation</label>
+<button id="query_button">query table</button>
+</div>
+
+<div style="display:inline-block">
+<label for="image_button">Aggregation</label>
+<button id="image_button">query diagram</button>
+
+</div>
+
+</div>
+
+Description: <label id="sensor_description">new2</label>
+Unit: <label id="sensor_unit">new2</label>
+
+<div id="result"></div>
+
+</body>
+
+</html>

@@ -9,8 +9,8 @@ cellHarmonics <- function(st,
   ## Environmental stuff
   
   # Packages
-  lib <- c("raster", "rgdal", "doParallel", "TSA")
-  sapply(lib, function(...) stopifnot(require(..., character.only = T)))
+  lib <- c("raster", "rgdal", "doParallel", "Rsenal")
+  sapply(lib, function(...) stopifnot(require(..., character.only = TRUE)))
   
   # Parallelization
   registerDoParallel(cl <- makeCluster(n.cores))
@@ -21,14 +21,6 @@ cellHarmonics <- function(st,
   # Extract values
   st.mat <- getValues(st)
   nd.mat <- getValues(nd)
-  
-  # ndvi.start <- substr(unique(substr(ndvi.ts.fls[, 1], 1, 7)), 1, 4) %in% 
-  #   ndvi.years[2:4]
-  # ndvi.end <- substr(unique(substr(ndvi.ts.fls[, 1], 1, 7)), 1, 4) %in% 
-  #   ndvi.years[9:11]
-  # 
-  # rst.st <- stack(ndvi.rst.agg[ndvi.start])
-  # rst.nd <- stack(ndvi.rst.agg[ndvi.end])
   
   # Stop if start and end rasters have different number of cells
   if (nrow(st.mat) != nrow(nd.mat))
@@ -41,22 +33,31 @@ cellHarmonics <- function(st,
     
     fit.med <- foreach(j = list(st.mat, nd.mat), k = list(st.start, nd.start), 
                        l = list(st.end, nd.end)) %do% {
-      # Cell time series
-      tmp.ts <- ts(j[i, ], start = k, end = l, frequency = 12)
-      # Harmonic functions
-      tmp.har <- harmonic(tmp.ts)
-      
-      # Linear model fitting
-      tmp.mod <- lm(tmp.ts ~ tmp.har)
-      tmp.fit <- ts(fitted(tmp.mod), start = st.start, end = st.end, 
-                    frequency = 12)
-      
-      # Median
-      tmp.fit.med <- apply(matrix(tmp.fit, ncol = 12, byrow = T), 2, 
-                           FUN = median)
-      # Moving average
-      tmp.fit.med.rmean <- filter(tmp.fit.med, rep(1/3, 3), circular = T)
-    }
+                         
+        vectorHarmonics(j[i, ], st = k, nd = l)  
+        
+        #       # Cell time series
+        #       tmp.ts <- ts(j[i, ], start = k, end = l, frequency = 12)
+        #       
+        #       if (all(is.na(tmp.ts))) {
+        #         stop(paste("Time series of cell", i, "contains no valid values!"))
+        #       } else {
+        #         #         # Harmonic functions
+        #         tmp.har <- harmonic(tmp.ts)
+        #         
+        #         # Linear model fitting
+        #         tmp.mod <- lm(tmp.ts ~ tmp.har)
+        #         tmp.fit <- ts(fitted(tmp.mod), start = st.start, end = st.end, 
+        #                       frequency = 12)
+        #         
+        #         # Median
+        #         tmp.fit.med <- apply(matrix(tmp.fit, ncol = 12, byrow = T), 2, 
+        #                              FUN = median)
+        #         # Moving average
+        #         tmp.fit.med.rmean <- filter(tmp.fit.med, rep(1/3, 3), circular = T)
+        #         
+        #       }
+}
     
     # Month with hightest NDVI + corresponding value
     st.max.x <- which(fit.med[[1]] == max(fit.med[[1]]))

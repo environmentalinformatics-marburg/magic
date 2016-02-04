@@ -1,6 +1,9 @@
 package tsdb.util;
 
-import static tsdb.util.TsDBLogger.log;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Methods of this class throw exeption and add an entry in log if an assumtion is false.
@@ -8,6 +11,8 @@ import static tsdb.util.TsDBLogger.log;
  *
  */
 public final class AssumptionCheck {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	private AssumptionCheck(){}
 
@@ -100,6 +105,22 @@ public final class AssumptionCheck {
 			throwText("null");
 		}
 	}
+	
+	/**
+	 * Throws an exception if array or elements are null. 
+	 * No nested array check.
+	 * @param a
+	 */
+	public static <T> void throwNullArray(T[] a) {
+		if(a==null) {
+			throwText("null");
+		}
+		for(T e:a) {
+			if(e==null) {
+				throwText("null");
+			}
+		}
+	}
 
 	/**
 	 * Throws an exception if object is null.
@@ -149,9 +170,24 @@ public final class AssumptionCheck {
 		}
 	}
 	
+	/**
+	 * Throws if array is null or empty
+	 * @param array
+	 */
 	public static void throwEmpty(Object[] array) {
 		if(array==null||array.length==0) {
 			throw new RuntimeException("array empty");
 		}		
+	}
+	
+	public static void throwNotContained(String[] source, String[] target) {
+		throwNull(source);
+		throwNull(target);
+		Map<String, Integer> map = Util.stringArrayToMap(target);
+		for(String name:source) {
+			if(!map.containsKey(name)) {
+				throw new RuntimeException("name not in target: "+name+"   "+Util.arrayToString(target));
+			}
+		}
 	}
 }

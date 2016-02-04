@@ -1,9 +1,0 @@
-PLOT,SERIAL,LOGGER,START,END
-sav5,1,tfi,2012-01-01,*
-hom4,2,tfi,2012-01-01,*
-flm1,3,tfi,2012-01-01,*
-foc6,4,tfi,2012-01-01,*
-foc0,5,tfi,2012-01-01,*
-fpo0,6,tfi,2012-01-01,*
-fpd0,7,tfi,2012-01-01,*
-fer0,8,tfi,2012-01-01,*

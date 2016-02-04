@@ -103,6 +103,9 @@ if (any(model=="nnet")&tuneThreshold){
     geom_line() +
     ylab("") + xlab("Probability Cutoff") +
     theme(legend.position = "top")
+
+ 
+  
 }
 if (any(model=="nnet")&tuneThreshold){
   dev.off()

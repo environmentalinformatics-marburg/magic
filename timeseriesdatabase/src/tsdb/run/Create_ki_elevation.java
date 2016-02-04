@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -15,7 +17,6 @@ import org.gdal.osr.SpatialReference;
 import tsdb.TsDB;
 import tsdb.TsDBFactory;
 import tsdb.VirtualPlot;
-import tsdb.util.TsDBLogger;
 import static tsdb.util.AssumptionCheck.*;
 
 /**
@@ -24,7 +25,9 @@ import static tsdb.util.AssumptionCheck.*;
  * @author woellauer
  *
  */
-public class Create_ki_elevation implements TsDBLogger {
+public class Create_ki_elevation {
+	
+	private static final Logger log = LogManager.getLogger();
 
 	public static void main(String[] args) throws FileNotFoundException {
 
@@ -32,11 +35,11 @@ public class Create_ki_elevation implements TsDBLogger {
 		TsDB tsdb = TsDBFactory.createDefault();
 		//cof1 Easting:305573 Northing:9641686 Elevation:1303.08
 
-		//loaf geoTiff library
+		//load geoTiff library
 		gdal.AllRegister();
 
 		//read geoTiff
-		String filename = TsDBFactory.get_CSV_output_path()+"DEM_ARC1960_30m_Hemp.tif";
+		String filename = TsDBFactory.get_CSV_output_directory()+"DEM_ARC1960_30m_Hemp.tif";
 		Dataset dataset = gdal.Open(filename);
 		System.out.println("Description: "+dataset.GetDescription());
 		System.out.println("Metadata: "+dataset.GetMetadata_Dict());
@@ -71,10 +74,11 @@ public class Create_ki_elevation implements TsDBLogger {
 		
 		//destination geo pos projection of geoTiff
 		dst.ImportFromWkt(dataset.GetProjection());
+		log.info(dataset.GetProjection());
 		CoordinateTransformation ct = CoordinateTransformation.CreateCoordinateTransformation(src, dst);		
 		
 		//create csv output file
-		PrintStream out = new PrintStream(new FileOutputStream(TsDBFactory.get_CSV_output_path()+"ki_elevation.csv"));
+		PrintStream out = new PrintStream(new FileOutputStream(TsDBFactory.get_CSV_output_directory()+"ki_elevation.csv"));
 		
 		//csv header
 		out.println("PlotID,Elevation");

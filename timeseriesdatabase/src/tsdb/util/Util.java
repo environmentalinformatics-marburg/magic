@@ -1,5 +1,7 @@
 package tsdb.util;
 
+import static tsdb.util.AssumptionCheck.throwNulls;
+
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -24,21 +26,21 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
-import static tsdb.util.AssumptionCheck.throwNulls;
-
 /**
  * Some utilities
  * @author woellauer
  *
  */
-public class Util {
+public final class Util {
 	
 	private Util(){}
 
 	/**
 	 * Default logger
 	 */
-	public static final Logger log = LogManager.getLogger("general");
+	public static final Logger log = LogManager.getLogger("tsdb");
+	//private static final PropertiesUtil PROPS = new PropertiesUtil("log4j2.StatusLogger.properties");
+	//public static final Logger log = new SimpleLogger("StatusLogger", Level.ERROR, false, true, false, false, Strings.EMPTY, null, PROPS, System.err);
 
 	/**
 	 * convert float to String with two fractional digits
@@ -412,7 +414,12 @@ public class Util {
 		Map<String,String> sectionMap = new HashMap<String, String>();
 		for(String key:section.keySet()) {
 			if(!key.equals("NaN")) {
+				if(section.getAll(key).size()>1) { // TODO always == 1 ???
+					log.warn("multiple entries: "+key+" from "+section.getName());
+				}
 				sectionMap.put(key, section.get(key));
+			} else {
+				log.warn("NaN key");
 			}
 		}
 		return sectionMap;
@@ -457,11 +464,11 @@ public class Util {
 		return resultSet;
 	}
 
-	public String ifNaN(float value, String text) {
+	public static String ifNaN(float value, String text) {
 		if(Float.isNaN(value)) {
 			return text;
 		} else {
-			return ""+value;
+			return Float.toString(value);
 		}
 	}
 
@@ -469,7 +476,7 @@ public class Util {
 		if(Double.isNaN(value)) {
 			return text;
 		} else {
-			return ""+value;
+			return Double.toString(value);
 		}
 	}
 
@@ -480,6 +487,13 @@ public class Util {
 			}
 		}
 		return false;
+	}
+	
+	public static String[] concat(String[] array, String lastEntry) {
+		throwNulls(array,lastEntry);
+		String[] result = Arrays.copyOf(array, array.length+1);
+		result[array.length] = lastEntry;
+		return result;
 	}
 
 	public static String[] getValidEntries(String[] names, String[] source) {
@@ -496,9 +510,7 @@ public class Util {
 			}
 		}
 		return true;
-	}
-
-	
+	}	
 
 	public static <T> ArrayList<T> streamToList(Stream<T> stream) {
 		return (ArrayList<T>) stream.collect(Collectors.toList());
@@ -512,7 +524,25 @@ public class Util {
 		return new String[]{e};
 	}
 
+	public static void createDirectoriesOfFile(String filepath) {
+		try {
+			File dir = new File(filepath);			
+			dir.getParentFile().mkdirs();
+		} catch(Exception e) {
+			log.error(e);
+		}
+	}
 	
-
+	public static boolean notNull(Object e) {
+		return e!=null;
+	}
+	
+	public static String msToText(long start, long end) {
+		long diff = end-start;
+		long h = diff%1000/100;
+		long z = diff%100/10;
+		long e = diff%10;
+		return diff/1000+"."+h+z+e+" s";
+	}
 	
 }

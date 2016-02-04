@@ -1,0 +1,473 @@
+########## CEMU START ##########
+[00CEMU_header_0000]
+PlotId = PlotId
+EpPlotId = EpPlotId
+Datum = Datum
+CycleCounter = CycleCounter
+LF_200 = rH_200
+LT_200 = Ta_200
+LT_10 = Ta_10
+BT_1 = Ts_5
+BT_2 = Ts_10
+BT_3 = Ts_20
+BT_4 = Ts_50
+NaN = PAR_200
+NaN = PAR_200_U
+LF_200_MIN = rH_200_min
+LF_200_MAX = rH_200_max
+LT_200_MIN = Ta_200_min
+LT_200_MAX = Ta_200_max
+LT_10_MIN = Ta_10_min
+LT_10_MAX = Ta_10_max
+BT_1_MIN = Ts_5_min
+BT_1_MAX = Ts_5_max
+BT_2_MIN = Ts_10_min
+BT_2_MAX = Ts_10_max
+BT_3_MIN = Ts_20_min
+BT_3_MAX = Ts_20_max
+BT_4_MIN = Ts_50_min
+BT_4_MAX = Ts_50_max
+UB = UB
+########## CEMU END ##########
+
+########## EEMU START ##########
+[00EEMU_header_0000]              
+PlotId = PlotId
+EpPlotId = EpPlotId
+Datum = Datum
+CycleCounter = CycleCounter
+LF_200 = rH_200
+LT_200 = Ta_200
+LT_10 = Ta_10
+BT_1 = Ts_5
+BT_2 = Ts_10
+BT_3 = Ts_20
+BT_4 = Ts_50
+NaN = PAR_300
+NaN = PAR_300_U
+NaN = Albedo
+NaN = SWDR_300
+NaN = SWUR_300
+NaN = LWDR_300
+NaN = LWUR_300
+NaN = SWDR_300_U
+NaN = SWUR_300_U
+NaN = LWDR_300_U
+NaN = LWUR_300_U
+Rn= Rn_300
+NaN = Tsky
+NaN = Tgnd
+NaN = Trad
+NaN = Trad_R
+container_EZ = P_container_RT
+NaN = P_container_NRT
+temp_balance_cell = T_Ott
+ott_voltage = UOtt
+NaN = WD
+NaN = WV
+WV_max = WV_gust
+NaN = p_QNH
+LF_200_MIN = rH_200_min
+LF_200_MAX = rH_200_max
+LT_200_MIN = Ta_200_min
+LT_200_MAX = Ta_200_max
+LT_10_MIN = Ta_10_min
+LT_10_MAX = Ta_10_max
+BT_1_MIN = Ts_5_min
+BT_1_MAX = Ts_5_max
+BT_2_MIN = Ts_10_min
+BT_2_MAX = Ts_10_max
+BT_3_MIN = Ts_20_min
+BT_3_MAX = Ts_20_max
+BT_4_MIN = Ts_50_min
+BT_4_MAX = Ts_50_max
+UB = UB
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_5_mineralisch = SM_50
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+BF_5 = SM_50_U
+precip_intensity_EZ = NaN
+precip_EZ/NEZ = P_RT_NRT
+precip_amount_NEZ = NaN
+precip_total_NEZ = NaN
+SM_10_mineralisch= SM_10
+SM_15_mineralisch= SM_15
+SM_20_mineralisch= SM_20
+SM_30_mineralisch= SM_30
+SM_40_mineralisch= SM_40
+SM_50_mineralisch= SM_50
+SM_30/50_mineralisch= SM_50
+########## EEMU END ##########
+
+########## AEMU START ##########
+[00AEMU_header_0000]              
+PlotId = PlotId
+EpPlotId = EpPlotId
+Datum = Datum
+CycleCounter = CycleCounter
+LF_200 = rH_200
+LT_200 = Ta_200
+LT_10 = Ta_10
+BT_1 = Ts_5
+BT_2 = Ts_10
+BT_3 = Ts_20
+BT_4 = Ts_50
+NaN = PAR_300
+NaN = PAR_300_U
+NaN = Albedo
+NaN = SWDR_300
+NaN = SWUR_300
+NaN = LWDR_300
+NaN = LWUR_300
+NaN = SWDR_300_U
+NaN = SWUR_300_U
+NaN = LWDR_300_U
+NaN = LWUR_300_U
+Rn= Rn_300
+NaN = Tsky
+NaN = Tgnd
+NaN = Trad
+NaN = Trad_R
+precip_EZ/NEZ = P_RT_NRT
+container_EZ = P_container_RT
+NaN = P_container_NRT
+temp_balance_cell = T_Ott
+ott_voltage = UOtt
+NaN = WD
+NaN = WV
+WV_max = WV_gust
+NaN = p_QNH
+LF_200_MIN = rH_200_min
+LF_200_MAX = rH_200_max
+LT_200_MIN = Ta_200_min
+LT_200_MAX = Ta_200_max
+LT_10_MIN = Ta_10_min
+LT_10_MAX = Ta_10_max
+BT_1_MIN = Ts_5_min
+BT_1_MAX = Ts_5_max
+BT_2_MIN = Ts_10_min
+BT_2_MAX = Ts_10_max
+BT_3_MIN = Ts_20_min
+BT_3_MAX = Ts_20_max
+BT_4_MIN = Ts_50_min
+BT_4_MAX = Ts_50_max
+UB = UB
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_5_mineralisch = SM_50
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+BF_5 = SM_50_U
+precip_intensity_EZ = NaN
+precip_amount_NEZ = NaN
+precip_total_NEZ = NaN
+SM_10_mineralisch= SM_10
+SM_15_mineralisch= SM_15
+SM_20_mineralisch= SM_20
+SM_30_mineralisch= SM_30
+SM_40_mineralisch= SM_40
+SM_50_mineralisch= SM_50
+SM_30/50_mineralisch= SM_50                            
+########## AEMU END ##########
+
+########## SOIL PARAMETERS START ##########
+[000AEGxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+
+
+[000AEWxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+
+
+[000HEGxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+
+
+#BeCycles 12_03_2015
+[000HEG05_soil_parameters_header_0000]
+BF_15_mineralisch = SM_30
+BF_15 = SM_30_U
+SM_15 = SM_30
+SM_15_U = SM_30_U
+
+[000HEG06_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+# OLD pre 12_03_2015: BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_4_mineralisch = SM_30
+BF_1 = SM_10_U
+# OLD pre 12_03_2015: BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_4 = SM_30_U
+#BeCycles 12_03_2015
+BF_15_mineralisch = SM_10_2
+BF_15 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+
+#BeCycles 12_03_2015
+[000HEG07_soil_parameters_header_0000]
+BF_15_mineralisch = SM_30
+BF_15 = SM_30_U
+SM_15 = SM_30
+SM_15_U = SM_30_U
+
+#BeCycles 12_03_2015
+[000HEG08_soil_parameters_header_0000]
+BF_15_mineralisch = SM_30
+BF_15 = SM_30_U
+SM_15 = SM_30
+SM_15_U = SM_30_U
+
+#BeCycles 12_03_2015
+[000HEG09_soil_parameters_header_0000]
+BF_3_mineralisch = SM_30
+BF_3 = SM_30_U
+
+
+[000HEWxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_15_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_3_mineralisch = SM_30
+BF_4_mineralisch = SM_40
+BF_1 = SM_10_U
+BF_15 = SM_15_U
+BF_2 = SM_20_U
+BF_3 = SM_30_U
+BF_4 = SM_40_U
+
+
+#BeCycles 12_03_2015
+[000HEW02_soil_parameters_header_0000]
+BF_15_mineralisch = SM_10_2
+BF_15 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+BF_4_mineralisch = SM_35
+BF_4 = SM_35_U
+
+#BeCycles 12_03_2015
+[000HEW04_soil_parameters_header_0000]
+BF_4_mineralisch = SM_35
+BF_4 = SM_35_U
+
+
+[000SEGxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_3_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_4_mineralisch = SM_50
+BF_1 = SM_10_U
+BF_3 = SM_15_U
+BF_2 = SM_20_U
+BF_4 = SM_50_U
+
+
+#BeCycles 12_03_2015
+[000SEG01_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG02_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG03_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG04_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG05_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG06_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG07_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG08_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEG09_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+[000SEG39_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+# OLD pre 12_03_2015: BF_2_mineralisch = SM_15
+BF_3_mineralisch = SM_20
+BF_1 = SM_10_U
+# OLD pre 12_03_2015: BF_2 = SM_15_U
+BF_3 = SM_20_U
+#BeCycles 12_03_2015
+BF_2_mineralisch = SM_10_2
+BF_2 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+
+[000SEG46_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+# OLD pre 12_03_2015: BF_2_mineralisch = SM_15
+BF_3_mineralisch = SM_20
+BF_1 = SM_10_U
+# OLD pre 12_03_2015: BF_2 = SM_15_U
+BF_3 = SM_20_U
+#BeCycles 12_03_2015
+BF_2_mineralisch = SM_10_2
+BF_2 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+
+[000SEWxx_soil_parameters_header_0000]
+BF_1_mineralisch = SM_10
+BF_3_mineralisch = SM_15
+BF_2_mineralisch = SM_20
+BF_4_mineralisch = SM_50
+BF_1 = SM_10_U
+BF_3 = SM_15_U
+BF_2 = SM_20_U
+BF_4 = SM_50_U
+
+
+#BeCycles 12_03_2015
+[000SEW01_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW02_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW03_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW04_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW05_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW06_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW07_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW08_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+
+#BeCycles 12_03_2015
+[000SEW09_soil_parameters_header_0000]
+BF_3_mineralisch = SM_10_2
+BF_3 = SM_10_2_U
+SM_15 = SM_10_2
+SM_15_U = SM_10_2_U
+########## SOIL PARAMETERS END ##########

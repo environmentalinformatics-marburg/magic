@@ -1,26 +1,65 @@
 package tsdb;
 
-import static tsdb.util.AssumptionCheck.throwNull;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Stream;
+import tsdb.util.Util;
 
 /**
- * This class contains data that is common for station and virtual plot
+ * Interface for common functionality of virtual Plots and stations that are plots.
  * @author woellauer
  *
  */
-public class Plot {
+public interface Plot {
 	
-	public final String name;
-
-	//Map SensorName -> correction value
-	public Map<String,Float> correctionValueMap;
-	
-	public Plot(String name) {
-		throwNull(name);
-		this.name = name;
-		correctionValueMap = new HashMap<String, Float>();
+	Stream<Plot> getNearestPlots();
+	String[] getSensorNames();
+	String getPlotID();
+	default String[] getValidSensorNames(String[] querySchema) {
+		return Util.getValidEntries(querySchema, getSensorNames());
 	}
-
+	
+	public static Real of(Station station) {
+		return new Real(station);
+	}
+	
+	public static Virtual of(VirtualPlot virtualPlot) {
+		return new Virtual(virtualPlot);
+	}
+	
+	class Real implements Plot {		
+		public final Station station;		
+		public Real(Station station) {
+			this.station = station;
+		}		
+		@Override
+		public Stream<Plot> getNearestPlots() {
+			return station.nearestStations.stream().map(s->new Real(s));			
+		}
+		@Override
+		public String getPlotID() {
+			return station.stationID;
+		}
+		@Override
+		public String[] getSensorNames() {
+			return station.getSchema();
+		}
+	}
+		
+	class Virtual implements Plot {		
+		public final VirtualPlot virtualPlot;		
+		public Virtual(VirtualPlot virtualPlot) {
+			this.virtualPlot = virtualPlot;
+		}		
+		@Override
+		public Stream<Plot> getNearestPlots() {
+			return virtualPlot.nearestVirtualPlots.stream().map(s->new Virtual(s));			
+		}
+		@Override
+		public String getPlotID() {
+			return virtualPlot.plotID;
+		}
+		@Override
+		public String[] getSensorNames() {
+			return virtualPlot.getSchema();
+		}
+	}
 }

@@ -1,6 +1,7 @@
 package tsdb.util.iterator;
 
 import tsdb.util.TsSchema;
+import tsdb.util.processingchain.ProcessingChain;
 
 /**
  * Base class for iterators that process input from one TimeSeriesIterator
@@ -17,8 +18,8 @@ public abstract class InputIterator extends TsIterator {
 	}
 
 	@Override
-	public NewProcessingChain getProcessingChain() {		
-		return new NewProcessingChainOneSource(input_iterator,this);
+	public ProcessingChain getProcessingChain() {		
+		return ProcessingChain.of(input_iterator,this);
 	}
 
 	

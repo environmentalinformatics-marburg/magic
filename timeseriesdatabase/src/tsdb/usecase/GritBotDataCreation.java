@@ -4,23 +4,20 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import tsdb.DataQuality;
-import tsdb.TsDBFactory;
-import tsdb.QueryProcessor;
-import tsdb.TimeConverter;
-import tsdb.TsDB;
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.util.TimeUtil;
+import tsdb.util.TsEntry;
 import tsdb.util.iterator.TsIterator;
 
+@Deprecated
 public class GritBotDataCreation {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		System.out.println("start...");
+		/*System.out.println("start...");
 		TsDB timeSeriesDatabase = TsDBFactory.createDefault();
 		QueryProcessor qp = new QueryProcessor(timeSeriesDatabase);
 
 		String plotID = "HEW42";
-		String[] querySchema = new String[]{"Ta_200","Ta_10",/*,"rH_200",,"Ts_5","Ts_10","Ts_20","Ts_50","SM_10","SM_15","SM_20"*/};
+		String[] querySchema = new String[]{"Ta_200","Ta_10"};
 		Long queryStart = null;
 		Long queryEnd = null;
 		DataQuality dataQuality = DataQuality.STEP;		
@@ -30,17 +27,17 @@ public class GritBotDataCreation {
 		writeGritbotName("c:/vm_share/gritbot.names",querySchema);		
 		writeGritbotData("c:/vm_share/gritbot.data",result_iterator);
 
-		System.out.println("...end");
+		System.out.println("...end");*/
 
 	}
 	
-	private static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
+	public static void writeGritbotData(String filename, TsIterator it) throws FileNotFoundException {
 		PrintStream printStream = new PrintStream(filename);
-		
+
 		while(it.hasNext()) {
-			TimeSeriesEntry e = it.next();
+			TsEntry e = it.next();
 			
-			LocalDateTime datetime = TimeConverter.oleMinutesToLocalDateTime(e.timestamp);
+			LocalDateTime datetime = TimeUtil.oleMinutesToLocalDateTime(e.timestamp);
 			
 			printStream.print(datetime.getYear());
 			printStream.print("-");

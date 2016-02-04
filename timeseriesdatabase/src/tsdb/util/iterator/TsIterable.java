@@ -2,12 +2,12 @@ package tsdb.util.iterator;
 
 import java.util.Iterator;
 
-import tsdb.raw.TimeSeriesEntry;
+import tsdb.util.TsEntry;
 
-public interface TsIterable extends Iterable<TimeSeriesEntry> {
+public interface TsIterable extends Iterable<TsEntry> {
 
 	@Override
-	public default Iterator<TimeSeriesEntry> iterator() {
+	public default Iterator<TsEntry> iterator() {
 		return tsIterator();
 	}
 	

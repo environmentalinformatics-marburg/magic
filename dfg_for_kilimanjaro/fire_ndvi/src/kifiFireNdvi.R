@@ -10,11 +10,10 @@ switch(Sys.info()[["sysname"]],
 
 # Required packages and functions
 lib <- c("doParallel", "raster", "rgdal", "randomForest",
-         "latticeExtra", "popbio", "ggplot2")
+         "latticeExtra", "popbio", "zoo", "ggplot2")
 sapply(lib, function(x) stopifnot(require(x, character.only = TRUE)))
 
-fun <- paste0("src/", c("kifiAggData.R", "probRst.R", "myMinorTick.R", 
-                        "ndviCell.R", "evalTree.R", "splitRaster.R"))
+fun <- paste0("src/", c("probRst.R", "ndviCell.R", "evalTree.R"))
 sapply(fun, source)
 
 # Parallelization
@@ -25,39 +24,53 @@ registerDoParallel(cl <- makeCluster(3))
 
 ## MODIS NDVI 
 
-# Import Whittaker-filled files (2003-2013)
-ndvi.rst.wht <- lapply(c("mod13q1", "myd13q1"), function(i) {
-  ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
-                         pattern = "^NDVI_Yearly.*_year.*.tif$", 
+# MODIS platforms
+sensors <- c("mod13q1", "myd13q1")
+
+# Time range
+st_year <- "2001"
+nd_year <- "2013"
+
+# Import raster data and corresponding dates for each sensor separately
+ndvi.rst.wht <- lapply(sensors, function(i) {
+#   # Import Whittaker-filled files (2003-2013)
+#   ndvi.fls <- list.files(paste0("data/processed/whittaker_", i), 
+#                          pattern = "^WHT.*.tif$", full.names = TRUE)
+  
+  # Import quality-controlled MODIS NDVI data
+  ndvi.fls <- list.files("data/processed", pattern = paste0("^BF.*", toupper(i)), 
                          full.names = TRUE)
   
-  st <- ifelse(i == "mod13q1", "2001", "2003")
-  nd <- "2013"
+  st <- grep(ifelse(i == "mod13q1", st_year, "2003"), ndvi.fls)[1]
+  nd <- grep(nd_year, ndvi.fls)[length(grep(nd_year, ndvi.fls))]
   
-  ndvi.fls <- ndvi.fls[grep(st, ndvi.fls):grep(nd, ndvi.fls)]
+  ndvi.fls <- ndvi.fls[st:nd]
   ndvi.rst <- stack(ndvi.fls)
   
   # Import corresponding date information
-  ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/outProj/", 
+  ndvi.fls.init <- list.files("data/MODIS_ARC/PROCESSED/ndvi_clrk", 
                               pattern = paste0(toupper(i), ".*_NDVI.tif$"))
-  ndvi.fls.init <- ndvi.fls.init[grep(st, ndvi.fls.init)[1]:
-                                   grep(nd, ndvi.fls.init)[length(grep(nd, ndvi.fls.init))]]
+  
+  st_init <- grep(ifelse(i == "mod13q1", st_year, "2003"), ndvi.fls.init)[1]
+  nd_init <- grep(nd_year, ndvi.fls.init)[length(grep(nd_year, ndvi.fls.init))]
+  
+  ndvi.fls.init <- ndvi.fls.init[st_init:nd_init]
   ndvi.dates <- as.Date(substr(ndvi.fls.init, 10, 16), format = "%Y%j")
   
-  # Return RasterStack and corresponding layer dates
+  # List raster data and corresponding dates
   return(list(ndvi.rst, ndvi.dates))
 })
 
 # Rearrange raster layers according to date information
-dates <- do.call("c", sapply(ndvi.rst.wht, "[[", 2))
+dates <- do.call("c", lapply(ndvi.rst.wht, "[[", 2))
 index <- order(dates)
 dates <- dates[index]
 
-ndvi.stck.wht <- stack(sapply(ndvi.rst.wht, "[[", 1))
+ndvi.stck.wht <- stack(lapply(ndvi.rst.wht, "[[", 1))
 ndvi.stck.wht <- ndvi.stck.wht[[index]]
 
 # Setup time series
-ndvi.ts <- do.call("c", lapply(2001:2013, function(i) { 
+ndvi.ts <- do.call("c", lapply(st_year:nd_year, function(i) { 
   seq(as.Date(paste(i, "01", "01", sep = "-")), 
       as.Date(paste(i, "12", "31", sep = "-")), 8)
 }))
@@ -77,19 +90,20 @@ ndvi.rst.wht <- lapply(ndvi.ts[, 3], function(i) {
 ## MODIS fire
 
 # Import 8-day fire files (2001-2013)
-fire.fls <- list.files("data/md14a1/aggregated/", pattern = ".tif$", 
-                       full.names = TRUE)
+fire.fls <- list.files("data/md14a1/aggregated/", 
+                       pattern = "^aggsum_8day.*.tif$", full.names = TRUE)
 
 
 # # Limit time window from Terra-MODIS launch to Dec 2013
-# st <- grep("2001", fire.fls)[1]
-# nd <- grep("2013", fire.fls)[length(grep("2013", fire.fls))]
-# fire.fls <- fire.fls[st:nd]
+st <- grep(st_year, fire.fls)[1]
+nd <- grep(nd_year, fire.fls)[length(grep(nd_year, fire.fls))]
+fire.fls <- fire.fls[st:nd]
 
 # Setup time series
-fire.dates <- as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j")
+fire.dates <- substr(sapply(strsplit(basename(fire.fls), "_"), "[[", 4), 1, 7)
+fire.dates <- as.Date(fire.dates, format = "%Y%j")
 
-fire.ts <- do.call("c", lapply(2001:2013, function(i) { 
+fire.ts <- do.call("c", lapply(st_year:nd_year, function(i) { 
   seq(as.Date(paste(i, "01", "01", sep = "-")), 
       as.Date(paste(i, "12", "31", sep = "-")), 8)
 }))
@@ -134,7 +148,7 @@ burnt.ndvi.cells <- ndviCell(fire.scenes = fire.scenes,
                              ndvi.rst = ndvi.rst.wht,
                              fire.mat = fire.mat, 
                              ndvi.mat = ndvi.mat, 
-                             method = "deviation.from.mean",
+                             method = "temporal.change",
                              n.cores = 3)
 
 # write.csv(burnt.ndvi.cells, "out/burnt_ndvi_cells.csv", 
@@ -167,18 +181,17 @@ model <- randomForest(as.factor(fire) ~ ndvi + ndvi_diff + ndvi_meandev,
 prob.rst <- probRst(fire.scenes = fire.scenes, 
                     fire.dates = fire.dates, 
                     fire.rst = fire.rst,
-                    ndvi.rst = ndvi.rst,
+                    ndvi.rst = ndvi.rst.wht,
                     fire.mat = fire.mat, 
                     ndvi.mat = ndvi.mat, 
                     model = model, 
-                    n.cores = 4)
+                    n.cores = 3)
 
 # Output storage
-out.names <- paste(gsub("md14a1", "md13q1", 
-                        sapply(fire.rst[which(fire.scenes)], names)), 
+out.names <- paste(sapply(fire.rst[which(fire.scenes)], names), 
                    "prob.tif", sep = "_")
 
-foreach(i = prob.rst, j = seq(prob.rst)) %do% {
+prob.rst <- foreach(i = prob.rst, j = seq(prob.rst)) %do% {
   if (!is.null(i))
     writeRaster(i, filename = paste0("out/ndvi_prob/", out.names[j]),  
                 format = "GTiff", overwrite = TRUE)
@@ -188,19 +201,18 @@ foreach(i = prob.rst, j = seq(prob.rst)) %do% {
 resp.rst <- probRst(fire.scenes = fire.scenes, 
                     fire.dates = fire.dates, 
                     fire.rst = fire.rst,
-                    ndvi.rst = ndvi.rst,
+                    ndvi.rst = ndvi.rst.wht,
                     fire.mat = fire.mat, 
                     ndvi.mat = ndvi.mat, 
                     model = model, 
                     type = "response",
-                    n.cores = 4)
+                    n.cores = 3)
 
 # Output storage
-out.names <- paste(gsub("md14a1", "md13q1", 
-                        sapply(fire.rst[which(fire.scenes)], names)), 
+out.names <- paste(sapply(fire.rst[which(fire.scenes)], names), 
                    "resp.tif", sep = "_")
 
-foreach(i = resp.rst, j = seq(resp.rst)) %do% {
+resp.rst <- foreach(i = resp.rst, j = seq(resp.rst)) %do% {
   if (!is.null(i))
     writeRaster(i, filename = paste0("out/ndvi_resp/", out.names[j]),  
                 format = "GTiff", overwrite = TRUE)
@@ -213,7 +225,7 @@ foreach(i = resp.rst, j = seq(resp.rst)) %do% {
 
 fire.ts.fls <- 
   merge(data.frame(date = fire.ts[, 1]), 
-        data.frame(date = as.Date(substr(basename(fire.fls), 8, 14), format = "%Y%j"), 
+        data.frame(date = fire.dates, 
                    file = fire.fls, stringsAsFactors = FALSE), 
         by = "date", all.x = TRUE)
 
