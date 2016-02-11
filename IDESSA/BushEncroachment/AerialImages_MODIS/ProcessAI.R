@@ -44,6 +44,7 @@ load("/media/memory01/casestudies/hmeyer/IDESSA_LandCover/model.RData")
 clusters <- list.dirs(datapath,full.names = TRUE,recursive=FALSE)
 clustersnames <- list.dirs(datapath,full.names = FALSE,recursive=FALSE)
 setwd(outpath)
+rasterOptions(tmpdir=paste0(outpath,"/tmp/")) 
 for (i in 1:length(clusters)){
   clusterpath <- clusters[i]
   image <- list.files(clusterpath,pattern=".tif$",full.names = TRUE)
@@ -81,12 +82,18 @@ for (i in 1:length(clusters)){
       print(paste0("cluster ",i,"image ",k," could not be processed"))
       next
     }
-    
+    rm(rasters)
+    gc()
     print("write results...")
     writeRaster(pred,paste0(outpath,"pred_",imagenames[k]),overwrite=TRUE) 
     writeRaster(pred_prob,paste0(outpath,"pred_prob_",imagenames[k]),overwrite=TRUE) 
     
+    rm(pred,pred_prob)
+    gc()
+    #unlink(rasterOptions(tmpdir=paste0(outpath,"/tmp/")) , recursive = TRUE)
+    file.remove(list.files(paste0(outpath,"/tmp/"),full.names=TRUE))
   }
   print (paste0("cluster ", clusters[i], " processed"))
 }
+
 
