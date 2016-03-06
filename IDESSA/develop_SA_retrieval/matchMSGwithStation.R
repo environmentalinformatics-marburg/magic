@@ -1,25 +1,28 @@
-year= 2010
+
+rm(list=ls())
+year <- 2010
 
 setwd("/media/memory01/data/IDESSA/")
-outpath<-"/media/memory01/data/IDESSA/"
+outpath <- "/media/memory01/data/IDESSA/"
 
-files<- list.files(path="statdat",pattern=".csv")
-filenames<- substr(files,1,nchar(files)-4)
-MSG_extract<- get(load(paste0("ExtractedData_agg_",year,".RData")))
-names(MSG_extract)[2]="Station"
-MSG_extract=MSG_extract[order(MSG_extract$Station, MSG_extract$date),]
-MSG_extract$Station<-as.character(MSG_extract$Station)
+files <- list.files(path="statdat",pattern=".csv")
+filenames <- substr(files,1,nchar(files)-4)
+MSG_extract <- get(load(paste0("ExtractedData_agg_",year,".RData")))
+names(MSG_extract)[2] <- "Station"
+MSG_extract <- MSG_extract[order(MSG_extract$Station, MSG_extract$date),]
+MSG_extract$Station <- as.character(MSG_extract$Station)
+MSG_extract$date <- paste0(MSG_extract$date,"00")
 
 #für jede zeile in extracted data...
-rainfall<-data.frame()
+rainfall <- data.frame()
 for (i in 1:length(unique(MSG_extract$Station))){
   statdatsub <- MSG_extract[MSG_extract$Station==unique(MSG_extract$Station)[i],]
   statdatsub$date <- as.character(statdatsub$date)
   statdat <- read.csv(paste0("statdat/",files[which(filenames==MSG_extract$Station[i])]))
   statdat$datetime <- as.character(statdat$datetime)
-  statdat$datetime<- gsub("-", "",statdat$datetime)
-  statdat$datetime<-gsub("T", "",statdat$datetime)
-  statdat$datetime<-gsub(":", "",statdat$datetime)
+  statdat$datetime <- gsub("-", "",statdat$datetime)
+  statdat$datetime <-gsub("T", "",statdat$datetime)
+  statdat$datetime <-gsub(":", "",statdat$datetime)
   
   for (k in 1:nrow(statdatsub)){
     if (any(statdatsub$date[k]==statdat$datetime)==FALSE){next}
