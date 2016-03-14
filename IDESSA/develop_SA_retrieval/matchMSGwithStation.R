@@ -1,11 +1,11 @@
 
 rm(list=ls())
-year <- 2010
+year <- 2011
 
 setwd("/media/memory01/data/IDESSA/")
 outpath <- "/media/memory01/data/IDESSA/"
 
-files <- list.files(path="statdat",pattern=".csv")
+files <- list.files(path=paste0(getwd(),"/statdat/",year),pattern=".csv")
 filenames <- substr(files,1,nchar(files)-4)
 MSG_extract <- get(load(paste0("ExtractedData_agg_",year,".RData")))
 names(MSG_extract)[2] <- "Station"
@@ -18,7 +18,14 @@ rainfall <- data.frame()
 for (i in 1:length(unique(MSG_extract$Station))){
   statdatsub <- MSG_extract[MSG_extract$Station==unique(MSG_extract$Station)[i],]
   statdatsub$date <- as.character(statdatsub$date)
-  statdat <- read.csv(paste0("statdat/",files[which(filenames==MSG_extract$Station[i])]))
+  statdat<-tryCatch(read.csv(paste0("statdat/",year,"/",
+                                    files[which(filenames==unique(MSG_extract$Station)[i])])),
+                    error = function(e)e)
+  if(inherits(statdat, "error")) {
+    print(paste0(unique(MSG_extract$Station)[i]," could not be processed"))
+    next
+  }
+  #statdat <- read.csv(paste0("statdat/",files[which(filenames==unique(MSG_extract$Station)[i])]))
   statdat$datetime <- as.character(statdat$datetime)
   statdat$datetime <- gsub("-", "",statdat$datetime)
   statdat$datetime <-gsub("T", "",statdat$datetime)
@@ -34,5 +41,5 @@ for (i in 1:length(unique(MSG_extract$Station))){
   print(paste0(i, "von ", length(unique(MSG_extract$Station))))
 }
 
-
+print(warnings())
 save(rainfall,file=paste0(outpath,"StationMatch_",year,".RData"))

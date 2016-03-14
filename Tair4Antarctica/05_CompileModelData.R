@@ -12,15 +12,17 @@ sampsize <- 0.25
 ComparisonTable_Aqua <- get(load("/media/hanna/data/Antarctica/results/ExactTimeEvaluation/ComparisonTable_Aqua.RData"))
 ComparisonTable_Terra <- get(load("/media/hanna/data/Antarctica/results/ExactTimeEvaluation/ComparisonTable_Terra.RData"))
 
-#ComparisonTable_Aqua <- ComparisonTable_Aqua [which(
-#  !names(ComparisonTable_Aqua)%in%(c("Byrd","Brianna","Henry","Baldrick",
-#                                     "canada_met","Theresa",
-#                                     "Ago-4","Elizabeth","Nico","Tom")))]
+ComparisonTable_Aqua <- ComparisonTable_Aqua [which(
+  !names(ComparisonTable_Aqua)%in%(c("DomeCII","DomeFuji","Elizabeth","Harry",
+                                     "Janet","Nico",
+                                     "RelayStation","SipleDome")))]
+#,"JASE2007","Mizuhu","PandaSouth","Theresa")))]
 
-#ComparisonTable_Terra <- ComparisonTable_Terra [which(
-#  !names(ComparisonTable_Terra)%in%(c("Byrd","Brianna","Henry","Baldrick",
-#                                      "canada_met","Theresa",
-#                                      "Ago-4","Elizabeth","Nico","Tom")))]
+ComparisonTable_Terra <- ComparisonTable_Terra [which(
+  !names(ComparisonTable_Terra)%in%(c("DomeCII","DomeFuji","Elizabeth","Harry",
+                                      "Janet","Nico",
+                                      "RelayStation","SipleDome")))]
+#,"JASE2007","Mizuhu","PandaSouth","Theresa")))]
 
 statdat <- c()
 LST <- c()
@@ -45,18 +47,25 @@ for (i in 1:length(ComparisonTable_Terra)){
 }
 
 
+season <- as.character(doy)
+season[doy<79|doy>=355]="Summer"
+season[doy>=79&doy<173]="Autumn"
+season[doy>=173&doy<266]="Winter"
+season[doy>=266&doy<355]="Spring"
+
+
 dataset <- data.frame("statdat"=statdat,"LST"=LST,"station"=station,
-                            "doy"=doy,"time"=time,
-                            "month"=months(as.POSIXct(paste0("2013",doy),
-                                                      format="%Y%j",tz="UTC"),abbreviate=T),
-                            
-                            "sensor"=c(rep("Aqua",length(unlist(ComparisonTable_Aqua))),
-                                       rep("Terra",length(unlist(ComparisonTable_Terra)))))
+                      "doy"=doy,"season"=season,"time"=time,
+                      "month"=months(as.POSIXct(paste0("2013",doy),
+                                                format="%Y%j",tz="UTC"),abbreviate=T),
+                      
+                      "sensor"=c(rep("Aqua",length(unlist(ComparisonTable_Aqua))),
+                                 rep("Terra",length(unlist(ComparisonTable_Terra)))))
 
 dataset$month <- factor(dataset$month, levels = c("Jan","Feb","Mar",
-                                                            "Apr","May","Jun",
-                                                            "Jul","Aug","Sep",
-                                                            "Oct","Nov","Dec"))
+                                                  "Apr","May","Jun",
+                                                  "Jul","Aug","Sep",
+                                                  "Oct","Nov","Dec"))
 
 
 StationMeta <- readOGR("/media/hanna/data/Antarctica/data/ShapeLayers/StationDataAnt.shp",
@@ -77,7 +86,7 @@ proj4string(skyview)<-proj4string(dem)
 
 reclt <- c(0,45,1,315,360,1,45,135,2, 135,225,3,225,315,4)
 aspect <- reclassify(aspect,reclt)
-  
+
 
 
 ice[ice>0]=1
@@ -117,7 +126,10 @@ dataset$time <- as.factor(dataset$time)
 dataset$ice <- as.factor(dataset$ice)
 levels(dataset$ice)<-c("NoIce","Ice")
 dataset$type <- as.factor(dataset$type)
-save(dataset,file="/media/hanna/data/Antarctica/results/ExactTimeEvaluation/dataset.RData")
+
+
+
+save(dataset,file="/media/hanna/data/Antarctica/results/ML/dataset.RData")
 
 
 ################################################################################
