@@ -5,7 +5,7 @@ library(rgdal)
 library(Rsenal)
 library(caret)
 
-sampsize <- 0.25
+sampsize <- 0.4
 #load("/media/hanna/data/Antarctica/results/ExactTimeEvaluation/dataset.RData")
 
 
@@ -29,6 +29,7 @@ LST <- c()
 station <- c()
 doy<-c()
 time<-c()
+acc<-0
 for (i in 1:length(ComparisonTable_Aqua)){
   statdat <- c(statdat,ComparisonTable_Aqua[[i]]$statdat)
   LST <- c(LST,ComparisonTable_Aqua[[i]]$LST)
@@ -37,6 +38,7 @@ for (i in 1:length(ComparisonTable_Aqua)){
   station <- c(station,rep(names(ComparisonTable_Aqua)[i],
                            length(ComparisonTable_Aqua[[i]]$LST)))
 }
+aquasum <- length(station)
 for (i in 1:length(ComparisonTable_Terra)){
   statdat <- c(statdat,ComparisonTable_Terra[[i]]$statdat)
   LST <- c(LST,ComparisonTable_Terra[[i]]$LST)
@@ -45,7 +47,7 @@ for (i in 1:length(ComparisonTable_Terra)){
   station <- c(station,rep(names(ComparisonTable_Terra)[i],
                            length(ComparisonTable_Terra[[i]]$LST)))
 }
-
+terrasum<-length(station)-aquasum
 
 season <- as.character(doy)
 season[doy<79|doy>=355]="Summer"
@@ -59,8 +61,8 @@ dataset <- data.frame("statdat"=statdat,"LST"=LST,"station"=station,
                       "month"=months(as.POSIXct(paste0("2013",doy),
                                                 format="%Y%j",tz="UTC"),abbreviate=T),
                       
-                      "sensor"=c(rep("Aqua",length(unlist(ComparisonTable_Aqua))),
-                                 rep("Terra",length(unlist(ComparisonTable_Terra)))))
+                      "sensor"=c(rep("Aqua",aquasum),
+                                 rep("Terra",terrasum)))
 
 dataset$month <- factor(dataset$month, levels = c("Jan","Feb","Mar",
                                                   "Apr","May","Jun",
@@ -129,7 +131,7 @@ dataset$type <- as.factor(dataset$type)
 
 
 
-save(dataset,file="/media/hanna/data/Antarctica/results/ML/dataset.RData")
+save(dataset,file="/media/hanna/data/Antarctica/results/MLFINAL//dataset.RData")
 
 
 ################################################################################
@@ -145,5 +147,5 @@ trainIndex <- createDataPartition(dataset$station,
 trainData <- dataset[trainIndex,]
 testData <- dataset[-trainIndex,]
 
-save(trainData,file="/media/hanna/data/Antarctica/results/ML/trainData.RData")
-save(testData,file="/media/hanna/data/Antarctica/results/ML/testData.RData")
+save(trainData,file="/media/hanna/data/Antarctica/results/MLFINAL//trainData.RData")
+save(testData,file="/media/hanna/data/Antarctica/results/MLFINAL//testData.RData")

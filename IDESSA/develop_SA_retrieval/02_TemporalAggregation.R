@@ -19,7 +19,7 @@ for (i in 1:length(uniquehours)-1){
     if (nrow(subset2)<4){next}
 
     agg<-aggregate(subset2[,3:ncol(subset2)],by=list(subset2$as.character.stations.data.Name.),FUN="median")
-    agg <- data.frame("date"=uniquehours[i+1],agg) #weil stationsdaten bis i+1 aggregieren
+    agg <- data.frame("date"=uniquehours[i+1],agg)
     results<-rbind(results,agg)
     print(paste0("Station ",k, " of Date ",uniquehours[i]))
   }

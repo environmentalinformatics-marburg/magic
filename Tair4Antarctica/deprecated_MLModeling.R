@@ -16,7 +16,10 @@ predictors <- trainData[,c("LST",
                            #"month",
                            "season",
                            "sensor",
-                           "dem","slope","aspect","skyview",
+                           "dem",
+                           "slope",
+                           "aspect",
+                           "skyview",
                            "ice")]
 cvindices <- list()
 acc <- 1

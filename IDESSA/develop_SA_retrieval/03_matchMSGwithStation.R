@@ -1,6 +1,6 @@
 
 rm(list=ls())
-year <- 2011
+year <- 2010
 
 setwd("/media/memory01/data/IDESSA/")
 outpath <- "/media/memory01/data/IDESSA/"
@@ -22,7 +22,7 @@ for (i in 1:length(unique(MSG_extract$Station))){
                                     files[which(filenames==unique(MSG_extract$Station)[i])])),
                     error = function(e)e)
   if(inherits(statdat, "error")) {
-    print(paste0(unique(MSG_extract$Station)[i]," could not be processed"))
+	print(paste0(unique(MSG_extract$Station)[i]," could not be processed"))
     next
   }
   #statdat <- read.csv(paste0("statdat/",files[which(filenames==unique(MSG_extract$Station)[i])]))
