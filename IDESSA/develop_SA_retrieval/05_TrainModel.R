@@ -9,16 +9,16 @@ for (daytime in c("day","night")){
     
     predictornames <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3",
                         "IR8.7","IR9.7","IR10.8","IR12.0","IR13.4","sunzenith",
-                        "WV6.2_IR10.8","WV7.3_IR12.0","IR8.7_IR10.8","IR10.8_IR12.0",
-                        "IR3.9_WV7.3","IR3.9_IR10.8")
+                        "T0.6_1.6","T6.2_10.8","T7.3_12.0","T8.7_10.8",
+                        "T10.8_12.0","T3.9_7.3","T3.9_10.8")
   }else{
     predictornames <- c("IR3.9","WV6.2","WV7.3",
                         "IR8.7","IR9.7","IR10.8","IR12.0","IR13.4",
-                        "WV6.2_IR10.8","WV7.3_IR12.0","IR8.7_IR10.8","IR10.8_IR12.0",
-                        "IR3.9_WV7.3","IR3.9_IR10.8")
+                        "T6.2_10.8","T7.3_12.0","T8.7_10.8",
+                        "T10.8_12.0","T3.9_7.3","T3.9_10.8")
     
   }
-  responseRA <- dataset$RainArea
+  responseRA <- trainData$RainArea
   predictorsRA <- trainData[,predictornames]
   
   responseRR <-trainData$P_RT_NRT[trainData$P_RT_NRT>0]

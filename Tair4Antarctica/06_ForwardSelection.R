@@ -35,7 +35,7 @@ if(doParallel){
 }
 
 ctrl <- trainControl(index=cvindices,
-                     method="cv")
+                     method="cv",savePredictions = TRUE)
 fullModel <-train(predictors,trainData$statdat,method="cubist",
                   trControl = ctrl,tuneLength=3)
 save(fullModel,file=paste0(outpath,"fullModel.RData"))

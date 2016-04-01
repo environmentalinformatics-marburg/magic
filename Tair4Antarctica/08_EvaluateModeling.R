@@ -6,7 +6,7 @@ library(grid)
 
 
 
-load("/media/hanna/data/Antarctica/results/ML/final/testData.RData")
+load("/media/hanna/data/Antarctica/results/MLFINAL//testData_comparison.RData")
 modeldats <- testData[,substr(names(testData),nchar(names(testData))-2,
                               nchar(names(testData)))=="Mod"]
 
@@ -48,7 +48,7 @@ for (i in 1:ncol(modeldats)){
 ################################################################################
 ################################################################################
 
-pdf(paste0("/media/hanna/data/Antarctica/visualizations/RF_timeseries.pdf"),
+pdf(paste0("/media/hanna/data/Antarctica/visualizations/GBM_timeseries.pdf"),
     width=8,height=7)
 
 for (i in unique(testData$station)){
@@ -58,7 +58,7 @@ for (i in unique(testData$station)){
   if (nrow(dat_sort)<10){next}
   obs <- smooth.spline(dat_sort$doy,dat_sort$statdat, spar=0.25)
   pred <- smooth.spline(dat_sort$doy,dat_sort$LST, spar=0.25)
-  pred_ML <- smooth.spline(dat_sort$doy,dat_sort$rfMod, spar=0.25)
+  pred_ML <- smooth.spline(dat_sort$doy,dat_sort$gbmMod, spar=0.25)
   pred_lin <- smooth.spline(dat_sort$doy,dat_sort$lin, spar=0.25)
   lim <- c(min(dat_sort$statdat,dat_sort$LST,na.rm=T),max(dat_sort$statdat,dat_sort$LST,na.rm=T))
   plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
@@ -72,33 +72,33 @@ for (i in unique(testData$station)){
 
 dat_sort <- testData[order(testData$doy),]
 dat_sort <- dat_sort[complete.cases(dat_sort),]
-dat_sort <- aggregate(x = data.frame(dat_sort$statdat,dat_sort$LST,dat_sort$rfMod,
+dat_sort <- aggregate(x = data.frame(dat_sort$statdat,dat_sort$LST,dat_sort$gbmMod,
                                      dat_sort$linMod),
                       by = list(dat_sort$doy), FUN = "mean")
 obs <- smooth.spline(1:365,dat_sort$dat_sort.statdat, spar=0.25)
 pred <- smooth.spline(1:365,dat_sort$dat_sort.LST, spar=0.25)
-pred_ML <- smooth.spline(1:365,dat_sort$dat_sort.rfMod, spar=0.25)
+pred_ML <- smooth.spline(1:365,dat_sort$dat_sort.gbmMod, spar=0.25)
 pred_lin <- smooth.spline(1:365,dat_sort$dat_sort.linMod, spar=0.25)
-lim <- c(min(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.RfMod,na.rm=T),
-         max(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.RfMod,na.rm=T))
+lim <- c(min(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.gbmMod,na.rm=T),
+         max(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.gbmMod,na.rm=T))
 plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
      main="all stations",ylim=lim)
 lines(pred,col="black",lty=2)
 lines(pred_lin,col="red",lty=2)
 lines(pred_ML,col="red",lty=1)
-legend("bottomleft",legend=c("Stations","MODIS LST","Random Forests","Linear Model"),
+legend("bottomleft",legend=c("Stations","MODIS LST","GBM","Linear Model"),
        col=c("black","black","red","red"),lty=c(1,2,1,2),lwd=1,bty="n")
 dev.off()
 #######################################
-load("/media/hanna/data/Antarctica/results/ML/final/model_RF.RData")
-pdf("/media/hanna/data/Antarctica/visualizations/rf_varimp.pdf",width=5,height=5)
-plot(varImp(model_RF),col="black")
+load("/media/hanna/data/Antarctica/results/MLFINAL//model_GBM.RData")
+pdf("/media/hanna/data/Antarctica/visualizations/gbm_varimp.pdf",width=5,height=4)
+plot(varImp(model_GBM,scale=FALSE),col="black")
 dev.off()
 
 
 ####################################
 # Correlation LST ~ AirT
-load("/media/hanna/data/Antarctica/results/ML/final/trainData.RData")
+load("/media/hanna/data/Antarctica/results/MLFINAL//trainData.RData")
 pdf(paste0("/media/hanna/data/Antarctica/visualizations/CorLSTAirT_hexbin.pdf"))
 
 hbp <- hexbinplot(trainData$statdat~trainData$LST,
@@ -117,3 +117,4 @@ hbp <- hexbinplot(trainData$statdat~trainData$LST,
                   })
 print(hbp)
 dev.off()
+

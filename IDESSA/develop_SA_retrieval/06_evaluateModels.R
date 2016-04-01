@@ -1,6 +1,6 @@
 #evaluate Models
 library(Rainfall)
-library(Rsenal)
+#library(Rsenal)
 library(caret)
 setwd("/media/memory01/data/IDESSA/Model")
 outpath <- "/media/memory01/data/IDESSA/Model/"
@@ -8,6 +8,8 @@ outpath <- "/media/memory01/data/IDESSA/Model/"
 prediction<-list()
 obs<-list()
 acc <- 0
+tmpnamesobs<-c()
+tmpnamespred<-c()
 for (daytime in c("day","night")){
   for (responsetype in c("RA","RR")){
     acc <- acc+1
@@ -16,17 +18,20 @@ for (daytime in c("day","night")){
     predVars <- scaleByValue(testData[,row.names(model$scaleParam)],model$scaleParam)
     if (responsetype=="RR"){
       prediction[[acc]] <- predict(model,predVars[testData$P_RT_NRT>0,])
-      names(prediction)<-c(names(prediction),paste0(daytime,"_",responsetype))
+      tmpnamespred<-c(tmpnamespred,paste0(daytime,"_",responsetype))
       obs[[acc]] <- testData$P_RT_NRT[testData$P_RT_NRT>0]
-      names(obs) <- c(names(obs),paste0(daytime,"_",responsetype))
+      tmpnamesobs <- c(tmpnamesobs,paste0(daytime,"_",responsetype))
     }else{
       prediction[[acc]] <- predict(model,predVars)
-      names(prediction)<-c(names(prediction),paste0(daytime,"_",responsetype))
-      obs[[acc]] <- testData$YN
-      names(obs)<-c(names(obs),paste0(daytime,"_",responsetype))
+      tmpnamespred<-c(tmpnamespred,paste0(daytime,"_",responsetype))
+      obs[[acc]] <- testData$RainArea
+      tmpnamesobs <- c(tmpnamesobs,paste0(daytime,"_",responsetype))
     }
   }
 }
+
+names(obs)<-tmpnamesobs
+names(prediction)<-tmpnamespred
 save(prediction,file=paste0(outpath,"predictions.RData"))
 save(obs,file=paste0(outpath,"obs.RData"))
 
