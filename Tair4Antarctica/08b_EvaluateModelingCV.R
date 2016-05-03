@@ -4,7 +4,7 @@ library(Rsenal)
 library(hexbin)
 library(grid)
 library(gridExtra)
-
+library(viridis)
 
 setwd("/media/hanna/data/Antarctica/results/MLFINAL/")
 modellist <- list.files(,pattern="model")
@@ -49,7 +49,7 @@ for (i in 1:length(modellist)){
                   xlim=c(-80,10),ylim=c(-80,10),maxcnt=60,
                     ylab="Measured Air temperature (°C)", 
                     xlab="Predicted Air temperature(°C)",
-                    colramp=colorRampPalette(rev(terrain.colors(10))),
+                    colramp=colorRampPalette(rev(viridis(10))),
                     panel = function(...) {
                       panel.hexbinplot(...)
                       panel.abline(a=0,b=1,lwd=2)

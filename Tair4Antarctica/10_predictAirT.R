@@ -25,36 +25,28 @@ predictAirT <- function (model, LSTpath, month="Jan", outname=NULL,
   }
 }
 
+rasterOptions(tmpdir = "/media/hanna/data/Antarctica/rastertmp")
 
-filelist_aqua <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/aqua/2013/mosaics/",pattern=".kea$",full.names = TRUE)
-filelist_terra <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/terra/2013/mosaics/",pattern=".kea$",full.names = TRUE)
-filelist_aqua <- filelist_aqua[substr(filelist_aqua,nchar(filelist_aqua)-14,nchar(filelist_aqua)-12)=="1km"]
-filelist_terra <- filelist_terra[substr(filelist_terra,nchar(filelist_terra)-14,nchar(filelist_terra)-12)=="1km"]
-filelists <- list(filelist_aqua,filelist_terra)
+filelist <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/integrated/2013/mosaics/",pattern=".kea$",full.names = TRUE)
+filename <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/integrated/2013/mosaics/",pattern=".kea$",full.names = FALSE)
 
-filenames_aqua <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/aqua/2013/mosaics/",pattern=".kea$",full.names = FALSE)
-filenames_terra <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/terra/2013/mosaics/",pattern=".kea$",full.names = FALSE)
-filenames_aqua <- filenames_aqua[substr(filenames_aqua,nchar(filenames_aqua)-14,nchar(filenames_aqua)-12)=="1km"]
-filenames_terra <- filenames_terra[substr(filenames_terra,nchar(filenames_terra)-14,nchar(filenames_terra)-12)=="1km"]
-filenames <- list(filenames_aqua,filenames_terra)
+
 
 
 load("/media/hanna/data/Antarctica/results/MLFINAL/model_GBM.RData")
 outpath<-"/media/hanna/data/Antarctica/results/predictions/"
 
 
-for (k in 1:length(filelists)){
-  filelist <- filelists[[k]]
-  filename <- filenames [[k]]
+
 for (i in 1:length(filelist)){
   year<-substr(filename[i],nchar(filename[i])-10,nchar(filename[i])-7)
   jday<-substr(filename[i],nchar(filename[i])-6,nchar(filename[i])-4)
   month<-month.abb[as.numeric(substr(strptime(paste(year, jday), "%Y %j"),6,7))]
   outname <- paste0(outpath,"/",substr(filename[i],1,nchar(filename[i])-4))
   predictAirT(model_GBM,LSTpath = filelist[i],month=month,outname=outname)
-
   print(i)
+  file.remove(list.files("/media/hanna/data/Antarctica/rastertmp"))
 }
-}
+
 
 

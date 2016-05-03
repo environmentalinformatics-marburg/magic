@@ -6,7 +6,6 @@ origin_of_file <- c(-3282496.232239199, 3333134.0276302756)
 year <-2013
 
 
-
 aquapath <- paste0("/media/hanna/data/Antarctica/data/MODIS_LST/aqua/",
   year,"/mosaics/")
 terrapath <-paste0("/media/hanna/data/Antarctica/data/MODIS_LST/terra/",

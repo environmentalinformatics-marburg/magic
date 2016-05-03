@@ -1,3 +1,4 @@
+rm(list=ls())
 load("/media/hanna/data/Antarctica/results/MLFINAL/fullModel.RData")
 load("/media/hanna/data/Antarctica/results/MLFINAL/testData.RData")
 load("/media/hanna/data/Antarctica/results/MLFINAL/ffs_best_SD.RData")
@@ -5,6 +6,7 @@ load("/media/hanna/data/Antarctica/results/MLFINAL/ffs_best_SD.RData")
 library(hexbin)
 library(caret)
 library(grid)
+library(viridis)
 
 fullModel_cv <- fullModel$pred[fullModel$pred$committees==
                             fullModel$finalModel$tuneValue$committees&
@@ -32,7 +34,7 @@ fullModel_cv_hex <- hexbinplot(fullModel_cv$obs~fullModel_cv$pred,
            xlim=c(-80,10),ylim=c(-80,10),
            ylab="Measured Air temperature (°C)", 
            xlab="Predicted Air temperature(°C)",
-           colramp=colorRampPalette(rev(terrain.colors(10))))
+           colramp=colorRampPalette(rev(viridis(10))))
          
 
 #### FULL MODEL TEST
@@ -48,7 +50,7 @@ fullModel_test_hex <- hexbinplot(testData$statdat~predtest,
                                xlim=c(-80,10),ylim=c(-80,10),
                                ylab="Measured Air temperature (°C)", 
                                xlab="Predicted Air temperature(°C)",
-                               colramp=colorRampPalette(rev(terrain.colors(10))))
+                               colramp=colorRampPalette(rev(viridis(10))))
 
 #### FFS MODEL CV
 
@@ -63,7 +65,7 @@ ffs_cv_hex <- hexbinplot(ffs_cv$obs~ffs_cv$pred,
                                xlim=c(-80,10),ylim=c(-80,10),
                                ylab="Measured Air temperature (°C)", 
                                xlab="Predicted Air temperature(°C)",
-                               colramp=colorRampPalette(rev(terrain.colors(10))))
+                               colramp=colorRampPalette(rev(viridis(10))))
                              
 #### FFS MODEL TEST
 predtest <- predict(ffs_best,testData)
@@ -78,8 +80,8 @@ ffs_test_hex <- hexbinplot(testData$statdat~predtest,
                                  xlim=c(-80,10),ylim=c(-80,10),
                                  ylab="Measured Air temperature (°C)", 
                                  xlab="Predicted Air temperature(°C)",
-                                 colramp=colorRampPalette(rev(terrain.colors(10))))
-                               )
+                                colramp=colorRampPalette(rev(viridis(10))))
+                               
 
 
 hp <- c(
@@ -109,3 +111,11 @@ hp <- c(
 pdf(paste0("/media/hanna/data/Antarctica/visualizations/overfitting_hexbin.pdf"))
 hp
 dev.off()
+
+################################################################################
+#fullModel_cv: fullModel_cv$obs~fullModel_cv$pred
+#fullModel test: testData$statdat~predtest
+#ffs model test: testData$statdat~predtest
+#ffs_cv: ffs_cv$obs~ffs_cv$pred
+
+################################################################################

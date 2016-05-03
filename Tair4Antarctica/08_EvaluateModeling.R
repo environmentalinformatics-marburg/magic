@@ -3,12 +3,19 @@ library(caret)
 library(Rsenal)
 library(hexbin)
 library(grid)
+library(viridis)
 
 
 
 load("/media/hanna/data/Antarctica/results/MLFINAL//testData_comparison.RData")
+load("/media/hanna/data/Antarctica/results/MLFINAL//dataset.RData")
+load("/media/hanna/data/Antarctica/results/MLFINAL//model_GBM.RData")
+load("/media/hanna/data/Antarctica/results/MLFINAL//model_LIN.RData")
+dataset$gbmMod <- predict(model_GBM,data.frame("LST"=dataset$LST,"month"=dataset$month))
+dataset$linMod <- predict(model_LIN,data.frame("LST"=dataset$LST))
+
 modeldats <- testData[,substr(names(testData),nchar(names(testData))-2,
-                              nchar(names(testData)))=="Mod"]
+                              nchar(names(testData)))=="Mod"] 
 
 
 for (i in 1:ncol(modeldats)){
@@ -31,7 +38,7 @@ for (i in 1:ncol(modeldats)){
                            max(testData$statdat,modeldat,na.rm=T)),
                     ylab="Measured Air temperature (°C)", 
                     xlab="predicted Air temperature(°C)",
-                    colramp=colorRampPalette(rev(terrain.colors(10))),
+                    colramp=colorRampPalette(rev(viridis(10))),
                     panel = function(...) {
                       panel.hexbinplot(...)
                       panel.abline(a=0,b=1,lwd=2)
@@ -48,11 +55,11 @@ for (i in 1:ncol(modeldats)){
 ################################################################################
 ################################################################################
 
-pdf(paste0("/media/hanna/data/Antarctica/visualizations/GBM_timeseries.pdf"),
-    width=8,height=7)
+pdf(paste0("/media/hanna/data/Antarctica/visualizations/GBM_timeseries_full.pdf"),
+    width=8,height=7) 
 
-for (i in unique(testData$station)){
-  dat_sort <- testData[testData$station==i,]
+for (i in unique(dataset$station)){
+  dat_sort <- dataset[dataset$station==i,]
   dat_sort <- dat_sort[order(dat_sort$doy),]
   dat_sort <- dat_sort[complete.cases(dat_sort),]
   if (nrow(dat_sort)<10){next}
@@ -64,14 +71,14 @@ for (i in unique(testData$station)){
   plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
        main=i,ylim=lim)
   lines(pred,col="black",lty=2)
-  lines(pred_lin,col="red",lty=2)
-  lines(pred_ML,col="red",lty=1)
+  lines(pred_lin,col="grey70",lty=2)
+  lines(pred_ML,col="grey70",lty=1)
   legend("bottomleft",legend=c("Stations","MODIS LST","Random Forests","Linear Model"),
-         col=c("black","black","red","red"),lty=c(1,2,1,2),lwd=1,bty="n")
+         col=c("black","black","grey70","grey70"),lty=c(1,2,1,2),lwd=1,bty="n")
 }
 
-dat_sort <- testData[order(testData$doy),]
-dat_sort <- dat_sort[complete.cases(dat_sort),]
+dat_sort <- dataset[order(dataset$doy),] 
+dat_sort <- dat_sort[complete.cases(dat_sort),] 
 dat_sort <- aggregate(x = data.frame(dat_sort$statdat,dat_sort$LST,dat_sort$gbmMod,
                                      dat_sort$linMod),
                       by = list(dat_sort$doy), FUN = "mean")
@@ -84,10 +91,10 @@ lim <- c(min(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.g
 plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
      main="all stations",ylim=lim)
 lines(pred,col="black",lty=2)
-lines(pred_lin,col="red",lty=2)
-lines(pred_ML,col="red",lty=1)
+lines(pred_lin,col="grey70",lty=2)
+lines(pred_ML,col="grey70",lty=1)
 legend("bottomleft",legend=c("Stations","MODIS LST","GBM","Linear Model"),
-       col=c("black","black","red","red"),lty=c(1,2,1,2),lwd=1,bty="n")
+       col=c("black","black","grey70","grey70"),lty=c(1,2,1,2),lwd=1,bty="n")
 dev.off()
 #######################################
 load("/media/hanna/data/Antarctica/results/MLFINAL//model_GBM.RData")
@@ -108,7 +115,7 @@ hbp <- hexbinplot(trainData$statdat~trainData$LST,
                          max(trainData$statdat,trainData$LST,na.rm=T)),
                   ylab="Measured Air temperature (°C)", 
                   xlab="MODIS LST (°C)",
-                  colramp=colorRampPalette(rev(terrain.colors(10))),
+                  colramp=colorRampPalette(rev(viridis(10))),
                   panel = function(...) {
                     panel.hexbinplot(...)
                     panel.abline(a=0,b=1,lwd=2)
