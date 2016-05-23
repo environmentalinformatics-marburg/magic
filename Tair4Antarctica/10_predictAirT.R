@@ -31,8 +31,6 @@ filelist <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/integrated/2
 filename <- list.files("/media/hanna/data/Antarctica/data/MODIS_LST/integrated/2013/mosaics/",pattern=".kea$",full.names = FALSE)
 
 
-
-
 load("/media/hanna/data/Antarctica/results/MLFINAL/model_GBM.RData")
 outpath<-"/media/hanna/data/Antarctica/results/predictions/"
 
@@ -48,5 +46,18 @@ for (i in 1:length(filelist)){
   file.remove(list.files("/media/hanna/data/Antarctica/rastertmp"))
 }
 
+############aggregate
+outpath <- "/media/hanna/data/Antarctica/results/predictions/TairDaily/aggregate/"
+setwd("/media/hanna/data/Antarctica/results/predictions/TairDaily/")
+files <- list.files(,pattern=".tif")
+uniquedoy <- unique(substr(files,nchar(files)-10,nchar(files)-4))
 
-
+rasterOptions(tmpdir = "/media/hanna/data/Antarctica/rastertmp")
+for (i in 1:length(uniquedoy)){
+  rasters <- stack(files[grep(uniquedoy[i],files)])
+  means <- calc(rasters,mean,na.rm=T)
+  writeRaster(means,paste0(outpath,"predictedTair_",
+                           uniquedoy[i],
+                           ".tif"),overwrite=TRUE)
+  file.remove(list.files("/media/hanna/data/Antarctica/rastertmp"))
+}

@@ -1,5 +1,5 @@
 #Aggregate to 1h
-year= 2010
+year= 2014
 
 setwd("/media/memory01/data/IDESSA/")
 outpath<-"/media/memory01/data/IDESSA/"
@@ -21,8 +21,8 @@ for (i in 1:length(uniquehours)-1){
     agg<-aggregate(subset2[,3:ncol(subset2)],by=list(subset2$as.character.stations.data.Name.),FUN="median")
     agg <- data.frame("date"=uniquehours[i+1],agg)
     results<-rbind(results,agg)
-    print(paste0("Station ",k, " of Date ",uniquehours[i]))
   }
+  print(paste0(uniquehours[i]," done"))
 }
 
 results <- results[complete.cases(results[3:ncol(results)]),]

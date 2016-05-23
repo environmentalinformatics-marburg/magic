@@ -86,3 +86,23 @@ merge<-c(p4,p3,p2,p1,layout=c(2,2))
 print(merge)
 dev.off()
 
+test <- data.frame("variables"=c(rownames(varImp(trainText[[1]])$importance),
+                   rownames(varImp(trainText[[2]])$importance),
+                   rownames(varImp(trainText[[3]])$importance),
+                   rownames(varImp(trainText[[4]])$importance)),
+                   "Importance"=c(varImp(trainText[[1]])$importance[,1],
+                   varImp(trainText[[2]])$importance[,1],
+                   varImp(trainText[[3]])$importance[,1],
+                   varImp(trainText[[4]])$importance[,1]),
+                   "Model"=c(rep(substr(filesText[1],14,nchar(filesText[1])-6),length(varImp(trainText[[1]])$importance[,1])),
+                             rep(substr(filesText[2],14,nchar(filesText[2])-6),length(varImp(trainText[[2]])$importance[,1])),
+                             rep(substr(filesText[3],14,nchar(filesText[3])-6),length(varImp(trainText[[3]])$importance[,1])),
+                             rep(substr(filesText[4],14,nchar(filesText[4])-6),length(varImp(trainText[[4]])$importance[,1])))
+)
+
+
+ggplot(test,aes(y = Importance, x = variables)) + 
+  geom_bar(stat = "identity") +
+  facet_grid(~Model,scales = "free")+
+  coord_flip()
+                          

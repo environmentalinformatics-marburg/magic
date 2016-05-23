@@ -7,7 +7,7 @@ library(Rsenal)
 regcmpath ="/media/hanna/data/Antarctica/data/RegCM_2013/tiffs/"
 outpath_A <- "/media/hanna/data/Antarctica/results/predictions/RegCMExtent/"
 outpath_B <- "/media/hanna/data/Antarctica/results/predictions/RegCMRes/"
-predpath <- "/media/hanna/data/Antarctica/results/predictions/"
+predpath <- "/media/hanna/data/Antarctica/results/predictions//TairDaily/aggregate/"
 setwd(predpath)
 predictions <- list.files(,pattern=".tif$")
 rasterOptions(tmpdir = "/media/hanna/data/Antarctica/rastertmp")
@@ -16,7 +16,6 @@ for (i in 1:length(predictions)){
   regCM <- raster(list.files(regcmpath,full.names = TRUE)[1])
   pred <- raster(predictions[i])
   proj4string(regCM)<-proj4string(pred)
-  
   pred_regCMExt <- crop(pred,regCM)
   pred_regCMRes <- resample(pred_regCMExt,regCM)
   
