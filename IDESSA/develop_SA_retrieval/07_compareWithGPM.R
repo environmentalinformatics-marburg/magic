@@ -28,7 +28,9 @@ proj4string(msg)<-CRS("+proj=geos +lon_0=0 +h=35785831 +x_0=0 +y_0=0 +ellps=WGS8
 
 ###lade passendes gpm with rasterizeIMERG
 #crop(imerg,msgpred)
-###aggregiere imerg auf stunde. aggregiere msgProdukt auf 10km
+#extract data at locations of stations
+#aggregiere imerg auf stunde. 
+#zusätzlich: aggregate msg auf 10km
 ###compare both with stations
 
 imergData <- list.files("/media/memory01/data/data01/RainfallProducts/IMERG_GPM_2014/",recursive = TRUE)
