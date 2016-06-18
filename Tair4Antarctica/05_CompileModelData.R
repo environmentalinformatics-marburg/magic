@@ -14,20 +14,20 @@ ComparisonTable_Terra <- get(load("/media/hanna/data/Antarctica/results/ExactTim
 
 
 #take only some of the dry valley stations
-dryvalleys_sub <- c("commonwealth_met","hoare_met","howard_met","taylor_met","vanda_met","MarblePoint",
-                    "fryxell_met")
+#dryvalleys_sub <- c("commonwealth_met","hoare_met","howard_met","taylor_met","vanda_met","MarblePoint",
+#                    "fryxell_met")
   
   #"BullPass","MtFlemming","beacon_met","bonney_met",
   #                  "brownworth_met","hoare_met","vida_met")
 
 ComparisonTable_Aqua <- ComparisonTable_Aqua [which(
-  !names(ComparisonTable_Aqua)%in%(c(dryvalleys_sub,"DomeCII","DomeFuji","Elizabeth","Harry",
+  !names(ComparisonTable_Aqua)%in%(c("DomeCII","DomeFuji","Elizabeth","Harry",
                                      "Janet","Nico","canada_met",
                                      "RelayStation","SipleDome")))]
 #,"JASE2007","Mizuhu","PandaSouth","Theresa")))]
 
 ComparisonTable_Terra <- ComparisonTable_Terra [which(
-  !names(ComparisonTable_Terra)%in%(c(dryvalleys_sub,"DomeCII","DomeFuji","Elizabeth","Harry",
+  !names(ComparisonTable_Terra)%in%(c("DomeCII","DomeFuji","Elizabeth","Harry",
                                       "Janet","Nico","canada_met",
                                       "RelayStation","SipleDome")))]
 #,"JASE2007","Mizuhu","PandaSouth","Theresa")))]
@@ -102,24 +102,25 @@ proj4string(skyview)<-proj4string(dem)
 reclt <- c(0,45,1,315,360,1,45,135,2, 135,225,3,225,315,4)
 aspect <- reclassify(aspect,reclt)
 
-pole <- SpatialPoints(data.frame("x"=0,"y"=0),
-                   proj4string = CRS(proj4string(dem)))
-dist <- distanceFromPoints(dem, pole) 
+#pole <- SpatialPoints(data.frame("x"=0,"y"=0),
+#                   proj4string = CRS(proj4string(dem)))
+#dist <- distanceFromPoints(dem, pole) 
 
 
 
 ice[ice>0]=1
 ice[ice<0]=0
-auxiliary <- list(dem,slope,aspect,skyview,ice,dist)
+auxiliary <- list(dem,slope,aspect,skyview,ice)
 auxiliary <- lapply(auxiliary,function(x){proj4string(x)=proj4string(StationMeta)
 return(x)})
 
 
 auxiliary <- lapply(auxiliary,extract,StationMeta)
 
-stationprop<-data.frame(StationMeta$Name,matrix(unlist(auxiliary), nrow=length(StationMeta), byrow=F))
+stationprop<-data.frame(StationMeta$Name,matrix(unlist(auxiliary), nrow=length(StationMeta),
+                                                byrow=F))
 names(stationprop)[2:ncol(stationprop)]<- c("dem","slope","aspect","skyview",
-                                            "ice","dist")
+                                            "ice")
 
 property <- data.frame(matrix(ncol=ncol(stationprop)-1,nrow=nrow(dataset)))
 for (k in 1:(ncol(stationprop)-1)){
@@ -130,7 +131,7 @@ for (k in 1:(ncol(stationprop)-1)){
   }
 }
 names(property) <- c("dem","slope","aspect","skyview",
-                     "ice","dist")
+                     "ice")
 dataset <- data.frame(dataset,property)
 dataset$type <- NA
 for (i in 1:nrow(dataset)){

@@ -4,13 +4,13 @@ library(Rainfall)
 library(Rsenal)
 library(gdalUtils)
 
-years <- c(2010:2014)
+years <- 2010
 
 datapath <- "/media/memory01/data/data01/msg-out-hanna/"
 cloudmaskpath <- "/media/memory01/data/data01/CM_SAF_CMa/"
 cloudmaskpathCLAAS <- "/media/memory01/data/data01/CLAAS2_cloudmask/ftp-cmsaf.dwd.de/cloudmask/cloudmask/"
-stationpath <- "/media/memory01/data/IDESSA/"
-outpath <- "/media/memory01/data/IDESSA/"
+stationpath <- "/media/memory01/data/IDESSA/statdat/"
+outpath<-"/media/memory01/data/IDESSA/Results/ExtractedData/"
 untardir <- "/media/memory01/data/IDESSA/tmp/"
 
 stations <- readOGR(paste0(stationpath,"allStations.shp"),"allStations")

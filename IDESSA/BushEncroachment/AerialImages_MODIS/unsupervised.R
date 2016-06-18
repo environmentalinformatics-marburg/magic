@@ -3,13 +3,12 @@
 # script calculates predictor variables from aerial images and applys a k-means 
 # clustering algorithm
 ################################################################################
-
 rm(list=ls())
 library(Rsenal)
+library(rgdal)
 library(cluster)
 library(fuerHanna) # for fortran implementation of vvi, hsi, simpletexture
 require(vegan)
-
 ################################################################################
 ### Do adjustments here
 ################################################################################
@@ -17,10 +16,12 @@ pathToSampleImages <- "/media/hanna/data/IDESSA_Bush/AERIALIMAGERY/samples/"
 tmpdir <- "/media/hanna/data/IDESSA_Bush/AERIALIMAGERY/samples/tmpdir"
 outdir <- "/media/hanna/data/IDESSA_Bush/AERIALIMAGERY/samples/clusterResults/"
 
-fname <- list.files(pathToSampleImages,pattern=".tif$")[4] # file to be clustered
+fname <- list.files(pathToSampleImages,pattern=".tif$")[2] # file to be clustered
 sizeOfImage <- 150 # in m
-method="elbow" # or"cascadeKM" method to determine optimal nr of clusters
-applyShadowMask <- FALSE
+method <- "elbow" # or"cascadeKM" method to determine optimal nr of clusters
+includeTexture <- FALSE
+applyShadowMask <- FALSE #might make more sense to let shadow be a separate class 
+                         #if it can clearly be distinguished from other objects
 ################################################################################
 ### Load and crop
 ################################################################################
@@ -44,9 +45,13 @@ vvindex <- vvi(red = raster(rgb_img, layer = 1),
                green = raster(rgb_img, layer = 2),
                blue = raster(rgb_img, layer = 3))
 names(vvindex) <- "VVI"
-result <- brick(c(rgb_img,vvindex))
-txt <- simpletexture(result,3)
-result <- stack(result,txt)
+result <- brick(c(rgb_img,rgb_hsi,vvindex))
+if(includeTexture){
+  txt <- simpletexture(result,3)
+  result <- stack(result,txt)
+}
+result <- stack(result)
+result <- result[[-which(names(result)=="H")]] #NUR TEMPORÄR!!!
 ################################################################################
 ### Shadow detection
 ################################################################################
@@ -62,7 +67,7 @@ if(applyShadowMask){
 ################################################################################
 ### Determine Number of clusters
 ################################################################################
-image.df <- as.data.frame(result) 
+image.df <- as.data.frame(result)
 
 ############################# Elbow method
 if (method=="elbow"){
@@ -81,7 +86,7 @@ if (method=="elbow"){
   plot(1:10, pExp, 
        type="b", xlab="Number of Clusters",
        ylab="Within groups sum of squares")
-  points(optNrCluster,p.exp[optNrCluster],col="red",pch=16)
+  points(optNrCluster,pExp[optNrCluster],col="red",pch=16)
   dev.off()
 }
 ############################# cascadeKM method
@@ -108,6 +113,3 @@ if(applyShadowMask){
 ################################################################################
 writeRaster(clustered,paste0(outdir,"/clustered_",fname,".tif"))
 unlink(tmpdir, recursive=TRUE)
-
-
-

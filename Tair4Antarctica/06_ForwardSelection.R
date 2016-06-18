@@ -1,15 +1,15 @@
 rm(list=ls())
 library(caret)
 library(doParallel)
-#library(Rsenal)
+library(Rsenal)
 ################################################################################
-datapath <-"/media/memory01/casestudies/hmeyer/Antarctica/"
-outpath <- "/media/memory01/casestudies/hmeyer/Antarctica/"
-#datapath <-"/media/hanna/data/Antarctica/results/MLFINAL/"
-#outpath <- "/media/hanna/data/Antarctica/results/MLFINAL/"
+#datapath <-"/media/memory01/casestudies/hmeyer/Antarctica/"
+#outpath <- "/media/memory01/casestudies/hmeyer/Antarctica/"
+datapath <-"/media/hanna/data/Antarctica/results/MLFINAL/"
+outpath <- "/media/hanna/data/Antarctica/results/MLFINAL/"
 doParallel <- TRUE
 ################################################################################
-source("/home/hmeyer/hmeyer/Antarctica/ffs.R")
+#source("/home/hmeyer/hmeyer/Antarctica/ffs.R")
 load(paste0(datapath,"/trainData.RData"))
 load(paste0(datapath,"/testData.RData"))
 predictornames <- c("LST",

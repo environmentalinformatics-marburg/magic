@@ -2,11 +2,11 @@ rm(list=ls())
 library(caret)
 library(doParallel)
 ################################################################################
-datapath <-"/media/memory01/casestudies/hmeyer/Antarctica/"
-outpath <- "/media/memory01/casestudies/hmeyer/Antarctica/"
-#datapath <-"/media/hanna/data/Antarctica/results/MLFINAL//"
-#outpath <- "/media/hanna/data/Antarctica/results/MLFINAL//"
-doParallel <- TRUE
+#datapath <-"/media/memory01/casestudies/hmeyer/Antarctica/"
+#outpath <- "/media/memory01/casestudies/hmeyer/Antarctica/"
+datapath <-"/media/hanna/data/Antarctica/results/MLFINAL//"
+outpath <- "/media/hanna/data/Antarctica/results/MLFINAL//"
+doParallel <- FALSE
 ################################################################################
 
 load(paste0(datapath,"/trainData.RData"))
