@@ -8,9 +8,8 @@ dataset <- data.frame()
 for (i in 1:length(matchfiles)){
   tmp <- get(load(matchfiles[i]))
   names(tmp)[length(names(tmp))]<-"P_RT_NRT"
-  
-  tmp<-dataset[complete.cases(tmp),]
-  tmp<-dataset[tmp$sunzenith!=-99,]
+  tmp<-tmp[complete.cases(tmp),]
+  tmp<-tmp[tmp$sunzenith!=-99,]
   
   dataset <- rbind(dataset,tmp)
 }

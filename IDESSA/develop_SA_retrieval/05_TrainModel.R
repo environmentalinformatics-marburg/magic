@@ -1,10 +1,10 @@
 library(Rainfall)
-setwd("/media/memory01/data/IDESSA/Model")
-outpath <- "/media/memory01/data/IDESSA/Model/"
+setwd("//media/memory01/data/IDESSA/Results/Model/")
+outpath <- "/media/memory01/data/IDESSA/Results/Model/"
 
 for (daytime in c("day","night")){
   
-  trainData <- get(load(paste0(outpath,"trainData_",daytime,".RData")))
+  trainData <- get(load(paste0(outpath,"dataset_",daytime,".RData")))
   if(daytime=="day"){
     
     predictornames <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3",
