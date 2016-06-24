@@ -28,7 +28,7 @@ for (i in 1:length(modellist)){
                                        "R2"=model$results$Rsquared[which(
                                          model$results$RMSE==min(model$results$RMSE,na.rm=TRUE))])  
     
-   CUB_ptxt<-paste0("Rsq = ",sprintf("%.2f", round(CUB_regstat$R2,2)),
+   CUB_ptxt<-paste0("R² = ",sprintf("%.2f", round(CUB_regstat$R2,2)),
                               "\nRMSE = ",sprintf("%.2f", round(CUB_regstat$RMSE,2)))
   }
   if (modelname=="GBM"){
@@ -41,7 +41,7 @@ for (i in 1:length(modellist)){
                               "R2"=model$results$Rsquared[which(
                                 model$results$RMSE==min(model$results$RMSE,na.rm=TRUE))])  
     
-    GBM_ptxt<-paste0("Rsq = ",sprintf("%.2f", round(GBM_regstat$R2,2)),
+    GBM_ptxt<-paste0("R² = ",sprintf("%.2f", round(GBM_regstat$R2,2)),
                      "\nRMSE = ",sprintf("%.2f", round(GBM_regstat$RMSE,2)))
   }
   
@@ -53,7 +53,7 @@ for (i in 1:length(modellist)){
                               "R2"=model$results$Rsquared[which(
                                 model$results$RMSE==min(model$results$RMSE,na.rm=TRUE))])  
     
-    RF_ptxt<-paste0("Rsq = ",sprintf("%.2f", round(RF_regstat$R2,2)),
+    RF_ptxt<-paste0("R² = ",sprintf("%.2f", round(RF_regstat$R2,2)),
                      "\nRMSE = ",sprintf("%.2f", round(RF_regstat$RMSE,2)))
   }
   if (modelname=="LIN"){
@@ -62,7 +62,7 @@ for (i in 1:length(modellist)){
                              "R2"=model$results$Rsquared[which(
                                model$results$RMSE==min(model$results$RMSE,na.rm=TRUE))])  
     
-    LIN_ptxt<-paste0("Rsq = ",sprintf("%.2f", round(LIN_regstat$R2,2)),
+    LIN_ptxt<-paste0("R² = ",sprintf("%.2f", round(LIN_regstat$R2,2)),
                     "\nRMSE = ",sprintf("%.2f", round(LIN_regstat$RMSE,2)))
   }
 }
@@ -72,7 +72,8 @@ complete_df <- rbind(CUB,GBM,
                        stringsAsFactors=FALSE)
   
 p <- xyplot(obs~pred|model,data=complete_df,
-                           panel=panel.smoothScatter,
+            xlim=c(-82,10),ylim=c(-82,10),
+                           panel=panel.smoothScatter,nrpoints=0,
                            xlab=expression('Predicted T'['air']*'(°C)'),
                            ylab=expression('Observed T'['air']*'(°C)'),asp=1,
             par.settings = list(strip.background=list(col="grey")))

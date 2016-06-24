@@ -1,5 +1,5 @@
 library(Rainfall)
-setwd("//media/memory01/data/IDESSA/Results/Model/")
+setwd("/media/memory01/data/IDESSA/Results/Model/")
 outpath <- "/media/memory01/data/IDESSA/Results/Model/"
 
 for (daytime in c("day","night")){
@@ -25,7 +25,11 @@ for (daytime in c("day","night")){
   predictorsRR <- trainData[trainData$P_RT_NRT>0,predictornames]
   
   model_RA <- train4rainfall(predictorsRA,responseRA, out = "RInfo",
-                             scaleVars = TRUE,sampsize = 1)
+                             scaleVars = TRUE,sampsize = 1,
+                             thresholdTune = c(seq(0, 0.1, 0.01), 
+                                               seq(0.12, 0.2, 0.02), 
+                                               seq(0.2,0.3,0.05), 
+                                               seq(0.4, 1,0.1)))
   
   save(model_RA,file=paste0(outpath,daytime,"_model_RA.RData"))
   

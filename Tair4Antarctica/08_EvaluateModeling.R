@@ -55,7 +55,7 @@ for (i in 1:ncol(modeldats)){
 ################################################################################
 ################################################################################
 
-pdf(paste0("/media/hanna/data/Antarctica/visualizations/GBM_timeseries_full.pdf"),
+pdf(paste0("/media/hanna/data/Antarctica/visualizations/GBM_timeseries_full_V2.pdf"),
     width=8,height=7) 
 
 for (i in unique(dataset$station)){
@@ -71,10 +71,10 @@ for (i in unique(dataset$station)){
   plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
        main=i,ylim=lim)
   lines(pred,col="black",lty=2)
-  lines(pred_lin,col="grey70",lty=2)
-  lines(pred_ML,col="grey70",lty=1)
-  legend("bottomleft",legend=c("Stations","MODIS LST","Random Forests","Linear Model"),
-         col=c("black","black","grey70","grey70"),lty=c(1,2,1,2),lwd=1,bty="n")
+  lines(pred_lin,col="blue",lty=1)
+  lines(pred_ML,col="red",lty=1)
+  legend("bottomleft",legend=c("Stations","MODIS LST","GBM","Linear Model"),
+         col=c("black","black","red","blue"),lty=c(1,2,1,1),lwd=1,bty="n")
 }
 
 dat_sort <- dataset[order(dataset$doy),] 
@@ -91,10 +91,10 @@ lim <- c(min(dat_sort$dat_sort.statdat,dat_sort$dat_sort.LST,dat_sort$dat_sort.g
 plot(obs,type="l",xlab="doy",ylab="Air Temperature (°C)",
      main="all stations",ylim=lim)
 lines(pred,col="black",lty=2)
-lines(pred_lin,col="grey70",lty=2)
-lines(pred_ML,col="grey70",lty=1)
+lines(pred_lin,col="blue",lty=1)
+lines(pred_ML,col="red",lty=1)
 legend("bottomleft",legend=c("Stations","MODIS LST","GBM","Linear Model"),
-       col=c("black","black","grey70","grey70"),lty=c(1,2,1,2),lwd=1,bty="n")
+       col=c("black","black","red","blue"),lty=c(1,2,1,1),lwd=1,bty="n")
 dev.off()
 #######################################
 load("/media/hanna/data/Antarctica/results/MLFINAL//model_GBM.RData")
