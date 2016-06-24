@@ -88,10 +88,11 @@ for (year in years){
                                       of="GTiff", output_Raster=TRUE, verbose=TRUE)
           
         }
-        cloudmask <- crop(cloudmask,extent(sunzen))
+        
         cloudmask <- cr2Geos(cloudmask)
-        #      extent(cloudmask)<-c(1408689.286,2908890.869, -3493969.487,-2293808.22)
-        #      proj4string(cloudmask)<-CRS("+proj=geos +lon_0=0 +h=35785831 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs")
+        cloudmask <- crop(cloudmask,extent(MSG))
+        
+     
         cloudmask[cloudmask==1]=NA
         cloudmask[cloudmask>1]=1
         #Extract data

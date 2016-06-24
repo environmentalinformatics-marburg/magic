@@ -6,13 +6,14 @@ library(caret)
 library(rgdal)
 library(gdalUtils)
 
+year <- 2012
 modelpath <- "/media/memory01/data/IDESSA/Results/Model/"
 outpath <- "/media/memory01/data/IDESSA/Results/Predictions/"
-msgpath <- "/media/memory01/data/data01/msg-out-hanna/2014/"
+msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
 untardir <- "/media/memory01/data/IDESSA/tmp/"
 cloudmaskpath <- "/media/memory01/data/data01/CM_SAF_CMa/"
 cloudmaskpathCLAAS <- "/media/memory01/data/data01/CLAAS2_cloudmask/ftp-cmsaf.dwd.de/cloudmask/cloudmask/"
-year <- 2014
+
 
 rasterdat <- listDirectory(msgpath, recursive=2,fullNames=TRUE)
 rasterdat_names <- listDirectory(msgpath, recursive=2,fullNames=FALSE)
@@ -41,7 +42,7 @@ for (daytime in c("day","night")){
     szenext<-extent(getSunzenith(paste0(rasterdat[i],"/meta/")))
     msgdat <- cr2Geos(getChannels(paste0(rasterdat[i],"/cal/")))
     szen <- cr2Geos(getSunzenith(paste0(rasterdat[i],"/meta/")))
-    date <- getDate(paste0(rasterdat[i],"/meta/"))
+    date <- Rainfall::getDate(paste0(rasterdat[i],"/meta/"))
     year<- substr(date,1,4)
     month <- substr(date,5,6)
     day <- substr(date,7,8)
@@ -74,12 +75,18 @@ for (daytime in c("day","night")){
                                   of="GTiff", output_Raster=TRUE, verbose=TRUE)
       
     }
-    cloudmask <- crop(cloudmask,extent(szenext))
-    cloudmask <- cr2Geos(cloudmask)
-    cloudmask[cloudmask==1]=NA
+ 
+
+    cloudmask <- cr2Geos(cloudmask)    
+    cloudmask <- crop(cloudmask,extent(msgdat))
+#    writeRaster(cloudmask,paste0(outpath,"/Rate/cloudmask",date,".tif"),overwrite=T)
+     cloudmask[cloudmask==1]=NA
     cloudmask[cloudmask>1]=1
+  
     
-    msgdat <- tryCatch(mask(msgdat,cloudmask),error = function(e)e)
+#    writeRaster(msgdat$IR10.8,paste0(outpath,"/Rate/msgcheck_",date,".tif"),overwrite=T)
+   
+     msgdat <- tryCatch(mask(msgdat,cloudmask),error = function(e)e)
     if(inherits(msgdat, "error")){next}
     szen <- tryCatch(mask(szen,cloudmask),error = function(e)e)
     if(inherits(szen, "error")){next}
