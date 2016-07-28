@@ -16,10 +16,10 @@ for (dayt in c("day","night")){
   RINFOOUT<-rbind(RINFOOUT,cbind(texture,"time"=dayt,"type"="optimal model"),cbind(SpectralOnly,"time"=dayt,"type"="only spectral"))
 }
 names(RINFOOUT)[3]="POFD"#manually correct error in score name
-RINFOUT=data.frame("VALUE"=unlist(RINFOOUT[,c(2:3,5,9)]),
-                   "SCORE"=rep(names(RINFOOUT[,c(2:3,5,9)]),
-                               c(rep(nrow(RINFOOUT[,c(2:3,5,9)]),
-                                     length(names(RINFOOUT[,c(2:3,5,9)]))))),
+RINFOUT=data.frame("VALUE"=unlist(RINFOOUT[,c(2:4,5,9)]),
+                   "SCORE"=rep(names(RINFOOUT[,c(2:4,5,9)]),
+                               c(rep(nrow(RINFOOUT[,c(2:4,5,9)]),
+                                     length(names(RINFOOUT[,c(2:4,5,9)]))))),
                    "TIME"=unlist(RINFOOUT[,10]),
                    "MODEL"=unlist(RINFOOUT[,11]))
 
@@ -71,12 +71,12 @@ Rain <- ggplot(RAINOUT, aes(x = MODEL, y = VALUE))+
 
 
 
-pdf("/home/hanna/Documents/Presentations/Paper/Meyer2015_textureParameters/latex/figures/validation_RAIN.pdf",
+pdf("/home/hanna/Documents/Presentations/Paper/submitted/Meyer2016_textureParameters/SubmissionIII/figureprep/validation_RAIN.pdf",
     width=9,height=10)
 Rain
 dev.off()
 
-pdf("/home/hanna/Documents/Presentations/Paper/Meyer2015_textureParameters/latex/figures/validation_RInfo.pdf",
+pdf("/home/hanna/Documents/Presentations/Paper/submitted/Meyer2016_textureParameters/SubmissionIII/figureprep/validation_RInfo.pdf",
     width=9,height=10)
 RInfo
 dev.off()

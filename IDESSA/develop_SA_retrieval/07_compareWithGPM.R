@@ -1,40 +1,44 @@
+## Script adds IMERG estimations to an evaluation table that includes observed
+# and predicted rainfall for South Africa weather stations
 rm(list=ls())
 library(Rsenal)
 library(caret)
 library(Rainfall)
+### Set data paths #############################################################
+setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
+stationpath <- "/media/memory01/data/IDESSA/statdat/"
+### Load data ##################################################################
+template <- raster("/media/memory01/data/IDESSA/Results/Predictions/Rate/201301010015.tif")
+evaldat <- get(load("evaluationData_all.RData"))
+evaldat <- evaldat[as.numeric(as.character(evaldat$Date))>201403120000,]
+stations <- readOGR(paste0(stationpath,"allStations.shp"),"allStations")
+IMERGfiles <- list.files("/media/memory01/data/data01/RainfallProducts/IMERG_GPM_2014/",
+                         recursive=1,pattern=".HDF5$",full.names = TRUE)
+IMERGfileNames <- list.files("/media/memory01/data/data01/RainfallProducts/IMERG_GPM_2014/",
+                             recursive=1,pattern=".HDF5$",full.names = FALSE)
 
-setwd("/media/memory01/data/IDESSA/Model/")
-##load model (RA,RR,day,night):
-model <- get(load("day_model_RA.RData"))
-################################################################################
-#load msg, claculate predictors
-################################################################################
-msg <- getChannels(paste0(msgpath,"/cal"))
-msg <- stack(msg,getSunzenith(paste0(msgpath,"/meta")))
-msg_add <- calculatePredictors(msg,spectral=c("T6.2_10.8","T7.3_12.0", 
-                                              "T8.7_10.8","T10.8_12.0", "T3.9_7.3",
-                                              "T3.9_10.8"),further=NULL)
-msg<-stack(msg,msg_add)
-extent(msg)<-c(1408689.286,2908890.869, -3493969.487,-2293808.22)
-proj4string(msg)<-CRS("+proj=geos +lon_0=0 +h=35785831 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs")
+results <- data.frame()
 
-
-################################################################################
-# apply cloud mask
-################################################################################
-
-
-## predict auf msg mit predict4Rainfall (scale var)
-
-###lade passendes gpm with rasterizeIMERG
-#crop(imerg,msgpred)
-#extract data at locations of stations
-#aggregiere imerg auf stunde. 
-#zusätzlich: aggregate msg auf 10km
-###compare both with stations
-
-imergData <- list.files("/media/memory01/data/data01/RainfallProducts/IMERG_GPM_2014/",recursive = TRUE)
-
-date <- substr(imergData,nchar(imergData)-38,nchar(imergData)-31)
-time <- substr(imergData,nchar(imergData)-28,nchar(imergData)-25)
-
+for (date in unique(substr(evaldat$Date,1,10))){
+  ### Prepare data matching ######################################################
+  subs <- evaldat[substr(evaldat$Date,1,10)==date,]
+  yearmonthday <- substr(date,1,8)
+  hour <- substr(date,9,10)
+  ### Load matching imerg data ###################################################
+  gpms <- IMERGfiles[substr(IMERGfileNames,26,33)==yearmonthday&
+                       substr(IMERGfileNames,36,37)==hour]
+  gpmStack<-tryCatch(stack(rasterizeIMERG(gpms[1]),
+                           rasterizeIMERG(gpms[2])),
+                     error = function(e)e)
+  if(inherits(gpmStack, "error")){
+    next
+  }
+  ### Calculate mm/h #############################################################
+  gpmStack <- calc(gpmStack,mean)
+  gpmExtr <- data.frame("Date"=date,"Station"=as.character(stations@data$Name),
+                        "IMERG"=extract(gpmStack,stations))
+  ### Merge with evaluation table ################################################
+  results <- rbind(results,merge(subs, gpmExtr, by.x = "Station",
+                                 "Station"))
+}
+save(results,file="IMERGComparison.RData")
