@@ -17,7 +17,7 @@ tmpdir <- "/media/hanna/data/IDESSA_Bush/AERIALIMAGERY/samples/tmpdir"
 outdir <- "/media/hanna/data/IDESSA_Bush/AERIALIMAGERY/samples/clusterResults/"
 
 fname <- list.files(pathToSampleImages,pattern=".tif$")[2] # file to be clustered
-sizeOfImage <- 150 # in m
+sizeOfImage <- 300 # in m
 method <- "elbow" # or"cascadeKM" method to determine optimal nr of clusters
 includeTexture <- FALSE
 applyShadowMask <- FALSE #might make more sense to let shadow be a separate class 
@@ -41,7 +41,7 @@ names(rgb_img) <- c("R","G","B")
 rgb_hsi <- hsi(red = raster(rgb_img, layer = 1), 
                green = raster(rgb_img, layer = 2),
                blue = raster(rgb_img, layer = 3))
-vvindex <- vvi(red = raster(rgb_img, layer = 1), 
+vvindex <- fuerHanna::vvi(red = raster(rgb_img, layer = 1), 
                green = raster(rgb_img, layer = 2),
                blue = raster(rgb_img, layer = 3))
 names(vvindex) <- "VVI"
@@ -51,7 +51,6 @@ if(includeTexture){
   result <- stack(result,txt)
 }
 result <- stack(result)
-result <- result[[-which(names(result)=="H")]] #NUR TEMPORÄR!!!
 ################################################################################
 ### Shadow detection
 ################################################################################
@@ -111,5 +110,5 @@ if(applyShadowMask){
 ################################################################################
 ### Save clustered image and clean tmpdir
 ################################################################################
-writeRaster(clustered,paste0(outdir,"/clustered_",fname,".tif"))
+writeRaster(clustered,paste0(outdir,"/clustered_",fname,".tif"),overwrite=TRUE)
 unlink(tmpdir, recursive=TRUE)
