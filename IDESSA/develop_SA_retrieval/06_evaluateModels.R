@@ -43,3 +43,30 @@ for (daytime in c("day","night")){
 }
 save(results_all,file=paste0(outpath,"evaluationData_all.RData"))
 
+#################################################################################
+comp <- results_all
+results_area <- data.frame()
+for (i in unique(comp$Date)){
+  subs <- comp[comp$Date==i,]
+  if (nrow(subs)<5){next}
+  results_area <- data.frame(rbind(results_area,
+                                   data.frame("Date"=i,
+                                              classificationStats(subs$RA_pred,subs$RA_obs))))
+  
+}
+save(results_area,file=paste0(outpath,"/eval_area.RData"))
+
+results_rate <- data.frame()
+for (i in unique(comp$Date)){
+  subs <- comp[comp$Date==i,]
+  if (nrow(subs)<5){next}
+  if(sum(subs$RA_obs=="Rain")<5){next}
+  results_rate <- data.frame(rbind(results_rate,
+                                   data.frame("Date"=i,
+                                              regressionStats(subs$RR_pred[subs$RA_obs=="Rain"],
+                                                              subs$RR_obs[subs$RA_obs=="Rain"],
+                                                              adj.rsq = FALSE))))
+}
+results_rate <- results_rate[,-which(names(results_rate)%in%c("ME.se","MAE.se","RMSE.se"))]
+save(results_rate,file=paste0(outpath,"/eval_rate.RData"))
+
