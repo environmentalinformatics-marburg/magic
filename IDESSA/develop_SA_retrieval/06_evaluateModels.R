@@ -46,15 +46,27 @@ save(results_all,file=paste0(outpath,"evaluationData_all.RData"))
 #################################################################################
 comp <- results_all
 results_area <- data.frame()
+results_area_s <- data.frame()
+results_area_l <-data.frame()
 for (i in unique(comp$Date)){
   subs <- comp[comp$Date==i,]
+  subs_s <- subs[subs$RR_obs<mean(subs$RR_obs),]
+  subs_l <-subs[subs$RR_obs>=mean(subs$RR_obs),]
   if (nrow(subs)<5){next}
   results_area <- data.frame(rbind(results_area,
                                    data.frame("Date"=i,
                                               classificationStats(subs$RA_pred,subs$RA_obs))))
+  results_area_s <- data.frame(rbind(results_area_s,
+                                   data.frame("Date"=i,
+                                              classificationStats(subs_s$RA_pred,subs_s$RA_obs))))
+  results_area_l <- data.frame(rbind(results_area_l,
+                                     data.frame("Date"=i,
+                                                classificationStats(subs_l$RA_pred,subs_l$RA_obs))))
   
 }
 save(results_area,file=paste0(outpath,"/eval_area.RData"))
+save(results_area_s,file=paste0(outpath,"/eval_area_s.RData"))
+save(results_area_l,file=paste0(outpath,"/eval_area_l.RData"))
 
 results_rate <- data.frame()
 for (i in unique(comp$Date)){
