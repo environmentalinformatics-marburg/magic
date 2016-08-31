@@ -90,9 +90,13 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       setwd(cloudmaskpathCLAAS)
       cloudmask <- cloudlist[grep(date,cloudlist[,2]),]
       if(nrow(cloudmask)==0){stop}
+      tmp <- tryCatch(
       untar(as.character(cloudmask$folder),
             files=as.character(cloudmask$tar),
-            exdir=untardir)
+            exdir=untardir),error = function(e)e)
+      if(inherits(tmp, "error")){
+        next
+      }
       setwd(untardir)
       cloudmask <- list.files(untardir,recursive = TRUE,full.names = FALSE)     
       setwd(paste0("level2/",year,"/",month,"/",day,"/"))
@@ -173,21 +177,26 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   
 }
 
- cl <- makeCluster(detectCores()-4, outfile = "debug.txt")
- registerDoParallel(cl) 
-# 
- rslt <- foreach(i=1:length(unique(hours)),.errorhandling = "remove",
-                 .packages=lib,.combine = c)%dopar%{ 
-                   doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
-                                untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
-                                model_RR_night,model_RR_day,rasterdat_names,tmpdir,cloudlist,mainpath)
-                 }
+#cl <- makePSOCKcluster(detectCores() - 4)
+#clusterExport(cl, varlist = c("rasterdat", "hours", "year", "modelpath", 
+#                              "outpath", "msgpath", "untardir", "cloudmaskpath", 
+#                              "cloudmaskpathCLAAS", "model_RA_night", 
+#                              "model_RA_day", "model_RR_night", "model_RR_day", 
+#                              "rasterdat_names", "tmpdir", "cloudlist","mainpath","doPrediction", "lib"))
+#clusterEvalQ(cl, sapply(lib, function(x) library(x, character.only = TRUE)))
 
- stopCluster(cl)
-#for(i in 1:length(unique(hours))){
-#  print(i)
-#  doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
-#               untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
-#               model_RR_night,model_RR_day,rasterdat_names,tmpdir,cloudlist,mainpath)
-#  }
+#rslt <- parLapply(cl, 1:length(unique(hours)), function(i) { 
+#                  doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
+#                               untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
+#                               model_RR_night,model_RR_day,rasterdat_names,tmpdir,cloudlist,
+#                               mainpath)
+#                })
+#stopCluster(cl)
+
+for(i in 1:length(unique(hours))){
+  print(i)
+  doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
+               untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
+               model_RR_night,model_RR_day,rasterdat_names,tmpdir,cloudlist,mainpath)
+  }
   
