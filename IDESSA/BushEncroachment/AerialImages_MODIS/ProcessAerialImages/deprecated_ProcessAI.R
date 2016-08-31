@@ -1,37 +1,12 @@
 rm(list=ls())
 
-vvi <- function(rgb, r = 1, g = 2, b = 3) {
-  
-  ### prerequisites
-  
-  ## compatibility check
-  if (nlayers(rgb) < 3)
-    stop("Argument 'rgb' needs to be a Raster* object with at least 3 layers (usually red, green and blue).")
-  
-  
-  ### processing
-  
-  ## separate visible bands
-  red <- rgb[[r]]
-  green <- rgb[[g]]
-  blue <- rgb[[b]]
-  
-  ## calculate vvi
-  rst_vvi <- (1 - abs((red - 30) / (red + 30))) * 
-    (1 - abs((green - 50) / (green + 50))) * 
-    (1 - abs((blue - 1) / (blue + 1)))
-  
-  ## return vvi
-  return(rst_vvi)
-}
-
 
 
 datapath <- "/media/memory01/casestudies/hmeyer/IDESSA_LandCover/AI_2013/"
 library(gdalUtils)
 library(raster)
 library(rgdal)
-#library(Rsenal)
+library(Rsenal)
 library(gdalUtils)
 setwd(datapath)
 library(caret)
