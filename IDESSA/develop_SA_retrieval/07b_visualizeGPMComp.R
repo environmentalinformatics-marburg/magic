@@ -1,6 +1,7 @@
 library(Rsenal)
 library(reshape2)
 library(vioplot)
+library(latticeExtra)
 
 outpath <- "/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/"
 dat<-get(load("Evaluation/IMERGComparison.RData"))
@@ -18,14 +19,14 @@ dat_area <- dat
 #RATE
 ################################################################################
 dat <- dat[dat$RA_obs=="Rain",]
-dat_agg_day <- aggregate(dat[,names(dat)%in%c("RR_obs","RR_pred","IMERG")],
-                          by=list(dat$Day,dat$Station),sum,na.rm=TRUE)
+#dat_agg_day <- aggregate(dat[,names(dat)%in%c("RR_obs","RR_pred","IMERG")],
+#                          by=list(dat$Day,dat$Station),sum,na.rm=TRUE)
+#names(dat_agg_day)[1:2]<-c("Day","Station")
 
-
-for (i in unique(dat_agg_day$Day)){
-  subs <- dat_agg_day[dat_agg_day$Date.x==i,]
+for (i in unique(dat$Date.x)){
+  subs <- dat[dat$Date.x==i,]
   if (nrow(subs)<5){next}
-  if(sum(subs$RA_obs=="Rain")<5){next}
+#  if(sum(subs$RA_obs=="Rain")<5){next}
   results_rate[[1]] <- data.frame(rbind(results_rate[[1]],
                                    data.frame("Date"=i,
                                               regressionStats(subs$RR_pred,
@@ -47,7 +48,7 @@ results<-rbind(results_rate[[1]],results_rate[[2]])
 results_melt <- melt(results)
 results_melt <- results_melt[results_melt$variable%in%(c("Rsq","RMSE","ME","MAE")),]
 results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
-results_melt$variable<-factor(results_melt$variable,levels=c("Rsq","RMSE","ME","MAE"))
+results_melt$variable<-factor(results_melt$variable,levels=c("RMSE","Rsq","MAE","ME"))
 
 
 pdf(paste0(outpath,"IMERGcomp.pdf"),width=7,height=7)

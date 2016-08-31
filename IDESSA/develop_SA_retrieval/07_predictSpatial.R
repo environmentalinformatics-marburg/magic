@@ -9,7 +9,7 @@ msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
 untardir <- "/media/memory01/data/IDESSA/tmp/"
 cloudmaskpath <- "/media/memory01/data/data01/CM_SAF_CMa/"
 cloudmaskpathCLAAS <- "/media/memory01/data/data01/CLAAS2_cloudmask/ftp-cmsaf.dwd.de/cloudmask/cloudmask/"
-tmpdir <- "/media/memory01/data/IDESSA/tmp2/"
+tmpdir <- "/media/memory01/data/IDESSA/tmpout/"
 mainpath <- "/home/hmeyer/Rainfall4SA/"
 model_RA_night <- get(load(paste0(modelpath,"night_model_RA.RData")))
 model_RR_night <- get(load(paste0(modelpath,"night_model_RR.RData")))
@@ -17,6 +17,7 @@ model_RA_day <- get(load(paste0(modelpath,"day_model_RA.RData")))
 model_RR_day <- get(load(paste0(modelpath,"day_model_RR.RData")))
 
 
+dir.create(tmpdir)
 
 
 rasterdat <- listDirectory(msgpath, recursive=2,fullNames=TRUE)
@@ -42,12 +43,17 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   #  tmpdiri <- paste0(tmpdir,"/",i)
   #  dir.create(tmpdiri)
   #  rasterOptions(tmpdir=tmpdiri)
+  untardir_i <-paste0(untardir,"/",i,"/")
+  dir.create(untardir_i)
   rasterdat_sub <- rasterdat[hours==unique(hours)[i]]
   
   ############################################################################
   #get MSG Data
   ############################################################################
-  szenext <- extent(getSunzenith(paste0(rasterdat_sub[1],"/meta/")))
+  # szenext <- extent(getSunzenith(paste0(rasterdat_sub[1],"/meta/")))
+  szenext <- tryCatch(extent(getSunzenith(paste0(rasterdat_sub[1],"/meta/"))),
+                      error = function(e)e)
+  if(inherits(szenext, "error")){next}
   msgdats <- list()
   szen <- list()
   ############################################################################
@@ -91,23 +97,24 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       cloudmask <- cloudlist[grep(date,cloudlist[,2]),]
       if(nrow(cloudmask)==0){stop}
       tmp <- tryCatch(
-      untar(as.character(cloudmask$folder),
-            files=as.character(cloudmask$tar),
-            exdir=untardir),error = function(e)e)
+        untar(as.character(cloudmask$folder),
+              files=as.character(cloudmask$tar),
+              exdir=untardir_i),error = function(e)e)
       if(inherits(tmp, "error")){
         next
       }
-      setwd(untardir)
-      cloudmask <- list.files(untardir,recursive = TRUE,full.names = FALSE)     
+      setwd(untardir_i)
+      cloudmask <- list.files(untardir_i,recursive = TRUE,full.names = FALSE)     
       setwd(paste0("level2/",year,"/",month,"/",day,"/"))
       cloudmask <- list.files(,pattern=date)
       if (length(cloudmask)==0){ stop("error")}
       Sys.setenv(GDAL_NETCDF_BOTTOMUP="NO")
       cloudmask <- tryCatch(gdal_translate(paste0('NETCDF:',cloudmask,':cma'), 
-                                           'tmp.tif', 
+                                           paste0(tmpdir,"/tmp_",i,".tif"), 
                                            of="GTiff", output_Raster=TRUE, verbose=TRUE),
                             error = function(e)e)
       setwd(mainpath)
+      unlink(paste0(untardir_i,"/level2/",year,"/",month,"/",day,"/"))
       if(inherits(cloudmask, "error")){
         stop("error")
       }
@@ -142,8 +149,9 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   names(msgdat) <- c(names(msgdats[[1]]),"sunzenith")
   
   rm(msgdats,cloudmask)
+  file.remove(paste0(tmpdir,"/tmp_",i,".tif"))
   gc()
-  writeRaster(msgdat,paste0(outpath,"MSG/msgdat_",unique(hours)[i],".tif"),overwrite=TRUE)
+  #  writeRaster(msgdat,paste0(outpath,"MSG/msgdat_",unique(hours)[i],".tif"),overwrite=TRUE)
   ############################################################################
   #Predict RA
   ############################################################################
@@ -172,6 +180,7 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   writeRaster(pred_RR,paste0(outpath,"/Rate/rate_",outname,".tif"),overwrite=TRUE)
   rm(pred_RR)
   gc()
+  unlink(untardir_i)
   #   unlink(tmpdiri, recursive=TRUE)
   
   
@@ -193,10 +202,22 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
 #                })
 #stopCluster(cl)
 
-for(i in 1:length(unique(hours))){
+
+#cl <- makeCluster(detectCores()-4, outfile = "debug.txt")
+#registerDoParallel(cl) 
+
+#rslt <- foreach(i=62:length(unique(hours)),.errorhandling = "remove",
+#                .packages=lib,.combine = c)%dopar%{ 
+#                  doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
+#                               untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
+#                               model_RR_night,model_RR_day,rasterdat_names,tmpdir)}
+#stopCluster(cl)           
+
+
+for(i in 62:length(unique(hours))){
   print(i)
   doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
                untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,
                model_RR_night,model_RR_day,rasterdat_names,tmpdir,cloudlist,mainpath)
   }
-  
+
