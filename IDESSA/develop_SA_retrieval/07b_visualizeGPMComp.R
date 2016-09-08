@@ -63,9 +63,9 @@ bwplot(results_melt$value~results_melt$Model|results_melt$variable,
 dev.off()
 
 pdf(paste0(outpath,"vioplot.pdf"),width=6,height=6)
-vioplot(dat_agg_day$RR_obs,dat_agg_day$RR_pred,dat_agg_day$IMERG,
+vioplot(dat$RR_obs,dat$RR_pred,dat$IMERG,
         names=c("Rain gauge","MSG","IMERG"),col="grey")
-title(ylab="daily rainfall (mm)")
+title(ylab="Rainfall (mm)")
 dev.off()
 ################################################################################
 #Area
@@ -90,7 +90,7 @@ results<-rbind(results_area[[1]],results_area[[2]])
 results_melt <- melt(results)
 results_melt <- results_melt[results_melt$variable%in%(c("POD","PFD","FAR","HSS")),]
 results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
-results_melt$variable<-factor(results_melt$variable,levels=c("POD","PFD","FAR","HSS"))
+results_melt$variable<-factor(results_melt$variable,levels=c("FAR","HSS","POD","PFD"))
 
 
 pdf(paste0(outpath,"IMERGcomp_area.pdf"),width=7,height=7)

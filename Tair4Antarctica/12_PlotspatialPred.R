@@ -115,4 +115,27 @@ key2 <- draw.colorkey(key = list(col = mapviewPalette(500),
 
 dev.off()
 
+################################################################################
+#GA
+################################################################################
+predictions <- raster(list.files(,pattern="yearly"))
+
+statloc <- readOGR("/media/hanna/data/Antarctica/data/ShapeLayers/StationsFinal.shp",
+                   "StationsFinal")
+statloc@data$Name <- gsub("([.])", "", statloc@data$Name)
+statloc@data$Name <- gsub("([ ])", "", statloc@data$Name)
+
+predictions <- crop(predictions,c(-2810142,2813933,-2348479,2290109))
+
+png("/home/hanna/Documents/tmp/test.png",width = 545, height = 445, units = "px", pointsize = 12,
+    type="cairo")
+
+spplot(predictions,maxpixels=50000,col.regions=mapviewPalette(500),cuts=80,
+       #        colorkey = list(space = "top"),
+       ylab.right=expression('air temperature (°C)'),scales=list(draw=FALSE),
+       par.settings = list(axis.line = list(col =  'transparent'),
+       layout.widths = list(axis.key.padding = 0,
+                                                ylab.right = 2)),
+       sp.layout = list("sp.points", statloc, pch = 3, cex = 1.3, col = "black"))
+dev.off()
 

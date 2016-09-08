@@ -43,6 +43,49 @@ comp_agg_month_overall <- aggregate(comp_overall[,names(comp_overall)%in%c("RR_o
 ################################################################################
 #Rainfall rate 
 ################################################################################
+
+# rainstats_raw <- data.frame()
+# for (i in unique(comp$Date)){
+#   subs <- comp[comp$Date==i,]
+#   if (nrow(subs)<5){next}
+#   rainstats_raw <- rbind(rainstats_raw,
+#                          regressionStats(subs$RR_pred,
+#                                          subs$RR_obs,adj.rsq = FALSE))
+# }
+# 
+# 
+# rainstats_day <- data.frame()
+# for (i in unique(comp_agg_day$Group.1)){
+#   subs <- comp_agg_day[comp_agg_day$Group.1==i,]
+#   if (nrow(subs)<5){next}
+#   rainstats_day <- rbind(rainstats_day,
+#                      regressionStats(subs$RR_pred,
+#                                      subs$RR_obs,adj.rsq = FALSE))
+# }
+# 
+# rainstats_week <- data.frame()
+# for (i in unique(comp_agg_week$Group.1)){
+#   subs <- comp_agg_week[comp_agg_week$Group.1==i,]
+# #  if (nrow(subs)<5){next}
+#   rainstats_week <- rbind(rainstats_week,
+#                          regressionStats(subs$RR_pred,
+#                                          subs$RR_obs,adj.rsq = FALSE))
+# }
+# 
+# 
+# rainstats_month <- data.frame()
+# for (i in unique(comp_agg_month$Group.1)){
+#   subs <- comp_agg_month[comp_agg_month$Group.1==i,]
+#   if (nrow(subs)<5){next}
+#   rainstats_month <- rbind(rainstats_month,
+#                           regressionStats(subs$RR_pred,
+#                                           subs$RR_obs,adj.rsq = FALSE))
+# }
+# 
+# 
+
+
+
 stats <- data.frame(regressionStats(comp$RR_pred,comp$RR_obs),"Model"="rate","Agg"="Hour")
 stats <- rbind(stats,data.frame(regressionStats(comp_agg_day$RR_pred,comp_agg_day$RR_obs),"Model"="rate","Agg"="Day"))
 stats <- rbind(stats, data.frame(regressionStats(comp_agg_week$RR_pred,comp_agg_week$RR_obs),"Model"="rate","Agg"="Week"))

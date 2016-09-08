@@ -49,8 +49,6 @@ results_area <- data.frame()
 
 for (i in unique(comp$Date)){
   subs <- comp[comp$Date==i,]
-  subs_s <- subs[subs$RR_obs<mean(subs$RR_obs),]
-  subs_l <- subs[subs$RR_obs>=mean(subs$RR_obs),]
   if (nrow(subs)<5){next}
   results_area <- data.frame(rbind(results_area,
                                    data.frame("Date"=i,

@@ -2,8 +2,7 @@ library(reshape2)
 setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
 load("eval_rate.RData")
 load("eval_area.RData")
-load("eval_area_s.RData")
-load("eval_area_l.RData")
+
 comp <- get(load("evaluationData_all.RData"))
 
 setwd("/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/")
