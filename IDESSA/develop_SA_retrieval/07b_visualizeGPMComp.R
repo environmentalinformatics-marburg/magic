@@ -40,6 +40,7 @@ for (i in unique(dat$Date.x)){
                                                                    adj.rsq = FALSE))))
 }
 results_rate[[2]]$Rsq[is.na(results_rate[[2]]$Rsq)]<-0
+results_rate[[1]]$Rsq[is.na(results_rate[[1]]$Rsq)]<-0
 results_rate[[2]]$Model<-"IMERG"
 results_rate[[1]]$Model<-"MSG"
 results<-rbind(results_rate[[1]],results_rate[[2]])

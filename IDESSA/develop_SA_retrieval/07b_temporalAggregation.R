@@ -5,21 +5,25 @@ folder_raw <- "/media/memory01/data/IDESSA/Results/Predictions/Rate/"
 outdir <- "/media/memory01/data/IDESSA/Results/Predictions/"
 
 
-aggregationLevels <- c("day","week","month")
-#aggregationLevels <- c("month")
+aggregationLevels <- c("day","week","month","year")
+aggregationLevels <- c("year")
 
-aggregationfolder <- c(folder_raw,paste0(outdir,"agg_",aggregationLevels,"/"))
-#acc <- 0
+
 for (level in aggregationLevels){
   print(level)
-  #  acc <- acc+1
   if (level=="day"){
     setwd(folder_raw)
     filelist <- list.files(,pattern=".tif$")
   }else{
-    setwd(paste0(outdir,"agg_day/"))
-    filelist <- list.files(,pattern="._rainsum.tif$")
-  }
+    if(level=="year"){
+      setwd(paste0(outdir,"agg_month/"))
+      filelist <- list.files(,pattern="_rainsum.tif$")
+      filelist_rd <- list.files(,pattern="days.tif$")
+      date <- substr(filelist,1,4)
+    }else{
+      setwd(paste0(outdir,"agg_day/"))
+      filelist <- list.files(,pattern="_rainsum.tif$")
+    }}
   if(level=="day"){
     date <- substr(filelist,6,13)
   }
@@ -30,14 +34,18 @@ for (level in aggregationLevels){
   if(level=="month"){
     date <- substr(filelist,1,6)
   }
-  dir.create(outdir,"agg_",level,"/")
+  dir.create(paste0(outdir,"agg_",level,"/"))
   for (uniqued in unique(date)){
     print(uniqued)
     datestack <- stack(filelist[date==uniqued])
     if(nlayers(datestack)<4){next}
     aggregatedrain <- calc(datestack,sum,na.rm=TRUE)
-    if (level != "day"){
+    if (level == "week"||level == "month"){
       values(datestack)[values(datestack)>0] <- 1
+      rainy <- calc(datestack,sum,na.rm=TRUE)
+    }
+    if (level == "year"){
+      datestack <- stack(filelist_rd[date==uniqued])
       rainy <- calc(datestack,sum,na.rm=TRUE)
     }
     writeRaster(aggregatedrain,paste0(outdir,"agg_",level,"/",uniqued,"_rainsum.tif"),overwrite=TRUE)
