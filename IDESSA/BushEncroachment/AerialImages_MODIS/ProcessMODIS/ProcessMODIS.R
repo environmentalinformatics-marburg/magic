@@ -1,25 +1,29 @@
+rm(list=ls())
 library(raster)
 library(rgdal)
 
 
-datapath <- "/media/memory01/casestudies/hmeyer/IDESSA_LandCover/PROCESSED/MOD09A1.005_20151209024127/"
+path_basis <- "/media/hanna/data/IDESSA_Bush/MODIS/"
+datapath <- paste0(path_basis,"raster/MODIS/")
+outpath <- paste0(path_basis,"raster/")
 setwd(datapath)
 
-files <- list.files(,pattern="b0")
+files <- list.files(,pattern="b0",recursive=TRUE)
 files <- files[substr(files,nchar(files)-3,nchar(files))==".tif"]
+jday <- substr(files,nchar(files)-19,nchar(files)-17)
+month <- format(strptime(jday, 
+                         format="%j"), format="%m")
 
+season_lut <- cbind(1:12,c(rep("summer",2),rep("autumn",3),rep("winter",3),rep("spring",3),"summer"))
+season <- season_lut[,2][as.numeric(month)]
 
-filelist <- data.frame ("file"=files, "jday" =substr(files,14,16),
-                        "month"=format(strptime(substr(files,14,16), 
-                                                format="%j"), format="%m") )
+datinfo <- data.frame ("season"=season, "jday" =jday,
+                        "month"=month)
 
-for (i in 1:length(unique(filelist$month))){
-  selectedday <- filelist$jday[filelist$month==filelist$month[i]][1]
-  selectedchannels <- as.character(filelist$file[filelist$month==filelist$month[i][1]&filelist$jday==
-                                                   selectedday])
-  scene <- stack(selectedchannels)
-  ###Extract Data (Location of aerial images)
-  ###add % of the aerial images
-}
+filestack <-stack(files)
+names(filestack) <- paste0(datinfo$season,"_",substr(names(filestack),
+                                                 nchar(names(filestack))-2,nchar(names(filestack))))
+writeRaster(filestack,paste0(outpath,"/MODISstack.tif"),overwrite=TRUE)
+
 
 
