@@ -10,6 +10,7 @@ MODISoptions(localArcPath=paste0(getwd(),"/MODIS_ARC"), outDirPath=paste0(getwd(
 
 #product <- "MCD43A4"
 product <- "MOD09A1"
+product <-MCD12Q2 #land cover
 
 h=c(19,20,21)
 v=c(11,12)
