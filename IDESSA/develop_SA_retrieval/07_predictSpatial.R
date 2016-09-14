@@ -118,12 +118,13 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       if(inherits(cloudmask, "error")){
         stop("error")
       }
-      
+      if(is.null(cloudmask)){next}
+      extent(cloudmask)<-c(extent(cloudmask)@xmin+38,extent(cloudmask)@xmax+38,
+                           extent(cloudmask)@ymin+38,extent(cloudmask)@ymax+38)
     }
     
     if(is.null(cloudmask)){next}
-    extent(cloudmask)<-c(extent(cloudmask)@xmin+38,extent(cloudmask)@xmax+38,
-                         extent(cloudmask)@ymin+38,extent(cloudmask)@ymax+38)
+
     cloudmask <- cr2Geos(cloudmask)
     cloudmask <- crop(cloudmask,extent(msgdats[[subhours]]))
     cloudmask[cloudmask==1] <- NA
