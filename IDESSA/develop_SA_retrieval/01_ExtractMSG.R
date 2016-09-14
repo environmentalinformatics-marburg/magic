@@ -86,10 +86,10 @@ for (year in years){
           cloudmask <- gdal_translate(paste0('NETCDF:',cloudmask,':cma'), 
                                       'tmp.tif', 
                                       of="GTiff", output_Raster=TRUE, verbose=TRUE)
-          
-        }
+        
         extent(cloudmask)<-c(extent(cloudmask)@xmin+38,extent(cloudmask)@xmax+38,
                              extent(cloudmask)@ymin+38,extent(cloudmask)@ymax+38)
+        }
         cloudmask <- cr2Geos(cloudmask)
         cloudmask <- crop(cloudmask,extent(MSG))
         

@@ -5,7 +5,7 @@ outpath <- "/media/memory01/data/IDESSA/Results/Model/"
 
 for (traintest in c("train","test")){
   if (traintest=="train"){
-    matchfiles <- c("StationMatch_2010.RData","StationMatch_2012.RData",
+    matchfiles <- c("StationMatch_2010.RData","StationMatch_2011.RData",
                     "StationMatch_2012.RData")
   }else{
     matchfiles <- c("StationMatch_2013.RData","StationMatch_2014.RData")
