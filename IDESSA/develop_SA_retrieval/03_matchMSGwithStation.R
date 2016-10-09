@@ -11,6 +11,6 @@ outpath <- "/media/memory01/data/IDESSA/Results/ExtractedData/"
 for (year in years){
   stationpath <- paste0("/media/memory01/data/IDESSA/statdat/",year,"/")
   MSG_extract <- get(load(paste0(datapath,"ExtractedData_agg_",year,".RData")))
-  rslt <- msgstatmatch(stationpath,MSG_extract)
-  save(rslt,file=paste0(outpath,"StationMatch_test_",year,".RData"))
+  rslt <- msgstatmatch(stationpath,MSG_extract,UTC=2)
+  save(rslt,file=paste0(outpath,"StationMatch_",year,".RData"))
 }

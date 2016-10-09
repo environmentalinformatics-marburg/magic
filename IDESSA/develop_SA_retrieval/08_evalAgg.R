@@ -1,7 +1,13 @@
 library(Rsenal)
 library(viridis)
-setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
-comp <- get(load("evaluationData_all.RData"))
+library(latticeExtra)
+
+datapath <- "/media/memory01/data/IDESSA/Results/Evaluation/"
+figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
+
+
+#setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
+comp <- get(load(paste0(datapath,"evaluationData_all.RData")))
 
 comp <- comp[substr(comp$Date,1,4)=="2013",]
 
@@ -147,9 +153,9 @@ monthplot <- update(monthplot,panel = function(...) {
 
 aggplots<-c(weekplot,monthplot,hourplot,dayplot)
 
-setwd("/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/")
 
-pdf("RainfallAgg.pdf",width=8,height=8)
+
+pdf(paste0(figurepath,"RainfallAgg.pdf"),width=8,height=8)
 aggplots
 dev.off()
 
@@ -221,7 +227,7 @@ weekplot <- update(weekplot,panel = function(...) {
 
 aggplots<-c(weekplot,monthplot,hourplot,dayplot)
 
-pdf("RainfallAgg_overall.pdf",width=8,height=8)
+pdf(paste0(figurepath,"RainfallAgg_overall.pdf"),width=8,height=8)
 aggplots
 dev.off()
 

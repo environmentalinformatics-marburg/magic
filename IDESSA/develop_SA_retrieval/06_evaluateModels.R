@@ -32,7 +32,8 @@ for (daytime in c("day","night")){
         tmpnamesobs,tmpnamespred,tmpnamesprob)
     }
   }
-  results$RR_pred[results$RA_pred=="NoRain"]=0
+  results$RR_pred[results$RA_pred=="NoRain"] <- 0
+  results$RR_pred[results$RR_pred<0] <- 0
   if(daytime=="night"){
     results_all <- rbind(resultstmp,results)
   }

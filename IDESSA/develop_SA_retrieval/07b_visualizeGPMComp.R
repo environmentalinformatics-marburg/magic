@@ -3,8 +3,11 @@ library(reshape2)
 library(vioplot)
 library(latticeExtra)
 
-outpath <- "/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/"
-dat<-get(load("Evaluation/IMERGComparison.RData"))
+datapath <- "/media/memory01/data/IDESSA/Results/Evaluation/"
+figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
+
+
+dat<-get(load(paste0(datapath,"IMERGComparison.RData")))
 results_rate <- list()
 results_rate[[1]]<-data.frame()
 results_rate[[2]]<-data.frame()
@@ -14,10 +17,12 @@ results_area[[2]]<-data.frame()
 dat$Day <- substr(dat$Date.x,1,8)
 dat_area <- dat
 
+dat$RR_pred[dat$RR_pred<0]<-0
 
 ################################################################################
 #RATE
 ################################################################################
+#dat <- dat[dat$RA_obs=="Rain"|dat$RA_IMERG=="Rain",]
 dat <- dat[dat$RA_obs=="Rain",]
 #dat_agg_day <- aggregate(dat[,names(dat)%in%c("RR_obs","RR_pred","IMERG")],
 #                          by=list(dat$Day,dat$Station),sum,na.rm=TRUE)
@@ -52,7 +57,7 @@ results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
 results_melt$variable<-factor(results_melt$variable,levels=c("RMSE","Rsq","MAE","ME"))
 
 
-pdf(paste0(outpath,"IMERGcomp.pdf"),width=7,height=7)
+pdf(paste0(figurepath,"IMERGcomp.pdf"),width=7,height=7)
 bwplot(results_melt$value~results_melt$Model|results_melt$variable,
        notch=TRUE,ylab="value",
       scales = "free",fill="lightgrey",
@@ -63,11 +68,11 @@ bwplot(results_melt$value~results_melt$Model|results_melt$variable,
       box.rectangle = list(col="black",fill= rep(c("black", "black"),2))))
 dev.off()
 
-pdf(paste0(outpath,"vioplot.pdf"),width=6,height=6)
-vioplot(dat$RR_obs,dat$RR_pred,dat$IMERG,
-        names=c("Rain gauge","MSG","IMERG"),col="grey")
-title(ylab="Rainfall (mm)")
-dev.off()
+#pdf(paste0(figurepath,"vioplot.pdf"),width=6,height=6)
+#vioplot(dat$RR_obs,dat$RR_pred,dat$IMERG,
+#        names=c("Rain gauge","MSG","IMERG"),col="grey")
+#title(ylab="Rainfall (mm)")
+#dev.off()
 ################################################################################
 #Area
 ################################################################################
@@ -94,7 +99,7 @@ results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
 results_melt$variable<-factor(results_melt$variable,levels=c("FAR","HSS","POD","PFD"))
 
 
-pdf(paste0(outpath,"IMERGcomp_area.pdf"),width=7,height=7)
+pdf(paste0(figurepath,"IMERGcomp_area.pdf"),width=7,height=7)
 bwplot(results_melt$value~results_melt$Model|results_melt$variable,
        notch=TRUE,ylab="value",
        scales = "free",fill="lightgrey",

@@ -5,6 +5,7 @@ sapply(lib, function(x) require(x, character.only = TRUE))
 year <- 2013
 modelpath <- "/media/memory01/data/IDESSA/Results/Model/"
 outpath <- "/media/memory01/data/IDESSA/Results/Predictions/"
+auxdatpath <- "/media/memory01/data/IDESSA/auxiliarydata"
 msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
 untardir <- "/media/memory01/data/IDESSA/tmp/"
 cloudmaskpath <- "/media/memory01/data/data01/CM_SAF_CMa/"
@@ -15,6 +16,11 @@ model_RA_night <- get(load(paste0(modelpath,"night_model_RA.RData")))
 model_RR_night <- get(load(paste0(modelpath,"night_model_RR.RData")))
 model_RA_day <- get(load(paste0(modelpath,"day_model_RA.RData")))
 model_RR_day <- get(load(paste0(modelpath,"day_model_RR.RData")))
+
+base <- readOGR(paste0(auxdatpath,"TM_WORLD_BORDERS-0.3.shp"),
+                "TM_WORLD_BORDERS-0.3")
+base <- crop(base,c(2,44,-40,-9))
+base <- spTransform(base,"+proj=geos +lon_0=0 +h=35785831 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs")
 
 
 dir.create(tmpdir)
@@ -148,8 +154,9 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   
   msgdat <- stackApply(stack(unlist(msgdats)), c(1:nlayers(msgdats[[1]])), 
                        median,na.rm=FALSE)
-  msgdat<-stack(msgdat,szen)
+  msgdat <- stack(msgdat,szen)
   names(msgdat) <- c(names(msgdats[[1]]),"sunzenith")
+  msgdat <- mask(msgdat,base)
   
   rm(msgdats,cloudmask)
   file.remove(paste0(tmpdir,"/tmp_",i,".tif"))
@@ -217,7 +224,7 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
 #stopCluster(cl)           
 
 
-for(i in 62:length(unique(hours))){
+for(i in 1:length(unique(hours))){
   print(i)
   doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
                untardir,cloudmaskpath,cloudmaskpathCLAAS,model_RA_night,model_RA_day,

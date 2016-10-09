@@ -9,7 +9,7 @@ setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
 stationpath <- "/media/memory01/data/IDESSA/statdat/"
 gpmout <- "/media/memory01/data/IDESSA/Results/IMERG/"
 ### Load data ##################################################################
-template <- raster("/media/memory01/data/IDESSA/Results/Predictions/Rate/201301010015.tif")
+template <- raster("/media/memory01/data/IDESSA/Results/Predictions/template.tif")
 #template <- projectRaster(template,crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
 evaldat <- get(load("evaluationData_all.RData"))
 evaldat <- evaldat[as.numeric(as.character(evaldat$Date))>201403120000,]

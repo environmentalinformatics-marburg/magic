@@ -4,10 +4,10 @@ library(raster)
 library(viridis)
 library(rgdal)
 
-setwd("/media/hanna/data/Rainfall4SA/Results/Predictions/agg_month/")
-figurepath <- "/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/"
+setwd("/media/memory01/data/IDESSA/Results/Predictions/agg_month/")
+figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
 
-base <- readOGR("/home/hanna/Documents/Projects/IDESSA/GIS/TM_WORLD_BORDERS-0.3/TM_WORLD_BORDERS-0.3.shp",
+base <- readOGR("/media/memory01/data/IDESSA/auxiliarydata/TM_WORLD_BORDERS-0.3.shp",
                 "TM_WORLD_BORDERS-0.3")
 
 ################################################################################
