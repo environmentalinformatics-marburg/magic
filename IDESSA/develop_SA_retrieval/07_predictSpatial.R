@@ -2,9 +2,9 @@ rm(list=ls())
 lib <- c("R.utils","Rainfall","Rsenal","caret","rgdal","gdalUtils","foreach","doParallel","raster")
 sapply(lib, function(x) require(x, character.only = TRUE))
 
-year <- 2013
+year <- 2014
 modelpath <- "/media/memory01/data/IDESSA/Results/Model/"
-outpath <- "/media/memory01/data/IDESSA/Results/Predictions/"
+outpath <- paste0("/media/memory01/data/IDESSA/Results/Predictions/",i,"/")
 auxdatpath <- "/media/memory01/data/IDESSA/auxiliarydata"
 msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
 untardir <- "/media/memory01/data/IDESSA/tmp/"
@@ -161,7 +161,7 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   rm(msgdats,cloudmask)
   file.remove(paste0(tmpdir,"/tmp_",i,".tif"))
   gc()
-  #  writeRaster(msgdat,paste0(outpath,"MSG/msgdat_",unique(hours)[i],".tif"),overwrite=TRUE)
+    writeRaster(msgdat,paste0(outpath,"MSG/msgdat_",unique(hours)[i],".tif"),overwrite=TRUE)
   ############################################################################
   #Predict RA
   ############################################################################

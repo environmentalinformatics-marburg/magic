@@ -63,11 +63,13 @@ results_rate <- data.frame()
 for (i in unique(comp$Date)){
   subs <- comp[comp$Date==i,]
   if (nrow(subs)<5){next}
-  if(sum(subs$RA_obs=="Rain")<5){next}
+#  if(sum(subs$RA_obs=="Rain")<5){next}
   results_rate <- data.frame(rbind(results_rate,
                                    data.frame("Date"=i,
-                                              regressionStats(subs$RR_pred[subs$RA_obs=="Rain"],
-                                                              subs$RR_obs[subs$RA_obs=="Rain"],
+                                              #regressionStats(subs$RR_pred[subs$RA_obs=="Rain"],
+                                              #                subs$RR_obs[subs$RA_obs=="Rain"],
+                                              regressionStats(subs$RR_pred,
+                                                              subs$RR_obs,
                                                               adj.rsq = FALSE))))
 }
 results_rate <- results_rate[,-which(names(results_rate)%in%c("ME.se","MAE.se","RMSE.se"))]

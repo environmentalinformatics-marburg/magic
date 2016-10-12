@@ -4,26 +4,28 @@ library(vioplot)
 library(latticeExtra)
 
 datapath <- "/media/memory01/data/IDESSA/Results/Evaluation/"
+#datapath <- "/media/hanna/data/CopyFrom181/Results/Evaluation/"
 figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
+#figurepath <- "/media/hanna/data/CopyFrom181/Results/Figures/"
 
 
-dat<-get(load(paste0(datapath,"IMERGComparison.RData")))
+dat <- get(load(paste0(datapath,"IMERGComparison.RData")))
 results_rate <- list()
-results_rate[[1]]<-data.frame()
-results_rate[[2]]<-data.frame()
+results_rate[[1]] <- data.frame()
+results_rate[[2]] <- data.frame()
 results_area <- list()
-results_area[[1]]<-data.frame()
-results_area[[2]]<-data.frame()
+results_area[[1]] <- data.frame()
+results_area[[2]] <- data.frame()
 dat$Day <- substr(dat$Date.x,1,8)
 dat_area <- dat
 
-dat$RR_pred[dat$RR_pred<0]<-0
+dat$RR_pred[dat$RR_pred<0] <- 0
 
 ################################################################################
 #RATE
 ################################################################################
 #dat <- dat[dat$RA_obs=="Rain"|dat$RA_IMERG=="Rain",]
-dat <- dat[dat$RA_obs=="Rain",]
+#dat <- dat[dat$RA_obs=="Rain",]
 #dat_agg_day <- aggregate(dat[,names(dat)%in%c("RR_obs","RR_pred","IMERG")],
 #                          by=list(dat$Day,dat$Station),sum,na.rm=TRUE)
 #names(dat_agg_day)[1:2]<-c("Day","Station")
@@ -46,18 +48,22 @@ for (i in unique(dat$Date.x)){
 }
 results_rate[[2]]$Rsq[is.na(results_rate[[2]]$Rsq)]<-0
 results_rate[[1]]$Rsq[is.na(results_rate[[1]]$Rsq)]<-0
-results_rate[[2]]$Model<-"IMERG"
-results_rate[[1]]$Model<-"MSG"
-results<-rbind(results_rate[[1]],results_rate[[2]])
+
+results_rate[[2]]$correlation <- sqrt(results_rate[[2]]$Rsq)
+results_rate[[1]]$correlation <- sqrt(results_rate[[1]]$Rsq)
+
+results_rate[[2]]$Model <- "IMERG"
+results_rate[[1]]$Model <- "MSG"
+results <- rbind(results_rate[[1]],results_rate[[2]])
 
 
 results_melt <- melt(results)
-results_melt <- results_melt[results_melt$variable%in%(c("Rsq","RMSE","ME","MAE")),]
+results_melt <- results_melt[results_melt$variable%in%(c("correlation","RMSE","ME","MAE")),]
 results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
-results_melt$variable<-factor(results_melt$variable,levels=c("RMSE","Rsq","MAE","ME"))
+results_melt$variable<-factor(results_melt$variable,levels=c("RMSE","correlation","MAE","ME"))
 
 
-pdf(paste0(figurepath,"IMERGcomp.pdf"),width=7,height=7)
+pdf(paste0(figurepath,"IMERGcomp.pdf"),width=5.5,height=6)
 bwplot(results_melt$value~results_melt$Model|results_melt$variable,
        notch=TRUE,ylab="value",
       scales = "free",fill="lightgrey",
@@ -99,7 +105,7 @@ results_melt$Model<-factor(results_melt$Model,levels=c("MSG","IMERG"))
 results_melt$variable<-factor(results_melt$variable,levels=c("FAR","HSS","POD","PFD"))
 
 
-pdf(paste0(figurepath,"IMERGcomp_area.pdf"),width=7,height=7)
+pdf(paste0(figurepath,"IMERGcomp_area.pdf"),width=5.5,height=6)
 bwplot(results_melt$value~results_melt$Model|results_melt$variable,
        notch=TRUE,ylab="value",
        scales = "free",fill="lightgrey",
