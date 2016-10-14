@@ -65,8 +65,8 @@ comp_agg_month <- aggregate(comp[,names(comp)%in%c("RR_obs","RR_pred")],
                                      regMSG))
  } 
  
- rainstats_raw <- rainstats_raw[rainstats_raw$eventsObs>=raineventsthres,]
-
+ 
+ rainstats_raw$rho[rainstats_raw$eventsObs<raineventsthres] <- NA
   ####### Daily
  
  rainstats_day <- data.frame()

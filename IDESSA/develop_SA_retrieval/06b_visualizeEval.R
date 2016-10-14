@@ -9,7 +9,7 @@ mainpath <- "/media/memory01/data/IDESSA/Results/"
 datapath <- paste0(mainpath, "Evaluation/")
 figurepath <- paste0(mainpath,"Figures/")
 
-raineventsthres <- 5 # threshold. validate only rate quantity if the number
+#raineventsthres <- 5 # threshold. validate only rate quantity if the number
 #of stations that observed rainfall is higher than "raineventsthres"
 
 load(paste0(datapath,"eval_rate.RData"))
@@ -45,7 +45,7 @@ dev.off()
 # RATE
 ################################################################################
 results_rate <- results_rate[substr(results_rate$Date,1,4)=="2013",]
-results_rate <- results_rate[results_rate$eventsObs>=raineventsthres,]
+#results_rate <- results_rate[results_rate$eventsObs>=raineventsthres,]
 meltreg <- melt(results_rate)
 meltreg$variable <- factor(meltreg$variable,
                                  #levels=c("RMSE","rho","ME","MAE"))

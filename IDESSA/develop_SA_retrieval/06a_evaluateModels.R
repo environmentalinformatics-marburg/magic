@@ -7,6 +7,8 @@ rm(list=ls())
 library(Rainfall)
 library(Rsenal)
 library(caret)
+raineventsthres <- 5 # threshold. calculate rho only rate quantity if the number
+#of stations that observed rainfall is higher than "raineventsthres"
 
 mainpath <- "/media/memory01/data/IDESSA/Results/"
 #mainpath <- "/media/hanna/data/CopyFrom181/Results/"
@@ -81,7 +83,9 @@ for (i in unique(comp$Date)){
                                               "eventsPred" = sum(subs$RR_pred>0),
                                               regMSG)))
 }
+
 save(results_area,file=paste0(outpath,"/eval_area.RData"))
 results_rate <- results_rate[,-which(names(results_rate)%in%c("ME.se","MAE.se","RMSE.se","Rsq"))]
+results_rate$rho[results_rate$eventsObs<raineventsthres] <- NA
 save(results_rate,file=paste0(outpath,"/eval_rate.RData"))
 
