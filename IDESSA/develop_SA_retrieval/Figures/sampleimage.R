@@ -1,29 +1,93 @@
-setwd("/home/hanna/Documents/Presentations/Paper/in_prep/Meyer2016_SARetrieval/figureDrafts/sampleimage/")
-base <- readOGR("/media/hanna/data/CopyFrom181/auxiliarydata/TM_WORLD_BORDERS-0.3.shp",
+library(rgdal)
+library(raster)
+library(viridis)
+library(Rsenal)
+
+date <- "2014042410"
+saturationpoint <- 10
+
+mainpath <- "/media/memory01/data/IDESSA/"
+
+auxdatpath <- paste0(mainpath,"auxiliarydata/")
+stationpath <- paste0(mainpath,"statdat/")
+IMERGpath <- paste0(mainpath,"Results/IMERG/")
+evaluationpath <- paste0(mainpath,"Results/Evaluation/")
+MSGpredpath <- paste0(mainpath,"Results/Predictions/2014/")
+figurepath <- paste0(mainpath,"Results/Figures/sampleimages/")
+dir.create(figurepath)
+
+base <- readOGR(paste0(auxdatpath,"TM_WORLD_BORDERS-0.3.shp"),
                 "TM_WORLD_BORDERS-0.3")
+stations <- readOGR(paste0(stationpath,"allStations.shp"),
+                    "allStations")
+IMERG <- raster(list.files(IMERGpath,pattern=paste0(date,".tif$"),full.names = TRUE))
+rate <- raster(list.files(paste0(MSGpredpath,"/Rate"),pattern=paste0(date,".tif$"),full.names = TRUE))
+area <- raster(list.files(paste0(MSGpredpath,"/Area"),pattern=paste0(date,".tif$"),full.names = TRUE))
+MSG <- stack(list.files(paste0(MSGpredpath,"/MSG/"),pattern=paste0(date,".tif$"),full.names = TRUE))
 
-IMERG <- stack(list.files(,pattern=glob2rx("IMERG*tif$")))
-
-rate <- stack(list.files(,pattern=glob2rx("rate*tif$")))
-MSG <- stack(list.files(,pattern=glob2rx("msgdat*tif$")))
-#IMERG <- mask(IMERG,MSG$msgdat_2014042410.5)
-IMERG[IMERG<=0] <- NA 
+rate[area==2] <- 0
+IMERG <- mask(IMERG,area)
 stck <- stack(rate,IMERG)
 stck <- projectRaster(stck, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 MSG <- projectRaster(MSG, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-base <- crop(base,stck)
 
-spplot(stck,col.regions = rev(viridis(100)),
-       scales=list(draw=FALSE,x=list(rot=90)),#x=list(rot=90)
-       at=seq(0.0,5.0,by=0.2),
-       xlim=c(11.4,36.2),ylim=c(-35.4,-17),
+
+
+stck <- mask(stck,base)
+base <- crop(base,c(11.4,36.2,-35.4,-17))
+MSG <- crop(MSG, c(11.4,36.2,-35.4,-17))
+stck <- crop(stck, c(11.4,36.2,-35.4,-17))
+stck <- stack(stck[[1]],stck)
+values(stck[[1]]) <- NA
+
+names(stck)<- c("RGB","MSG","IMERG")
+stck$IMERG[stck$IMERG>saturationpoint] <- saturationpoint
+
+#########################################
+#observed
+comp <- get(load(paste0(evaluationpath,"IMERGComparison.RData")))
+comp <- comp[comp$Date.x=="201404241000",]
+
+
+
+stations$Obs <- merge(stations,comp,by.x="Name",by.y="Station")$RR_obs
+stations <- stations[!is.na(stations$Obs),]
+
+statrstr <- rasterize(stations,stck[[1]],field="Obs")
+statrstragg <- aggregate(statrstr,18,fun=max)
+statrstragg <- resample(statrstragg,stck[[1]])
+stck$Observed <- statrstragg
+#########################################
+
+spp <- spplot(stck,col.regions = c("grey",rev(viridis(100))),
+       scales=list(draw=FALSE,x=list(rot=90)),
+       at=seq(0.0,saturationpoint,by=0.2),
+       ncol=2,nrow=2,
        maxpixels=ncell(stck)*0.6,
-      # colorkey = list(at=seq(0,max(values(monthly),na.rm=TRUE))),
        par.settings = list(strip.background=list(col="lightgrey")),
        sp.layout=list("sp.polygons", base, col = "black", first = FALSE))
 
-
+png(paste0(figurepath,"rgb_",date,".png"),
+    width=8,height=8,units="cm",res = 600,type="cairo")
 plotRGB(MSG,r=2,g=4,b=9,stretch="lin")
-plot(base,add=T)
+plot(base,add=T,lwd=1.4)
+dev.off()
+
+png(paste0(figurepath,"spp_",date,".png"),
+    width=17,height=16,units="cm",res = 600,type="cairo")
+spp
+dev.off()
 
 
+
+results_area <- rbind(classificationStats(comp$RA_pred,comp$RA_obs),
+                      classificationStats(comp$RA_IMERG,comp$RA_obs))
+
+
+
+results_rate <- rbind(regressionStats(comp$RR_pred,comp$RR_obs,adj.rsq = FALSE,method="spearman"),
+                      regressionStats(comp$IMERG,comp$RR_obs,adj.rsq = FALSE,method="spearman"))
+
+
+stats <- cbind(results_area,results_rate)
+write.csv(stats,paste0(figurepath,"/stats_",date,".csv"))

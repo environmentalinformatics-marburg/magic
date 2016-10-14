@@ -4,10 +4,13 @@ rm(list=ls())
 library(Rsenal)
 library(caret)
 library(Rainfall)
+processRaster <- FALSE # FALSE if only statistics are to be calculated
+#and raster already exist
 ### Set data paths #############################################################
 setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
 stationpath <- "/media/memory01/data/IDESSA/statdat/"
 gpmout <- "/media/memory01/data/IDESSA/Results/IMERG/"
+IMERGpath <- gpmout
 ### Load data ##################################################################
 template <- raster("/media/memory01/data/IDESSA/Results/Predictions/template.tif")
 #template <- projectRaster(template,crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
@@ -26,21 +29,29 @@ results <- data.frame()
 for (date in unique(substr(evaldat$Date,1,10))){
   ### Prepare data matching ####################################################
   subs <- evaldat[substr(evaldat$Date,1,10)==date,]
-  yearmonthday <- substr(date,1,8)
-  hour <- substr(date,9,10)
-  ### Load, reproject and aggregate matching imerg data ########################
-  gpms <- IMERGfiles[substr(IMERGfileNames,26,33)==yearmonthday&
-                       substr(IMERGfileNames,36,37)==hour]
-  gpmStack <- tryCatch(stack(rasterizeIMERG(gpms[1]),
-                           rasterizeIMERG(gpms[2])),
-                     error = function(e)e)
-  if(inherits(gpmStack, "error")){
-    next
+  if (processRaster){
+    yearmonthday <- substr(date,1,8)
+    hour <- substr(date,9,10)
+    
+    ### Load, reproject and aggregate matching imerg data ########################
+    gpms <- IMERGfiles[substr(IMERGfileNames,26,33)==yearmonthday&
+                         substr(IMERGfileNames,36,37)==hour]
+    gpmStack <- tryCatch(stack(rasterizeIMERG(gpms[1]),
+                               rasterizeIMERG(gpms[2])),
+                         error = function(e)e)
+    if(inherits(gpmStack, "error")){
+      next
+    }
+    gpmStack <- projectRaster(gpmStack,template)
+    gpmStack <- crop(gpmStack,template)
+    gpmStack <- calc(gpmStack,mean)
+    if (!processRaster){
+      writeRaster(gpmStack,paste0(gpmout,"IMERG_",date,".tif"),overwrite=TRUE)
+    }
   }
-  gpmStack <- projectRaster(gpmStack,template)
-  gpmStack <- crop(gpmStack,template)
-  gpmStack <- calc(gpmStack,mean)
-  writeRaster(gpmStack,paste0(gpmout,"IMERG_",date,".tif"),overwrite=TRUE)
+  if(!processRaster){
+    gpmStack <- raster(paste0(gpmout,"IMERG_",date,".tif"))
+  }
   gpmExtr <- data.frame("Date"=date,"Station"=as.character(stations@data$Name),
                         "IMERG"=extract(gpmStack,stations))
   ### Merge with evaluation table ################################################
