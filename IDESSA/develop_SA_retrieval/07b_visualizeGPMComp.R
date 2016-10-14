@@ -1,6 +1,7 @@
 # This script compares MSG based rainfall predictions with GPM IMERG estimates.
 # A comparison table from "compareWithGPM.R" is required.
 ##########################
+rm(list=ls())
 library(Rsenal)
 library(reshape2)
 library(vioplot)
