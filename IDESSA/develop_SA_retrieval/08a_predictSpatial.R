@@ -4,7 +4,7 @@ sapply(lib, function(x) require(x, character.only = TRUE))
 
 year <- 2014
 modelpath <- "/media/memory01/data/IDESSA/Results/Model/"
-outpath <- paste0("/media/memory01/data/IDESSA/Results/Predictions/",i,"/")
+outpath <- paste0("/media/memory01/data/IDESSA/Results/Predictions/",year,"/")
 auxdatpath <- "/media/memory01/data/IDESSA/auxiliarydata"
 msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
 untardir <- "/media/memory01/data/IDESSA/tmp/"
@@ -17,6 +17,7 @@ model_RR_night <- get(load(paste0(modelpath,"night_model_RR.RData")))
 model_RA_day <- get(load(paste0(modelpath,"day_model_RA.RData")))
 model_RR_day <- get(load(paste0(modelpath,"day_model_RR.RData")))
 
+dir.create(outpath)
 base <- readOGR(paste0(auxdatpath,"TM_WORLD_BORDERS-0.3.shp"),
                 "TM_WORLD_BORDERS-0.3")
 base <- crop(base,c(2,44,-40,-9))

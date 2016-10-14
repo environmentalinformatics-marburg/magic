@@ -7,6 +7,7 @@ library(Rainfall)
 processRaster <- FALSE # FALSE if only statistics are to be calculated
 #and raster already exist
 ### Set data paths #############################################################
+pathorig <- getwd()
 setwd("/media/memory01/data/IDESSA/Results/Evaluation/")
 stationpath <- "/media/memory01/data/IDESSA/statdat/"
 gpmout <- "/media/memory01/data/IDESSA/Results/IMERG/"
@@ -62,3 +63,4 @@ results$RA_IMERG <- "NoRain"
 results$RA_IMERG[results$IMERG>0] <- "Rain"
 results$RA_IMERG <- factor(results$RA_IMERG,levels=c("Rain","NoRain"))
 save(results,file="IMERGComparison.RData")
+setwd(pathorig)
