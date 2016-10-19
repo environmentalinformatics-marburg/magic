@@ -83,16 +83,23 @@ for (i in unique(dat_area$Date)){
   subs <- dat_area[dat_area$Date==i,]
   results_area[[1]] <- data.frame(rbind(results_area[[1]],
                                         data.frame("Date"=i,
+                                                   "eventsObs" = sum(subs$RA_obs=="Rain"),
+                                                   "eventsPred" = sum(subs$RA_pred=="Rain"),
                                                    classificationStats(subs$RA_pred,
                                                                    subs$RA_obs))))
   
   results_area[[2]] <- data.frame(rbind(results_area[[2]],
                                         data.frame("Date"=i,
+                                                   "eventsObs" = sum(subs$RA_obs=="Rain"),
+                                                   "eventsPred" = sum(subs$RA_IMERG=="Rain"),
                                                    classificationStats(subs$RA_IMERG,
                                                                    subs$RA_obs))))
 }
 results_area[[2]]$Model<-"IMERG"
 results_area[[1]]$Model<-"MSG"
+#results_area[[1]] <- results_area[[1]][results_area[[1]]$eventsObs>=raineventsthres,]
+#results_area[[2]] <- results_area[[2]][results_area[[2]]$eventsObs>=raineventsthres,]
+
 results<-rbind(results_area[[1]],results_area[[2]])
 
 
@@ -112,3 +119,4 @@ bwplot(results_melt$value~results_melt$Model|results_melt$variable,
                          box.dot = list(col = "black", pch = 16, cex=0.4),
                          box.rectangle = list(col="black",fill= rep(c("black", "black"),2))))
 dev.off()
+

@@ -79,13 +79,11 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
        inherits(szen[[subhours]], "error")){
       next
     }
-    print("dubug_1")
     date <- Rainfall::getDate(paste0(rasterdat_sub[subhours],"/meta/"))
     year <- substr(date,1,4)
     month <- substr(date,5,6)
     day <- substr(date,7,8)
     outname <- substr(date,1,(nchar(date)-2))
-    #   print(date)
     ############################################################################
     #Process Cloud Mask
     ############################################################################
@@ -131,7 +129,6 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       extent(cloudmask)<-c(extent(cloudmask)@xmin+38,extent(cloudmask)@xmax+38,
                            extent(cloudmask)@ymin+38,extent(cloudmask)@ymax+38)
     }
-    print("dubug_2")
     if(is.null(cloudmask)){next}
 
     cloudmask <- cr2Geos(cloudmask)
@@ -146,7 +143,6 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       stop("error")
     }
   }
-  print("dubug_3")
   ############################################################################
   #Aggregation to hour
   ############################################################################
@@ -155,13 +151,11 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   if(is.null(cloudmask)){stop('error')}
   if (length(msgdats)==0){stop('error')}
   szen <- calc(stack(unlist(szen)),median)
-  print("dubug_4")
   msgdat <- stackApply(stack(unlist(msgdats)), c(1:nlayers(msgdats[[1]])), 
                        median,na.rm=FALSE)
   msgdat <- stack(msgdat,szen)
   names(msgdat) <- c(names(msgdats[[1]]),"sunzenith")
   msgdat <- mask(msgdat,base)
-  print("dubug_5")
   rm(msgdats,cloudmask)
   file.remove(paste0(tmpdir,"/tmp_",i,".tif"))
   gc()
@@ -169,7 +163,6 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   ############################################################################
   #Predict RA
   ############################################################################
-  print("dubug_6")
   if (getDaytime(szen)=="day"){
     model_RA <- model_RA_day
     model_RR <-model_RR_day
@@ -178,7 +171,6 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
     model_RR <-model_RR_night
   }
   model_RA$levels<-c("Rain","NoRain")
-  print("dubug_7")
   pred_RA <- predictRainfall(model_RA,sceneraster=msgdat,
                              sunzenith=szen,date=date)
   
@@ -186,18 +178,15 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   ############################################################################
   #Predict RR
   ############################################################################
-  print("dubug_8")
   pred_RA[pred_RA==2] <- NA
   pred_RR <- predictRainfall(model_RR,sceneraster=msgdat,
                              sunzenith=szen,date=date,
                              rainmask=pred_RA)
   rm(msgdat,szen,pred_RA)
   gc()
-  print("dubug_9")
   writeRaster(pred_RR,paste0(outpath,"/Rate/rate_",outname,".tif"),overwrite=TRUE)
   rm(pred_RR)
   gc()
-  print("dubug_10")
   unlink(untardir_i)
   #   unlink(tmpdiri, recursive=TRUE)
   

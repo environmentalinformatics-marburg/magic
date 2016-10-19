@@ -68,6 +68,7 @@ for (i in unique(comp$Date)){
   subs <- comp[comp$Date==i,]
   results_area <- data.frame(rbind(results_area,
                                    data.frame("Date"=i,
+                                              "Daytime" = unique(subs$daytime),
                                               "eventsObs" = sum(subs$RR_obs>0),
                                               "eventsPred" = sum(subs$RR_pred>0),
                                               classificationStats(subs$RA_pred,
@@ -79,6 +80,7 @@ for (i in unique(comp$Date)){
   if (inherits(regMSG,"error")){next}
   results_rate <- data.frame(rbind(results_rate,
                                    data.frame("Date"=i,
+                                              "Daytime" = unique(subs$daytime),
                                               "eventsObs" = sum(subs$RR_obs>0),
                                               "eventsPred" = sum(subs$RR_pred>0),
                                               regMSG)))

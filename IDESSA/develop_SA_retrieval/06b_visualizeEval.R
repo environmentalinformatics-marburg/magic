@@ -68,3 +68,13 @@ dev.off()
 boxplot(results_rate$rho~substr(results_rate$Date,5,6),notch=T)
 boxplot(results_rate$rho~substr(results_rate$Date,9,10),notch=T)
 boxplot(results_area$HSS~substr(results_area$Date,9,10),notch=T)
+boxplot(results_area$FAR~results_area$Daytime,notch=T)
+boxplot(results_rate$rho~results_rate$Daytime,notch=T)
+
+boxplot(results_area$HSS[results_area$eventsObs<5],
+        results_area$HSS[results_area$eventsObs>=5&results_area$eventsObs<10],
+        results_area$HSS[results_area$eventsObs>=10&results_area$eventsObs<15],
+        results_area$HSS[results_area$eventsObs>=15&results_area$eventsObs<20],
+        results_area$HSS[results_area$eventsObs>=20&results_area$eventsObs<25],
+        results_area$HSS[results_area$eventsObs>=25&results_area$eventsObs<30],
+        results_area$HSS[results_area$eventsObs>=30],notch=T)

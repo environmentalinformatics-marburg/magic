@@ -3,21 +3,24 @@ rm(list=ls())
 library(raster)
 library(viridis)
 library(rgdal)
+mainpath <- "/media/memory01/data/IDESSA/"
+#mainpath <- "/media/hanna/data/CopyFrom181/"
+predictionpath_month <- paste0(mainpath,"Results/Predictions/agg_month/")
+predictionpath_year <- paste0(mainpath,"Results/Predictions/agg_year/")
+figurepath <- paste0(mainpath,"Results/Figures/")
+auxdatpath <- paste0(mainpath,"auxiliarydata/")
 
-setwd("/media/memory01/data/IDESSA/Results/Predictions/agg_month/")
-figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
-
-base <- readOGR("/media/memory01/data/IDESSA/auxiliarydata/TM_WORLD_BORDERS-0.3.shp",
+base <- readOGR(paste0(auxdatpath,"TM_WORLD_BORDERS-0.3.shp"),
                 "TM_WORLD_BORDERS-0.3")
 
 ################################################################################
 #Rainy Days
 ################################################################################
-yearly <- raster("../agg_year/2013_rainydays.tif")
+yearly <- raster(paste0(predictionpath_year,"2013_rainydays.tif"))
 yearly <- projectRaster(yearly, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 base <- crop(base,yearly)
 
-monthly <- stack(list.files(,pattern="rainydays.tif$"))
+monthly <- stack(list.files(predictionpath_month,pattern="rainydays.tif$",full.names = TRUE))
 monthly <- projectRaster(monthly, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 names(monthly)<- month.abb[as.numeric(substr(names(monthly),6,7))]
 
@@ -45,10 +48,10 @@ dev.off()
 ################################################################################
 #Precipitation sums
 ################################################################################
-yearly <- raster("../agg_year/2013_rainsum.tif")
+yearly <- raster(paste0(predictionpath_year,"2013_rainsum.tif"))
 yearly <- projectRaster(yearly, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
-monthly <- stack(list.files(,pattern="rainsum.tif$"))
+monthly <- stack(list.files(predictionpath_month,pattern="rainsum.tif$",full.names = TRUE))
 monthly <- projectRaster(monthly, crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 names(monthly)<- month.abb[as.numeric(substr(names(monthly),6,7))]
 
