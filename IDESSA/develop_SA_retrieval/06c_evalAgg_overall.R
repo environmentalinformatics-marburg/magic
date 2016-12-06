@@ -162,5 +162,7 @@ pdf(paste0(figurepath,"RainfallAgg.pdf"),width=8,height=8)
 aggplots
 dev.off()
 
-
-
+png(paste0(figurepath,"RainfallAgg.png"),
+    width=16,height=16,units="cm",res = 600,type="cairo")
+aggplots
+dev.off()

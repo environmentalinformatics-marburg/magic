@@ -80,4 +80,23 @@ pdf("/home/hanna/Documents/Presentations/Paper/submitted/Meyer2016_textureParame
     width=9,height=10)
 RInfo
 dev.off()
-
+##################################
+#Submission Letters
+###############
+RINFOUT <- RINFOUT[RINFOUT$SCORE%in%c("FAR","POFD","POD"),]
+RInfo <- ggplot(RINFOUT, aes(x = MODEL, y = VALUE))+ 
+  geom_boxplot(outlier.size = NA, notch = TRUE)+ 
+  theme_bw()+
+  facet_grid(SCORE ~ TIME,scales = "free")+
+  xlab("") + ylab("")+
+  theme(legend.title = element_text(size=16, face="bold"),
+        legend.text = element_text(size = 16),
+        legend.key.size=unit(1,"cm"),
+        strip.text.y = element_text(size = 16),
+        strip.text.x = element_text(size = 16),
+        axis.text=element_text(size=14),
+        panel.margin = unit(0.7, "lines"))
+pdf("/home/hanna/Documents/Presentations/Paper/submitted/Meyer2016_textureParameters/SubmissionIII/figureprep/validation_RInfo_sub.pdf",
+    width=10,height=10)
+RInfo
+dev.off()

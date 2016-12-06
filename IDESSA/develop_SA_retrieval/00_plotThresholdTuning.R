@@ -1,8 +1,10 @@
 ##for publication:
 library(reshape2)
 library(ggplot2)
-datapath <- "/media/memory01/data/IDESSA/Results/Model/"
-figurepath <- "/media/memory01/data/IDESSA/Results/Figures/"
+mainpath <- "/media/hanna/data/CopyFrom181/Results/"
+#mainpath <- "/media/hanna/data/CopyFrom181/Results/"
+datapath <- paste0(mainpath,"Model/")
+figurepath <- paste0(mainpath,"Figures/")
 
 fit_nnet <- get(load(paste0(datapath,"day_model_RA.RData")))
 t_size=unlist(fit_nnet$finalModel$tuneValue[1])
@@ -30,6 +32,6 @@ thresplot <- ggplot(metrics, aes(x = threshold, y = Data, color = Resampled,line
         axis.title.x = element_text(size = 14))
 
 pdf(paste0(figurepath,"ThresholdTuning.pdf"),
-    width=7,height=6)
+    width=9,height=6)
 print(thresplot)
 dev.off()

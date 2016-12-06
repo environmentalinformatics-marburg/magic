@@ -36,3 +36,7 @@ png(paste0(outpath,"rainsum_",date,".png"),
 print(spp)
 dev.off()
 }
+
+#rename files then
+#avconv -framerate 3 -i %02d.png video.webm
+

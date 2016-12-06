@@ -8,7 +8,7 @@ filepath_base <- "/media/memory01/casestudies/hmeyer/IDESSA_LandCover/Woody_MODI
 path_aerial <- "/media/memory01/casestudies/hmeyer/IDESSA_LandCover/AerialImages/"
 path_temp <- paste0(filepath_base,"/tmp/")
 path_raster <- paste0(filepath_base,"raster/")
-path_source <- "/home/hmeyer/magic/IDESSA/BushEncroachment/AerialImages_MODIS/ProcessMODIS/"
+path_source <- "/home/hmeyer/hmeyer/magic/IDESSA/BushEncroachment/AerialImages_MODIS/ProcessMODIS/"
 
 dir.create(paste0(path_raster, "aerial_images_sinu/"))
 # Libraries --------------------------------------------------------------------
