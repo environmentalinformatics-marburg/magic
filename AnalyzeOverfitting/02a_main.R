@@ -1,15 +1,20 @@
+# This script prepares different case studies (currently Tair Antarctica, 
+#Soil moisture cookfarm and soil moisture exploratories) and controls the
+#comparison study of different validation and feature selection algorithms.
 
 rm(list=ls())
 library(caret)
 library(Rsenal)
 sampsize_Tair <- 1
 sampsize_Soil <- 1
+tuneLength <- 6
 doParallel <- TRUE
-caseStudy <- c("Tair")#"Soil,"Tair"
+caseStudy <- c("Tair")#"cookfarm,"Tair",Expl
 algorithms <- c("rf")
 featureSelect <- c("noSelection","ffs","rfe")#"noSelection","ffs","rfe"
 validation <- c("llocv","ltocv","lltocv") #"cv","llocv","ltocv","lstocv"
-additionals <- c("Tair","rf","cv","noSelection")
+additionals <- expand.grid("caseStudy"=caseStudy,"algorithms"=algorithms,
+                           "validation"="cv","featureSelect"="noSelection")
 
 individualModels <- expand.grid("caseStudy"=caseStudy,
                                 "algorithms"=algorithms,
@@ -29,7 +34,7 @@ setwd(datapath)
 
 
 for (i in 1:nrow(individualModels)){
-  if (individualModels$caseStudy[i]=="Soil"){
+  if (individualModels$caseStudy[i]=="cookfarm"){
     sampsize <- sampsize_Soil
     dataset <- get(load("Soil.RData"))
     dataset <- dataset[complete.cases(dataset),]
@@ -64,6 +69,18 @@ for (i in 1:nrow(individualModels)){
     nfolds_space <- 10
     nfolds_spacetime <- 10
   }
+  if (individualModels$caseStudy[i]=="Expl"){
+    sampsize <- sampsize_Soil
+    dataset <- get(load("dataset_exploratories.RData"))
+    dataset <- dataset[complete.cases(dataset),]
+    dataset$month <- as.numeric(dataset$month)
+    response <- "SM_10"
+    predictors<-c("Exploratorium","P_RT_NRT","Ta_200","Ts_10","elevation","slope","aspect",
+                  "bulk","Clay","Fine_Silt","Coarse_Silt","Fine_Sand","Medium_Sand","Coarse_Sand",
+                  "month","doy","LUI","Precip_cum")
+    spacevar <- "plotID"
+    timevar <- "date"
+  }
 
   model <- trainModels (dataset,spacevar=spacevar,timevar=timevar,
                         sampsize=sampsize,
@@ -76,7 +93,7 @@ for (i in 1:nrow(individualModels)){
                         calculate_random_fold_model=TRUE,
                         nfolds_spacetime=nfolds_spacetime,
                         nfolds_space=nfolds_space,
-                        nfolds_time=nfolds_time)
+                        nfolds_time=nfolds_time,tuneLength=tuneLength)
   print(i)
 }
 

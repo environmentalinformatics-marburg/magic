@@ -76,7 +76,7 @@ for (i in 1:nrow(dataset_clean)){
 }
 #clean up
 dataset_clean <- dataset_clean[complete.cases(dataset_clean),]
-save(dataset_clean,file="dataset_clean.RData")
+
 #################################################################################
 # calculate further variables
 #################################################################################
@@ -91,5 +91,6 @@ for (i in unique(dat_order$plotID)){
                               FUN=cumsum)
 }
 
-
+dat <- dat_order
+save(dat,file="dataset_exploratories.RData")
 #loc <- loc[loc@data$EP_Plotid%in%dataset_clean$plotID,]
