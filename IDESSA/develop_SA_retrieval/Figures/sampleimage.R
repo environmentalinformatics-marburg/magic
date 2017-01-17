@@ -10,6 +10,7 @@ dates <- c("2014042410","2014040701","2014041301")
 saturationpoint <- 10
 
 mainpath <- "/media/memory01/data/IDESSA/"
+#mainpath <- "/media/hanna/data/CopyFrom181/"
 
 auxdatpath <- paste0(mainpath,"auxiliarydata/")
 stationpath <- paste0(mainpath,"statdat/")
