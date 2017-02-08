@@ -54,6 +54,10 @@ trainModels <- function (dataset,spacevar,timevar,
   ####################################################################
   #prepare data splitting
   ####################################################################
+  if (sampsize!=1){
+    dataset <- dataset[createDataPartition(dataset[,response],p=sampsize,list=FALSE),]
+  }
+  
   spacefolds <- CreateSpacetimeFolds(x=dataset,timevar=NA,spacevar = spacevar,k=nfolds_space)
   timefolds <- CreateSpacetimeFolds(x=dataset,spacevar=NA, timevar = timevar,k=nfolds_time)
   spacetimefolds <- CreateSpacetimeFolds(x=dataset,spacevar = spacevar,

@@ -93,16 +93,16 @@ extractMSG <- function(year=2010,
           cloudmask <- crop(cloudmask,extent(MSG))
           
           if (setcloudNA){
+            cloudmask[cloudmask>1] <- NA
+          }else{
             cloudmask[cloudmask==1] <- NA
             cloudmask[cloudmask>1] <- 1
-          }else{
-            cloudmask[cloudmask>1] <- NA
           }
           #Extract data
           #####
           MSG <- tryCatch(mask(MSG,cloudmask),error = function(e)e)
           if(inherits(MSG, "error")){next}
-          MSG_extract <- rbind(MSG_extract,data.frame(date,as.character(stations@data$Name),extract(MSG,stations)))
+          MSG_extract <- rbind(MSG_extract,data.frame(date,as.character(stations@data$plot),extract(MSG,stations)))
           if (masktype=="CLAAS"){
             #setwd(untardir)
             file.remove(paste0(untardir,list.files(untardir,recursive = TRUE)))

@@ -39,7 +39,15 @@ dataset$year <- substr(dataset$date,1,4)
 dataset$month <- substr(dataset$date,6,7)
 dataset$doy <- as.numeric(format(dataset$date,"%j"))
 
+#replace comma
+lui[,which(names(lui)%in%c("G_std","M_std","F_std", "LUI"))] <- 
+  apply(lui[,which(names(lui)%in%c("G_std","M_std","F_std", "LUI"))],2,
+  function(x){as.numeric(sub(",",".",x ))})
+
+
+
 #merge with lui
+
 lui$Std_procedure.year. <- substr(lui$Std_procedure.year.,12,15)
 dataset <- merge(dataset, lui,by.x=c("plotID","year"),
                  by.y=c("EP.Plotid","Std_procedure.year."),
