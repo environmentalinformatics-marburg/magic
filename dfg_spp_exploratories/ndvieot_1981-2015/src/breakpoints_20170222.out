@@ -1,0 +1,218 @@
+Loading required package: sp
+[[1]]
+[[1]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[1]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[1]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[1]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[2]]
+[[2]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[2]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[2]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[2]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[3]]
+[[3]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[3]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[3]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[3]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[4]]
+[[4]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[4]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[4]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[4]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[5]]
+[[5]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[5]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[5]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[5]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[6]]
+[[6]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[6]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[6]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[6]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[7]]
+[[7]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[7]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[7]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[7]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[8]]
+[[8]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[8]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[8]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[8]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[9]]
+[[9]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[9]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[9]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[9]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[10]]
+[[10]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[10]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[10]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[10]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[11]]
+[[11]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[11]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[11]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[11]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+[[12]]
+[[12]]$raster
+[1] "raster"    "sp"        "stats"     "graphics"  "grDevices" "utils"    
+[7] "datasets"  "methods"   "base"     
+
+[[12]]$velox
+ [1] "velox"     "raster"    "sp"        "stats"     "graphics"  "grDevices"
+ [7] "utils"     "datasets"  "methods"   "base"     
+
+[[12]]$parallel
+ [1] "parallel"  "velox"     "raster"    "sp"        "stats"     "graphics" 
+ [7] "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+[[12]]$bfast
+ [1] "bfast"     "parallel"  "velox"     "raster"    "sp"        "stats"    
+ [7] "graphics"  "grDevices" "utils"     "datasets"  "methods"   "base"     
+
+
+Starting with 'alb'.
