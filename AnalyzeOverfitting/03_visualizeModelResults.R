@@ -4,9 +4,9 @@ rm(list=ls())
 library(reshape2)
 library(latticeExtra)
 
-datapath <- "/media/memory01/data/hmeyer/Overfitting/"
-#datapath <- "/media/hanna/data/Overfitting/"
-outpath <- paste0(datapath,"/results/")
+#datapath <- "/media/memory01/data/hmeyer/Overfitting/"
+datapath <- "/media/hanna/data/Overfitting/"
+outpath <- paste0(datapath,"/results3/")
 #outpath <- "/home/hanna/Documents/Projects/Overfitting/" #tmp
 figurepath <- paste0(datapath,"/figures/")
 setwd(outpath)
@@ -44,21 +44,22 @@ rfeselection <- list(llocv_rfe,llocv_cv_rfe)
 names(rfeselection) <- c("llocv_rfe","llocv_cv_rfe")
 
 #### # Forward feature selection
-llocv_ffs <- get(load(models[grep("_llocv_ffs",models)]))
-llocv_cv_ffs <-  llocv_ffs$random_kfold_cv
+lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
+lltocv_cv_ffs <-  lltocv_ffs$random_kfold_cv
 #lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
 #lltocv_cv_ffs <-  lltocv_ffs$random_kfold_cv
 #ltocv_ffs <- get(load(models[grep("_ltocv_ffs",models)]))
 #ltocv_cv_ffs <-  ltocv_ffs$random_kfold_cv
 
-ffsselection <- list(llocv_ffs,llocv_cv_ffs)
-names(ffsselection) <- c("llocv_ffs","llocv_cv_ffs")
+ffsselection <- list(lltocv_ffs,lltocv_cv_ffs)
+names(ffsselection) <- c("lltocv_ffs","lltocv_cv_ffs")
 ################################################################################
 ### Get predictions and observed values for each resample
 ################################################################################
 
-modelslist <- append(noselection,rfeselection)
-modelslist <- append(modelslist,ffsselection)
+#modelslist <- append(noselection,rfeselection)
+#modelslist <- append(modelslist,ffsselection)
+modelslist <- append(noselection,ffsselection)
 
 modelspred <- modelslist
 for (i in 1:length(modelslist)){
@@ -90,10 +91,21 @@ results_melt <- melt(results)
 ### Visualize differences
 ################################################################################
 results_melt_noselect <- results_melt[results_melt$VarSelect=="noselect",]
+
+#define minmax for scaling without outliers
+maxm <- 0
+minm <- 100
+for (i in unique(results_melt_noselect$cv)){
+valmin <- boxplot(results_melt_noselect$value[results_melt_noselect$cv==i])$stats[c(1, 5), ][1]
+valmax <- boxplot(results_melt_noselect$value[results_melt_noselect$cv==i])$stats[c(1, 5), ][2]
+maxm <- max(maxm,valmax)
+minm <- min(minm,valmin)
+}
+
 pdf(paste0(figurepath,casestudy,"_comp_noselection.pdf"))
 bwplot(results_melt_noselect$value~
-         results_melt_noselect$modelopt,
-       notch=TRUE,ylab="|pred-obs|",
+         results_melt_noselect$modelopt,do.out = FALSE,
+       notch=TRUE,ylab="|pred-obs|",ylim=c(minm-1,maxm+1),
        #scales = "free",
        fill="lightgrey",
        par.settings=list(plot.symbol=list(col="black",pch=8,cex=0.4),
@@ -106,30 +118,30 @@ dev.off()
 
 
 
-####################### LLOCV Comparison ###################################
+####################### LLTOCV Comparison ###################################
 
-results_melt_llocv <- results_melt[results_melt$modelopt=="llocv",]
-no_llocv <-  results_melt_llocv$value[
-  results_melt_llocv$VarSelect=="noselect"&results_melt_llocv$cv!="cv"]
-no_llocv_cv <- results_melt$value[results_melt$VarSelect=="noselect"&
+results_melt_lltocv <- results_melt[results_melt$modelopt=="lltocv",]
+no_lltocv <-  results_melt_lltocv$value[
+  results_melt_lltocv$VarSelect=="noselect"&results_melt_lltocv$cv!="cv"]
+no_lltocv_cv <- results_melt$value[results_melt$VarSelect=="noselect"&
                               results_melt$cv=="cv"&results_melt$modelopt=="cv"]
 
-rfe_llocv <- results_melt_llocv$value[
-  results_melt_llocv$VarSelect=="rfe"&results_melt_llocv$cv!="cv"]
-rfe_cv <- results_melt_llocv$value[
-  results_melt_llocv$VarSelect=="rfe"&results_melt_llocv$cv=="cv"]
-ffs_llocv <- results_melt_llocv$value[
-  results_melt_llocv$VarSelect=="ffs"&results_melt_llocv$cv!="cv"]
-ffs_cv <- results_melt_llocv$value[
-  results_melt_llocv$VarSelect=="ffs"&results_melt_llocv$cv=="cv"]
+rfe_lltocv <- results_melt_lltocv$value[
+  results_melt_lltocv$VarSelect=="rfe"&results_melt_lltocv$cv!="cv"]
+rfe_cv <- results_melt_lltocv$value[
+  results_melt_lltocv$VarSelect=="rfe"&results_melt_lltocv$cv=="cv"]
+ffs_lltocv <- results_melt_lltocv$value[
+  results_melt_lltocv$VarSelect=="ffs"&results_melt_lltocv$cv!="cv"]
+ffs_cv <- results_melt_lltocv$value[
+  results_melt_lltocv$VarSelect=="ffs"&results_melt_lltocv$cv=="cv"]
 
 
-pdf(paste0(figurepath,casestudy,"_comp_LLOCV.pdf"),width=9,height=5) 
-boxplot(no_llocv,no_llocv_cv,rfe_llocv,rfe_cv,ffs_llocv,ffs_cv,
+pdf(paste0(figurepath,casestudy,"_comp_lltoCV.pdf"),width=9,height=5) 
+boxplot(no_lltocv,no_lltocv_cv,rfe_lltocv,rfe_cv,ffs_lltocv,ffs_cv,
         col=c("grey50","grey90"),notch=TRUE,
         #pch=20,cex=0,
         outline=FALSE,
-        names=rep(c("LLO-CV","10-Fold-CV"),3),
+        names=rep(c("LLTO-CV","10-Fold-CV"),3),
         at=c(1,2,3.5,4.5,6,7),ylab="|pred-obs|")
 mtext("No Selection", side = 1, line = 2, outer = FALSE, at = NA,
       adj = 0.12, padj = 1,cex=1.2)

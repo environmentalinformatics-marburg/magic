@@ -111,16 +111,10 @@ trainfuncs <- caretFuncs
   ##############################################################################
   if (featureSelect=="ffs"){
     set.seed(seed)
-    model_ffs <- ffs(dataset[,predictors],dataset[,response],method=algorithm,
+    model <- ffs(dataset[,predictors],dataset[,response],method=algorithm,
                  trControl = ctrl,withinSD=withinSD,
-                 runParallel=TRUE,tuneLength=3,
-                 metric="RMSE")
-    model <- train(dataset[,names(model_ffs$trainingData)[-which(
-      names(model_ffs$trainingData)==".outcome")]],method=algorithm,
-                 trControl = ctrl,
                  runParallel=TRUE,tuneLength=tuneLength,
                  metric="RMSE")
-    
     if(save){
     save(model,file=paste0(outpath,"/TMP_model_",algorithm,"_",caseStudy,"_",
                            validation,"_",featureSelect,".RData"))
@@ -128,8 +122,8 @@ trainfuncs <- caretFuncs
     # add k-fold cv performance
     if(calculate_random_fold_model){
       set.seed(seed)
-      model_cv <- train(dataset[,names(model_ffs$trainingData)[-which(
-        names(model_ffs$trainingData)==".outcome")]],
+      model_cv <- train(dataset[,names(model$trainingData)[-which(
+        names(model$trainingData)==".outcome")]],
         dataset[,response],method=algorithm,trControl=ctrlKfold,tuneLength=tuneLength,
         metric="RMSE")
       model$random_kfold_cv <- model_cv

@@ -11,15 +11,18 @@ library(Rsenal)
 ################################################################################
 datapath <- "/media/memory01/data/hmeyer/Overfitting/"
 scriptpath <- "/home/hmeyer/magic/AnalyzeOverfitting/" #contains the modelling function
-outpath <- paste0(datapath,"/results2/")
+outpath <- paste0(datapath,"/results3/")
 sampsize_Tair <- 1 # 1=use entire dataset
 sampsize_Soil <- 1
 sampsize_Expl <- 1
-tuneLength <- 10
-withinSD <- FALSE #see ?ffs
+tuneLength <- 5
+withinSD <- TRUE #see ?ffs
 doParallel <- TRUE
 caseStudy <- c("Expl")#"cookfarm,"Tair",Expl
 algorithms <- c("rf")
+nfolds_time <- 10
+nfolds_space <- 10
+nfolds_spacetime <- 10
 ### set individual models
 featureSelect <- c("noSelection","ffs","rfe")#"noSelection","ffs","rfe"
 validation <- c("llocv","ltocv","lltocv") #"cv","llocv","ltocv","lstocv"
@@ -34,7 +37,7 @@ individualModels <- rbind(additionals,individualModels)
 ##remove those that are not needed
 individualModels <- individualModels[!(
   individualModels$featureSelect%in%c("rfe","ffs")&
-    individualModels$validation%in%c("lltocv","ltocv")),]
+    individualModels$validation%in%c("llocv","ltocv")),]
 ################################################################################
 #set response and predictors for every dataset
 ################################################################################
@@ -73,33 +76,29 @@ for (i in 1:nrow(individualModels)){
                     "ice")
     spacevar <- "station"
     timevar <- "doy"
-    nfolds_time <- 10
-    nfolds_space <- 10
-    nfolds_spacetime <- 10
   }
   ########################### EXPLORATORIES ####################################
   if (individualModels$caseStudy[i]=="Expl"){
     sampsize <- sampsize_Expl
     dataset <- get(load("dataset_exploratories.RData"))
     dataset <- dataset[complete.cases(dataset),]
-    dataset <- dataset[dataset$Exploratorium=="ALB",]
+#    dataset <- dataset[dataset$Exploratorium=="ALB",]
     dataset$year <- as.factor(dataset$year)
-    dataset <- dataset[dataset$year=="2013",]
+#    dataset <- dataset[dataset$year=="2013"|dataset$year=="2014",]
     dataset$date <- as.character(dataset$date)
     names(dataset)[which(names(dataset)=="date")] <- "dts"
     dataset$month <- as.numeric(dataset$month)
-     dataset$LUI <- as.numeric(dataset$LUI)
+    dataset$LUI <- as.numeric(dataset$LUI)
     response <- "SM_10"
-    predictors <- c("Exploratorium",
-                  "P_RT_NRT","Ta_200","Ts_10","elevation","slope","aspect",
+    predictors <- c(
+                  "P_RT_NRT","Ta_200",
+                  "elevation","slope","aspect",
                   "bulk","Clay","Fine_Silt","Coarse_Silt","Fine_Sand",
-                  "Medium_Sand","Coarse_Sand",
-                  "month","doy","LUI","Precip_cum","rw","hw")
+                  "Medium_Sand","Coarse_Sand","SWDR_300","PrecDeriv",
+                  "month","doy","LUI","Precip_cum","rw","hw",
+                  "Ta_200_min","Ta_200_max","evaporation","Ts_10")
     spacevar <- "plotID"
     timevar <- "dts"
-    nfolds_time <- 10
-    nfolds_space <- 10
-    nfolds_spacetime <- 10
   }
   ##############################################################################
   #Run modelling procedure for the respective individual model settings
