@@ -6,12 +6,12 @@ library(latticeExtra)
 
 #datapath <- "/media/memory01/data/hmeyer/Overfitting/"
 datapath <- "/media/hanna/data/Overfitting/"
-outpath <- paste0(datapath,"/results3/")
+outpath <- paste0(datapath,"/results4/")
 #outpath <- "/home/hanna/Documents/Projects/Overfitting/" #tmp
 figurepath <- paste0(datapath,"/figures/")
 setwd(outpath)
 
-casestudy <- "Expl" # Tair or Expl
+casestudy <- "Tair" # Tair or Expl
 ################################################################################
 # Get individual models
 ################################################################################
@@ -93,7 +93,7 @@ results_melt <- melt(results)
 results_melt_noselect <- results_melt[results_melt$VarSelect=="noselect",]
 
 #define minmax for scaling without outliers
-maxm <- 0
+maxm <- -100
 minm <- 100
 for (i in unique(results_melt_noselect$cv)){
 valmin <- boxplot(results_melt_noselect$value[results_melt_noselect$cv==i])$stats[c(1, 5), ][1]
