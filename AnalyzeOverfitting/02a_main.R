@@ -11,15 +11,15 @@ library(Rsenal)
 ################################################################################
 datapath <- "/media/memory01/data/hmeyer/Overfitting/"
 scriptpath <- "/home/hmeyer/magic/AnalyzeOverfitting/" #contains the modelling function
-outpath <- paste0(datapath,"/results3/")
+outpath <- paste0(datapath,"/results4/")
 sampsize_Tair <- 1 # 1=use entire dataset
 sampsize_Soil <- 1
 sampsize_Expl <- 1
 tuneLength <- 5
-withinSD <- TRUE #see ?ffs
+withinSD <- FALSE #see ?ffs
 doParallel <- TRUE
-caseStudy <- c("Expl")#"cookfarm,"Tair",Expl
-algorithms <- c("rf")
+caseStudy <- c("Tair")#"cookfarm,"Tair",Expl
+algorithms <- c("rf")#rf
 nfolds_time <- 10
 nfolds_space <- 10
 nfolds_spacetime <- 10
@@ -27,7 +27,7 @@ nfolds_spacetime <- 10
 featureSelect <- c("noSelection","ffs","rfe")#"noSelection","ffs","rfe"
 validation <- c("llocv","ltocv","lltocv") #"cv","llocv","ltocv","lstocv"
 additionals <- expand.grid("caseStudy"=caseStudy,"algorithms"=algorithms,
-                           "validation"="cv","featureSelect"="noSelection")
+                           "validation"="cv","featureSelect"=c("noSelection","ffs","rfe"))
 individualModels <- expand.grid("caseStudy"=caseStudy,
                                 "algorithms"=algorithms,
                                 "validation"=validation,
@@ -49,6 +49,7 @@ for (i in 1:nrow(individualModels)){
     sampsize <- sampsize_Soil
     dataset <- get(load("Soil.RData"))
     dataset <- dataset[complete.cases(dataset),]
+    dataset <- dataset[substr(dataset$Date,1,4)%in%c("2013"),]
     response <- "VW"
     predictors<-c("DEM","TWI","NDRE.M","NDRE.Sd","Bt","BLD","PHI","Precip_cum",
                   "MaxT_wrcc","MinT_wrcc","cdayt","Crop")
@@ -64,10 +65,10 @@ for (i in 1:nrow(individualModels)){
     dataset$month <- as.numeric(dataset$month)
     response <- "statdat"
     predictors <- c("LST",
-                    "doy",
+                  #  "doy",
                     "season",
                     "time",
-                    "month",
+                   # "month",
                     "sensor",
                     "dem",
                     "slope",
@@ -84,19 +85,19 @@ for (i in 1:nrow(individualModels)){
     dataset <- dataset[complete.cases(dataset),]
 #    dataset <- dataset[dataset$Exploratorium=="ALB",]
     dataset$year <- as.factor(dataset$year)
-#    dataset <- dataset[dataset$year=="2013"|dataset$year=="2014",]
+    dataset <- dataset[dataset$year%in%c("2013"),]
     dataset$date <- as.character(dataset$date)
     names(dataset)[which(names(dataset)=="date")] <- "dts"
     dataset$month <- as.numeric(dataset$month)
     dataset$LUI <- as.numeric(dataset$LUI)
     response <- "SM_10"
     predictors <- c(
-                  "P_RT_NRT","Ta_200",
+                  "P_RT_NRT","Ta_200","Exploratorium",
                   "elevation","slope","aspect",
                   "bulk","Clay","Fine_Silt","Coarse_Silt","Fine_Sand",
                   "Medium_Sand","Coarse_Sand","SWDR_300","PrecDeriv",
-                  "month","doy","LUI","Precip_cum","rw","hw",
-                  "Ta_200_min","Ta_200_max","evaporation","Ts_10")
+                  "month","doy","LUI","Precip_cum",
+                  "evaporation","Ts_10")
     spacevar <- "plotID"
     timevar <- "dts"
   }

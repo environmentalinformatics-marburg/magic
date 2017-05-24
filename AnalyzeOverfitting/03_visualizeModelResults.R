@@ -3,15 +3,15 @@
 rm(list=ls())
 library(reshape2)
 library(latticeExtra)
-
-#datapath <- "/media/memory01/data/hmeyer/Overfitting/"
+################################################################################
+#USER ADJUSTMENTS
 datapath <- "/media/hanna/data/Overfitting/"
-outpath <- paste0(datapath,"/results4/")
-#outpath <- "/home/hanna/Documents/Projects/Overfitting/" #tmp
+casestudy <- "Tair" # Tair or Expl
+################################################################################
+
+outpath <- paste0(datapath,"/",casestudy)
 figurepath <- paste0(datapath,"/figures/")
 setwd(outpath)
-
-casestudy <- "Tair" # Tair or Expl
 ################################################################################
 # Get individual models
 ################################################################################
@@ -28,28 +28,23 @@ noselection <- list(cv_noselect,llocv_noselect,
                     ltocv_noselect,lltocv_noselect)
 names(noselection) <- c("cv_noselect","llocv_noselect",
                          "ltocv_noselect","lltocv_noselect")
-#llocv,ltocv and lltocv are reference models
+
+#lltocv is the reference model
 #aim is to improve the performance of these models.
 #therefore rfe and ffs is tested:
 
 #### # Recursive feature selection
-llocv_rfe <- get(load(models[grep("_llocv_rfe",models)]))
-llocv_cv_rfe <- llocv_rfe$random_kfold_cv
-#ltocv_rfe <- get(load(models[grep("_ltocv_rfe",models)]))
-#ltocv_cv_rfe <- ltocv_rfe$random_kfold_cv
-#lltocv_rfe <- get(load(models[grep("_lltocv_rfe",models)]))
-#lltocv_cv_rfe <- lltocv_rfe$random_kfold_cv
+lltocv_rfe <- get(load(models[grep("_lltocv_rfe",models)]))
+lltocv_cv_rfe <- lltocv_rfe$random_kfold_cv
 
-rfeselection <- list(llocv_rfe,llocv_cv_rfe)
-names(rfeselection) <- c("llocv_rfe","llocv_cv_rfe")
+
+rfeselection <- list(lltocv_rfe,lltocv_cv_rfe)
+names(rfeselection) <- c("lltocv_rfe","lltocv_cv_rfe")
 
 #### # Forward feature selection
 lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
 lltocv_cv_ffs <-  lltocv_ffs$random_kfold_cv
-#lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
-#lltocv_cv_ffs <-  lltocv_ffs$random_kfold_cv
-#ltocv_ffs <- get(load(models[grep("_ltocv_ffs",models)]))
-#ltocv_cv_ffs <-  ltocv_ffs$random_kfold_cv
+
 
 ffsselection <- list(lltocv_ffs,lltocv_cv_ffs)
 names(ffsselection) <- c("lltocv_ffs","lltocv_cv_ffs")
@@ -57,9 +52,8 @@ names(ffsselection) <- c("lltocv_ffs","lltocv_cv_ffs")
 ### Get predictions and observed values for each resample
 ################################################################################
 
-#modelslist <- append(noselection,rfeselection)
-#modelslist <- append(modelslist,ffsselection)
-modelslist <- append(noselection,ffsselection)
+modelslist <- append(noselection,rfeselection)
+modelslist <- append(modelslist,ffsselection)
 
 modelspred <- modelslist
 for (i in 1:length(modelslist)){
@@ -102,21 +96,12 @@ maxm <- max(maxm,valmax)
 minm <- min(minm,valmin)
 }
 
-pdf(paste0(figurepath,casestudy,"_comp_noselection.pdf"))
-bwplot(results_melt_noselect$value~
-         results_melt_noselect$modelopt,do.out = FALSE,
-       notch=TRUE,ylab="|pred-obs|",ylim=c(minm-1,maxm+1),
-       #scales = "free",
-       fill="lightgrey",
-       par.settings=list(plot.symbol=list(col="black",pch=8,cex=0.4),
-                         strip.background=list(col="lightgrey"),
-                         box.umbrella = list(col = "black"),
-                         box.dot = list(col = "black", pch = 16, cex=0.4),
-                         box.rectangle = list(col="black",
-                                              fill= rep(c("black", "black"),2))))
+pdf(paste0(figurepath,casestudy,"_comp_noselection.pdf"),width=6,height=5)
+boxplot(results_melt_noselect$value~
+         results_melt_noselect$modelopt,outline=FALSE,
+       notch=TRUE,ylab="cross-validated |pred-obs|",ylim=c(minm-1,maxm+1),
+       col="grey50")
 dev.off()
-
-
 
 ####################### LLTOCV Comparison ###################################
 
@@ -136,13 +121,13 @@ ffs_cv <- results_melt_lltocv$value[
   results_melt_lltocv$VarSelect=="ffs"&results_melt_lltocv$cv=="cv"]
 
 
-pdf(paste0(figurepath,casestudy,"_comp_lltoCV.pdf"),width=9,height=5) 
+pdf(paste0(figurepath,casestudy,"_comp_lltoCV.pdf"),width=9,height=6) 
 boxplot(no_lltocv,no_lltocv_cv,rfe_lltocv,rfe_cv,ffs_lltocv,ffs_cv,
         col=c("grey50","grey90"),notch=TRUE,
         #pch=20,cex=0,
         outline=FALSE,
         names=rep(c("LLTO-CV","10-Fold-CV"),3),
-        at=c(1,2,3.5,4.5,6,7),ylab="|pred-obs|")
+        at=c(1,2,3.5,4.5,6,7),ylab="cross-validated |pred-obs|")
 mtext("No Selection", side = 1, line = 2, outer = FALSE, at = NA,
       adj = 0.12, padj = 1,cex=1.2)
 mtext("RFE", side = 1, line = 2, outer = FALSE, at = NA,

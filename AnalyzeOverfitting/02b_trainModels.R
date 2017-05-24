@@ -42,13 +42,13 @@ trainModels <- function (dataset,spacevar,timevar,
   ####################################################################
   #prepare trainControl
   ####################################################################
-trainfuncs <- caretFuncs
-#trainfuncs <- rfFuncs
-#  trainfuncs$fit <- function (x, y, first, last, ...) {
-#    loadNamespace("randomForest")
-#    randomForest::randomForest(x, y, importance=T,...)
-#  }
-  rtrl <- rfeControl(method="cv",rerank = TRUE,verbose=TRUE,
+#trainfuncs <- caretFuncs
+trainfuncs <- rfFuncs
+  trainfuncs$fit <- function (x, y, first, last, ...) {
+    loadNamespace("randomForest")
+    randomForest::randomForest(x, y, importance=T,...)
+  }
+  rtrl <- rfeControl(method="cv",verbose=TRUE,
                      returnResamp = "all",functions = trainfuncs)
   ctrl <- trainControl(method="cv",savePredictions = TRUE,
                        verbose=TRUE)
@@ -65,7 +65,7 @@ trainfuncs <- caretFuncs
                                          timevar = timevar,k=nfolds_spacetime)
   
   if (validation=="llocv"){
-    ctrl$index=spacefolds$index
+    ctrl$index <- spacefolds$index
     rtrl$index <- spacefolds$index
     ctrl$indexOut <- spacefolds$indexOut
     rtrl$indexOut <- spacefolds$indexOut
@@ -102,7 +102,8 @@ trainfuncs <- caretFuncs
   if (featureSelect=="noSelection"){
     set.seed(seed)
     model <- train(dataset[,predictors],dataset[,response],method=algorithm,
-                  trControl = ctrl,tuneLength=tuneLength)
+                  trControl = ctrl,tuneLength=tuneLength,
+                  importance=TRUE)
   }
   ##############################################################################
   # train ffs model (usually based on llocv, ltocv,lltocv) and if 
@@ -135,13 +136,17 @@ trainfuncs <- caretFuncs
   ##############################################################################
   if (featureSelect=="rfe"){
     set.seed(seed)
+#    if(caseStudy=="Tair"){
+   #   dataset$aspect <- as.numeric(dataset$aspect)
+  #    dataset$season <- as.numeric(dataset$season)
+#    }
     model_raw <- rfe(dataset[,predictors],dataset[,response],
                      method=algorithm,
-                     trControl = trainControl(method="cv",
-                                              savePredictions = TRUE,
-                                              verbose=TRUE),
+   #                  trControl = trainControl(method="cv",
+    #                                          savePredictions = TRUE,
+     #                                         verbose=TRUE),
                      runParallel=TRUE,
-                     tuneLength=3,
+      #               tuneLength=3,
                      rfeControl=rtrl,
                      sizes=seq(2,length(predictors),2),metric="RMSE")
     if(save){
