@@ -4,12 +4,11 @@
 rm(list = ls(all = TRUE))
 
 # Working directory
-path.wd <- "G:/ki_osm"
-setwd(path.wd)
+setwd("/media/permanent/repo/magic/dfg_for_kilimanjaro/osm_google_kili")
 
 # Required packages and functions
-lib <- c("raster", "rgdal", "parallel")
-sapply(lib, function(...) require(..., character.only = T))
+# devtools::install_github("fdetsch/Orcs", local = FALSE)
+Orcs::loadPkgs(c("raster", "rgdal", "parallel"))
 
 source("src/getTileCenters.R")
 source("src/getOsmTiles.R")
