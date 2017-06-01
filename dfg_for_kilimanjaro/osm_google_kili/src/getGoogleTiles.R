@@ -15,11 +15,17 @@
 #' @param plot.bff \code{numeric} buffer to expand the pre-defined spatial 
 #' frame around each tile centure. Measure against non-overlapping tiles.
 #' @param path.out Output folder as \code{character}.
-#' @param plot Optional name of the POI as \code{character}.
+#' @param mosaic \code{logical}, defaults to \code{FALSE}. If \code{TRUE}, 
+#' downloaded tiles are merged into a single large image. Else if a 
+#' \code{character} file name is specified, tiles are not only merged, but the 
+#' resulting image is also written to disk incrementally, thus reducing the 
+#' amount of memory required. 
+#' 
 #' @param ... Additional arguments passed to \code{\link{gmap}}.
 #' 
 #' @return 
-#' A \code{list}.
+#' If 'mosaic' is \code{TRUE} or represents a valid file path, a mosaicked 
+#' \code{RasterBrick} object, else a \code{list} of downloaded tile names.
 #' 
 #' @author Florian Detsch
 #' 
@@ -32,26 +38,20 @@ getGoogleTiles <- function(tile.cntr,
                            plot.res,
                            plot.bff = 0,
                            path.out = ".",
-                           plot = NULL,
                            prefix = "kili_tile_",
-                           ...) {
+                           mosaic = FALSE) {
   
   # Transform SpatialPointsDataFrame to data.frame (optional)
   prj <- proj4string(location)
   location <- data.frame(location)
 
   # Loop through single tile centers of current research plot
-  dsm.rst.ls <- lapply(seq(tile.cntr), function(z) {
+  dsm.rst.ls <- do.call("rbind", lapply(seq(tile.cntr), function(z) {
     
     # Current filename
-    fl <- if (is.null(plot)) {
-      paste0(path.out, "/", prefix, 
-             formatC(z, width = 3, format = "d", flag = "0"), ".tif")
-    } else {
-      paste0(path.out, "/", plot, "/", prefix, 
-             formatC(z, width = 3, format = "d", flag = "0"), ".tif")
-    }    
-    
+    fl <- paste0(path.out, "/", prefix, 
+                 formatC(z, width = 3, format = "d", flag = "0"), ".tif")
+
     if (file.exists(fl)) {
       print(paste("File", fl, "already exists! Proceeding to the next tile ..."))
     } else {
@@ -85,18 +85,12 @@ getGoogleTiles <- function(tile.cntr,
       tmp.bndry.xt <- extent(coordinates(tmp.bndry.tl)[,1], coordinates(tmp.bndry.br)[,1],
                              coordinates(tmp.bndry.br)[,2], coordinates(tmp.bndry.tl)[,2])
       
-      # Download non-existent files only
-      if (is.null(plot)) {
-        tmp.fls <- paste0(path.out, "/", prefix,
-                          formatC(z, width = 3, format = "d", flag = "0"), ".tif")
-      } else {
-        tmp.fls <- paste0(path.out, "/", plot, "/", prefix,
-                          formatC(z, width = 3, format = "d", flag = "0"), ".tif")
-      }
+      # Download Google Map of the given extent and save copy to HDD
+      tmp.rst <- try(dismo::gmap(tmp.bndry.xt, ...), silent = TRUE)
       
-      if (!file.exists(tmp.fls)) {
-        # Download Google Map of the given extent and save copy to HDD
-        tmp.rst <- dismo::gmap(tmp.bndry.xt, ...)
+      if (inherits(tmp.rst, "try-error")) {
+        tmp.rst = NULL
+      } else {
         
         tmp.lst <- lapply(1:nlayers(tmp.rst), function(a) {
           val <- as.matrix(tmp.rst[[a]])
@@ -104,24 +98,35 @@ getGoogleTiles <- function(tile.cntr,
           setValues(tmp.rst[[a]], val)
         })
         
-        tmp.rst <- trim(stack(tmp.lst))
-        
-        # Save Google Map as GeoTiff to HDD
-        if (is.null(plot)) {
-          writeRaster(tmp.rst, filename = tmp.fls, format = "GTiff", 
-                      overwrite = TRUE)
-        } else {
-          suppressWarnings(dir.create(paste(path.out, plot, sep = "/")))
-          writeRaster(tmp.rst, tmp.fls)
-        }
-        
-        # Return DSM information
-        return(data.frame(tile = formatC(z, width = 3, format = "d", flag = "0"), 
-                          file = tmp.fls, stringsAsFactors = FALSE))
+        tmp.rst <- trim(stack(tmp.lst), filename = fl)
       }
     }
-  })
+    
+    # Return DSM information
+    data.frame(tile = formatC(z, width = 3, format = "d", flag = "0"), 
+               file = ifelse(file.exists(fl), fl, NULL), stringsAsFactors = FALSE)
+  }))
   
   # Return list of output rasters
-  return(dsm.rst.ls)
+  if (isTRUE(mosaic) | is.character(mosaic)) {
+    tmp1 = ifelse(is.character(mosaic), paste0(dirname(mosaic), "/tmp.tif"), "")
+
+    for (i in 2:nrow(dsm)) {
+      if (i %% 10 == 0) 
+        cat("File #", i, " is in, start processing...\n", sep = "")
+      
+      if (i == 2) {
+        msc <- merge(brick(dsm$fls[i-1]), brick(dsm$fls[i]), tolerance = 100, 
+                     filename = mosaic)
+      } else {
+        tmp2 <- merge(msc, brick(dsm$fls[i]), tolerance = 100, 
+                      filename = tmp1, overwrite = TRUE)
+        jnk <- file.copy(attr(tmp2@file, "name"), mosaic, overwrite = TRUE)
+        msc <- brick(mosaic)
+      }
+    }
+    
+    return(msc)
+    
+  } else return(dsm.rst.ls)
 }
