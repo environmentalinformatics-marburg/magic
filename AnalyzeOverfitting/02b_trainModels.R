@@ -36,54 +36,79 @@ trainModels <- function (dataset,spacevar,timevar,
                          nfolds_spacetime=10,
                          nfolds_space=10,
                          withinSD=TRUE,
+                         metric,
                          nfolds_time=10,
-                         tuneLength=3,seed=10){
+                         tuneLength=3,seed=100){
   
   ####################################################################
   #prepare trainControl
   ####################################################################
-#trainfuncs <- caretFuncs
-trainfuncs <- rfFuncs
+  #trainfuncs <- caretFuncs
+  trainfuncs <- rfFuncs
   trainfuncs$fit <- function (x, y, first, last, ...) {
     loadNamespace("randomForest")
     randomForest::randomForest(x, y, importance=T,...)
   }
-  rtrl <- rfeControl(method="cv",verbose=TRUE,
-                     returnResamp = "all",functions = trainfuncs)
-  ctrl <- trainControl(method="cv",savePredictions = TRUE,
+  # set seeds to make sure models are identical 
+  # though running in parallel
+  set.seed(seed)
+  seeds <- vector(mode = "list", 
+                  length = max(nfolds_space,nfolds_spacetime,nfolds_time)+1)
+  for(seed in 1:(max(nfolds_space,nfolds_spacetime,nfolds_time)+1)){ 
+    seeds[[seed]] <- sample.int(1000, tuneLength)
+  }
+  # set rfe and train control
+  rtrl <- rfeControl(method="cv",
+                     verbose=TRUE,
+                     returnResamp = "all",
+                     functions = trainfuncs)
+  
+  ctrl <- trainControl(method="cv",
+                       savePredictions = TRUE,
                        verbose=TRUE)
   ctrlKfold <- ctrl
   ####################################################################
   #prepare data splitting
   ####################################################################
   if (sampsize!=1){
-    dataset <- dataset[createDataPartition(dataset[,response],p=sampsize,list=FALSE),]
+    dataset <- dataset[createDataPartition(dataset[,response],
+                                           p=sampsize,list=FALSE),]
   }
-  spacefolds <- CreateSpacetimeFolds(x=dataset,timevar=NA,spacevar = spacevar,k=nfolds_space)
-  timefolds <- CreateSpacetimeFolds(x=dataset,spacevar=NA, timevar = timevar,k=nfolds_time)
+  spacefolds <- CreateSpacetimeFolds(x=dataset,timevar=NA,spacevar = spacevar,
+                                     k=nfolds_space,seed=seed)
+  timefolds <- CreateSpacetimeFolds(x=dataset,spacevar=NA, timevar = timevar,
+                                    k=nfolds_time,seed=seed)
   spacetimefolds <- CreateSpacetimeFolds(x=dataset,spacevar = spacevar,
-                                         timevar = timevar,k=nfolds_spacetime)
-  
+                                         timevar = timevar,
+                                         k=nfolds_spacetime,seed=seed)
+  #adapt index values in trainControl
   if (validation=="llocv"){
     ctrl$index <- spacefolds$index
     rtrl$index <- spacefolds$index
     ctrl$indexOut <- spacefolds$indexOut
     rtrl$indexOut <- spacefolds$indexOut
+    ctrl$seeds <- seeds[c(1:nfolds_space,length(seeds))]
+    rtrl$seeds <- ctrl$seeds
   }
   if (validation=="ltocv"){
     ctrl$index <- timefolds$index
     rtrl$index <- timefolds$index
     ctrl$indexOut <- timefolds$indexOut
     rtrl$indexOut <- timefolds$indexOut
+    ctrl$seeds <- seeds[c(1:nfolds_time,length(seeds))]
+    rtrl$seeds <- ctrl$seeds
   }
   if (validation=="lltocv"){
     ctrl$index <- spacetimefolds$index
     rtrl$index <- spacetimefolds$index
     ctrl$indexOut <- spacetimefolds$indexOut
     rtrl$indexOut <- spacetimefolds$indexOut
+    ctrl$seeds <- seeds[c(1:nfolds_spacetime,length(seeds))]
+    rtrl$seeds <- ctrl$seeds
   }
   if(validation=="cv"){
     calculate_random_fold_model=FALSE
+    ctrl$seeds <- seeds[c(1:10,length(seeds))]
   }
   ####################################################################
   ####################################################################
@@ -102,23 +127,23 @@ trainfuncs <- rfFuncs
   if (featureSelect=="noSelection"){
     set.seed(seed)
     model <- train(dataset[,predictors],dataset[,response],method=algorithm,
-                  trControl = ctrl,tuneLength=tuneLength,
-                  importance=TRUE)
+                   trControl = ctrl,tuneLength=tuneLength,
+                   importance=TRUE)
   }
   ##############################################################################
   # train ffs model (usually based on llocv, ltocv,lltocv) and if 
-  # calculate_random_fold_model==TRUE test
-  # how selected variables peform on cv model
+  # calculate_random_fold_model==TRUE test 
+  #how selected variables peform on cv model
   ##############################################################################
   if (featureSelect=="ffs"){
     set.seed(seed)
     model <- ffs(dataset[,predictors],dataset[,response],method=algorithm,
-                 trControl = ctrl,withinSD=withinSD,
+                 trControl = ctrl,withinSD=withinSD,seed=seed,
                  runParallel=TRUE,tuneLength=tuneLength,
-                 metric="RMSE")
+                 metric=metric)
     if(save){
-    save(model,file=paste0(outpath,"/TMP_model_",algorithm,"_",caseStudy,"_",
-                           validation,"_",featureSelect,".RData"))
+      save(model,file=paste0(outpath,"/TMP_model_",algorithm,"_",caseStudy,"_",
+                             validation,"_",featureSelect,".RData"))
     }
     # add k-fold cv performance
     if(calculate_random_fold_model){
@@ -126,7 +151,7 @@ trainfuncs <- rfFuncs
       model_cv <- train(dataset[,names(model$trainingData)[-which(
         names(model$trainingData)==".outcome")]],
         dataset[,response],method=algorithm,trControl=ctrlKfold,tuneLength=tuneLength,
-        metric="RMSE")
+        metric=metric)
       model$random_kfold_cv <- model_cv
     }
   }
@@ -136,39 +161,36 @@ trainfuncs <- rfFuncs
   ##############################################################################
   if (featureSelect=="rfe"){
     set.seed(seed)
-#    if(caseStudy=="Tair"){
-   #   dataset$aspect <- as.numeric(dataset$aspect)
-  #    dataset$season <- as.numeric(dataset$season)
-#    }
+    
     model_raw <- rfe(dataset[,predictors],dataset[,response],
                      method=algorithm,
-   #                  trControl = trainControl(method="cv",
-    #                                          savePredictions = TRUE,
-     #                                         verbose=TRUE),
+                     #                  trControl = trainControl(method="cv",
+                     #                                          savePredictions = TRUE,
+                     #                                         verbose=TRUE),
                      runParallel=TRUE,
-      #               tuneLength=3,
+                     #               tuneLength=3,
                      rfeControl=rtrl,
-                     sizes=seq(2,length(predictors),2),metric="RMSE")
+                     sizes=seq(2,length(predictors),2),metric=metric)
     if(save){
-    save(model_raw,file=paste0(outpath,"/model_raw_",algorithm,"_",caseStudy,"_",
-                               validation,"_",featureSelect,".RData"))
+      save(model_raw,file=paste0(outpath,"/model_raw_",algorithm,"_",caseStudy,"_",
+                                 validation,"_",featureSelect,".RData"))
     }
     #retrain model using optimal variables
     set.seed(seed)
     model <- train(dataset[,model_raw$optVariables],dataset[,response],
-                   method=algorithm,trControl=ctrl,tuneLength=tuneLength,metric="RMSE")
+                   method=algorithm,trControl=ctrl,tuneLength=tuneLength,metric=metric)
     #add k-fold cv performance
     if(calculate_random_fold_model){
       set.seed(seed)
       model_cv <- train(dataset[,model_raw$optVariables],dataset[,response],
                         method=algorithm,trControl=ctrlKfold,tuneLength=tuneLength,
-                        metric="RMSE")
+                        metric=metric)
       model$random_kfold_cv <- model_cv
     }
   }
   if(save){
-  save(model,file=paste0(outpath,"/model_",algorithm,"_",caseStudy,"_",
-                         validation,"_",featureSelect,".RData"))
+    save(model,file=paste0(outpath,"/model_",algorithm,"_",caseStudy,"_",
+                           validation,"_",featureSelect,".RData"))
   }
   if(doParallel){
     stopCluster(cl)
