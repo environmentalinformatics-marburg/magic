@@ -7,8 +7,10 @@ library(Rsenal)
 library(caret)
 ################################################################################
 #USER ADJUSTMENTS
-datapath <- "/media/hanna/data/Overfitting/"
-casestudy <- "cookfarm" # Tair or Expl
+#datapath <- "/media/hanna/data/Overfitting/"
+datapath <- "/home/hanna/Documents/Projects/Overfitting/"
+casestudy <- "Tair" # cookfarm, Tair or Expl
+targets <- c("LLTOCV","LLOCV","LTOCV") #"LLOCV,LTOCV
 ################################################################################
 
 outpath <- paste0(datapath,"/Results_",casestudy)
@@ -36,20 +38,59 @@ names(noselection) <- c("cv_noselect","llocv_noselect",
 #therefore rfe and ffs is tested:
 
 #### # Recursive feature selection
+rfeselection <- list()
+load_lltocv <- tryCatch({
 lltocv_rfe <- get(load(models[grep("_lltocv_rfe",models)]))
 lltocv_cv_rfe <- lltocv_rfe$random_kfold_cv
+rfeselection_lltocv <- list(lltocv_rfe,lltocv_cv_rfe)
+names(rfeselection_lltocv) <- c("lltocv_rfe","lltocv_cv_rfe")
+rfeselection <- append(rfeselection,rfeselection_lltocv)
+},error = function(e) e)
 
+load_llocv <- tryCatch({
+llocv_rfe <- get(load(models[grep("_llocv_rfe",models)]))
+llocv_cv_rfe <- llocv_rfe$random_kfold_cv
+rfeselection_llocv <- list(llocv_rfe,llocv_cv_rfe)
+names(rfeselection_llocv) <- c("llocv_rfe","llocv_cv_rfe")
+rfeselection <- append(rfeselection,rfeselection_llocv)
+},error = function(e) e)
 
-rfeselection <- list(lltocv_rfe,lltocv_cv_rfe)
-names(rfeselection) <- c("lltocv_rfe","lltocv_cv_rfe")
+load_ltocv <- tryCatch({
+  ltocv_rfe <- get(load(models[grep("_ltocv_rfe",models)]))
+  ltocv_cv_rfe <- ltocv_rfe$random_kfold_cv
+  rfeselection_ltocv <- list(ltocv_rfe,ltocv_cv_rfe)
+  names(rfeselection_ltocv) <- c("ltocv_rfe","ltocv_cv_rfe")
+  rfeselection <- append(rfeselection,rfeselection_ltocv)
+},error = function(e) e)
+
 
 #### # Forward feature selection
-lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
-lltocv_cv_ffs <-  lltocv_ffs$random_kfold_cv
+ffsselection <- list()
+load_lltocv <- tryCatch({
+  lltocv_ffs <- get(load(models[grep("_lltocv_ffs",models)]))
+  lltocv_cv_ffs <- lltocv_ffs$random_kfold_cv
+  ffsselection_lltocv <- list(lltocv_ffs,lltocv_cv_ffs)
+  names(ffsselection_lltocv) <- c("lltocv_ffs","lltocv_cv_ffs")
+  ffsselection <- append(ffsselection,ffsselection_lltocv)
+},error = function(e) e)
+
+load_llocv <- tryCatch({
+  llocv_ffs <- get(load(models[grep("_llocv_ffs",models)]))
+  llocv_cv_ffs <- llocv_ffs$random_kfold_cv
+  ffsselection_llocv <- list(llocv_ffs,llocv_cv_ffs)
+  names(ffsselection_llocv) <- c("llocv_ffs","llocv_cv_ffs")
+  ffsselection <- append(ffsselection,ffsselection_llocv)
+},error = function(e) e)
+
+load_ltocv <- tryCatch({
+  ltocv_ffs <- get(load(models[grep("_ltocv_ffs",models)]))
+  ltocv_cv_ffs <- ltocv_ffs$random_kfold_cv
+  ffsselection_ltocv <- list(ltocv_ffs,ltocv_cv_ffs)
+  names(ffsselection_ltocv) <- c("ltocv_ffs","ltocv_cv_ffs")
+  ffsselection <- append(ffsselection,ffsselection_ltocv)
+},error = function(e) e)
 
 
-ffsselection <- list(lltocv_ffs,lltocv_cv_ffs)
-names(ffsselection) <- c("lltocv_ffs","lltocv_cv_ffs")
 ################################################################################
 ### Get predictions and observed values for each resample
 ################################################################################
@@ -107,30 +148,30 @@ boxplot(results_melt_noselect$value~
        col="grey50")
 dev.off()
 
-####################### LLTOCV Comparison ###################################
-
-results_melt_lltocv <- results_melt[results_melt$modelopt=="lltocv",]
-no_lltocv <-  results_melt_lltocv$value[
-  results_melt_lltocv$VarSelect=="noselect"&results_melt_lltocv$cv!="cv"]
-no_lltocv_cv <- results_melt$value[results_melt$VarSelect=="noselect"&
+####################### FFS Comparison ###################################
+for (target in targets){
+results_melt_target <- results_melt[results_melt$modelopt==tolower(target),]
+no_target <-  results_melt_target$value[
+  results_melt_target$VarSelect=="noselect"&results_melt_target$cv!="cv"]
+no_target_cv <- results_melt$value[results_melt$VarSelect=="noselect"&
                               results_melt$cv=="cv"&results_melt$modelopt=="cv"]
 
-rfe_lltocv <- results_melt_lltocv$value[
-  results_melt_lltocv$VarSelect=="rfe"&results_melt_lltocv$cv!="cv"]
-rfe_cv <- results_melt_lltocv$value[
-  results_melt_lltocv$VarSelect=="rfe"&results_melt_lltocv$cv=="cv"]
-ffs_lltocv <- results_melt_lltocv$value[
-  results_melt_lltocv$VarSelect=="ffs"&results_melt_lltocv$cv!="cv"]
-ffs_cv <- results_melt_lltocv$value[
-  results_melt_lltocv$VarSelect=="ffs"&results_melt_lltocv$cv=="cv"]
+rfe_target <- results_melt_target$value[
+  results_melt_target$VarSelect=="rfe"&results_melt_target$cv!="cv"]
+rfe_cv <- results_melt_target$value[
+  results_melt_target$VarSelect=="rfe"&results_melt_target$cv=="cv"]
+ffs_target <- results_melt_target$value[
+  results_melt_target$VarSelect=="ffs"&results_melt_target$cv!="cv"]
+ffs_cv <- results_melt_target$value[
+  results_melt_target$VarSelect=="ffs"&results_melt_target$cv=="cv"]
 
-
-pdf(paste0(figurepath,casestudy,"_comp_lltoCV.pdf"),width=9,height=6) 
-boxplot(no_lltocv_cv,no_lltocv,rfe_cv,rfe_lltocv,ffs_cv,ffs_lltocv,
-        col=c("grey50","grey90"),notch=TRUE,
+targetstring <- paste0(substr(target,1,nchar(target)-2),"-CV")
+pdf(paste0(figurepath,casestudy,"_comp_",target,".pdf"),width=9,height=6) 
+boxplot(no_target_cv,no_target,rfe_cv,rfe_target,ffs_cv,ffs_target,
+        col=c("grey90","grey50"),notch=TRUE,
         #pch=20,cex=0,
         outline=FALSE,
-        names=rep(c("random-CV","LLTO-CV"),3),
+        names=rep(c("random-CV",targetstring),3),
         at=c(1,2,3.5,4.5,6,7),ylab="cross-validated |pred-obs|")
 mtext("No Selection", side = 1, line = 2, outer = FALSE, at = NA,
       adj = 0.12, padj = 1,cex=1.2)
@@ -139,7 +180,7 @@ mtext("RFE", side = 1, line = 2, outer = FALSE, at = NA,
 mtext("FFS", side = 1, line = 2, outer = FALSE, at = NA,
       adj = 0.85, padj = 1,cex=1.2)
 dev.off()
-
+}
 ################################################################################
 ################# Regression Table #############################################
 ################################################################################
@@ -147,7 +188,7 @@ regstats <- c()
 for (i in 1:length(modelspred)){
 regstats <- rbind(regstats,regressionStats(modelspred[[i]]$obs,modelspred[[i]]$pred))
 }
-regstats <- round(regstats,2)
+regstats <- round(regstats,3)
 regstats$name <- names(modelspred)
 write.csv(regstats[,-which(names(regstats)%in%c("ME.se","MAE.se","RMSE.se"))],
           paste0(figurepath,casestudy,"_regstatstab.csv"),row.names=FALSE)
@@ -200,7 +241,7 @@ if(any(unique(results_melt$VarSelect)!=c("noselect", "rfe","ffs"))){
 pdf(paste0(figurepath,casestudy,"_comp_10fold_selections.pdf"),width=6,height=5)
 boxplot(results_melt$value~
           results_melt$VarSelect,outline=FALSE,
-        notch=TRUE,ylab="cross-validated |pred-obs|",ylim=c(minm-1,maxm+1),
+        notch=TRUE,ylab="cross-validated |pred-obs|",ylim=c(minm-minm*0.1,maxm+maxm*0.1),
         col="grey50",names=c("No Selection","RFE","FFS"))
 dev.off()
 
