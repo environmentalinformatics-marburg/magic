@@ -38,7 +38,7 @@ trainModels <- function (dataset,spacevar,timevar,
                          withinSD=TRUE,
                          metric,
                          nfolds_time=10,
-                         tuneLength=3,seed=100){
+                         tuneLength=3,tuneGrid=NA,seed=100){
   
   ####################################################################
   #prepare trainControl
@@ -52,10 +52,12 @@ trainModels <- function (dataset,spacevar,timevar,
   # set seeds to make sure models are identical 
   # though running in parallel
   set.seed(seed)
+  tl <- tuneLength
+  if (is.na(tuneLength)){tl <- nrow(tuneGrid)}
   seeds <- vector(mode = "list", 
                   length = max(nfolds_space,nfolds_spacetime,nfolds_time)+1)
   for(seed in 1:(max(nfolds_space,nfolds_spacetime,nfolds_time)+1)){ 
-    seeds[[seed]] <- sample.int(1000, tuneLength)
+    seeds[[seed]] <- sample.int(1000, tl)
   }
   # set rfe and train control
   rtrl <- rfeControl(method="cv",
@@ -67,6 +69,7 @@ trainModels <- function (dataset,spacevar,timevar,
                        savePredictions = TRUE,
                        verbose=TRUE)
   ctrlKfold <- ctrl
+  ctrlKfold$seeds <- seeds[c(1:10,length(seeds))]
   ####################################################################
   #prepare data splitting
   ####################################################################
@@ -88,7 +91,7 @@ trainModels <- function (dataset,spacevar,timevar,
     ctrl$indexOut <- spacefolds$indexOut
     rtrl$indexOut <- spacefolds$indexOut
     ctrl$seeds <- seeds[c(1:nfolds_space,length(seeds))]
-    rtrl$seeds <- ctrl$seeds
+    #    rtrl$seeds <- ctrl$seeds
   }
   if (validation=="ltocv"){
     ctrl$index <- timefolds$index
@@ -96,7 +99,7 @@ trainModels <- function (dataset,spacevar,timevar,
     ctrl$indexOut <- timefolds$indexOut
     rtrl$indexOut <- timefolds$indexOut
     ctrl$seeds <- seeds[c(1:nfolds_time,length(seeds))]
-    rtrl$seeds <- ctrl$seeds
+    #    rtrl$seeds <- ctrl$seeds
   }
   if (validation=="lltocv"){
     ctrl$index <- spacetimefolds$index
@@ -104,7 +107,7 @@ trainModels <- function (dataset,spacevar,timevar,
     ctrl$indexOut <- spacetimefolds$indexOut
     rtrl$indexOut <- spacetimefolds$indexOut
     ctrl$seeds <- seeds[c(1:nfolds_spacetime,length(seeds))]
-    rtrl$seeds <- ctrl$seeds
+    #    rtrl$seeds <- ctrl$seeds
   }
   if(validation=="cv"){
     calculate_random_fold_model=FALSE
@@ -128,6 +131,7 @@ trainModels <- function (dataset,spacevar,timevar,
     set.seed(seed)
     model <- train(dataset[,predictors],dataset[,response],method=algorithm,
                    trControl = ctrl,tuneLength=tuneLength,
+                   tuneGrid = tuneGrid,
                    importance=TRUE)
   }
   ##############################################################################
@@ -140,6 +144,7 @@ trainModels <- function (dataset,spacevar,timevar,
     model <- ffs(dataset[,predictors],dataset[,response],method=algorithm,
                  trControl = ctrl,withinSD=withinSD,seed=seed,
                  runParallel=TRUE,tuneLength=tuneLength,
+                 tuneGrid = tuneGrid,
                  metric=metric)
     if(save){
       save(model,file=paste0(outpath,"/TMP_model_",algorithm,"_",caseStudy,"_",
@@ -151,6 +156,7 @@ trainModels <- function (dataset,spacevar,timevar,
       model_cv <- train(dataset[,names(model$trainingData)[-which(
         names(model$trainingData)==".outcome")]],
         dataset[,response],method=algorithm,trControl=ctrlKfold,tuneLength=tuneLength,
+        tuneGrid = tuneGrid,
         metric=metric)
       model$random_kfold_cv <- model_cv
     }
@@ -170,7 +176,7 @@ trainModels <- function (dataset,spacevar,timevar,
                      runParallel=TRUE,
                      #               tuneLength=3,
                      rfeControl=rtrl,
-                     sizes=seq(2,length(predictors),2),metric=metric)
+                     sizes=seq(2,length(predictors),1),metric=metric)
     if(save){
       save(model_raw,file=paste0(outpath,"/model_raw_",algorithm,"_",caseStudy,"_",
                                  validation,"_",featureSelect,".RData"))
@@ -178,12 +184,14 @@ trainModels <- function (dataset,spacevar,timevar,
     #retrain model using optimal variables
     set.seed(seed)
     model <- train(dataset[,model_raw$optVariables],dataset[,response],
-                   method=algorithm,trControl=ctrl,tuneLength=tuneLength,metric=metric)
+                   method=algorithm,trControl=ctrl,tuneLength=tuneLength,
+                   tuneGrid = tuneGrid,metric=metric)
     #add k-fold cv performance
     if(calculate_random_fold_model){
       set.seed(seed)
       model_cv <- train(dataset[,model_raw$optVariables],dataset[,response],
                         method=algorithm,trControl=ctrlKfold,tuneLength=tuneLength,
+                        tuneGrid = tuneGrid,
                         metric=metric)
       model$random_kfold_cv <- model_cv
     }

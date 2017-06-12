@@ -11,19 +11,20 @@ library(Rsenal)
 ################################################################################
 datapath <- "/media/memory01/data/hmeyer/Overfitting/"
 scriptpath <- "/home/hmeyer/magic/AnalyzeOverfitting/" #contains the modelling function
-outpath <- paste0(datapath,"/Results_Cookfarm/")
+outpath <- paste0(datapath,"/results_Tair_final/")
 sampsize_Tair <- 1 # 1=use entire dataset
 sampsize_Soil <- 1
 sampsize_Expl <- 1
-tuneLength <- 3
+tuneLength <- NA
+tuneGrid <- expand.grid(mtry = 2)
 withinSD <- FALSE #see ?ffs
 doParallel <- TRUE
-metric <- "Rsquared"
-caseStudy <- c("cookfarm")#"cookfarm,"Tair",Expl
+caseStudy <- c("Tair")#"cookfarm,"Tair",Expl
 algorithms <- c("rf")#rf
-nfolds_time <- 7
+nfolds_time <- 10
 nfolds_space <- 10
-nfolds_spacetime <- 7
+nfolds_spacetime <- 10
+metric="RMSE"
 ### set individual models
 featureSelect <- c("noSelection","ffs","rfe")#"noSelection","ffs","rfe"
 validation <- c("llocv","ltocv","lltocv") #"cv","llocv","ltocv","lstocv"
@@ -35,32 +36,28 @@ individualModels <- expand.grid("caseStudy"=caseStudy,
                                 "featureSelect"=featureSelect,
                                 stringsAsFactors=FALSE)
 individualModels <- rbind(additionals,individualModels)
-##remove those that are not needed
-individualModels <- individualModels[!(
-  individualModels$featureSelect%in%c("rfe","ffs")&
-    individualModels$validation%in%c("llocv","ltocv")),]
+
 ################################################################################
 #set response and predictors for every dataset
 ################################################################################
 source(paste0(scriptpath,"/02b_trainModels.R"))
 setwd(datapath)
-  for (i in 1:nrow(individualModels)){
+for (i in 1:nrow(individualModels)){
+#  for (i in c(1,4:12,2,3)){
   ########################### COOKFARM #########################################
   if (individualModels$caseStudy[i]=="cookfarm"){
     sampsize <- sampsize_Soil
     dataset <- get(load("Soil.RData"))
     dataset <- dataset[complete.cases(dataset),]
-#    dataset <- dataset[substr(dataset$Date,1,4)%in%c("2013"),]
-    dataset$year <- as.character(substr(dataset$Date,1,4))
     dataset <- dataset[dataset$altitude==-0.3,]
+    dataset$year <- factor(as.character(substr(dataset$Date,1,4)))
+    dataset$yearmonth <- factor(as.character(substr(dataset$Date,1,7)))
+    dataset <- dataset[substr(dataset$Date,1,4)%in%c("2011","2012","2013"),]
     response <- "VW"
-    predictors <- c("DEM","TWI","NDRE.M","NDRE.Sd",
-                  "Bt","BLD","PHI","Precip_cum",
-                  "MaxT_wrcc","MinT_wrcc",
-                  "cdayt",
-                  "Crop")
+    predictors <- c("DEM","TWI","NDRE.M","NDRE.Sd","Bt","BLD","PHI","Precip_cum",
+                  "MaxT_wrcc","MinT_wrcc","cdayt","Crop")
     spacevar <- "SOURCEID" #for LLOCV
-    timevar <- "year" # FOR TOCV
+    timevar <- "yearmonth" # for TOCV
   }
   ########################### TAIR ANTARCTICA ##################################
   if (individualModels$caseStudy[i]=="Tair"){
@@ -71,10 +68,10 @@ setwd(datapath)
     dataset$month <- as.numeric(dataset$month)
     response <- "statdat"
     predictors <- c("LST",
-                  #  "doy",
+                    #"doy",
                     "season",
                     "time",
-                   # "month",
+                    "month",
                     "sensor",
                     "dem",
                     "slope",
@@ -123,6 +120,7 @@ setwd(datapath)
                         nfolds_spacetime=nfolds_spacetime,
                         nfolds_space=nfolds_space,metric=metric,
                         nfolds_time=nfolds_time,tuneLength=tuneLength,
-                        seed=100)
+                        tuneGrid=tuneGrid,
+                        seed=111)
   print(i)
 }
