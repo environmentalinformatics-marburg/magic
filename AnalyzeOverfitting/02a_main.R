@@ -9,23 +9,29 @@ library(Rsenal)
 ################################################################################
 #user defined settings
 ################################################################################
+#paths:
 datapath <- "/media/memory01/data/hmeyer/Overfitting/"
-scriptpath <- "/home/hmeyer/magic/AnalyzeOverfitting/" #contains the modelling function
+scriptpath <- "/home/hmeyer/magic/AnalyzeOverfitting/" #contains the modelling 
+#                                                   function "02b_trainModels.R"
 outpath <- paste0(datapath,"/results_Tair_final/")
-sampsize_Tair <- 1 # 1=use entire dataset
+#sample sizes. 1= entire dataset and is recommended:
+sampsize_Tair <- 1
 sampsize_Soil <- 1
 sampsize_Expl <- 1
+#tune and train settings:
+seed <- 111
 tuneLength <- NA
-tuneGrid <- expand.grid(mtry = 2)
+tuneGrid <- expand.grid(mtry = 2) # only use one mtry value if already shown 
+#                                   that this is the optimal one
 withinSD <- FALSE #see ?ffs
 doParallel <- TRUE
-caseStudy <- c("Tair")#"cookfarm,"Tair",Expl
-algorithms <- c("rf")#rf
-nfolds_time <- 10
-nfolds_space <- 10
-nfolds_spacetime <- 10
+caseStudy <- c("Tair")#"cookfarm,"Tair"
+algorithms <- c("rf") #currently only tested with rf
+nfolds_time <- 10 # number of folds for LTOCV
+nfolds_space <- 10 # number of folds for LLOCV
+nfolds_spacetime <- 10 # number of folds for LLTOCV
 metric="RMSE"
-### set individual models
+# define individual models:
 featureSelect <- c("noSelection","ffs","rfe")#"noSelection","ffs","rfe"
 validation <- c("llocv","ltocv","lltocv") #"cv","llocv","ltocv","lstocv"
 additionals <- expand.grid("caseStudy"=caseStudy,"algorithms"=algorithms,
@@ -43,7 +49,6 @@ individualModels <- rbind(additionals,individualModels)
 source(paste0(scriptpath,"/02b_trainModels.R"))
 setwd(datapath)
 for (i in 1:nrow(individualModels)){
-#  for (i in c(1,4:12,2,3)){
   ########################### COOKFARM #########################################
   if (individualModels$caseStudy[i]=="cookfarm"){
     sampsize <- sampsize_Soil
@@ -67,17 +72,8 @@ for (i in 1:nrow(individualModels)){
     dataset$time <- as.numeric(dataset$time)
     dataset$month <- as.numeric(dataset$month)
     response <- "statdat"
-    predictors <- c("LST",
-                    #"doy",
-                    "season",
-                    "time",
-                    "month",
-                    "sensor",
-                    "dem",
-                    "slope",
-                    "aspect",
-                    "skyview",
-                    "ice")
+    predictors <- c("LST","season","time","month","sensor","dem","slope",
+                    "aspect","skyview","ice")
     spacevar <- "station"
     timevar <- "doy"
   }
@@ -95,12 +91,10 @@ for (i in 1:nrow(individualModels)){
     dataset$LUI <- as.numeric(dataset$LUI)
     response <- "SM_10"
     predictors <- c(
-                  "P_RT_NRT","Ta_200","Exploratorium",
-                  "elevation","slope","aspect",
-                  "bulk","Clay","Fine_Silt","Coarse_Silt","Fine_Sand",
-                  "Medium_Sand","Coarse_Sand","SWDR_300","PrecDeriv",
-                  "month","doy","LUI","Precip_cum",
-                  "evaporation","Ts_10")
+                  "P_RT_NRT","Ta_200","Exploratorium","elevation","slope",
+                  "aspect","bulk","Clay","Fine_Silt","Coarse_Silt","Fine_Sand",
+                  "Medium_Sand","Coarse_Sand","SWDR_300","PrecDeriv","month",
+                  "doy","LUI","Precip_cum","evaporation","Ts_10")
     spacevar <- "plotID"
     timevar <- "dts"
   }
@@ -121,6 +115,6 @@ for (i in 1:nrow(individualModels)){
                         nfolds_space=nfolds_space,metric=metric,
                         nfolds_time=nfolds_time,tuneLength=tuneLength,
                         tuneGrid=tuneGrid,
-                        seed=111)
+                        seed=seed)
   print(i)
 }

@@ -43,14 +43,14 @@ trainModels <- function (dataset,spacevar,timevar,
   ####################################################################
   #prepare trainControl
   ####################################################################
-  #trainfuncs <- caretFuncs
-  trainfuncs <- rfFuncs
+  #modify RFE function:
+  #trainfuncs <- caretFuncs #use caretFubcs if tuning is still required
+  trainfuncs <- rfFuncs 
   trainfuncs$fit <- function (x, y, first, last, ...) {
     loadNamespace("randomForest")
     randomForest::randomForest(x, y, importance=T,...)
   }
-  # set seeds to make sure models are identical 
-  # though running in parallel
+  # set seeds to make sure models are identical though running in parallel:
   set.seed(seed)
   tl <- tuneLength
   if (is.na(tuneLength)){tl <- nrow(tuneGrid)}
@@ -77,6 +77,7 @@ trainModels <- function (dataset,spacevar,timevar,
     dataset <- dataset[createDataPartition(dataset[,response],
                                            p=sampsize,list=FALSE),]
   }
+  # create Index and Index out for fifferent CV strategies: 
   spacefolds <- CreateSpacetimeFolds(x=dataset,timevar=NA,spacevar = spacevar,
                                      k=nfolds_space,seed=seed)
   timefolds <- CreateSpacetimeFolds(x=dataset,spacevar=NA, timevar = timevar,
@@ -84,7 +85,7 @@ trainModels <- function (dataset,spacevar,timevar,
   spacetimefolds <- CreateSpacetimeFolds(x=dataset,spacevar = spacevar,
                                          timevar = timevar,
                                          k=nfolds_spacetime,seed=seed)
-  #adapt index values in trainControl
+  # adapt index values in trainControl accordingly: 
   if (validation=="llocv"){
     ctrl$index <- spacefolds$index
     rtrl$index <- spacefolds$index
@@ -99,7 +100,6 @@ trainModels <- function (dataset,spacevar,timevar,
     ctrl$indexOut <- timefolds$indexOut
     rtrl$indexOut <- timefolds$indexOut
     ctrl$seeds <- seeds[c(1:nfolds_time,length(seeds))]
-    #    rtrl$seeds <- ctrl$seeds
   }
   if (validation=="lltocv"){
     ctrl$index <- spacetimefolds$index
@@ -107,7 +107,6 @@ trainModels <- function (dataset,spacevar,timevar,
     ctrl$indexOut <- spacetimefolds$indexOut
     rtrl$indexOut <- spacetimefolds$indexOut
     ctrl$seeds <- seeds[c(1:nfolds_spacetime,length(seeds))]
-    #    rtrl$seeds <- ctrl$seeds
   }
   if(validation=="cv"){
     calculate_random_fold_model=FALSE
@@ -136,8 +135,8 @@ trainModels <- function (dataset,spacevar,timevar,
   }
   ##############################################################################
   # train ffs model (usually based on llocv, ltocv,lltocv) and if 
-  # calculate_random_fold_model==TRUE test 
-  #how selected variables peform on cv model
+  # calculate_random_fold_model==TRUE test how selected variables peform for
+  # random cv
   ##############################################################################
   if (featureSelect=="ffs"){
     set.seed(seed)
@@ -150,7 +149,7 @@ trainModels <- function (dataset,spacevar,timevar,
       save(model,file=paste0(outpath,"/TMP_model_",algorithm,"_",caseStudy,"_",
                              validation,"_",featureSelect,".RData"))
     }
-    # add k-fold cv performance
+    # add random k-fold cv performance
     if(calculate_random_fold_model){
       set.seed(seed)
       model_cv <- train(dataset[,names(model$trainingData)[-which(
@@ -162,19 +161,19 @@ trainModels <- function (dataset,spacevar,timevar,
     }
   }
   ##############################################################################
-  # train rfe model (usually based on llocv, ltocv,lltocv) and test
-  #how selected variables peform on cv model
+  #train rfe model (usually based on llocv, ltocv,lltocv) and test
+  #how selected variables peform for random cv
   ##############################################################################
   if (featureSelect=="rfe"){
     set.seed(seed)
     
     model_raw <- rfe(dataset[,predictors],dataset[,response],
                      method=algorithm,
-                     #                  trControl = trainControl(method="cv",
-                     #                                          savePredictions = TRUE,
-                     #                                         verbose=TRUE),
+                     # trControl = trainControl(method="cv",
+                     #    savePredictions = TRUE,
+                     #    verbose=TRUE),
                      runParallel=TRUE,
-                     #               tuneLength=3,
+                     #               tuneLength=tuneLength,
                      rfeControl=rtrl,
                      sizes=seq(2,length(predictors),1),metric=metric)
     if(save){
@@ -186,7 +185,7 @@ trainModels <- function (dataset,spacevar,timevar,
     model <- train(dataset[,model_raw$optVariables],dataset[,response],
                    method=algorithm,trControl=ctrl,tuneLength=tuneLength,
                    tuneGrid = tuneGrid,metric=metric)
-    #add k-fold cv performance
+    #add random k-fold cv performance
     if(calculate_random_fold_model){
       set.seed(seed)
       model_cv <- train(dataset[,model_raw$optVariables],dataset[,response],
