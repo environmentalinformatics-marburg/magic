@@ -180,10 +180,16 @@ for (target in targets){
 ################# Regression Table #############################################
 ################################################################################
 regstats <- c()
+sds_obs <- c()
+means_obs <- c()
 for (i in 1:length(modelspred)){
   regstats <- rbind(regstats,regressionStats(modelspred[[i]]$obs,modelspred[[i]]$pred))
+  means_obs <- c(means_obs,mean(modelspred[[i]]$obs))
+  sds_obs <- c(sds_obs,sd(modelspred[[i]]$obs))
 }
-regstats <- round(regstats,3)
+regstats$mean_obs <- means_obs
+regstats$sd_obs <- sds_obs
+regstats <- round(regstats,4)
 regstats$name <- names(modelspred)
 write.csv(regstats[,-which(names(regstats)%in%c("ME.se","MAE.se","RMSE.se"))],
           paste0(figurepath,casestudy,"_regstatstab.csv"),row.names=FALSE)
