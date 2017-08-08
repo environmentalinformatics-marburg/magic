@@ -1,87 +1,72 @@
-### 'rhdf5' -----
+### environment -----
 
+## working directory
+setwd("dfg_for_bale/c2/hdf5")
+
+## packages and functions
 library(raster)
-library(rhdf5)
 
-## coordinates
-fls <- "/media/fdetsch/XChange/MODIS_ARC/PROBA-V/PROBAV_S5_TOC_X21Y06_20170601_100M_NDVI_V101.HDF5"
-fid <- H5Fopen(fls)
-
-crs <- H5Dopen(fid, "crs")
-lat <- H5Dopen(fid, "lat"); lat <- H5Dread(lat)
-lon <- H5Dopen(fid, "lon"); lon <- H5Dread(lon)
-ext <- extent(c(range(lon), range(lat)))
-
-## ndvi
-glv <- H5Gopen(fid, "LEVEL3")
-gvi <- H5Gopen(glv, "NDVI")
-dvi <- H5Dopen(gvi, "NDVI")
-vvi <- H5Dread(dvi)
-H5close()
+source("read_vi.R")
+source("read_qc.R")
 
 
-read_hdf5_alt <-function(h5file) {
-  if (!"rhdf5" %in% installed.packages()) {
-    source("https://bioconductor.org/biocLite.R")
-    biocLite("rhdf5")
-  }
-  
-  #extract the TOA reflectances for the four spectral bands
-  d_red <- h5read(h5file, "LEVEL3/RADIOMETRY/RED/TOA") / 2000
-  d_nir <- h5read(h5file, "LEVEL3/RADIOMETRY/NIR/TOA") / 2000
-  d_blu <- h5read(h5file, "LEVEL3/RADIOMETRY/BLUE/TOA") / 2000
-  d_swi <- h5read(h5file, "LEVEL3/RADIOMETRY/SWIR/TOA") / 2000
-}
+# ### 'rhdf5' -----
+# 
+# library(rhdf5)
+# 
+# ## coordinates
+# fls <- "/media/fdetsch/XChange/MODIS_ARC/PROBA-V/PROBAV_S5_TOC_X21Y06_20170601_100M_NDVI_V101.HDF5"
+# fid <- H5Fopen(fls)
+# 
+# crs <- H5Dopen(fid, "crs")
+# lat <- H5Dopen(fid, "lat"); lat <- H5Dread(lat)
+# lon <- H5Dopen(fid, "lon"); lon <- H5Dread(lon)
+# ext <- extent(c(range(lon), range(lat)))
+# 
+# ## ndvi
+# glv <- H5Gopen(fid, "LEVEL3")
+# gvi <- H5Gopen(glv, "NDVI")
+# dvi <- H5Dopen(gvi, "NDVI")
+# vvi <- H5Dread(dvi)
+# H5close()
+# 
+# 
+# read_hdf5_alt <-function(h5file) {
+#   if (!"rhdf5" %in% installed.packages()) {
+#     source("https://bioconductor.org/biocLite.R")
+#     biocLite("rhdf5")
+#   }
+#   
+#   #extract the TOA reflectances for the four spectral bands
+#   d_red <- h5read(h5file, "LEVEL3/RADIOMETRY/RED/TOA") / 2000
+#   d_nir <- h5read(h5file, "LEVEL3/RADIOMETRY/NIR/TOA") / 2000
+#   d_blu <- h5read(h5file, "LEVEL3/RADIOMETRY/BLUE/TOA") / 2000
+#   d_swi <- h5read(h5file, "LEVEL3/RADIOMETRY/SWIR/TOA") / 2000
+# }
 
 
 ### 'h5r' -----
 
-read_hdf5 <- function(h5file
-                      , crs = "+init=epsg:4326"
-                      , no_data = 255
-                      , scale_factor = 0.004) {
+library(h5r)
 
-  ### environment -----
-  
-  ## open connection to hdf5 file
-  h5f <- h5r::H5File(h5file, "r")
-  dvi <- h5r::getH5Dataset(h5f, "/LEVEL3/NDVI/NDVI")
-  
-  
-  ### geometry -----
-  
-  ## resolution
-  dpj <- h5r::getH5Dataset(h5f, "crs")
-  apj <- h5r::getH5Attribute(dpj, "GeoTransform")
-  vpj <- h5r::readH5Data(apj)
-  
-  tmp <- as.double(unlist(strsplit(vpj, " ")))
-  res <- c(tmp[2], tmp[6])
+drs_vi = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167280"
+             , pattern = "V101$", full.names = TRUE)
+dts_vi = substr(basename(drs_vi), 16, 23)
+fls_vi = unlist(lapply(drs_vi, function(i) {
+  list.files(i, pattern = ".hdf5$", full.names = TRUE)
+}))
 
-  ## bounding box
-  dms <- dim(dvi)
-  
-  dcr <- h5r::getH5Group(h5f, "/LEVEL3/GEOMETRY")
-  crd <- sapply(c("TOP_LEFT_LONGITUDE", "TOP_LEFT_LATITUDE"), function(name) {
-    acr <- h5r::getH5Attribute(dcr, name)
-    h5r::readH5Data(acr)
-  }) 
-  
-  xmn <- crd[1]; ymx <- crd[2]
-  xmx <- xmn + dms[1] * res[1]; ymn <- ymx + dms[2] * res[2]
-  
-  
-  ### data extraction -----
+drs_qc = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167367"
+             , pattern = "V101$", full.names = TRUE)
+dts_qc = substr(basename(drs_qc), 11, 18)
+drs_qc = drs_qc[dts_qc %in% dts_vi]
+fls_qc = unlist(lapply(drs_qc, function(i) {
+  list.files(i, pattern = ".hdf5$", full.names = TRUE)
+}))
 
-  val <- array(h5r::readH5Data(dvi), dms)
-  val[val == no_data] <- NA; val <- val * scale_factor
-  
-  rst <- raster::raster(val, xmn, xmx, ymn, ymx, crs)
-  return(rst)
-}
-
-fls1 <- "/media/fdetsch/XChange/MODIS_ARC/PROBA-V/PROBAV_S5_TOC_X21Y06_20170601_100M_NDVI_V101.HDF5"
-rst1 <- read_hdf5(fls1)
-
-fls2 <- "/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167280/PV_S5_TOC_NDVI_20140311_100M_V101/PROBAV_S5_TOC_X21Y06_20140311_100M_NDVI_V101.hdf5"
-rst2 <- read_hdf5(fls2)
+lst = lapply(1:length(fls_vi), function(i) {
+  cat(i, "of", length(fls_vi), "\n")
+  vi = read_vi(fls_vi[i], filename = gsub(".hdf5$", ".tif", fls_vi[i]), datatype = "FLT4S")
+  qc = read_qc(fls_qc[i], filename = gsub("V101.hdf5$", "SM_V101.tif", fls_qc[i]), datatype = "INT1U")
+  raster::stack(vi, qc)
+})
