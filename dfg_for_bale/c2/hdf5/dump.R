@@ -9,6 +9,31 @@ library(raster)
 source("read_vi.R")
 source("read_qc.R")
 
+## parallelization
+library(doParallel)
+cl = makeCluster(3L)
+registerDoParallel(cl)
+
+## reference extent
+ext = readRDS("../../../../bafire/inst/extdata/uniformExtent.rds")
+ext = spTransform(ext, CRS("+init=epsg:4326"))
+
+## methods
+setMethod('merge', signature(x = 'list', y = 'missing'), 
+          function(x, y, tolerance = 0.05, filename = "", ...) {
+            
+            args <- x
+            args$tolerance <- tolerance
+            args$filename <- filename
+            
+            ## additional arguments
+            dots <- list(...)
+            args <- append(args, dots)
+            
+            ## perform merge
+            do.call(raster::merge, args)
+          })
+
 
 # ### 'rhdf5' -----
 # 
@@ -49,6 +74,7 @@ source("read_qc.R")
 
 library(h5r)
 
+## extract ndvi and status map (sm) layers from hdf5 files
 drs_vi = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167280"
              , pattern = "V101$", full.names = TRUE)
 dts_vi = substr(basename(drs_vi), 16, 23)
@@ -60,13 +86,41 @@ drs_qc = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167367"
              , pattern = "V101$", full.names = TRUE)
 dts_qc = substr(basename(drs_qc), 11, 18)
 drs_qc = drs_qc[dts_qc %in% dts_vi]
+dts_qc = dts_qc[dts_qc %in% dts_vi]
 fls_qc = unlist(lapply(drs_qc, function(i) {
   list.files(i, pattern = ".hdf5$", full.names = TRUE)
 }))
 
 lst = lapply(1:length(fls_vi), function(i) {
   cat(i, "of", length(fls_vi), "\n")
-  vi = read_vi(fls_vi[i], filename = gsub(".hdf5$", ".tif", fls_vi[i]), datatype = "FLT4S")
-  qc = read_qc(fls_qc[i], filename = gsub("V101.hdf5$", "SM_V101.tif", fls_qc[i]), datatype = "INT1U")
-  raster::stack(vi, qc)
+  vi = read_vi(fls_vi[i], filename = gsub(".hdf5$", ".tif", fls_vi[i]), 
+               datatype = "FLT4S", overwrite = TRUE)
+  qc = read_qc(fls_qc[i], filename = gsub("V101.hdf5$", "SM_V101.tif", fls_qc[i]), 
+               datatype = "INT1U", overwrite = TRUE)
+  stack(vi, qc)
 })
+
+## perform quality control
+drs_qcl = "/media/fdetsch/XChange/bale/proba-v/qcl/"
+nms_qcl = sapply(sapply(lst[seq(1, length(lst), 2)], "[[", 1), names)
+nms_qcl = gsub("X21Y06", "X2xY06", nms_qcl)
+fls_qcl = paste0(drs_qcl, nms_qcl)
+
+qcl = foreach(i = seq(1, length(lst), 2), .packages = "raster") %dopar% {
+  crp = lapply(lst[i:(i+1)], function(j) crop(j, ext, snap = "out"))
+  mrg = do.call(merge, crp)
+  
+  overlay(mrg[[1]], mrg[[2]], fun = function(x, y) {
+    bin <- R.utils::intToBin(y[])
+    quality <- substr(bin, 6, 8)
+    flags = sapply(4:1, function(z) substr(bin, z, z) == 1)
+    
+    ids = (quality == "000") | (quality == "010" & all(flags))
+    x[!ids] <- NA
+    
+    return(x)
+  }, filename = fls_qcl[i], format = "GTiff", datatype = "FLT4S")
+}
+
+## close parallel backend
+stopCluster(cl)
