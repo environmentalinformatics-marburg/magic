@@ -39,6 +39,7 @@ read_vi <- function(h5file
   ### data extraction -----
   
   val <- array(h5r::readH5Data(dvi), dms)
+  val <- t(val)
   
   rst <- raster::raster(val, xmn, xmx, ymn, ymx, crs); rm(val)
   rst <- raster::calc(rst, fun = function(x) {
