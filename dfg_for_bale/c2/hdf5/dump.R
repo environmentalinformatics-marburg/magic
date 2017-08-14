@@ -3,6 +3,8 @@
 ## working directory
 setwd("dfg_for_bale/c2/hdf5")
 
+options(stringsAsFactors = FALSE)
+
 ## packages and functions
 library(raster)
 
@@ -75,29 +77,58 @@ library(h5r)
 
 ## extract ndvi and status map (sm) layers from hdf5 files
 drs_vi = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167280"
-             , pattern = "V101$", full.names = TRUE)
+             , full.names = TRUE)
 dts_vi = substr(basename(drs_vi), 16, 23)
+vrs_vi = substr(basename(drs_vi), 30, 33)
 fls_vi = unlist(lapply(drs_vi, function(i) {
   list.files(i, pattern = ".hdf5$", full.names = TRUE)
 }))
 nms_vi = gsub(".hdf5$", ".tif", fls_vi)
+tls_vi = substr(basename(fls_vi), 15, 20)
+dat_vi = data.frame(dts = rep(dts_vi, each = 2), tls = tls_vi, 
+                    vrs = rep(vrs_vi, each = 2), ifl = fls_vi, ofl = nms_vi)
 
 drs_qc = dir("/media/fdetsch/XChange/MODIS_ARC/PROBA-V/M0167367"
-             , pattern = "V101$", full.names = TRUE)
+             , full.names = TRUE)
 dts_qc = substr(basename(drs_qc), 11, 18)
-drs_qc = drs_qc[dts_qc %in% dts_vi]
-dts_qc = dts_qc[dts_qc %in% dts_vi]
+vrs_qc = substr(basename(drs_qc), 25, 28)
 fls_qc = unlist(lapply(drs_qc, function(i) {
   list.files(i, pattern = ".hdf5$", full.names = TRUE)
 }))
 nms_qc = gsub("V101.hdf5$", "SM_V101.tif", fls_qc)
+nms_qc = gsub("V102.hdf5$", "SM_V102.tif", nms_qc)
+tls_qc = substr(basename(fls_qc), 15, 20)
+dat_qc = data.frame(dts = rep(dts_qc, each = 2), tls = tls_qc, 
+                    vrs = rep(vrs_qc, each = 2), ifl = fls_qc, ofl = nms_qc)
 
-lst = lapply(1:length(fls_vi), function(i, verbose = FALSE) {
-  if (verbose) cat(i, "of", length(fls_vi), "\n")
-  vi = ifMissing(nms_vi[i], fun0 = raster, fun1 = read_vi, arg1 = "filename", 
-                 h5file = fls_vi[i], datatype = "FLT4S")
-  qc = ifMissing(nms_qc[i], fun0 = raster, fun1 = read_qc, arg1 = "filename", 
-                 h5file = fls_qc[i], datatype = "INT1U")
+dat_pv = merge(dat_vi, dat_qc, by = c("dts", "tls", "vrs"), all = TRUE)
+rm(list = c("dat_vi", "dat_qc"))
+
+dat_na = dat_pv[is.na(dat_pv$ifl.x) & !is.na(dat_pv$ifl.y), ]
+tmp = gsub("V101.hdf5", "NDVI_V101.tif", dat_na$ifl.y)
+dat_na$ofl.x = gsub("V102.hdf5", "NDVI_V102.tif", tmp)
+ids = as.integer(row.names(dat_na))
+dat_pv$ofl.x[ids] = dat_na$ofl.x
+ids = sapply(dat_na$dts, function(i) i %in% dat_pv[complete.cases(dat_pv), "dts"])
+ids = as.integer(row.names(dat_na[ids, ]))
+dat_pv = dat_pv[-ids, ]
+
+dpl = names(which(table(dat_pv$dts) > 2))
+for (i in dpl) {
+  dat_pv = subset(dat_pv, dts != i | vrs == "V101")
+}
+
+lst = lapply(1:nrow(dat_pv), function(i, verbose = FALSE) {
+  if (verbose) cat(i, "of", nrow(dat_pv), "\n")
+  
+  ifl_vi = dat_pv[i, "ifl.x"]; ofl_vi = dat_pv[i, "ofl.x"]
+  if (is.na(ifl_vi)) ifl_vi = dat_pv[i, "ifl.y"]
+  ifl_qc = dat_pv[i, "ifl.y"]; ofl_qc = dat_pv[i, "ofl.y"]
+  
+  vi = ifMissing(ofl_vi, fun0 = raster, fun1 = read_vi, arg1 = "filename", 
+                 h5file = ifl_vi, datatype = "FLT4S")
+  qc = ifMissing(ofl_qc, fun0 = raster, fun1 = read_qc, arg1 = "filename", 
+                 h5file = ifl_qc, datatype = "INT1U")
   stack(vi, qc)
 })
 
@@ -136,7 +167,7 @@ qcl = stack(qcl)
 drs_mvc = gsub("qcl/$", "mvc/", drs_qcl)
 jnk = ifMissing(drs_mvc, file.path, dir.create, arg1 = "path")
 
-dts = as.Date(dts_vi, "%Y%m%d") + 2
+dts = as.Date(unique(dat_pv$dts), "%Y%m%d") + 2
 mts = format(dts, "%Y%m")
 
 nms_mvc = paste0("PROBAV_S5_TOC_X2xY06_"
