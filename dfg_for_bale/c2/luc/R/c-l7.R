@@ -1,46 +1,5 @@
-## required packages
-library(satellite)
-library(RStoolbox)
-library(Orcs)
-
-## parallelization
-library(parallel)
-cl = makePSOCKcluster(4L)
-jnk = clusterEvalQ(cl, { library(Orcs); library(satellite) })
-
-## reference extent
-bmnpshp = readRDS("../bafire/inst/extdata/uniformExtent.rds")
-
-## digital elevation model (dem)
-BaleDEM = raster("../../data/bale/dem/ASTGTM2_N0xE0xx_dem.tif")
-
-gzs = dir("../../../../../casestudies/bale/landsat"
-          , pattern = "^LC08.*gz|^LO08.*gz", full.names = TRUE)
-odr = "../../data/bale/landsat"
-for (i in gzs) {
-  ofl = file.path(odr, gsub(".tar.gz$", "", basename(i)))
-  tmp = ifMissing(ofl, file.path, dir.create, "path")
-  if (!is.character(tmp))
-    system(paste("tar -xvzf", i, "-C", ofl))
-}
-
 ## import landsat-8 scene
-lsatpaths <- dir(odr, pattern = "^LC08|^LO08", full.names = TRUE)
-
-wrs = unique(sapply(strsplit(basename(lsatpaths), "_"), "[[", 3))
-
-clusterExport(cl, c("lsatpaths", "BaleDEM", "bmnpshp"))
-dms = parLapply(cl, wrs, function(i) {
-  id = grep(i, basename(lsatpaths))[1]
-  cdt = list.files(lsatpaths[id], pattern = "B1.TIF$|B8.TIF$", full.names = TRUE)
-  lapply(cdt, function(j) {
-    rsl = ifelse(length(grep("B1.TIF$", j)) == 1, "_30m", "_15m")
-    ofl = paste0("../../data/bale/dem/ASTGTM2_", i, "_dem", rsl, ".tif")
-    ifMissing(ofl, raster, resample, "filename", x = BaleDEM
-              , y = crop(raster(j), bmnpshp, snap = "out"), datatype = "INT2U")    
-  })
-})
-names(dms) = wrs
+lsatpaths <- dir(odr, pattern = "^LE07", full.names = TRUE)
 
 for (lsatpath in lsatpaths) {
   cat("Scene", basename(lsatpath), "is in, start processing ...\n")
@@ -49,26 +8,16 @@ for (lsatpath in lsatpaths) {
   crr = dir(lsatpath, pattern = "corrected", full.names = TRUE)
   if (length(crr) == 1) {
     crr_fls = list.files(crr, pattern = ".tif$")
-    if (length(crr_fls) == 9) {
+    if (length(crr_fls) == 7) {
       next 
-    } else if (length(crr_fls) > 9) {
+    } else if (length(crr_fls) > 7) {
       stop("Something is wrong.\n")
     }
   } else if (length(crr) > 1) {
     stop("Something is wrong.\n")
   }
   
-  ## if current landsat scene is OLI-only ("LO08"), rename files ("LC08")
-  sid = substr(basename(lsatpath), 1, 4)
-  if (sid == "LO08") {
-    ifl = list.files(lsatpath, pattern = "TIF$|txt$", full.names = TRUE)
-    ofl = file.path(lsatpath, gsub("^LO08", "LC08", basename(ifl)))
-    jnk = sapply(seq(ofl), function(i) {
-      ifMissing(ofl[i], file.path, file.rename, "to", from = ifl[i])
-    })
-  }
-  
-  lsatfiles <-list.files(lsatpath, pattern = glob2rx("LC08*TIF"), full.names = TRUE)
+  lsatfiles <-list.files(lsatpath, pattern = glob2rx("LE07*TIF"), full.names = TRUE)
   sat <- satellite(lsatfiles)
   
   ## clip images with spatial extent of broader bale mountains region
@@ -118,15 +67,13 @@ for (lsatpath in lsatpaths) {
   ## import 30-m and 15-m hillshades
   nms30 = gsub("dem.tif$", "dem_30m.tif", attr(BaleDEM@file, "name"))
   hsd30 = resample(hsd, rst[[1]], filename = nms30, overwrite = TRUE)
-
+  
   nms15 = gsub("dem.tif$", "dem_15m.tif", attr(BaleDEM@file, "name"))
-  hsd15 = resample(hsd, rst[[8]], filename = nms15, overwrite = TRUE)
-
-  rm(list = c("sat", "hsd"))
+  hsd15 = resample(hsd, rst[[7]], filename = nms15, overwrite = TRUE)
   
   ## target files
-  trg = sortFilesLandsat(lsatfiles)[1:9]
-  trg = paste(dirname(trg), "corrected", basename(trg), sep = "/")
+  trg = lsatfiles[c(1:5, 8:9)]
+  trg = file.path(dirname(trg), "corrected", basename(trg))
   trg = gsub(".TIF$", ".tif", trg)
   
   dsn = unique(dirname(trg))
@@ -135,12 +82,9 @@ for (lsatpath in lsatpaths) {
   ## perform topographic correction
   for (i in 1:length(rst)) {
     if (!file.exists(trg[i])) {
-      jnk = calcTopoCorr(rst[[i]], if (i == 8) hsd15 else hsd30, filename = trg[i])
+      jnk = calcTopoCorr(rst[[i]], if (i == 7) hsd15 else hsd30, filename = trg[i])
     }
   }; try(rm(jnk), silent = TRUE)
   
   jnk = file.remove(list.files(tmpDir(), full.names = TRUE))
 }
-
-## close parallel backend
-stopCluster(cl)
