@@ -29,6 +29,10 @@ TairFromUWISC <- function(path){
                     "Date"=dates,
                     "Provider"="UWISC",
                     "Temperature"=dat$Temperature)
+  if (grepl("W  Elev",readLines(path,2)[2])){
+    dat$Lon <- -dat$Lon
+  }
+  return(dat)
 }
 
 TairFromUSDA <- function(path){
@@ -78,7 +82,7 @@ TairFromUSDA <- function(path){
                     "Temperature"= dat$Temperature)
 }
 
-TairFromLTER <- function(path){
+TairFromLTER <- function(path,agg2hour = TRUE){
   require(lubridate)
   header <- read.csv(path,skip=26,nrow=1,header=FALSE,sep=",",
                      stringsAsFactors= F)
@@ -98,12 +102,20 @@ TairFromLTER <- function(path){
   dates <- ymd(as.Date(dat$DATE_TIME,format="%m/%d/%Y")) + hm(substr(dat$DATE_TIME,12,16))
   Temperature <- dat$AIRT3M
   nameStation <- gsub('.{5}$', '',  gsub(".*[/]([^.]+)[.].*", "\\1", path))
+  dat <- data.frame("Date"=dates,"Temperature"=Temperature)
+  if(agg2hour){
+    dat_agg <- aggregate(dat$Temperature, 
+                     list(hour=cut(as.POSIXct(dat$Date), "hour")),
+                     mean)
+    dat <- data.frame("Date"=dat_agg$hour,"Temperature"=dat_agg$x)
+  }
+  
   dat <- data.frame("Name"= nameStation,
                     "Lat"=loc$Lat[loc$name==nameStation],
                     "Lon"=loc$Lon[loc$name==nameStation],
-                    "Date"=dates,
+                    "Date"=dat$Date,
                     "Provider"="LTER",
-                    "Temperature"=Temperature)
+                    "Temperature"=dat$Temperature)
 }
 
 TairFromItaly <- function(path){
