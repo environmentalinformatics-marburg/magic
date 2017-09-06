@@ -1,7 +1,7 @@
 
 
 TairFromUWISC <- function(path){
-  #extract necessary information from University of wisoncin data
+  require(lubridate)
   headernames <- c("Year","Yday","Month","Day","Time","Temperature",
                    "Pressure","WindSpeed","WindDirection","RelativeHumidity",
                    "DeltaT")
@@ -10,49 +10,78 @@ TairFromUWISC <- function(path){
   names(dat) <- headernames
   dat <- dat[,c("Year","Yday","Time","Temperature")]
   dat$Temperature[dat$Temperature==444] <- NA
-  dat$Time <- dat$Time/100
+  
+  x <- as.Date(dat$Yday, origin=as.Date(paste0(dat$Year,"-01-01")))
+  dates <- ymd(x) + hm(paste0(substr(sprintf("%04d", dat$Time),1,2),":",
+                              substr(sprintf("%04d", dat$Time),3,4)))
+  # dat$Time <- dat$Time/100
   info <- read.csv(path,nrows=2,header=FALSE,sep="",
                    na.strings ="", stringsAsFactors= F)
-  info <- c(info[1,10],info[2,2],info[2,4])
+  if (ncol(info)==10){
+    nme <- info[1,10]
+  } else{
+    nme <- paste0(info[1,10],info[1,11])
+  }
+  info <- c(nme,info[2,2],info[2,4])
   dat <- data.frame("Name"=info[1],
                     "Lat"=-as.numeric(gsub("([0-9]+).*$", "\\1", info[2])),
                     "Lon"=as.numeric(gsub("([0-9]+).*$", "\\1", info[3])),
-                    dat)
+                    "Date"=dates,
+                    "Provider"="UWISC",
+                    "Temperature"=dat$Temperature)
 }
 
 TairFromUSDA <- function(path){
-  require("rio")
- if (grepl("xlsx",path)){
-  created <- mapply(convert, path, gsub("xlsx", "csv", path))
-  path <- paste0(substr(path,1,nchar(path)-4),"csv")
- }
+  require(rio)
+  require(lubridate)
+  if (grepl("xls",path)){
+    if (grepl("xlsx",path)){
+      created <- mapply(convert, path, gsub("xlsx", "csv", path))
+      path <- paste0(substr(path,1,nchar(path)-4),"csv")
+      if (grepl("Mt.Fleming",path)){
+        nameStation <- "MtFleming"
+      }else{
+        nameStation <- gsub('.{2}$', '',  gsub(".*[/]([^.]+)[.].*", "\\1", sub("_","",sub("w.",".",path))))
+      }
+    }else{
+      created <- mapply(convert, path, gsub("xls", "csv", path))
+      path <- paste0(substr(path,1,nchar(path)-3),"csv")
+      if (grepl("Mt.Fleming",path)){
+        nameStation <- "MtFleming"
+      }else{
+        
+        nameStation <- gsub('.{2}$', '',  gsub(".*[/]([^.]+)[.].*", "\\1", sub("_","",sub("w.",".",path))))
+      }}}
+  
   dat <- read.table(path,skip=3,sep=",",comment.char = "")
   info <- read.csv(path,nrows=3,header=FALSE,sep=",",
                    na.strings ="", stringsAsFactors= F)
   dat <- data.frame(dat[,grep("YEAR",info[1,])],
-               dat[,grep("DAY",info[1,])],
-               dat[,grep("HOUR",info[1,])]/100,
-               dat[,grep("Air",info[1,])[1]])
+                    dat[,grep("DAY",info[1,])],
+                    dat[,grep("HOUR",info[1,])]/100,
+                    dat[,grep("Air",info[1,])[1]])
   names(dat) <- c("Year","Yday","Time","Temperature")
+  
+  x <- as.Date(dat$Yday, origin=as.Date(paste0(dat$Year,"-01-01")))
+  dates <- ymd(x) + hm(paste0(dat$Time,":00"))
+  
   loc <- data.frame("name"=c("BullPass","GraniteHarbour","MarblePoint",
-                    "MinnaBluff","MtFleming","ScottBase","VictoriaValley"),
+                             "MinnaBluff","MtFleming","ScottBase","VictoriaValley"),
                     "Lat"=c(-77.518,-77.006,-77.419,-78.512,-77.545,-77.848,-77.33094),
                     "Lon"=c(161.865,162.525,163.682,166.766,160.29,166.761,161.6007))
   
-  nameStation <- gsub('.{4}$', '',  gsub(".*[/]([^.]+)[.].*", "\\1", path))
-  if (nameStation=="Mt"){
-    nameStation <- "MtFleming"
-  }
   dat <- data.frame("Name"= nameStation,
                     "Lat"=loc$Lat[loc$name==nameStation],
                     "Lon"=loc$Lon[loc$name==nameStation],
-                    dat)
+                    "Date"=dates,
+                    "Provider"="USDA",
+                    "Temperature"= dat$Temperature)
 }
 
 TairFromLTER <- function(path){
   require(lubridate)
   header <- read.csv(path,skip=26,nrow=1,header=FALSE,sep=",",
-             stringsAsFactors= F)
+                     stringsAsFactors= F)
   loc <- data.frame("name"=c("beacon","bonney","brownworth","Canada",
                              "commonwealth","explorerscave","LakeFryxell",
                              "LakeHoare","HowardGlacier","MiersValley","TaylorGlacier",
@@ -64,29 +93,28 @@ TairFromLTER <- function(path){
                             163.453,163.182,162.902,163.085,163.78778,
                             162.141,161.011,161.788))
   dat <- read.csv(path,skip=27,header=FALSE,sep=",",
-                               stringsAsFactors= F)
+                  stringsAsFactors= F)
   names(dat) <- header
-  Year <- substr(dat$DATE_TIME,7,10)
-  Yday <- yday(as.Date(dat$DATE_TIME,format="%m/%d/%Y %H:%M"))
-  Time <- as.numeric(sub(":","",substr(dat$DATE_TIME,12,16)))/100
+  dates <- ymd(as.Date(dat$DATE_TIME,format="%m/%d/%Y")) + hm(substr(dat$DATE_TIME,12,16))
   Temperature <- dat$AIRT3M
-  dat <- data.frame(Year,Yday,Time,Temperature)
   nameStation <- gsub('.{5}$', '',  gsub(".*[/]([^.]+)[.].*", "\\1", path))
   dat <- data.frame("Name"= nameStation,
                     "Lat"=loc$Lat[loc$name==nameStation],
                     "Lon"=loc$Lon[loc$name==nameStation],
-                    dat)
+                    "Date"=dates,
+                    "Provider"="LTER",
+                    "Temperature"=Temperature)
 }
 
 TairFromItaly <- function(path){
   require(lubridate)
   dat <- read.table(path,header=TRUE)
-  Year <- substr(dat$DateTime,1,4)
-  Yday <- yday(as.Date(dat$DateTime))
-  Time <- as.numeric(sub(":","",dat$UTC))/100
+  #  Year <- as.numeric(substr(dat$DateTime,1,4))
+  #  Yday <- yday(as.Date(dat$DateTime))
+  # Time <- as.numeric(sub(":","",dat$UTC))/100
+  dates <- ymd(as.Date(dat$DateTime)) + hm(dat$UTC)
   Temperature <- as.numeric(as.character(dat$Temp))
-  dat <- data.frame(Year,Yday,Time,Temperature)
-  dat$Temperature[dat$Temperature>90] <- NA
+  Temperature[Temperature>90] <- NA
   loc <- data.frame("name"=c("Zoraida","Modesta","Paola","Sofiab","Silvia",
                              "Rita","Maria","Lola","Irene","Giulia",
                              "Eneide","Concordia","Arelis","Alessandra"),
@@ -100,6 +128,7 @@ TairFromItaly <- function(path){
   dat <- data.frame("Name"= nameStation,
                     "Lat"=loc$Lat[loc$name==nameStation],
                     "Lon"=loc$Lon[loc$name==nameStation],
-                    dat)
+                    "Date"=dates,
+                    "Provider"="Italy",
+                    "Temperature"=Temperature)
 }
-  
