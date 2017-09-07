@@ -1,0 +1,12 @@
+molopo region random sample of 1km tiles landcover classification
+
+01 mol_lcc_sample: sample point grid over the merged rgb
+	output: sample points
+02 mol_crop_tiles: choose random sample points and crop 1km tiles, calculate vvi
+	output: raster stack for each tile with rgb and vvi
+03 mol_lcc_1km.R: landcover classification for every tile
+	output: lcc_1.tif to lcc_296.tif
+04 mol_lcc_bush_reclassification.R: determine bush class; class with the highest vvi
+	output: lcc_reclass_x.tif
+
+
