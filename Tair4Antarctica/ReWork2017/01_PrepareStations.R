@@ -63,16 +63,20 @@ merged <- merged[year(merged$Date)>=2000,]
 
 #### Create shapefile
 stations <- data.frame("Name"=unique(merged$Name))
-stations$Lat <- unlist(lapply(stations$Name,function(x){merged$Lat[merged$Name==x][1]}))
-stations$Lon <- unlist(lapply(stations$Name,function(x){merged$Lon[merged$Name==x][1]}))
-stations$Provider <- unlist(lapply(stations$Name,function(x){merged$Provider[merged$Name==x][1]}))
+stations$Lat <- unlist(lapply(stations$Name,function(x){
+  merged$Lat[merged$Name==x][1]}))
+stations$Lon <- unlist(lapply(stations$Name,function(x){
+  merged$Lon[merged$Name==x][1]}))
+stations$Provider <- unlist(lapply(stations$Name,function(x){
+  merged$Provider[merged$Name==x][1]}))
 
 
 merged_sp <- SpatialPointsDataFrame(coords <- data.frame("x"=stations$Lon,
                                                          "y"=stations$Lat),
                                     data <- stations,
                                     proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
-merged_sp <- spTransform(merged_sp,"+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+merged_sp <- spTransform(merged_sp,
+                         "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
 
 LSTExt <- readOGR(paste0(datapath,"ShapeLayers/MSG_NotNA.shp"),"MSG_NotNA")
 stations_select <- intersect(merged_sp,LSTExt)
@@ -91,11 +95,12 @@ for (i in 1: length(unique(merged$Name))){
 dev.off()
 
 #manual check of the data
-merged[merged$Name=="VictoriaValley"&merged$Temperature<(-39),"Temperature"] <- NA
+merged[merged$Name=="VictoriaValley"&merged$Temperature<(-39),
+       "Temperature"] <- NA
 merged <- merged[-which(merged$Name%in%c("Doug"))]
 stations_select <- stations_select[stations_select$Name%in%unique(merged$Name),]
 
-save(merged,file=paste0(datapath,"/RData/stationdat2013.RData"))
+save(merged,file=paste0(datapath,"/RData/stationdat.RData"))
 writeOGR(stations_select, paste0(datapath,"ShapeLayers"), 
          "ClimateStations", driver="ESRI Shapefile",overwrite_layer = TRUE)
 
