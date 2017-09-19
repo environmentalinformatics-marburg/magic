@@ -15,10 +15,14 @@ trainingpixels <- 150000 # number of training pixels taken from training tiles
 #read and clean data:
 dataset <- readRDS(paste0(datapath,"/sentinel_bush_final.RDS"))
 dataset <- dataset[complete.cases(dataset),]
+names(dataset)[3:ncol(dataset)] <- paste0("S",names(dataset)[3:ncol(dataset)])
+
 #define predictors and response:
-predictors <- apply(expand.grid(c("01_","04_","07_"),
-              c("B1","B11","B12","B2","B3","B4",
-                "B5","B6","B7","B8","B8A","B9",
+predictors <- apply(expand.grid(c("S01_","S04_","S07_"),
+              c(#"B1",
+                "B11","B12","B2","B3","B4",
+                "B5","B6","B7","B8","B8A",
+                #"B9",
                 "ndvi","ndvi_mn","ndvi_sd")),
               1,paste, collapse="")
 response <- "bush"
@@ -27,19 +31,19 @@ k <- round(1/trainingtile_perc,0)
 foldids <- CreateSpacetimeFolds(dataset,spacevar="tile_nr",k=k,seed=100)
 traindata <- dataset[foldids$indexOut[[1]],]
 testdata <- dataset[unlist(foldids$indexOut[2:k]),]
-save(testdata,file=paste0(outpath,"/testdata.RData"))
-save(traindata,file=paste0(outpath,"/traindata.RData"))
+save(testdata,file=paste0(outpath,"/testdata_V2.RData"))
+save(traindata,file=paste0(outpath,"/traindata_V2.RData"))
 
 #reduce amount of training data pixels
 traindata_subs <- createDataPartition(traindata$bush,list=FALSE,
                                  p=100/nrow(traindata)*trainingpixels/100)
 traindata <- traindata[traindata_subs,]
-save(traindata,file=paste0(outpath,"/traindata_final.RData"))
+save(traindata,file=paste0(outpath,"/traindata_final_V2.RData"))
 # prepare a 10-fold LLOCV
 foldids <- CreateSpacetimeFolds(traindata,spacevar="tile_nr",
                                 k=10,seed=100)
 ctrl <- trainControl(method="cv",
-                     savePredictions = TRUE,
+                     savePredictions = "all",
                      verbose=TRUE,
                      index=foldids$index,
                      indexOut=foldids$indexOut)
@@ -58,5 +62,5 @@ model <- train(traindata[,predictors],traindata[,response],
                trControl = ctrl,tuneLength=3)
 #stop cluster and save model:
 stopCluster(cl)
-save(model,file=paste0(outpath,"/sentinelmodel.RData"))
+save(model,file=paste0(outpath,"/sentinelmodel_V2.RData"))
 ################################################################################

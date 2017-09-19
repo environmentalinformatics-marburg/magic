@@ -46,7 +46,7 @@ save(traindata,file=paste0(outpath,"/traindata_final.RData"))
 foldids <- CreateSpacetimeFolds(traindata,spacevar="bush_class_tile",
                                 k=10,seed=100)
 ctrl <- trainControl(method="cv",
-                     savePredictions = TRUE,
+                     savePredictions = "all",
                      index=foldids$index,
                      indexOut=foldids$indexOut,
                      verboseIter=TRUE,
