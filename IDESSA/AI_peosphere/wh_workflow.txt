@@ -1,0 +1,14 @@
+molopo waterhole classification
+
+01 merged tile around the climate stations and reprojected the raster to EPSG:32735 WGS-84-UTM-zone-35s
+02 visually identified waterholes
+03 wh_crop.R: crop 3 km around the waterholes
+04 wh_landcover_classification.R:
+	# # # tasks: # # #
+	# 1. load tiles
+	# 2. visible vegetation index
+	# 3. determine number of clusters (Elbow)
+	# 4. cluster image with optimal number of clusters
+	# # # 
+05 determine bush class visually ==> lcc_legend.csv
+06 wh_lcc_post_processing.R: unify class numbers
