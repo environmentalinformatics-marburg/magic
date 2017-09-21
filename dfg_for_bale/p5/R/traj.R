@@ -4,16 +4,11 @@
 rm(list = ls(all = TRUE)); closeAllConnections()
 
 ## packages
-library(opentraj)
-library(doParallel)
-library(raster)
-library(reshape2)
-library(Rsenal)
-library(grid)
-library(latticeExtra)
+lib = c("opentraj", "doParallel", "reshape2", "Rsenal", "grid", "latticeExtra")
+jnk = sapply(lib, function(x) library(x, character.only = TRUE))
 
 ## parallelization
-cl <- makeCluster(3L)
+cl <- makeCluster(.75 * detectCores())
 registerDoParallel(cl)
 
 
@@ -24,17 +19,19 @@ registerDoParallel(cl)
 # kHeight <- 3000
 
 ## path to meteorological reanalysis data
-rsv <- "/media/sd19006/data/users/fdetsch/R-Server"
-KMetFiles <- paste0(rsv, "/data/bale/HYSPLIT/ncep/")
-KOutFiles <- paste0(rsv, "/data/bale/HYSPLIT/results/")
+rsv <- "/media/sd19006/data/users/fdetsch/R-Server" 
+hsp = file.path(rsv, "data/bale/HYSPLIT")
+
+KMetFiles <- file.path(hsp, "ncep/")
+KOutFiles <- file.path(hsp, "results/")
 
 ## hysplit installation path
-KHySplitPath <- paste0(rsv, "/apps/hysplit-886/")
+KHySplitPath <- file.path(rsv, "apps/hysplit-886/")
 
 ## load and reformat point file
-dat <- read.csv("../../data/bale/HYSPLIT/p1/Master data sheet for Climate Station Data.csv", 
+dat <- read.csv(file.path(hsp, "p1/Master data sheet for Climate Station Data.csv"), 
                 skip = 3L, header = FALSE, stringsAsFactors = FALSE)
-nms <- read.csv("../../data/bale/HYSPLIT/p1/Master data sheet for Climate Station Data.csv", 
+nms <- read.csv(file.path(hsp, "p1/Master data sheet for Climate Station Data.csv"), 
                 skip = 2L, nrows = 1L, header = FALSE, stringsAsFactors = FALSE)
 nms[grep("Longitude", nms)] <- "Longitude"
 nms[1, 8:ncol(nms)] <- gsub("\\.", "/", nms[1, 8:ncol(nms)])
@@ -43,17 +40,14 @@ names(dat) <- nms
 mlt <- melt(dat, id.vars = 1:7, variable.name = "date", value.name = "prcp")
 mlt$date <- as.Date(mlt$date, "%d/%m/%Y")
 
-# df <- read.csv2("C:/Users/iotte/Desktop/20170208_only/writing/modelling/data/recycFrac_allPlots_monthMeanCopy_tst.csv", header = TRUE)
-
 ## auxilliary plot elements
-rgb <- brick(paste0(rsv, "/data/bale/HYSPLIT/rgb.tif"))
+rgb <- brick(file.path(hsp, "rgb.tif"))
 
-spt <- dat
-coordinates(spt) <- ~ Longitude + Latitude 
-proj4string(spt) <- "+init=epsg:4326"
+coordinates(dat) <- ~ Longitude + Latitude 
+proj4string(dat) <- "+init=epsg:4326"
 
 ## loop over weather stations
-iso <- lapply(dat[, "Station Code"], function(h) {
+iso <- lapply(dat@data[, "Station Code"], function(h) {
   sbs <- subset(mlt, mlt[, "Station Code"] == h)
   sbs <- sbs[complete.cases(sbs), ]
 
@@ -65,8 +59,7 @@ iso <- lapply(dat[, "Station Code"], function(h) {
   # coordinates
   lat <- sbs$Latitude[1]; lon <- sbs$Longitude[1]
   
-  lst <- foreach(i = 1:nrow(sbs), 
-                 .packages = c("opentraj", "Rsenal", "latticeExtra")) %dopar% {
+  lst <- foreach(i = 1:nrow(sbs), .packages = lib) %dopar% {
       
       dts <- if (i == 1) {
         seq(stp, msr[i], "day")
@@ -119,3 +112,5 @@ iso <- lapply(dat[, "Station Code"], function(h) {
 # spGridFreq <- PlotTrajFreq(r1, background = T, overlay = NA,
 #                            overlay.color = "white", pdf = FALSE, file.name = "output")
 
+## close parallel backend
+stopCluster(cl)
