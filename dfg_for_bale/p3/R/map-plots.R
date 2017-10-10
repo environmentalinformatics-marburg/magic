@@ -13,7 +13,7 @@ source("../p1/R/panel.smoothconts.R")
 source("../p1/R/visDEM.R")
 
 ## paths
-dir_dat = "D:/data/bale"
+dir_dat = "../../../../data/bale/"
 
 
 ### data import -----
@@ -68,7 +68,7 @@ p_dem = visDEM(dem, seq(1250, 4500, 50), col = "black", labcex = .6
 ## satellite image, and one with the non-transparent satellite image only
 alpha = c(.8, 1); nms = c("map_bale_dem.tiff", "map_bale.tiff")
 for (i in 1:2) {
-  rsl = Rsenal::rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha[i])
+  rsl = rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha[i])
   
   p_bale = spplot(rgb[[1]], col.regions = "transparent", colorkey = FALSE
                   , scales = list(draw = TRUE, cex = .8, alternating = 3
@@ -105,7 +105,7 @@ for (i in 1:2) {
   
   # epsg code
   upViewport()
-  Rsenal::grid.stext("EPSG:32637\n\uA9 OpenStreetMap contributors"
+  grid.stext("EPSG:32637\n\uA9 OpenStreetMap contributors"
                      , x = unit(.99, "npc"), y = unit(.01, "npc")
                      , just = c("right", "bottom") , gp = gpar(cex = .8))
   invisible(dev.off())
@@ -146,6 +146,7 @@ for (i in 1:length(settlements)) {
   
   ## create figures, one with contour lines superimposed upon a semi-transparent
   ## satellite image, and one with the non-transparent satellite image only
+  alpha = c(.8, 1)
   nms = c(paste("map", stm, "dem.tiff", sep = "_"), paste0("map_", stm, ".tiff"))
   for (j in 1:2) {
     rsl = rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha[j])
@@ -215,20 +216,21 @@ for (i in 1:length(settlements)) {
   
   ## create figures, one with contour lines superimposed upon a semi-transparent
   ## satellite image, and one with the non-transparent satellite image only
-  jnk = foreach(alpha = c(.8, 1), nms = c(paste("map", stm, "dem.tiff", sep = "_")
-                                          , paste0("map_", stm, ".tiff"))) %do% {
-    rsl = Rsenal::rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha)
+  alpha = c(.8, 1)
+  nms = c(paste("map", stm, "dem.tiff", sep = "_"), paste0("map_", stm, ".tiff"))
+  for (i in 1:2) {
+    rsl = rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha[i])
     
     p_bale = spplot(rgb[[1]], col.regions = "transparent", colorkey = FALSE
                     , scales = list(draw = TRUE, cex = .8, alternating = 3
                                     , y = list(rot = 90))
                     , sp.layout = rsl, maxpixels = ncell(rgb))
     
-    if (alpha != 1) {
+    if (alpha[i] != 1) {
       p_bale = p_bale + as.layer(p_dem)
     }
     
-    tiff(file.path("img/settlements/dsm", nms), width = 42, height = 29.7
+    tiff(file.path("img/settlements/dsm", nms[i]), width = 42, height = 29.7
          , units = "cm", res = 300, compression = "lzw")
     plot.new()
     
@@ -241,10 +243,10 @@ for (i in 1:length(settlements)) {
     
     # epsg code
     downViewport(trellis.vpname("figure"))
-    Rsenal::grid.stext("EPSG:32637\n\uA9 Google, TerraMetrics"
+    grid.stext("EPSG:32637\n\uA9 Google, TerraMetrics"
                        , x = unit(.99, "npc"), y = unit(.01, "npc")
                        , just = c("right", "bottom") , gp = gpar(cex = .8))
-    Rsenal::grid.stext(lbl, gp = gpar(cex = 1.8), just = c("left", "bottom")
+    grid.stext(lbl, gp = gpar(cex = 1.8), just = c("left", "bottom")
                        , x = unit(.52, "npc"), y = unit(.5, "npc"))
     invisible(dev.off())
   }
