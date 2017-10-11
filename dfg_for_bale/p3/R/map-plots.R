@@ -6,11 +6,15 @@ setwd("dfg_for_bale/p3")
 ## libraries and functions
 # devtools::install_github("environmentalinformatics-marburg/Rsenal", local = FALSE)
 # devtools::install_github("fdetsch/Orcs", local = FALSE)
-lib = c("Orcs", "Rsenal", "latticeExtra", "grid")
+lib = c("Orcs", "doParallel", "Rsenal", "latticeExtra", "grid")
 Orcs::loadPkgs(lib)
 
 source("../p1/R/panel.smoothconts.R")
 source("../p1/R/visDEM.R")
+
+## parallelization 
+cl = makeCluster(detectCores() * .75)
+registerDoParallel(cl)
 
 ## paths
 dir_dat = "../../../../data/bale/"
@@ -186,6 +190,45 @@ for (i in 1:length(settlements)) {
 
 ### visualize settlements (dismo) -----
 
+rps <- "../../dfg_for_kilimanjaro/osm_google_kili/src/"
+source(paste0(rps, "getTileCenters.R")); source(paste0(rps, "getGoogleTiles.R"))
+
+tls <- getTileCenters(4000, 800)
+
+## download (and merge) google maps tiles
+rgb = foreach(i = 1:length(settlements), .packages = c("raster", "rgeos")
+              , .export = "getGoogleTiles") %dopar% {
+                
+  stm = tolower(settlements[i, ]@data$name)
+  stm = gsub(" ", "-", stm)
+  
+  bff = gBuffer(settlements[i, ], width = 2000, quadsegs = 250)
+  ext = extend(extent(bff), c(1e3, 100))
+  
+  nms_dsm = paste0(file.path("data/dsm", paste0("dsm_", stm)), ".tif")
+  ext_dsm = extend(ext, c(0, 0, 250, 0))
+  
+  if (file.exists(nms_dsm)) {
+    brick(nms_dsm)
+  } else {
+    
+    # # retrieve aerial image (single image, coarse spatial resolution)
+    #   tmp = dismo::gmap(ext2spy(ext_dsm, "+init=epsg:32637"), type = "satellite"
+    #                     , scale = 2, rgb = TRUE)
+    
+    # retrieve aerial image (single tiles, higher spatial resolution)
+    odr = file.path("data/dsm", stm)
+    tmp = getGoogleTiles(tile.cntr = tls, location = settlements[i, ]
+                         , plot.res = 800, path.out = odr, plot.bff = 100
+                         , loc_name = "name", scale = 2, rgb = TRUE
+                         , type = "satellite", prefix = paste0(stm, "_tile_")
+                         , mosaic = file.path(odr, paste0(stm, ".tif")))
+    
+    tmp = projectRaster(tmp, crs = "+init=epsg:32637", method = "ngb")
+    crop(tmp, ext, snap = "out", filename = nms_dsm, datatype = "INT1U")
+  }
+}
+
 for (i in 1:length(settlements)) {
   
   stm = tolower(settlements[i, ]@data$name)
@@ -193,24 +236,9 @@ for (i in 1:length(settlements)) {
   stm = gsub(" ", "-", stm)
   
   cat(lbl, "is in, start processing.\n")
-  
-  ## retrieve aerial image
-  bff = rgeos::gBuffer(settlements[i, ], width = 2000, quadsegs = 250)
-  ext = extend(extent(bff), c(1e3, 100))
-  
-  ext_dsm = extend(ext, c(0, 0, 250, 0))
-  nms_dsm = paste0(file.path("data/dsm", paste0("dsm_", stm)), ".tif")
-  rgb = if (file.exists(nms_dsm)) {
-    brick(nms_dsm)
-  } else {
-    tmp = dismo::gmap(ext2spy(ext_dsm, "+init=epsg:32637"), type = "satellite"
-                      , scale = 2, rgb = TRUE)
-    tmp = projectRaster(tmp, crs = "+init=epsg:32637", method = "ngb")
-    crop(tmp, ext, snap = "out", filename = nms_dsm, datatype = "INT1U")
-  }
-  
+
   ## create contour lines
-  tmp = crop(dem, rgb, snap = "out")
+  tmp = crop(dem, rgb[[i]], snap = "out")
   p_dem = visDEM(tmp, seq(1250, 4500, 10), col = "black", labcex = .6
                  , labels = NULL)
   
@@ -219,9 +247,9 @@ for (i in 1:length(settlements)) {
   alpha = c(.8, 1)
   nms = c(paste("map", stm, "dem.tiff", sep = "_"), paste0("map_", stm, ".tiff"))
   for (i in 1:2) {
-    rsl = rgb2spLayout(rgb, quantiles = c(0, 1), alpha = alpha[i])
+    rsl = rgb2spLayout(rgb[[i]], quantiles = c(0, 1), alpha = alpha[i])
     
-    p_bale = spplot(rgb[[1]], col.regions = "transparent", colorkey = FALSE
+    p_bale = spplot(rgb[[i]][[1]], col.regions = "transparent", colorkey = FALSE
                     , scales = list(draw = TRUE, cex = .8, alternating = 3
                                     , y = list(rot = 90))
                     , sp.layout = rsl, maxpixels = ncell(rgb))
@@ -251,3 +279,6 @@ for (i in 1:length(settlements)) {
     invisible(dev.off())
   }
 }
+
+## close parallel backend
+stopCluster(cl)
