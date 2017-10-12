@@ -1,0 +1,2 @@
+- either adjust 'lambda' passed to Whittaker smoother or choose other approach
+- CHIRPS rainfall -> impact on NDVI anomalies in Schwaebische Alb?
