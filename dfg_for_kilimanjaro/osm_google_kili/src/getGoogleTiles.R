@@ -20,6 +20,7 @@
 #' \code{character} file name is specified, tiles are not only merged, but the 
 #' resulting image is also written to disk incrementally, thus reducing the 
 #' amount of memory required. 
+#' @param loc_name Name of column with location name as \code{character}.
 #' 
 #' @param ... Additional arguments passed to \code{\link{gmap}}.
 #' 
@@ -39,12 +40,15 @@ getGoogleTiles <- function(tile.cntr,
                            plot.bff = 0,
                            path.out = ".",
                            prefix = "kili_tile_",
-                           mosaic = FALSE) {
+                           loc_name = "Location",
+                           mosaic = FALSE, ...) {
   
   # Transform SpatialPointsDataFrame to data.frame (optional)
   prj <- proj4string(location)
-  location <- data.frame(location)
+  crd <- coordinates(location)
 
+  jnk = Orcs::ifMissing(path.out, invisible, dir.create, "path")
+  
   # Loop through single tile centers of current research plot
   dsm.rst.ls <- do.call("rbind", lapply(seq(tile.cntr), function(z) {
     
@@ -58,9 +62,9 @@ getGoogleTiles <- function(tile.cntr,
       print(paste("Processing file ", fl, "..."))
       
       # Set center of current tile
-      tmp.coords.mrc <- location
-      tmp.coords.mrc$x <- tmp.coords.mrc$x + tile.cntr[[z]][, 1]
-      tmp.coords.mrc$y <- tmp.coords.mrc$y + tile.cntr[[z]][, 2]
+      tmp.coords.mrc <- location@data
+      tmp.coords.mrc$x <- crd[, 1] + tile.cntr[[z]][, 1]
+      tmp.coords.mrc$y <- crd[, 2] + tile.cntr[[z]][, 2]
       coordinates(tmp.coords.mrc) <- c("x", "y")
       projection(tmp.coords.mrc) <- CRS(prj)
       
@@ -71,11 +75,11 @@ getGoogleTiles <- function(tile.cntr,
       tmp.coords.mrc$bottom <- coordinates(tmp.coords.mrc)[,2] - plot.res - plot.bff
       
       # Boundary coordinates in Mercator and Longlat
-      tmp.bndry.tl.mrc <- data.frame(tmp.coords.mrc)[,c("Location", "left", "top")]
+      tmp.bndry.tl.mrc <- data.frame(tmp.coords.mrc)[,c(loc_name, "left", "top")]
       coordinates(tmp.bndry.tl.mrc) <- c("left", "top")
       proj4string(tmp.bndry.tl.mrc) <- proj4string(tmp.coords.mrc)
       
-      tmp.bndry.br.mrc <- data.frame(tmp.coords.mrc)[,c("Location", "right", "bottom")]
+      tmp.bndry.br.mrc <- data.frame(tmp.coords.mrc)[,c(loc_name, "right", "bottom")]
       coordinates(tmp.bndry.br.mrc) <- c("right", "bottom")
       proj4string(tmp.bndry.br.mrc) <- proj4string(tmp.coords.mrc)
       
@@ -98,7 +102,7 @@ getGoogleTiles <- function(tile.cntr,
           setValues(tmp.rst[[a]], val)
         })
         
-        tmp.rst <- trim(stack(tmp.lst), filename = fl)
+        tmp.rst <- trim(stack(tmp.lst), filename = fl, datatype = "INT1U")
       }
     }
     
@@ -111,20 +115,22 @@ getGoogleTiles <- function(tile.cntr,
   if (isTRUE(mosaic) | is.character(mosaic)) {
     tmp1 = ifelse(is.character(mosaic), paste0(dirname(mosaic), "/tmp.tif"), "")
 
-    for (i in 2:nrow(dsm)) {
+    for (i in 2:nrow(dsm.rst.ls)) {
       if (i %% 10 == 0) 
         cat("File #", i, " is in, start processing...\n", sep = "")
       
       if (i == 2) {
-        msc <- merge(brick(dsm$fls[i-1]), brick(dsm$fls[i]), tolerance = 100, 
-                     filename = mosaic)
+        msc <- merge(brick(dsm.rst.ls$file[i-1]), brick(dsm.rst.ls$file[i]), tolerance = 100, 
+                     filename = mosaic, datatype = "INT1U")
       } else {
-        tmp2 <- merge(msc, brick(dsm$fls[i]), tolerance = 100, 
-                      filename = tmp1, overwrite = TRUE)
+        tmp2 <- merge(msc, brick(dsm.rst.ls$file[i]), tolerance = 100, 
+                      filename = tmp1, datatype = "INT1U", overwrite = TRUE)
         jnk <- file.copy(attr(tmp2@file, "name"), mosaic, overwrite = TRUE)
         msc <- brick(mosaic)
       }
     }
+    
+    jnk = file.remove(tmp1)
     
     return(msc)
     
