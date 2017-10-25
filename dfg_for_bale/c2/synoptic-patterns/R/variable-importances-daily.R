@@ -21,17 +21,17 @@ clusterExport(cl, c("bmn", "jro"))
 
 ## chirps rainfall
 rsp = "/media/sd19006/data/users/fdetsch/R-Server"
-cps = brick(file.path(rsp, "data/bale/chirps-2.0/chirps-2.0_bale_monthly_1981-2016.tif"))
-prc = parSapply(cl, unstack(cps), function(i) mean(i[], na.rm = TRUE))
+cps = brick(file.path(rsp, "data/bale/chirps-2.0/chirps-2.0_bale_daily.tif"))
+prc = parSapply(cl, unstack(cps), function(i) sum(i[], na.rm = TRUE))
 
 ## reanalysis variables (means per spatial domain)
-p250 = "../../../../../casestudies/bale/era-interim/monthly/pressure250_monthly.nc"
-p500 = "../../../../../casestudies/bale/era-interim/monthly/pressure500_monthly.nc"
+p250 = "../../../../../casestudies/bale/era-interim/daily/2001_2016/pressure_250.nc"
+p500 = "../../../../../casestudies/bale/era-interim/daily/2001_2016/pressure_500.nc"
 nc = nc_open(p250)
 nms_p = names(nc$var)
 nc_close(nc); rm(nc)
 
-surface = "../../../../../casestudies/bale/era-interim/monthly/surface_monthly.nc"
+surface = "../../../../../casestudies/bale/era-interim/daily/2001_2016/surface.nc"
 nc = nc_open(surface)
 nms_s = names(nc$var)
 nc_close(nc); rm(nc)
@@ -43,11 +43,17 @@ clusterExport(cl, c("p250", "p500", "surface"))
 
 ## pressure levels
 dat_p = do.call("cbind", parLapply(cl, nms_p, function(i) {
-  rst250 = stack(p250, varname = i)
+  rst250 = suppressWarnings(stack(p250, varname = i))
+  
+  ids = grep("2014.01.01", names(rst250))
+  ids = seq(ids, ids + 364)
+  rst250 = rst250[[ids]]
+  
   rst250 = crop(rst250, bmn, snap = "out")
   val250 = sapply(unstack(rst250), function(i) mean(i[], na.rm = TRUE))
   
-  rst500 = stack(p500, varname = i)
+  rst500 = suppressWarnings(stack(p500, varname = i))
+  rst500 = rst500[[ids]]
   rst500 = crop(rst500, bmn, snap = "out")
   val500 = sapply(unstack(rst500), function(i) mean(i[], na.rm = TRUE))
   
@@ -57,6 +63,11 @@ dat_p = do.call("cbind", parLapply(cl, nms_p, function(i) {
 ## surface
 dat_s = do.call("cbind", parLapply(cl, nms_s, function(i) {
   rst = stack(surface, varname = i)
+
+  ids = grep("2014.01.01", names(rst))
+  ids = seq(ids, ids + 364)
+  rst = rst[[ids]]
+
   rst = crop(rst, bmn, snap = "out")
   
   if (i == "sst") {
@@ -79,17 +90,17 @@ rfm = train(precip ~ ., data = dat, method = "rf", tuneLength = 3
             , trControl = trainControl("cv"), importance = TRUE)
 
 plot(rfm)
-plot(varImp(rfm), main = "Bale Mts.\n(monthly, no delay)")
+plot(varImp(rfm))
 
-## fit model (1-month delay)
-dat_lag1 = data.frame(dat[1:(nrow(dat)-1), -ncol(dat)]
-                      , "precip" = dat[2:nrow(dat), ncol(dat)])
+## fit model (4-day delay)
+dat_lag4 = data.frame(dat[1:(nrow(dat)-4), -ncol(dat)]
+                      , "precip" = dat[5:nrow(dat), ncol(dat)])
 
-rfm_lag1 = train(precip ~ ., data = dat_lag1, method = "rf", tuneLength = 3
+rfm_lag4 = train(precip ~ ., data = dat_lag4, method = "rf", tuneLength = 3
                  , trControl = trainControl("cv"), importance = TRUE)
 
-plot(rfm_lag1)
-plot(varImp(rfm_lag1), main = "Bale Mts.\n(monthly, 1-month delay)")
+plot(rfm_lag4)
+plot(varImp(rfm_lag4))
 
 
 ### kilimanjaro -----
