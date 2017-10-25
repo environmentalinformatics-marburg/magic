@@ -1,8 +1,9 @@
 ### environment -----
 
 ## working directory
-repo = file.path(getwd(), "dfg_for_bale/p1")
-setwd("/media/fdetsch/XChange/bale")
+repo = getwd()
+proj = file.path(repo, "dfg_for_bale/p1")
+Orcs::setwdOS("/media/fdetsch/XChange", "E:", "bale")
 
 ## packages and functions
 # devtools::install_github("environmentalinformatics-marburg/chirps")
@@ -141,10 +142,10 @@ proj4string(ref_utm) = "+init=epsg:32637"
 # hsm = histMatch(crp[[3]], right)
 # rgb = merge(right, hsm); rm(list = c("right", "hsm"))
 # rgb = trim(projectRaster(rgb, crs = "+init=epsg:4326", method = "ngb")
-#            , filename = file.path(repo, "inst/extdata/lc8.tif")
+#            , filename = file.path(proj, "inst/extdata/lc8.tif")
 #            , overwrite = TRUE, datatype = "INT1U")
 
-rgb = brick(file.path(repo, "inst/extdata/lc8.tif"))
+rgb = brick(file.path(proj, "inst/extdata/lc8.tif"))
 
 rsl = rgb2spLayout(rgb, c(0, 1))
 rsl_crp = rgb2spLayout(crop(rgb, small), c(0, 1))
@@ -159,7 +160,7 @@ p_rgb = spplot(ltm_mts[[1]], colorkey = FALSE, col.regions = "transparent"
 ## create figure in reber et al. 2017
 p = Orcs::latticeCombineGrid(list(p_rgb, p_anm[[1]], p_anm[[2]], p_anm[[3]]))
 
-tiff(file.path(repo, "out/figure-reber.tiff"), compression = "lzw"
+tiff(file.path(proj, "out/figure-reber.tiff"), compression = "lzw"
      , width = 18, height = 20, units = "cm", res = 300)
 plot.new()
 

@@ -10,8 +10,8 @@ lib = c("Orcs", "doParallel", "Rsenal", "latticeExtra", "grid", "rgeos"
         , "stargazer", "Hmisc", "OpenStreetMap", "dismo")
 Orcs::loadPkgs(lib)
 
-source("../p1/R/panel.smoothconts.R")
-source("../p1/R/visDEM.R")
+source("../R/panel.smoothconts.R")
+source("../R/visDEM.R")
 
 ## parallelization 
 cl = makeCluster(detectCores() * .75)
