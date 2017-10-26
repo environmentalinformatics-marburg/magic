@@ -84,14 +84,14 @@ merged <- merged[merged$Name%in%stations_select$Name,]
 
 
 #for manual time series check:
-pdf(paste0(visualizationpath,"timeseriescheck.pdf"))
-for (i in 1: length(unique(merged$Name))){
-  plot(merged$Date[merged$Name==unique(merged$Name)[i]],
-       merged$Temperature[merged$Name==unique(merged$Name)[i]],
-       pch=16,cex=0.4,xlab="Date",ylab="Temperature",
-       main=unique(merged$Name)[i])
+#pdf(paste0(visualizationpath,"timeseriescheck.pdf"))
+#for (i in 1: length(unique(merged$Name))){
+#  plot(merged$Date[merged$Name==unique(merged$Name)[i]],
+#       merged$Temperature[merged$Name==unique(merged$Name)[i]],
+#       pch=16,cex=0.4,xlab="Date",ylab="Temperature",
+#       main=unique(merged$Name)[i])
        #,xlim=c(0,365))
-}
+#}
 dev.off()
 
 #manual check of the data
@@ -101,6 +101,23 @@ merged <- merged[-which(merged$Name%in%c("Doug"))]
 stations_select <- stations_select[stations_select$Name%in%unique(merged$Name),]
 
 save(merged,file=paste0(datapath,"/RData/stationdat.RData"))
+
+merged$Day <- as.Date(merged$Date)
+merged_agg <- aggregate(data.frame(merged$Temperature),
+                        by=list("Date"=merged$Day,"Name"=merged$Name),
+                        FUN="median")
+names(merged_agg)[3] <- "Temperature"
+save(merged_agg,file=paste0(datapath,"/RData/stationdat_daily.RData"))
+
 writeOGR(stations_select, paste0(datapath,"ShapeLayers"), 
          "ClimateStations", driver="ESRI Shapefile",overwrite_layer = TRUE)
 
+pdf(paste0(visualizationpath,"timeseriescheck_daily.pdf"))
+for (i in 1: length(unique(merged_agg$Name))){
+  plot(merged_agg$Date[merged_agg$Name==unique(merged_agg$Name)[i]],
+       merged_agg$Temperature[merged_agg$Name==unique(merged_agg$Name)[i]],
+       pch=16,cex=0.4,xlab="Date",ylab="Temperature",
+       main=unique(merged_agg$Name)[i])
+  #,xlim=c(0,365))
+}
+dev.off()

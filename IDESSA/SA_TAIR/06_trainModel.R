@@ -6,8 +6,8 @@ library(lubridate)
 library(parallel)
 library(doParallel)
 #mainpath <- "/home/hanna/Documents/Projects/IDESSA/airT/modeldat/"
-mainpath <- "/mnt/sd19007/casestudies/hmeyer/IDESSA_TAIR/V2/"
-outpath <- "/home/hmeyer/Tair/"
+#mainpath <- "/mnt/sd19007/casestudies/hmeyer/IDESSA_TAIR/V2/"
+mainpath <- "/home/hmeyer/Tair/"
 
 nrOfStations <- 40
 trainingYears <- 2010:2011
@@ -22,7 +22,7 @@ traindat <- dataset[year(dataset$date)%in%trainingYears&
                       dataset$Station%in%trainingStations,]
 testdat <- dataset[!year(dataset$date)%in%trainingYears&
                  dataset$Station%in%trainingStations,]
-save(testdat,file=paste0(outpath,"/testdata.RData"))
+save(testdat,file=paste0(mainpath,"/testdata.RData"))
 rm(dataset,testdat)
 gc()
 set.seed(100)
@@ -43,7 +43,7 @@ registerDoParallel(cl)
 ## predictor und response definieren
 predictors <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3",
                 "IR8.7","IR9.7","IR10.8","IR12.0","IR13.4","sunzenith",
-                 "ndvi","Dem","Prec","Tmean","Continentality")
+                 "Precseason")
 predictors <- traindat[,predictors]
 response <- traindat$Tair
 
@@ -66,7 +66,8 @@ ffs_model <- ffs(predictors,
                        response,
                        method = "rf",
                        importance =TRUE,
-                       tuneLength = 3,
+                       #tuneLength = 3,
+                       tuneGrid = expand.grid(mtry = 2),
                        trControl = trainControl(method = "cv", 
                                                 index = station_out$index,
                                                 indexOut = station_out$indexOut,
@@ -74,6 +75,6 @@ ffs_model <- ffs(predictors,
                                                 verboseIter=TRUE,
                                                 returnResamp = "all"))
 
-save(ffs_model,file=paste0(outpath,"/ffs_model.RData"))
+save(ffs_model,file=paste0(mainpath,"/ffs_model.RData"))
 
 

@@ -8,7 +8,7 @@ lib <- c("R.utils","Rainfall","Rsenal","caret","rgdal","gdalUtils","foreach",
          "doParallel","raster")
 sapply(lib, function(x) require(x, character.only = TRUE))
 
-year <- 2012
+year <- 2013
 
 mainpath <- "/media/memory01/data/hmeyer/IDESSA_TAIR/"
 msgpath <- paste0("/media/memory01/data/data01/msg-out-hanna/",year,"/")
@@ -46,8 +46,8 @@ if (year>=2013){
 
 
 
-doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
-                         untardir,cloudmaskpath,cloudmaskpathCLAAS,model,
+prepareMSG <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
+                         untardir,cloudmaskpath,cloudmaskpathCLAAS,
                          rasterdat_names,tmpdir,cloudlist,mainpath){
   untardir_i <-paste0(untardir,"/",i,"/")
   dir.create(untardir_i)
@@ -74,18 +74,18 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
        inherits(szen[[subhours]], "error")){
       next
     }
-    date <- Rainfall::getDate(paste0(rasterdat_sub[subhours],"/meta/"))
-    year <- substr(date,1,4)
-    month <- substr(date,5,6)
-    day <- substr(date,7,8)
-    outname <- substr(date,1,(nchar(date)-2))
+    dte <- Rainfall::getDate(paste0(rasterdat_sub[subhours],"/meta/"))
+    year <- substr(dte,1,4)
+    month <- substr(dte,5,6)
+    day <- substr(dte,7,8)
+    outname <- substr(dte,1,(nchar(dte)-2))
     ############################################################################
     #Process Cloud Mask
     ############################################################################
     cloudmask <- NULL
     if (year<2013){
       cloudpath <- paste0(cloudmaskpath,"/",year,"/",month,"/",day,"/")
-      Cloudmaskfile <- list.files(cloudpath,pattern=date,full.names = TRUE)
+      Cloudmaskfile <- list.files(cloudpath,pattern=dte,full.names = TRUE)
       if(length(Cloudmaskfile)==0){stop}
       cloudmask <- tryCatch(raster(readGDAL(paste0('HDF5:\"',Cloudmaskfile,'\"://CMa'))),
                             error = function(e)e)
@@ -95,7 +95,7 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       
     }
     if (year>=2013){
-      cloudmask <- cloudlist[grep(date,cloudlist[,2]),]
+      cloudmask <- cloudlist[grep(dte,cloudlist[,2]),]
       if(nrow(cloudmask)==0){stop}
       tmp <- tryCatch(
         untar(as.character(cloudmask$folder),
@@ -104,7 +104,7 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
       if(inherits(tmp, "error")){
         next
       }
-      cloudmask <- list.files(paste0(untardir_i,"/level2/",year,"/",month,"/",day,"/"),pattern=date,full.names = TRUE)
+      cloudmask <- list.files(paste0(untardir_i,"/level2/",year,"/",month,"/",day,"/"),pattern=dte,full.names = TRUE)
       if (length(cloudmask)==0){ stop("error")}
       Sys.setenv(GDAL_NETCDF_BOTTOMUP="NO")
       cloudmask <- tryCatch(gdal_translate(paste0('NETCDF:',cloudmask,':cma'), 
@@ -155,12 +155,12 @@ doPrediction <- function(i,rasterdat,hours,year,modelpath,outpath,msgpath,
   gc()
   writeRaster(msgdat,paste0(outpath,"/msg_",unique(hours)[i],".tif"),overwrite=TRUE)
 }
- 
-for(i in 1:length(unique(hours))){
+
+for(i in 1:unique(length(hours))){
   print(i)
-  functmp <- tryCatch(doPrediction(i,rasterdat,hours,year,modelpath,outpath,msgpath,
+  functmp <- tryCatch(prepareMSG(i,rasterdat,hours,year,modelpath,outpath,msgpath,
                                    untardir,cloudmaskpath,cloudmaskpathCLAAS,
-                                  rasterdat_names,tmpdir,cloudlist,mainpath),
+                                   rasterdat_names,tmpdir,cloudlist,mainpath),
                       error = function(e)e)
   if(inherits(functmp, "error")){next}
 }

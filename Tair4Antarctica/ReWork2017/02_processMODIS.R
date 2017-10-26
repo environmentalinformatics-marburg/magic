@@ -60,3 +60,5 @@ for (year in years){
   save(dataTable,file=paste0(Rdatapath,"extractedData",
                              year,".RData"))
 }
+
+####ADD NIGHT/DAY INFO
