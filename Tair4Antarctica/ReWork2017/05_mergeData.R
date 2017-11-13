@@ -7,6 +7,7 @@ datapath <- paste0(mainpath,"/data/")
 rdatapath <- paste0(datapath, "/RData/")
 rasterdata <- paste0(datapath,"/raster/")
 Shppath <- paste0(datapath,"/ShapeLayers/")
+modelpath <- paste0(datapath, "/modeldat/")
 
 extracted <- list.files(paste0(rdatapath,"extracted/"),full.names = TRUE,pattern="extract")
 dailydat <- get(load(paste0(rdatapath,"stationdat_daily.RData")))
@@ -40,4 +41,4 @@ results_merged <- merge(results_merged,aux,by.x=c("DOY","Station"),by.y=c("Doy",
 
 results_merged<-results_merged[complete.cases(results_merged),]
 ###save results
-save(results_merged, file =paste0(rdatapath,"full_dataset.RData"))
+save(results_merged, file =paste0(modelpath,"full_dataset.RData"))
