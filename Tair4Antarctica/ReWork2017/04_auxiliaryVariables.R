@@ -29,7 +29,7 @@ coord <- coordinates(template)
 days <- seq(as.POSIXct("2010-01-01"), as.POSIXct("2010-12-31"), 
             by="days")
 
-for (i in 227:length(days)){
+for (i in 1:length(days)){
   tmpdiri <- paste0(mainpath,"/tmpdir/",i,"/")
   rasterOptions(tmpdir=tmpdiri)
   altitude_day <- list()

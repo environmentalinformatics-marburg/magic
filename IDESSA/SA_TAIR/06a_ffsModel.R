@@ -11,7 +11,8 @@ mainpath <- "/home/hmeyer/Tair/"
 
 nrOfStations <- 40
 trainingYears <- 2010:2011
-sampleSize <- 150000
+#sampleSize <- 150000
+sampleSize_ffs <- 20000
 
 load(paste0(mainpath,"modeldata.RData"))
 dataset <- dataset[complete.cases(dataset[,3:17]),]
@@ -23,58 +24,45 @@ traindat <- dataset[year(dataset$date)%in%trainingYears&
 testdat <- dataset[!year(dataset$date)%in%trainingYears&
                  dataset$Station%in%trainingStations,]
 save(testdat,file=paste0(mainpath,"/testdata.RData"))
+save(traindat,file=paste0(mainpath,"/traindata.RData"))
 rm(dataset,testdat)
 gc()
+
 set.seed(100)
-traindat_samples <- createDataPartition(traindat$Station, times = 1,list=FALSE,
-                                p=sampleSize/nrow(traindat))
-traindat <- traindat[traindat_samples,]
-## index LOSOCV 
+traindat_samples_ffs <- createDataPartition(traindat$Station, times = 1,list=FALSE,
+                                p=sampleSize_ffs/nrow(traindat))
 traindat$Station <- factor(traindat$Station)
+traindat_ffs <- traindat[traindat_samples_ffs,]
+
+## index LOSOCV 
+
 set.seed(100)
-station_out <- CreateSpacetimeFolds(traindat,spacevar = "Station",
+station_out_ffs <- CreateSpacetimeFolds(traindat_ffs,spacevar = "Station",
                                     timevar= "dateYD", k=10)
+
+## predictor und response definieren
+predictors <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3",
+                "IR8.7","IR9.7","IR10.8","IR12.0","IR13.4","sunzenith",
+                 "Precseason","ndvi","Dem","Continent")
+predictors_ffs <- traindat_ffs[,predictors]
+response_ffs <- traindat_ffs$Tair
 
 
 ## parallel prozessierung starten
 cl <- makeCluster(detectCores()-5)
 registerDoParallel(cl)
 
-## predictor und response definieren
-predictors <- c("VIS0.6","VIS0.8","NIR1.6","IR3.9","WV6.2","WV7.3",
-                "IR8.7","IR9.7","IR10.8","IR12.0","IR13.4","sunzenith",
-                 "Precseason")
-predictors <- traindat[,predictors]
-response <- traindat$Tair
-
-#rf model
-# model_rf_LLTO <- train(predictors,
-#                        response,
-#                        method = "rf",
-#                        importance =TRUE,
-#                        tuneLength = 3,
-#                        trControl = trainControl(method = "cv", 
-#                                                 index = station_out$index,
-#                                                 indexOut = station_out$indexOut,
-#                                                 savePredictions = TRUE,
-#                                                 verboseIter=TRUE,
-#                                                 returnResamp = "all"))
-# 
-# save(model_rf_LLTO,file=paste0(outpath,"/model_rf_LLTO.RData"))
-
-ffs_model <- ffs(predictors,
-                       response,
+ffs_model <- ffs(predictors_ffs,
+                       response_ffs,
                        method = "rf",
                        importance =TRUE,
                        #tuneLength = 3,
                        tuneGrid = expand.grid(mtry = 2),
                        trControl = trainControl(method = "cv", 
-                                                index = station_out$index,
-                                                indexOut = station_out$indexOut,
+                                                index = station_out_ffs$index,
+                                                indexOut = station_out_ffs$indexOut,
                                                 savePredictions = TRUE,
                                                 verboseIter=TRUE,
                                                 returnResamp = "all"))
 
 save(ffs_model,file=paste0(mainpath,"/ffs_model.RData"))
-
-
