@@ -5,8 +5,8 @@ library(CAST)
 library(parallel)
 library(doParallel)
 library(randomForest)
-#mainpath <- "/mnt/sd19007/users/hmeyer/Antarctica/ReModel2017/"
-mainpath <- "/media/hanna/data/Antarctica/ReModel2017/"
+mainpath <- "/mnt/sd19007/users/hmeyer/Antarctica/ReModel2017/"
+#mainpath <- "/media/hanna/data/Antarctica/ReModel2017/"
 datapath <- paste0(mainpath,"/data/")
 rdatapath <- paste0(datapath, "/RData/")
 rasterdata <- paste0(datapath,"/raster/")
@@ -17,8 +17,9 @@ trainingDat <- get(load(paste0(modelpath,"trainingDat.RData")))
 folds <- CreateSpacetimeFolds(trainingDat, spacevar = "Station", k = 10)
 
 predictors <-trainingDat[,c("LST_day","LST_night","min_hillsh","mean_hillsh","max_hillsh",
-"min_altitude","mean_altitude","max_altitude","min_azimuth",
-"mean_azimuth","max_azimuth","DEM")]
+"min_altitude","mean_altitude","max_altitude",
+#"min_azimuth","mean_azimuth","max_azimuth",
+"DEM")]
 response <- trainingDat$Temperature
 
 
