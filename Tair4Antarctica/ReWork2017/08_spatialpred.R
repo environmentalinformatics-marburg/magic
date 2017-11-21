@@ -27,15 +27,15 @@ for (year in years){
   MODISdat_terra <- list.files(paste0(MODISpath,"/terra/",year,"/"),
                                recursive = TRUE,pattern=".tif",full.names = TRUE)
   MODISdat_aqua <- list.files(paste0(MODISpath,"/aqua/",year,"/"),
-                              recursive = TRUE,pattern=".tif",full.names = TRUE)
+                              recursive = TRUE,pattern=".tif$",full.names = TRUE)
   
   aqua_day <- MODISdat_aqua[grep(pattern="LST_LST_Day",MODISdat_aqua)]
   aqua_night <- MODISdat_aqua[grep(pattern="LST_LST_Night",MODISdat_aqua)]
   terra_day <- MODISdat_terra[grep(pattern="LST_LST_Day",MODISdat_terra)]
   terra_night <- MODISdat_terra[grep(pattern="LST_LST_Night",MODISdat_terra)]
   
-  hillshades <- list.files(paste0(rasterdata,"/hillshade/"),full.names = TRUE)
-  solarprops <- list.files(paste0(rasterdata,"/solarinfo/"),full.names = TRUE)
+  hillshades <- list.files(paste0(rasterdata,"/hillshade/"),pattern=".tif$",full.names = TRUE)
+  solarprops <- list.files(paste0(rasterdata,"/solarinfo/"),pattern=".tif$",full.names = TRUE)
   
   for (i in 1:365){
     doy <- sprintf("%03d", i)
@@ -62,15 +62,14 @@ for (year in years){
     solarprop <- stack(solarprops[grep(solarprops,pattern=doy)])
     proj4string(solarprop) <- proj4string(LST_night)
     names(solarprop) <- c("min_altitude","mean_altitude","max_altitude",
-                          "min_azimuth","mean_azimuth","max_altitude")
-    if(extent(LST_day)!=extent(hillshade)){
+                          "min_azimuth","mean_azimuth","max_azimuth")
     LST_day <- crop(LST_day,hillshade)
     LST_night <- crop(LST_night,hillshade)
-    }
     preds <- stack(LST_day,LST_night,hillshade,solarprop)
     names(preds)[1:2] <- c("LST_day","LST_night")
     spatialpred <- predict(preds,model)
-    writeRaster(spatialpred,paste0(predpath,"/",year,"/prediction_",year,"_",doy,".tif"))
+    writeRaster(spatialpred,paste0(predpath,"/",year,"/prediction_",year,"_",doy,".tif"),
+                overwrite=TRUE)
     print(i)
     
   }

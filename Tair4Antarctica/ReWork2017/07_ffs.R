@@ -13,6 +13,8 @@ rasterdata <- paste0(datapath,"/raster/")
 Shppath <- paste0(datapath,"/ShapeLayers/")
 modelpath <- paste0(datapath, "/modeldat/")
 
+calcFFS <- FALSE
+
 trainingDat <- get(load(paste0(modelpath,"trainingDat.RData")))
 folds <- CreateSpacetimeFolds(trainingDat, spacevar = "Station", k = 10)
 
@@ -29,6 +31,7 @@ registerDoParallel(cl)
 
 #################### FFS MODEL
 
+if (calcFFS){
 ffs_model <- ffs(predictors,
                  response,
                  method = "rf",
@@ -41,7 +44,8 @@ ffs_model <- ffs(predictors,
                                           verboseIter=TRUE,
                                           returnResamp = "all"))
 save(ffs_model,file=paste0(modelpath,"/ffs_model.RData"))
-
+}
+load(paste0(modelpath,"/ffs_model.RData"))
 #################### FINAL MODEL
 
 predictors <- trainingDat[,names(ffs_model$trainingData)[-length(names(ffs_model$trainingData))]]
