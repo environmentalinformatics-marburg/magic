@@ -53,13 +53,13 @@ for (year in years){
       error=function(e)e) 
     
     if(inherits(LST_night,"error")|inherits(LST_day,"error")){
-      next()
+      next
     }
     
-    hillshade <- stack(hillshades[grep(pattern=doy,hillshades)])
+    hillshade <- stack( hillshades[grep(pattern=paste0(doy,".tif$"),hillshades)])
     proj4string(hillshade) <- proj4string(LST_night)
     names(hillshade) <- c("min_hillsh","mean_hillsh","max_hillsh")
-    solarprop <- stack(solarprops[grep(solarprops,pattern=doy)])
+    solarprop <- stack(solarprops[grep(solarprops,pattern=paste0(doy,".tif$"))])
     proj4string(solarprop) <- proj4string(LST_night)
     names(solarprop) <- c("min_altitude","mean_altitude","max_altitude",
                           "min_azimuth","mean_azimuth","max_azimuth")
