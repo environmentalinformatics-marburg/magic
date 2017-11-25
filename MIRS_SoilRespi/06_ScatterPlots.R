@@ -6,11 +6,17 @@ library(gridExtra)
 
 nbin <- 60
 
-setwd("/home/hanna/Documents/Presentations/Paper/in_prep/Nele_MIRS/figures/")
+setwd("/home/hanna/Documents/Presentations/Paper/submitted/Nele_MIRS/figures/")
 pred <- read.csv("predtab.csv")
 pred <- pred[complete.cases(pred[,c("pred","obs")]),]
 pred$all <- "All land use types"
 pred$Land_use <- factor(pred$Land_use,c("Cropland","Grassland","Forest"))
+
+
+regressionStats(pred$pred,pred$obs)
+regressionStats(pred$pred[pred$Land_use=="Cropland"],pred$obs[pred$Land_use=="Cropland"])
+regressionStats(pred$pred[pred$Land_use=="Forest"],pred$obs[pred$Land_use=="Forest"])
+regressionStats(pred$pred[pred$Land_use=="Grassland"],pred$obs[pred$Land_use=="Grassland"])
 
 allluc <- ggplot(pred, aes(obs,pred)) + 
   stat_binhex(bins=nbin)+ 

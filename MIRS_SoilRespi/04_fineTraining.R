@@ -1,5 +1,6 @@
 rm(list=ls())
-mainpath <- "/home/hmeyer/hmeyer/Nele_MIRS/version2/"
+#mainpath <- "/home/hmeyer/hmeyer/Nele_MIRS/version2/"
+mainpath <- "/home/hanna/Documents/Presentations/Paper/submitted/Nele_MIRS/data/"
 datapath <- paste0(mainpath,"data/")
 spectrapath <- paste0(datapath,"/Baseline/")
 modelpath <- paste0(mainpath,"/modeldata/")
@@ -9,7 +10,7 @@ library(hsdar)
 library(caret)
 library(doParallel)
 library(Rsenal)
-
+library(randomForest)
 load(paste0(modelpath,"specLib.RData"))
 load(paste0(modelpath,"rfemodel.RData"))
 
@@ -17,21 +18,12 @@ featureFrame <- data.frame(attribute(specci),as.data.frame(specci))
 featureFrame <- featureFrame[!featureFrame$Labornummer%in%c(57341, 57345, 
                                                             57349, 57350, 57352),]
 optVars <- names(varsRfeCV(rfemodel,sderror = TRUE))
-
-
-#cvindices_out <- list()
-#acc <- 1
-#for (i in unique(featureFrame$Labornummer)){
-#  cvindices_out[[acc]] <- which(featureFrame$Labornummer==i)
-#  acc <- acc+1
-#}
+#optVars <- rfemodel$optVariables
 set.seed(100)
-#tmp <- createFolds(1:length(unique(featureFrame$Labornummer)),10)
-#cvindices_agg <- lapply(tmp,function(x){unlist(cvindices_out[x])})
 
-folds <- CreateSpacetimeFolds(featureFrame, spacevar = "Labornummer", timevar = NA, k = 10)
-#folds <- CreateSpacetimeFolds(featureFrame, spacevar = "Labornummer", timevar = NA)
-
+#folds <- CreateSpacetimeFolds(featureFrame, spacevar = "Labornummer", timevar = NA, k = 10)
+folds <- CreateSpacetimeFolds(featureFrame, spacevar = "Labornummer", timevar = NA, 
+                              k = length(unique(featureFrame$Labornummer)))
 
 rfFuncs$fit <- function (x, y, first, last, ...) {
   loadNamespace("randomForest")
@@ -55,6 +47,8 @@ model <- train(predictors,response,method="rf",
                 tuneLength=10)
 
 stopCluster(cl)
+
+#save(model,file=paste0(modelpath,"finalModel_otherrfeextract.RData"))
 save(model,file=paste0(modelpath,"finalModel.RData"))
 
 ######################################
