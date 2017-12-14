@@ -1,25 +1,26 @@
 ### environmental stuff -----
 
-setwd("dfg_for_bale/p7")
-
-## required packages and functions
+## required packages
 lib <- c("MODIS", "doParallel", "rgdal")
 Orcs::loadPkgs(lib)
-
-source("R/fireDates.R")
 
 ## modis options
 os <- switch(Sys.info()[["sysname"]]
              , "Windows" = "F:"
-             , "Linux" = "/media/fdetsch/modis_data")
+             , "Linux" = file.path(getwd(), "../../data"))
 
 MODISoptions(localArcPath = file.path(os, "MODIS_ARC")
              , outDirPath = file.path(os, "MODIS_ARC/PROCESSED/")
              , outProj = "+init=epsg:32637"
              , MODISserverOrder = c("LAADS", "LPDAAC"))
 
+## working directory and functions
+setwd("dfg_for_bale/p7")
+
+source("R/fireDates.R")
+
 ## parallelization
-cl <- makeCluster(detectCores() - 1)
+cl <- makeCluster(.75 * detectCores())
 registerDoParallel(cl)
 
 
@@ -32,11 +33,18 @@ if (length(cll) > 1L) stop("More than one unique collection found.\n")
 tfs <- runGdal("M*D14A1", extent = readRDS("../inst/extdata/uniformExtent.rds"), 
                collection = cll, SDSstring = "1110", job = "fire-1km-bale")
 
+## remove empty list entries (ie. no file could be found for particular date)
+for (i in seq_along(tfs)) {
+  len = sapply(tfs[[i]], length)
+  if (any(len < 3))
+    tfs[[i]] = tfs[[i]][-which(len < 3)]
+}
+
 
 ### preprocessing -----
 
 ## data folder
-dir_dat <- "/media/fdetsch/data/bale/modis"
+dir_dat <- file.path(os, "bale/modis")
 if (!dir.exists(dir_dat)) dir.create(dir_dat)
 
 ## reclassification matrix
@@ -70,8 +78,9 @@ lst_prd <- foreach(product = names(tfs), .packages = "MODIS") %dopar% {
                     paste(dts, collapse = "_"), ".FireMask.tif")
   
   ## reclassify layers
-  rst <- stack(fls)
-  reclassify(rst, rcl, include.lowest = TRUE, right = FALSE, filename = fls_rcl)
+  Orcs::ifMissing(fls_rcl, raster::brick, raster::reclassify, "filename"
+                  , x = stack(fls), rcl = rcl, include.lowest = TRUE
+                  , right = FALSE)
 }
 
 
@@ -85,7 +94,8 @@ if (!dir.exists(dir_cmb)) dir.create(dir_cmb)
 lst_dts <- foreach(product = names(tfs), i = 1:2) %dopar% {
                      
   # list available .hdf files                   
-  dir_hdf <- paste0(getOption("MODIS_localArcPath"), "/MODIS/", product)
+  # dir_hdf <- paste0(getOption("MODIS_localArcPath"), "/MODIS/", product)
+  dir_hdf <- file.path("../../../../../../../casestudies/bale/modis", product)
   fls_hdf <- list.files(dir_hdf, pattern = "h21v08.*.hdf$", full.names = TRUE, 
                         recursive = TRUE)
   
