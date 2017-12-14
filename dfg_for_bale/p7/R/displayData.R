@@ -11,7 +11,12 @@ jnk <- sapply(lib, function(x) library(x, character.only = TRUE))
 ### display interactive map of active fires -----
 
 ## import yearly fires
-rst <- stack("data/MCD14A1.006/agg1yr/MCD14A1.A2000-2016.FireMask.tif")
+# rst <- stack("data/MCD14A1.006/agg1yr/MCD14A1.A2000-2016.FireMask.tif")
+fls = list.files("data/MCD14A1.006/agg1yr", pattern = "FireMask.tif$"
+                 , full.names = TRUE)
+fls = fls[1:grep("A2016.FireMask", fls)]
+rst = stack(fls)
+
 names(rst) <- paste0("active_fires_", 2000:2016)
 
 ## display interactive fire map, one layer for each year
@@ -25,6 +30,7 @@ jnk <- foreach(i = 1:nlayers(rst), j = 2000:2016) %do% {
   rst_yrs[[i]][rst_yrs[[i]][] > 0] <- j
 }
 rst_agg <- overlay(rst_yrs, fun = function(...) max(..., na.rm = TRUE))
+rst_agg = trim(projectRaster(rst_agg, crs = "+init=epsg:4326", method = "ngb"))
 spy_agg <- rasterToPolygons(rst_agg)
 
 ## display interactive fire map, one layer for all years
@@ -38,19 +44,20 @@ m1
 ## import satellite image
 rgb <- stack("inst/extdata/rgb.tif")
 
-p1 <- spplot(spy_agg, col = NA, alpha.regions = .6, scales = list(draw = TRUE), 
-             sp.layout = rgb2spLayout(rgb, quantiles = c(0, 1), alpha = .6), 
-             at = seq(1999.5, 2016.5, 1), main = "Year of Last Fire Incident", 
-             col.regions = rainbow(length(unique(rst_agg[]))), 
-             maxpixels = ncell(rgb))
+p2.1 <- spplot(crp <- crop(rst_agg, rgb, snap = "in")
+               , scales = list(draw = TRUE)
+               , sp.layout = list(
+                 rgb2spLayout(rgb, quantiles = c(0, 1), alpha = .6)
+                 , list("sp.points", table, pch = 4, cex = 1.2, col = "black")
+               ), at = seq(1999.5, 2016.5, 1), main = "Year of Last MODIS Fire" 
+               , col.regions = envinmrPalette(length(unique(rst_agg[])))
+               , alpha.regions = .6, colorkey = list(width = .8, height = .6)
+               , maxpixels = ncell(crp))
 
 ## write resultant map to file
-if (!dir.exists("vis")) dir.create("vis")
-
-tiff("vis/fires_modis.tiff", width = 20, height = 18, units = "cm", res = 300, 
-     compression = "lzw")
-grid.newpage()
-print(p1, newpage = FALSE)
+tiff("inst/extdata/wp_modis.tiff", width = 18, height = 16, units = "cm"
+     , res = 500, compression = "lzw")
+print(p2.1)
 dev.off()
 
 
@@ -108,6 +115,7 @@ rat <- rat_tmp@data@attributes[[1]]
 rat$Class <- c("S", "C", "A", "B")
 rat <- rat[order(rat$Class), , ]
 levels(rat_tmp) <- rat
+
 
 ### highlight recurrent fires -----
 
