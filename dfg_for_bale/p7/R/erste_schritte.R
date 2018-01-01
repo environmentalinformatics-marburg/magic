@@ -56,7 +56,7 @@ proj4string(table) = "+init=epsg:4326"
 
 library(OpenStreetMap)
 
-if (!require("Rsenal", character.only = TRUE)) {
+if (!require(Rsenal)) {
   devtools::install_github("environmentalinformatics-marburg/Rsenal")
   library(Rsenal)
 }
@@ -93,7 +93,8 @@ print(p1)
 ############################################################################
 ####### Date of (last) fire incident from MODIS data of waypoints ##########
 
-#run skript "DisplayDataR" until row 38 (missing object rgb.tif required later, how do I get it)
+#run skript "DisplayDataR" until row 38 until line 61, then continue in 
+#erste_schritte.R at line 121
 ##wanted:date of fire, last and all
 
 #extract burning dates from spdf and add to table
@@ -103,8 +104,8 @@ table<-cbind(table, rst.last.fire)
 names(table)
 names(table)[names(table)=="c.2015..2008..2015..2015..2015..2015..2015..2015..2015..2015.."] <- "last.fire"
 #write.table(table, file="table.txt")
-'Problem: die erste Spalte der Tabelle (Waypoints) wird mit den Zeilennummern beim
-Speichern ?berschrieben. Wie verhindere ich das? Beim Einlesen verschwindet das.'
+# 'Problem: die erste Spalte der Tabelle (Waypoints) wird mit den Zeilennummern beim
+# Speichern ?berschrieben. Wie verhindere ich das? Beim Einlesen verschwindet das.'
 #tab<-read.csv("table.csv",sep="")
 
 all.fire<-extract(rst,table)
@@ -116,7 +117,37 @@ print(all.fire==0)
 'Klappt noch nicht'
 
 #add burning dates to df "burning"
-burning<-read.csv("Burning.csv",sep=",", dec = ".", header=T)
-burning<-merge.data.frame(burning,table, by="Plot.No.")
-table1<-cbind(burning, burning$Plot.No., burning$people, burning$ring_anatomy,burning$last.fire.y)
-'auch nicht gew?nschtes Ergebnis, zu un?bersichtlich und Doppelspalten. Lieber neue Tabelle'
+# burning<-read.csv("Burning.csv")
+burning = read.csv("inst/extdata/Burning.csv")
+# burning = merge(burning, table, by = "Plot.No.", all = TRUE)
+burning = merge(table, burning, by = "Plot.No.", all = TRUE)
+
+# table1<-cbind(burning, burning$Plot.No., burning$people, burning$ring_anatomy,burning$last.fire.y)
+# 'auch nicht gew?nschtes Ergebnis, zu un?bersichtlich und Doppelspalten. Lieber neue Tabelle'
+
+## identify 1-km MODIS grid cell covering each plot and extract latest burn date 
+## as reported by interviewees
+grd = raster("inst/extdata/MODISgrid.tif")
+cls = cellFromXY(grd, burning)
+
+mxv = sapply(unique(cls), function(i) {
+  cdt = burning@data$people[cls == i]
+  return(max(cdt))
+})
+
+grd[unique(cls)] = mxv
+
+breaks = seq(1999.5, 2016.5, 1)
+
+p2.2 <- spplot(grd
+               , scales = list(draw = TRUE, y = list(rot = 90))
+               , sp.layout = list(
+                 rgb2spLayout(rgb, quantiles = c(0, 1), alpha = .6)
+                 , list("sp.points", table, pch = 4, cex = 1.2, col = "black")
+               ), at = breaks
+               , main = "Year of Last Fire\nas reported by interviewees" 
+               , col.regions = envinmrPalette(length(breaks))
+               , alpha.regions = .6, colorkey = list(width = .8, height = .6)
+               , maxpixels = ncell(grd))
+
+## (write image to file)
