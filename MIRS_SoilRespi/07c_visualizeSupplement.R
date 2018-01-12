@@ -123,7 +123,7 @@ plot(pred10$obs,pred10$pred,pch=16,xlab="Measured Q10",ylab="Estimated Q10",
      xlim=c(1.2,2.7),ylim=c(1.2,2.7))
 abline(0,1)
 plot(pred_stabil$obs,pred_stabil$pred,pch=16,xlab="Measured Stability",ylab="Estimated Stability",
-     xlim=c(1.2,2.7),ylim=c(1.2,2.7))
+     xlim=c(0.45,3.4),ylim=c(0.45,3.4))
 abline(0,1)
 dev.off()
 

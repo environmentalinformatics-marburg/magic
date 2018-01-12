@@ -37,9 +37,9 @@ outpath<-"/media/hanna/data/Antarctica/results/predictions/"
 
 
 for (i in 1:length(filelist)){
-  year<-substr(filename[i],nchar(filename[i])-10,nchar(filename[i])-7)
-  jday<-substr(filename[i],nchar(filename[i])-6,nchar(filename[i])-4)
-  month<-month.abb[as.numeric(substr(strptime(paste(year, jday), "%Y %j"),6,7))]
+  year <- substr(filename[i],nchar(filename[i])-10,nchar(filename[i])-7)
+  jday <- substr(filename[i],nchar(filename[i])-6,nchar(filename[i])-4)
+  month <- month.abb[as.numeric(substr(strptime(paste(year, jday), "%Y %j"),6,7))]
   outname <- paste0(outpath,"/",substr(filename[i],1,nchar(filename[i])-4))
   predictAirT(model_GBM,LSTpath = filelist[i],month=month,outname=outname)
   print(i)
