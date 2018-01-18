@@ -1,13 +1,13 @@
-install.packages("CAST")
+#install.packages("CAST")
 library(CAST)
 library(caret)
-mainpath <- "/mnt/sd19007/casestudies/hmeyer/IDESSA_LandCover/AerialToSentinel/classification_2016/"
+mainpath <- "/mnt/sd19007/users/hmeyer/IDESSA_LandCover/AerialToSentinel/classification_2016/"
 outpath <- paste0(mainpath,"/results")
 datapath <- paste0(mainpath,"/data")
 
 #trainingtile_perc <- 0.33 # percentage of tiles to get training pixels from.
 #keep the rest for spatially independent validation
-trainingpixels <- 200000 # number of training pixels taken from training tiles
+trainingpixels <- 150000 # number of training pixels taken from training tiles
 
 ################################################################################
 # PREPARATION
