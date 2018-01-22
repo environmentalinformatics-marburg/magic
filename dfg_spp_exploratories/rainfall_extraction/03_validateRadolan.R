@@ -10,6 +10,7 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 
+##run and save as intermediate result:
 #radolan <- read.csv(paste0(mainpath,"/Radolan/Radolan.csv"))
 #radolan$Date <- strptime(radolan$Date, format="%Y-%m-%d %H:%M")
 #radolan$Date <- format(round(radolan$Date, units="hours"), format="%Y-%m-%d %H:%M")
@@ -17,12 +18,14 @@ library(viridis)
 #save(radolan,file=paste0(mainpath,"/Radolan/radolan_melt.RData"))
 load(paste0(mainpath,"/Radolan/radolan_melt.RData"))
 
+
 stationdat <- read.csv(paste0(mainpath,"/RainfallExtraction/validationData/a0aa48545720a699/plots.csv"))
 stationdat$datetime<- strptime(stationdat$datetime,format="%Y-%m-%dT%H")
 stationdat$datetime<- format(round(stationdat$datetime, units="hours"), format="%Y-%m-%d %H:%M")
 stationdat <- stationdat[,which(names(stationdat)%in%c("plotID","datetime","P_RT_NRT"))]
 
-###0 vor namen 
+###match radolan and stationdat
+radolan$variable <- paste0(substr(radolan$variable,1,3),sprintf("%02d", as.numeric(substr(radolan$variable,4,5))))
 radolan <- radolan[radolan$variable%in%unique(stationdat$plotID),]
 radolan$Date <-  format(round(radolan$Date, units="hours"), format="%Y-%m-%d %H:%M")
 radolan <- radolan[radolan$Date%in%unique(stationdat$datetime),]
@@ -84,3 +87,4 @@ ggplot(compDat_day, aes(Reference,RADOLAN)) +
   scale_fill_gradientn(name = "data points", trans = "log", 
                        breaks = 10^(0:3),colors=viridis(10))
 dev.off()
+
