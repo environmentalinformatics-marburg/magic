@@ -4,7 +4,7 @@
 rm(list = ls(all = TRUE))
 
 # Working directory
-setwd("/media/permanent/repo/magic/dfg_for_kilimanjaro/osm_google_kili")
+setwd("dfg_for_kilimanjaro/osm_google_kili")
 
 # Required packages and functions
 # devtools::install_github("fdetsch/Orcs", local = FALSE)

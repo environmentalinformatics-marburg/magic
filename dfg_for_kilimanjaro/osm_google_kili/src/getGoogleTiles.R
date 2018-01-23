@@ -21,7 +21,8 @@
 #' resulting image is also written to disk incrementally, thus reducing the 
 #' amount of memory required. 
 #' @param loc_name Name of column with location name as \code{character}.
-#' 
+#' @param wait \code{\link{Sys.sleep}} time interval inserted after each file
+#' download.
 #' @param ... Additional arguments passed to \code{\link{gmap}}.
 #' 
 #' @return 
@@ -41,7 +42,8 @@ getGoogleTiles <- function(tile.cntr,
                            path.out = ".",
                            prefix = "kili_tile_",
                            loc_name = "Location",
-                           mosaic = FALSE, ...) {
+                           mosaic = FALSE, 
+                           wait = 0.5, ...) {
   
   # Transform SpatialPointsDataFrame to data.frame (optional)
   prj <- proj4string(location)
@@ -104,6 +106,8 @@ getGoogleTiles <- function(tile.cntr,
         
         tmp.rst <- trim(stack(tmp.lst), filename = fl, datatype = "INT1U")
       }
+      
+      Sys.sleep(wait)
     }
     
     # Return DSM information
