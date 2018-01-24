@@ -10,21 +10,16 @@ library(reshape2)
 library(ggplot2)
 library(viridis)
 
-##run and save as intermediate result:
-#radolan <- read.csv(paste0(mainpath,"/Radolan/Radolan.csv"))
-#radolan$Date <- strptime(radolan$Date, format="%Y-%m-%d %H:%M")
-#radolan$Date <- format(round(radolan$Date, units="hours"), format="%Y-%m-%d %H:%M")
-#radolan <- melt(radolan[,2:ncol(radolan)],id.vars=c("Date"))
-#save(radolan,file=paste0(mainpath,"/Radolan/radolan_melt.RData"))
-load(paste0(mainpath,"/Radolan/radolan_melt.RData"))
+
 
 
 stationdat <- read.csv(paste0(mainpath,"/RainfallExtraction/validationData/a0aa48545720a699/plots.csv"))
-stationdat$datetime<- strptime(stationdat$datetime,format="%Y-%m-%dT%H")
-stationdat$datetime<- format(round(stationdat$datetime, units="hours"), format="%Y-%m-%d %H:%M")
+stationdat$datetime <- strptime(stationdat$datetime,format="%Y-%m-%dT%H")
+stationdat$datetime <- format(round(stationdat$datetime, units="hours"), format="%Y-%m-%d %H:%M")
 stationdat <- stationdat[,which(names(stationdat)%in%c("plotID","datetime","P_RT_NRT"))]
 
 ###match radolan and stationdat
+load(paste0(mainpath,"/Radolan/radolan_melt.RData"))
 radolan$variable <- paste0(substr(radolan$variable,1,3),sprintf("%02d", as.numeric(substr(radolan$variable,4,5))))
 radolan <- radolan[radolan$variable%in%unique(stationdat$plotID),]
 radolan$Date <-  format(round(radolan$Date, units="hours"), format="%Y-%m-%d %H:%M")

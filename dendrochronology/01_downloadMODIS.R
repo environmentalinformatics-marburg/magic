@@ -5,22 +5,12 @@ rm(list=ls())
 library(MODIS)
 library(rgdal)
 
-MODISpath <- "/media/hanna/data/MODIS_EUROPE/"
+MODISpath <- "/media/memory01/data/processing_data/modis_europe/"
 shppath <- paste0(MODISpath,"/vector/")
-
-
 
 MODISoptions(localArcPath=paste0(MODISpath,"/MODIS_ARC/"),
              outDirPath=paste0(MODISpath,"/MODIS/"),
-             MODISserverOrder = c("LAADS", "LPDAAC"))
-
-
-
-#b1 <- getHdf(product = "M.D11A1", begin = "2016.12.01", 
-#             tileH = 18:19, tileV = 4) 
-#b1               
-
-
+             MODISserverOrder = c("LPDAAC", "LAADS"))
 
 
  dat <- read.csv(paste0(shppath,"Koordinaten.csv"))
@@ -31,14 +21,14 @@ MODISoptions(localArcPath=paste0(MODISpath,"/MODIS_ARC/"),
  
 
  
- downloadMODIS <- getHdf(product = "M.D11A1",
-                begin = "2000.03.01",
-               tileV=2:4,tileH=18:22)
+# downloadMODIS <- getHdf(product = "M.D11A1",
+#                begin = "2000.03.01",
+#               tileV=2:4,tileH=18:22)
  
-# processMODIS <-  runGdal( product="M.D11A1",
-#                           begin = "2000.03.01",
-#                           tileV=2:4,tileH=18:22,
-#                           SDSstring = c(100000000000,000010000000))
+ processMODIS <-  runGdal( product="M.D11A1",
+                           begin = "2000.03.01",
+                           tileV=2:4,tileH=18:22,
+                           SDSstring = c(100000000000,000010000000))
  
  
  
@@ -52,3 +42,15 @@ MODISoptions(localArcPath=paste0(MODISpath,"/MODIS_ARC/"),
 #         end = "2004.01.02",
 #         tileV=2:3,tileH=18,
 #         SDSstring = c(100000000000,000010000000))
+ 
+ 
+#  b1 <- runGdal(product = "MOD11A1", begin = "2016.12.01", 
+#               end = "2016.12.02",
+#               tileH = 18, tileV = 4,
+#               SDSstring = c(100000000000,000010000000))
+#  b1    
+#  
+# downloadMODIS <- getHdf(product = "MOD11A1",
+#                          begin = "2003.03.01",
+#                          end = "2003.03.02",
+#                          tileV=2,tileH=18)
