@@ -28,29 +28,7 @@ MODISoptions(localArcPath=paste0(MODISpath,"/MODIS_ARC/"),
  processMODIS <-  runGdal( product="M.D11A1",
                            begin = "2000.03.01",
                            tileV=2:4,tileH=18:22,
-                           SDSstring = c(100000000000,000010000000))
+                           SDSstring ='100010000000',
+                           job = "mcd11a1-europe")
  
  
- 
- ########## NUR TESTS
-# test <- getHdf(product = "M.D11A1",
-#                begin = "2004.01.01",
-#                end = "2004.01.02",
-#                tileV=2:3,tileH=18) 
-#runGdal( product="M.D11A1",
-#         begin = "2004.01.01",
-#         end = "2004.01.02",
-#         tileV=2:3,tileH=18,
-#         SDSstring = c(100000000000,000010000000))
- 
- 
-#  b1 <- runGdal(product = "MOD11A1", begin = "2016.12.01", 
-#               end = "2016.12.02",
-#               tileH = 18, tileV = 4,
-#               SDSstring = c(100000000000,000010000000))
-#  b1    
-#  
-# downloadMODIS <- getHdf(product = "MOD11A1",
-#                          begin = "2003.03.01",
-#                          end = "2003.03.02",
-#                          tileV=2,tileH=18)

@@ -57,7 +57,7 @@ model <- train(dataset[,predictors],
                dataset[,response],
                method="rf",
                trControl = ctrl,
-               tuneLength=3)
+               tuneLength=15)
 #stop cluster and save model:
 stopCluster(cl)
 save(model,file=paste0(outpath,"/sentinelmodel.RData"))

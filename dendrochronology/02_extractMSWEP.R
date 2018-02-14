@@ -33,7 +33,7 @@ for (tile in unique(tiles)){
 
 
 ### combine all data
-tss <- list.files(outpath,full.names = TRUE)
+tss <- list.files(outpath,full.names = TRUE,pattern="ts_")
 result <- get(load(tss[[1]]))
 for (i in 2:length(tss)){
   current <- get(load(tss[[i]]))

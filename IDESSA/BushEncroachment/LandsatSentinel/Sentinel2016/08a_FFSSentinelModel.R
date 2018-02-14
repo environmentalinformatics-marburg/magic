@@ -8,7 +8,7 @@ datapath <- paste0(mainpath,"/data")
 
 #trainingtile_perc <- 0.33 # percentage of tiles to get training pixels from.
 #keep the rest for spatially independent validation
-trainingpixels <- 75000 # number of training pixels taken from training tiles
+trainingpixels <- 50000 # number of training pixels taken from training tiles
 
 ################################################################################
 # PREPARATION
@@ -34,7 +34,7 @@ dataset <- dataset[data_subs,]
 rm(data_subs)
 # prepare a 10-fold LLOCV
 foldids <- CreateSpacetimeFolds(dataset,spacevar="lcc_tile",
-                                k=10,seed=100)
+                                k=3,seed=100)
 ctrl <- trainControl(method="cv",
                      savePredictions = FALSE,
                      verbose=FALSE,

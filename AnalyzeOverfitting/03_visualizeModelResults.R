@@ -8,8 +8,8 @@ library(caret)
 library(scales)
 ################################################################################
 #USER ADJUSTMENTS
-datapath <- "/home/hanna/Documents/Projects/Overfitting/"
-casestudy <- "cookfarm" # cookfarm, Tair or Expl
+datapath <- "/home/hanna/Documents/Projects/completed/Overfitting/"
+casestudy <- "Tair" # cookfarm, Tair or Expl
 targets <- c("LLTOCV","LLOCV","LTOCV") #"LLOCV,LTOCV
 ################################################################################
 outpath <- paste0(datapath,"/Results_",casestudy)
@@ -141,6 +141,7 @@ boxplot(results_melt_noselect$value~
         names=c("random-CV","LLO-CV","LTO-CV","LLTO-CV"),
         ylim=c(minm-minm*0.05,maxm+maxm*0.05),
         col="grey50")
+
 dev.off()
 
 ####################### FFS Comparison ###################################
