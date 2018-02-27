@@ -3,10 +3,11 @@ rm(list=ls())
 library(raster)
 library(viridis)
 library(latticeExtra)
+library(rgdal)
 mainpath <- "/home/hanna/Documents/Projects/IDESSA/airT/forPaper/"
 vispath<- paste0(mainpath,"/visualizations")
-load(paste0(mainpath,"/modeldat/dataset_withNDVI.RData"))
-load(paste0(mainpath,"/modeldat/testdata.RData"))
+load(paste0(mainpath,"/modeldat/modeldata.RData"))
+load(paste0(mainpath,"/modeldat/traindata.RData"))
 datsp <- readOGR(paste0(mainpath,"/shp/WeatherStations.shp"))
 base <- readOGR("/home/hanna/Documents/Projects/IDESSA/GIS/TM_WORLD_BORDERS-0.3/TM_WORLD_BORDERS-0.3.shp",
                 "TM_WORLD_BORDERS-0.3")
@@ -17,7 +18,7 @@ datsp_subs <- datsp[datsp$plot%in%unique(dataset$Station),]
 #datsp_train <- datsp_subs[!datsp_subs$plot%in%unique(testdat$Station),]
 
 datsp_subs$usage <- "training"
-datsp_subs$usage[datsp_subs$plot%in%unique(testdat$Station)] <- "testing"
+datsp_subs$usage[!datsp_subs$plot%in%unique(traindat$Station)] <- "validation"
 datsp_subs$usage <- factor(datsp_subs$usage)
 
 wc <- getData('worldclim', var='tmean', res=5)
@@ -39,8 +40,8 @@ spplot(wc_mean,col.regions = viridis(100),
        sp.layout=list("sp.polygons", base, col = "black", first = FALSE),
        key=list(corner=c(1,0.02),cex=0.8,#space = 'bottom', 
                 points = list(pch = 3, cex = 0.7, col = c("darkred","black")),
-                text = list(c("testing",
-                              "training"))))+
+                text = list(c("training",
+                              "validation"))))+
   as.layer(spplot(datsp_subs,zcol="usage",col.regions=c("darkred","black"),
                   pch=3,cex=0.7
   ))

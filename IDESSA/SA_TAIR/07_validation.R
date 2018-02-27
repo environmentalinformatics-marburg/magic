@@ -14,17 +14,7 @@ model <- get(load(paste0(datapath,"/model_rf_LLTO.RData")))
 dataset <- get(load(paste0(datapath,"/dataset_withNDVI.RData")))
 
 
-#### Visualize Individual Linear Relation
-dataset <- dataset[,names(dataset)%in%c(names(model$trainingData),"Tair")]
-dataset <- dataset[complete.cases(dataset),]
-dataset <- dataset[,c(1:12,14,13)]
-names(dataset)[names(dataset)=="ndvi"] <- "NDVI"
-names(dataset)[names(dataset)=="sunzenith"] <- "Sunzenith"
-M <- cor(dataset)
-pdf(paste0(vispath,"/corrplot.pdf"),width=6,height=6)
-corrplot(M, method="color",type="lower",tl.col="black",
-         tl.cex=0.9)
-dev.off()
+
 
 #### Validate with external testdata
 pred <- predict(model,testdata)

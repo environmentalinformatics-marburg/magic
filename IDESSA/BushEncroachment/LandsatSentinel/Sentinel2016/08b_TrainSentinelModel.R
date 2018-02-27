@@ -26,6 +26,7 @@ dataset <- dataset[complete.cases(dataset),]
 #  1,paste, collapse="")
 
 predictors <- modelFFS$selectedvars
+rm(modelFFS)
 response <- "bush_perc"
 #reduce amount of training data pixels
 
@@ -40,7 +41,6 @@ foldids <- CreateSpacetimeFolds(dataset,spacevar="lcc_tile",
                                 k=10,seed=100)
 ctrl <- trainControl(method="cv",
                      savePredictions = FALSE,
-                     verbose=FALSE,
                      index=foldids$index,
                      indexOut=foldids$indexOut)
 ################################################################################
@@ -49,7 +49,7 @@ ctrl <- trainControl(method="cv",
 #start parallel processing on all cores except 3:
 require(parallel)
 require(doParallel)
-cl <- makeCluster(detectCores()-5)
+cl <- makeCluster(10)
 registerDoParallel(cl)
 #train model:
 set.seed(100)
