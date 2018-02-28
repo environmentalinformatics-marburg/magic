@@ -46,7 +46,7 @@ ctrl <- trainControl(method="cv",
 #start parallel processing on all cores except 3:
 require(parallel)
 require(doParallel)
-cl <- makeCluster(detectCores()-5)
+cl <- makeCluster(10)
 registerDoParallel(cl)
 #train model:
 set.seed(100)
