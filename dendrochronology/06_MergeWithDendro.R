@@ -3,6 +3,7 @@
 
 rm(list=ls())
 library(lubridate)
+library(dplR)
 mainpath <- "/home/hanna/Documents/Projects/Dendrodaten/"
 dendropath <- paste0(mainpath, "/data/dendrodata/")
 predpath <- paste0(mainpath, "/data/T_Prec_basedata/")
@@ -30,8 +31,6 @@ for (i in 1:length(dendrodats)){
   
   dendrodat$years <- row.names(dendrodat)
   dendrodat <- melt(dendrodat)
-  
- # predictors[[i]]$year <- year(predictors[[i]]$Date)
   
   predictors[[i]] <- merge(predictors[[i]],dendrodat,
                            by.x=c("Tree","Year"),

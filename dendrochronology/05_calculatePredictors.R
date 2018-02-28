@@ -7,6 +7,8 @@ mainpath <- "/home/hanna/Documents/Projects/Dendrodaten/"
 targetdatpath <- paste0(mainpath, "/data/Dendrodaten/")
 predpath <- paste0(mainpath, "/data/T_Prec_basedata/")
 
+source("/home/hanna/Documents/Release/environmentalinformatics-marburg/magic/dendrochronology/functions.R")
+
 prec <- read.csv(paste0(predpath,"/rainfall_combined.csv"))
 tmean <- read.csv(paste0(predpath,"/DailyMeans_interpolated.csv"))
 tnight <- read.csv(paste0(predpath,"/Means_Night_interpolated.csv"))
@@ -37,9 +39,8 @@ predictors_all <- predictors_all[year(predictors_all$Date)>=2003,]
 
 targetdat <- expand.grid("Plot"=unique(predictors_all$Plot),
                          "Year"=unique(year(predictors_all$Date)))
-ecotemp <- calculateEcoClimate(dat=predictors_all, plotID="Plot", aggregation="month",
+ecotemp <- calculateEcoClimate(dat=predictors_all, plotID="Plot",
                                tday="tday",tnight="tnight")
-
 
 targetdat <- data.frame(targetdat,ecotemp)
 save(targetdat,file=paste0(predpath,"predictors.RData"))
