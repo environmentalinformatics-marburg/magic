@@ -9,16 +9,13 @@ dendropath <- paste0(mainpath, "/data/dendrodata/")
 predpath <- paste0(mainpath, "/data/T_Prec_basedata/")
 
 dataset <- get(load(paste0(predpath,"/predictors.RData")))
-################################################################################
-# Initialize Target dataset: for each year and each tree the corresponding 
-# predictors
-################################################################################
-
-#dendro <- aggregate(dataset$Dendro_year,by=list(dataset$tree,dataset$year),
-#                    "mean",na.rm=T)
 
 dendrodats <- list.files(dendropath,pattern="rwl$",full.names = TRUE)
 predictors <- list()
+################################################################################
+# Read and merge Dendro data
+################################################################################
+
 for (i in 1:length(dendrodats)){
   dendrodat <- read.rwl(dendrodats[i])
   plotname <- substr(dendrodats[i],nchar(dendrodats[i])-9,nchar(dendrodats[i])-4)
@@ -31,11 +28,16 @@ for (i in 1:length(dendrodats)){
   
   dendrodat$years <- row.names(dendrodat)
   dendrodat <- melt(dendrodat)
-  
+  #### merge:
   predictors[[i]] <- merge(predictors[[i]],dendrodat,
                            by.x=c("Tree","Year"),
                            by.y=c("variable","years"))
 }
+
+################################################################################
+# Re-format and save
+################################################################################
+
 datamerged_all <- do.call(rbind,predictors)
 names(datamerged_all)[names(datamerged_all)=="value"] <- "Dendro"
 datamerged_all <- datamerged_all[complete.cases(datamerged_all),]
