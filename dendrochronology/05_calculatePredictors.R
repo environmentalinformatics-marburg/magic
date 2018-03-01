@@ -47,6 +47,8 @@ predictors_all$Gsum <- Gsum(predictors_all$tmean)
 ecodat <- data.frame(aggregateClimate(predictors_all,dts="Date",plotID="Plot",
                                       variable="Gsum",fun="sum",agg = "month"),
                      aggregateClimate(predictors_all,dts="Date",plotID="Plot",
+                                      variable="GDD",fun="sum",agg = "month")[,-(1:2)],
+                     aggregateClimate(predictors_all,dts="Date",plotID="Plot",
                                       variable="tmean",fun="mean",agg = "month")[,-(1:2)],
                      aggregateClimate(predictors_all,dts="Date",plotID="Plot"
                                       ,variable="prec",fun="sum",agg = "month")[,-(1:2)],
