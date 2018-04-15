@@ -40,4 +40,4 @@ ggplot(testdat, aes(Temperature,prediction)) +
                        breaks = 10^(0:3),colors=viridis(10))
 dev.off()
 
-regressionStats()
+regressionStats(prd = dat$prediction,obs=dat$Temperature)

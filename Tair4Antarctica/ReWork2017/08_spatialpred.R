@@ -16,13 +16,14 @@ predpath <- paste0(datapath, "/predictions/")
 MODISpath <- paste0(mainpath,"/MODISLST/")
 MODISpath_VIS <- "/mnt/sd19006/data/users/fdetsch/R-Server/data/MODIS_ARC/PROCESSED/mod09ga-antarctica/"
 tmppath <- paste0(mainpath,"/tmp/")
-rasterOptions(tmpdir = tmppath)
 model <- get(load(paste0(modelpath,"model_final.RData")))
 
 years <- 2003:2017
 
 for (year in years){
-  
+  tmppath <- paste0(tmppath,"/",year)
+  dir.create(tmppath)
+  rasterOptions(tmpdir = tmppath)
   dir.create(paste0(predpath,"/",year))
   
   MODISdat_terra <- list.files(paste0(MODISpath,"/terra/",year,"/"),
@@ -87,6 +88,6 @@ for (year in years){
     writeRaster(spatialpred,paste0(predpath,"/",year,"/prediction_",year,"_",doy,".tif"),
                 overwrite=TRUE)
     print(i)
-    
+    file.remove(list.files(tmppath,full.names = TRUE))
   }
 }
