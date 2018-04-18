@@ -1,0 +1,623 @@
+---
+title: "L8_2016_processing"
+author: "Maite Lezama Valdes"
+date: "29 Oktober 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##setup and paths
+```{r, eval=F}
+require(raster)
+require(rgdal)
+#install.packages("satellite")
+require(satellite)
+require(RStoolbox)
+main <- "F:/HK_Geoinfo/data/L82016/"
+org <- paste0(main, "unzip/") #hier stimmt es nicht.
+
+f1 <- paste0(org, "173078/")
+f2 <- paste0(org, "173079/")
+f3 <- paste0(org, "174078/")
+f <- c(f1, f2, f3)
+tiles <- c("173078", "173079", "174078")
+sh_mol <- "D:/HK_Geoinfo/data/Molopo-shape/"
+molopo <- rgdal::readOGR(dsn=paste0(sh_mol,"study_area.shp"))
+
+#paths for atmospheric corrected data
+dirac <- paste0(org, "ac/")
+lfac <- list.files(dirac, full.names = T)
+
+#functions
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+scdir <- list.files(paste0(main, "proj/"), full.names = T)
+
+```
+
+##Umbau für AC nach 2. Durchlauf
+```{r, eval=F}
+
+# #per tile
+# #delete not-na-cleared projected files
+# di <- paste0(scdir, "/174078/")
+# rm <- lapply(seq(di), function(j){
+#   grep(list.files(di[[j]], pattern=".tif", full.names = T), pattern="na.tif", value=T, invert=T)
+# })
+# 
+# for(i in seq(rm)){
+#   file.remove(rm[[i]])
+# }
+# 
+# #rename: kill _na extension
+# tx <- lapply(seq(di), function(j){
+#   list.files(di[[j]], pattern=".tif", full.names = T)
+# })
+# 
+# ton <- lapply(seq(tx), function(i){
+#   lapply(seq(tx[[1]]), function(j){
+#     gsub("_na", "", tx[[i]][[j]])
+#   })
+# })
+# 
+# 
+# for(i in seq(8)){
+#   for(j in seq(8)){
+#     file.rename(tx[[i]][[j]], ton[[i]][[j]])
+#   }
+# }
+# 
+# list.files(di[[6]])
+
+```
+
+
+## Daten einlesen: 
+
+lf: Liste der Ordner für die 8-15 heruntergeladenen Szenen, alle 3 Kacheln, 
+Bänder 10,11,2-7 in dieser Reihenfolge (!)
+stc: Stack Originale (3 Kacheln, 8 Szenen)
+datf: Datum aus Ordnernamen (3 Kacheln, 8 Szenen)
+dates: Pro Kachel: Daten in Reihenfolge aus den Ordnern
+Positionen stimmen überein, d.h. stc[[1]][[1]] gehört zu stc[[2]][[1]] und 
+stc[[3]][[1]]
+
+```{r, eval=F}
+lf <- lapply(sequence(3), function(j){
+  list.files(f[j], pattern="LC", full.names = T)
+})
+
+fx <- NULL
+#kachel, scene, Bänder
+stc <- lapply(seq(3), function(j){
+  lapply(seq(8), function(i){
+    fx <- list.files(paste0(lf[[j]][i],"/"), pattern="TIF$", full.names=T)
+    fxa <- fx[2:9] #10,11,2-7
+    print(c(j,i))
+    flush.console()
+    stack(fxa)
+  })
+})
+
+datf <- lapply(seq(3), function(j){
+  lapply(seq(lf[[j]]), function(i){
+      substrRight(lf[[j]][[i]], 10)
+  })
+})
+
+dates <- lapply(seq(3), function(j){
+  unlist(datf[[j]])
+})
+
+```
+##Ordnersystem
+
+####*generell: Dateien werden überschrieben, in einem log-Textfile dokumentiert, 
+welcher Schritt absolviert wurde*
+
+dirnam: Character Kombination aus datstc für Ordnerbenennung, x=2016
+Ordnersystem nur einmal anzulegen
+```{r, eval=F}
+# dirnam <- NULL
+# for(i in seq(8)){
+#    dirnam[i] <- paste0(dates[[1]][[i]], "_", dates[[2]][[i]], "_", dates[[3]][[i]])
+#  }
+# 
+# dirnam <- gsub("2016", "x", dirnam)
+
+dirnam <- scdir
+
+# # MAKE SUBDIRECTORIES
+# lapply(seq(8), function(l){
+#   mainDir <- paste0(main, "ac")
+#   subDir <- dirnam[l]
+#   if (file.exists(subDir) == FALSE){
+#     dir.create(file.path(mainDir, subDir))}
+# })
+# 
+# sdirs <- list.files(paste0(main, "ac/"), full.names = T)
+# lapply(seq(8), function(l){
+#   mainDir <- sdirs[l]
+#   subDir <- c("/173078", "/173079", "/174078")
+#   for(j in seq(3)){
+#     if (file.exists(subDir[j]) == FALSE){
+#     dir.create(file.path(mainDir, subDir[j]))}
+#   }
+# })
+
+```
+#VERARBEITUNG
+
+##Projektion
+fst: Stack der verarbeiteten Kacheln
+```{r, eval=F}
+newproj <- "+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+
+for(i in seq(3)){ #3 Kacheln
+  for(j in seq(8)){ #8 Szenen
+    for (l in seq(8)){ #8 Bänder
+      writeto <- paste0(dirnam[j], c("/173078", "/173079", "/174078"))
+      rstp <- projectRaster(stc[[i]][[j]][[l]], crs=newproj)
+      writeRaster(rstp, paste0(main, "proj/", writeto[i],"/",
+                               filename=names(stc[[i]][[j]][[l]])), format="GTiff", overwrite=T)
+      #stc: Kacheln, Szenen, Bänder
+      print(c(i,j,l))
+      flush.console()
+    }
+    logx <- "projected"
+    write.csv(logx, file=paste0(main, "proj/", writeto[i],"/", "log.txt"))
+  }
+}
+
+st <- NULL
+fst <- lapply(seq(8), function(i){
+  st <- lapply(seq(3), function(j){
+        f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names = T)
+        stack(f)
+    })
+  })
+
+# #test
+# plotRGB(fst[[8]][[3]],r=5, g=4, b=3, stretch="lin")
+# plotRGB(fst[[8]][[2]],r=5, g=4, b=3, stretch="lin", add=T)
+# plotRGB(fst[[8]][[1]],r=5, g=4, b=3, stretch="lin", add=T)
+
+# par(mfrow=c(3,3))
+# hist(fst[[8]][[3]][[5]])
+# hist(fst[[8]][[3]][[4]])
+# hist(fst[[8]][[3]][[3]])
+# 
+# hist(fst[[8]][[2]][[5]])
+# hist(fst[[8]][[2]][[4]])
+# hist(fst[[8]][[2]][[3]])
+# 
+# hist(fst[[8]][[1]][[5]])
+# hist(fst[[8]][[1]][[4]])
+# hist(fst[[8]][[1]][[3]])
+
+```
+
+##Zuschneiden auf Molopo
+```{r, eval=F}
+
+for(i in seq(8)){
+  for(j in seq(3)){
+    writeto <- paste0(dirnam[i], c("/173078", "/173079", "/174078"))
+      cr <- raster::crop(fst[[i]][[j]], molopo)
+      for (l in seq(nlayers(cr))){ 
+        writeRaster(cr[[l]], paste0(main, "proj/", writeto[j],"/",
+                    filename=names(stc[[j]][[i]][[l]])), format="GTiff", overwrite=T)
+        #stc: Kacheln, Szenen, Bänder
+        print(c(i,j,l))
+        flush.console()
+      }
+    logx <- "cropped molopo"
+    write.csv(logx, file=paste0(main, "proj/", writeto[j],"/", "log.txt"))
+}
+}
+
+st <- NULL
+fst <- lapply(seq(8), function(i){
+  st <- lapply(seq(3), function(j){
+        f <- grep(list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names=T), pattern='na.tif', inv=T, value=T)
+        stack(f)
+    })
+  })
+
+
+
+```
+
+##Metadata kopieren
+```{r, eval=F}
+from <- lapply(seq(3), function(j){
+  paste0(lf[[j]], "/")
+})
+
+to <- list.files(paste0(main, "proj/"), full.names = T)
+
+lapply(seq(3), function(j){
+  lapply(seq(8), function(i){
+    file.copy(list.files(from[[j]][[i]], pattern="MTL.txt", full.names = T),
+              paste0(to[[i]], "/", tiles[[j]], "/"), overwrite=T)
+  })
+})
+```
+
+#Neu: 0 = NA vor Atmosphärenkorrektur
+```{r, eval=F}
+#alle negativen Werte Null setzen
+lapply(seq(8), function(j){
+  lapply(seq(3), function(x){
+    for (i in seq(8)){
+      nam <- names(fst[[j]][[x]][[i]])
+      fst[[j]][[x]][[i]][fst[[j]][[x]][[i]] <= 0]<- NA
+      writeRaster(fst[[j]][[x]][[i]], 
+                  paste0(dirs[[j]][[x]],filename=paste0(nam, "_na")), 
+                  format="GTiff", overwrite=T)
+      print(c(j, x, i))}
+  })
+})
+
+st <- NULL
+fst <- lapply(seq(8), function(i){
+  st <- lapply(seq(3), function(j){
+        f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern="na.tif$", full.names = T)
+        stack(f)
+    })
+  })
+
+plotRGB(fst[[1]][[3]], r=5, g=4, b=3, stretch='lin')
+plotRGB(fst[[1]][[2]], r=5, g=4, b=3, stretch='lin', add=T)
+plotRGB(fst[[1]][[1]], r=5, g=4, b=3, stretch='lin', add=T)
+
+```
+
+
+##Atmosphärenkorrektur
+```{r, eval=F}
+dirs <- lapply(seq(8), function(j){
+  lapply(seq(3), function(i){
+    writeto <- paste0(dirnam[j], c("/173078", "/173079", "/174078"))
+  })
+})
+
+testch <- gsub("proj", "ac", dirnam)
+
+acto <- lapply(seq(8), function(j){
+  #lapply(seq(3), function(i){
+    writeto <- paste0(testch[j], c("/173078/", "/173079/", "/174078/"))
+    #dirs <- paste0(main, "ac/", writeto[i],"/")
+  #})
+})
+
+#neuer Ansatz: 
+x <- c("/173078", "/173079", "/174078")
+newdir <- lapply(seq(3), function(j){
+  paste0(scdir, x[j])
+})
+
+
+# files <- list.files("C:/Users/mleza/Desktop/LC08_L1TP_173078_20160228_20170329_01_T1_2016-02-28/", full.names = T, pattern="MTL.txt")
+# mettest <- compMetaLandsat(files)
+# rfiles <- list.files("C:/Users/mleza/Desktop/LC08_L1TP_173078_20160228_20170329_01_T1_2016-02-28/", full.names = T, pattern=".TIF")
+# 
+# sattest <- satellite(rfiles)
+# atmd <- calcAtmosCorr(sattest, model = "DOS2", esun_method = "RadRef")
+# 
+# 
+
+
+j=1 #tiles
+i=8 #scenes
+
+yi <- c(17:22)
+for(i in c(6:8){ #i 8 scenes
+  for(j in seq(3)){ #j 3 tiles
+    tl <- newdir[[j]][[i]]
+    setwd(tl)
+    tb <- list.files(tl, pattern=".tif$", full.names = T)
+    met <- list.files(tl, pattern="MTL.txt", full.names=T)
+    # metf <- compMetaLandsat(tb[3:8])
+    # sttb <- lapply(c(3:8), function(x){
+    #   raster(tb[[x]])
+    # })
+    tbsat <- satellite(tb)
+    atmd <- calcAtmosCorr(tbsat, model = "DOS2", esun_method = "RadRef")
+    print(c("atmd", j, i)) #tile, scene
+    acst <- lapply(seq(yi), function(y){
+      atmd@layers[[yi[y]]]
+    })
+    for(x in seq(length(acst))){
+      writeRaster(acst[[x]], paste0(acto[[i]][[j]],filename=paste0(substring(names(acst[[x]]), 1,5), "_new")),
+                format="GTiff", overwrite=T)
+    }
+    print(c("writeras", j, i))
+  }
+}
+
+
+st <- NULL
+fst <- lapply(seq(8), function(i){
+  st <- lapply(seq(3), function(j){
+        f <- list.files(paste0(acto[[i]][j]), 
+                        pattern="new.tif", full.names = T)
+        stack(f)
+    })
+  })
+
+#wenn stretch histogram statt lin -> 2. Kachel (unten links sieht grau aus)
+#überprüfen
+plotRGB(fst[[1]][[3]], r=3, g=2, b=1, stretch='lin')
+plotRGB(fst[[1]][[2]], r=3, g=2, b=1, stretch='lin', add=T)
+plotRGB(fst[[1]][[1]], r=3, g=2, b=1, stretch='lin', add=T)
+
+#test mergen ohne hm
+i=1
+j=6
+lapply(seq(6), function(j){
+    mo <- mosaic(fst[[i]][[1]][[j]], fst[[i]][[2]][[j]], fst[[i]][[3]][[j]], fun=mean)
+    writeRaster(mo, paste0(main, "mosaics/mo2ap", i, "_b", j), format="GTiff", overwrite=T)
+  })
+
+f <- list.files(paste0(main, "mosaics/"), full.names=T)
+mos <- stack(f)
+
+plotRGB(mos, r=3, g=2, b=1, stretch="lin")
+
+```
+
+
+##test for negative values
+negative Werte draußen, 
+```{r, eval=F}
+#test for negative values
+nc <- vector()
+negval <- lapply(seq(fst), function (j){ #alle Szenen
+  lapply(seq(3), function(x){
+    for (i in seq(6)){
+    nc[i] <- sum(values(fst[[j]][[x]][[i]] < 0), na.rm=T)}
+    print(j,x,i)
+    nc
+    })
+  })
+
+# test <- drawExtent()
+# teststack <- crop(fst[[1]][[3]], test)
+# plot(teststack[[1]])
+# table(values(teststack[[1]]))
+# test2 <- drawExtent()
+# teststack2 <- crop(teststack[[1]], test2)
+
+#alle negativen Werte Null setzen
+lapply(seq(8), function(j){
+#  lapply(seq(3), function(x){
+    for (i in seq(6)){
+      nam <- names(fst[[j]][[1]][[i]])
+      fst[[j]][[1]][[i]][fst[[j]][[1]][[i]] <= 0]<- NA
+      writeRaster(fst[[j]][[1]][[i]], 
+                  paste0(acto[[j]][[1]],filename=paste0(nam, "_na")), 
+                  format="GTiff", overwrite=T)
+      print(c(j, 1, i))}
+#  })
+})
+
+st <- NULL
+fst <- lapply(seq(8), function(i){
+  st <- lapply(seq(3), function(j){
+        f <- list.files(paste0(main, "ac/", dirnam[i], "/", tiles[j], "/"), 
+                        pattern="na.tif$", full.names = T)
+        stack(f)
+    })
+  })
+
+fst
+
+plotRGB(fst[[1]][[1]], r=3, g=2, b=1, stretch='lin')
+plotRGB(fst[[1]][[2]], r=3, g=2, b=1, stretch='lin', add=T)
+plotRGB(fst[[1]][[3]], r=3, g=2, b=1, stretch='lin', add=T)
+
+```
+
+##histogram matching
+histograms of tile 2 and 3 are matched to that of 1. 
+#using fst with na
+```{r, eval=F}
+hm2 <- NULL
+hm3 <- NULL
+lapply(c(2:8), function(i){ #für alle Szenen
+  lapply(seq(nlayers(fst[[i]][[1]])), function(j){ #für alle ac-korrigierten Bänder 
+    hm2 <- histMatch(x=fst[[i]][[2]][[j]], ref=fst[[i]][[1]][[j]])
+    writeRaster(hm2, paste0(main, "hm/t", i, "_hm2_l", j), format="GTiff", overwrite=T)
+    print(c("hm2", i, j))
+    hm3 <- histMatch(x=fst[[i]][[3]][[j]], ref=fst[[i]][[1]][[j]])
+    writeRaster(hm3, paste0(main, "hm/t", i, "_hm3_l", j), format="GTiff", overwrite=T)
+    print(c("hm3", i, j))
+  })
+})
+
+```
+
+##mergen
+hma: scene 1 tile 2 layer 1:6, scene 1 tile 3 layer 1:6 ...
+
+til: [[scene]][[hm2]] // [[scene]][[hm3]]
+
+##*macht mean als function bei mosaic Sinn?*
+
+##definitiv 2. Ansatz! Erst Nullen löschen, dann AC, dann hma, dann mergen
+```{r, eval=F}
+f <- list.files(paste0(main, "/hm"))
+j=1
+sc <- NULL
+sc <- lapply(seq(8), function(j){
+  scene <- f[substr(f,2,2)==j]
+  scene <- paste0(main, "hm/", scene)
+})
+
+
+til <- lapply(seq(8), function(j){
+    t2 <- stack(sc[[j]][1:6])
+    t3 <- stack(sc[[j]][7:12])
+    return(list(t2,t3))
+  })
+
+lapply(c(2:8), function(i){
+  lapply(seq(6), function(j){
+    mo <- mosaic(fst[[i]][[1]][[j]], til[[i]][[1]][[j]], til[[i]][[2]][[j]], fun=mean)
+    writeRaster(mo, paste0(main, "mosaics/mo_hm_", i, "_b", j), format="GTiff", overwrite=T)
+  })
+})
+
+# plot(mo)
+# plot(fst[[i]][[1]][[j]])
+# plot(til[[i]][[1]][[j]], add=T)
+# plot(til[[i]][[2]][[j]], add=T)
+# plot(mo)
+# plot(momax)
+# maxtest <- drawExtent()
+# novalval <- values(crop(momax, maxtest))
+# plot(crop(momax, maxtest))
+# 
+# noval <- drawExtent() 
+# novalval <- values(crop(fst[[i]][[1]][[j]], noval))
+#NA-Values.
+
+#read merged files
+top <- c(6,12,18,24,30,36,42,48)
+low <- top+1
+low <- c(1, low[1:7])
+moscs <- lapply(seq(8), function(j){
+  f <- list.files(paste0(main, "mosaics/"), pattern=paste0("mo_hm"), full.names=T)
+  stack(f[low[j]:top[j]])
+})
+
+par(mfrow=c(3,3))
+for(i in seq(8)){
+  plotRGB(moscs[[i]], r=3, g=2, b=1, stretch="lin")
+}
+
+```
+
+##calc NDVI
+
+ndvi = (nir-rot)/(nir+rot)
+
+```{r, eval=F}
+for(j in seq(moscs)){
+  za <- moscs[[j]][[4]]-moscs[[j]][[3]]
+  ne <- moscs[[j]][[4]]+moscs[[j]][[3]]
+  ndvi <- za/ne
+  writeRaster(ndvi, paste0(main, "ndvi/ndvi_", j, ".tif"), format="GTiff", overwrite=T)
+}
+
+f <- list.files(paste0(main, "ndvi/"), full.names = T)
+ndvist <- stack(f)
+
+ndvi <- lapply(seq(8), function(j){
+  ndvist[[j]][ndvist[[j]]<(-1)]<-NA
+  ndvist[[j]][ndvist[[j]]>(1)]<-NA
+  ndvist[[j]]
+})
+
+ndvi <- stack(ndvi)
+ndvi
+
+for(i in seq(8)){
+  writeRaster(ndvi[[i]], paste0(main, "ndvi/ndvicorr_", i, ".tif"),format="GTiff", overwrite=T)
+}
+
+f <- list.files(paste0(main, "ndvi/"), pattern="corr", full.names = T)
+ndvist <- stack(f)
+
+```
+
+
+##FROM HERE!
+
+##reproject classified bush tiles
+```{r, eval=F}
+
+main <- "D:/HK_Geoinfo/data/L82016/"
+library(rgeos)
+library (plyr)
+require(raster)
+
+#read bush tiles
+bush_class_d <- paste0(main, "classifiedTiles/")
+bush <- list.files(bush_class_d, pattern=".tif$", full.names = T)
+
+rl <- list()
+brl <- lapply(seq(bush), function(j){
+  rl[j] <- raster:: raster(bush[j])
+})
+
+newproj <- "+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+brlproj <- list()
+
+for(i in seq(brl)){
+  brlproj <- raster::projectRaster(from=brl[[i]], crs=newproj, method="ngb")
+  writeRaster(brlproj, paste0("F:/Maite/projclasstiles/lcc_", i, ".tif"), format="GTiff", overwrite=T)
+  print(i)
+}
+
+```
+
+
+##extract
+
+#*Marvin classification: bush=1*
+```{r, eval=F}
+#read projected bush tiles
+bush_class_d <- paste0(main, "classifiedTiles/")
+bush <- list.files(bush_class_d, pattern=".tif$", full.names = T)
+
+rl <- list()
+brl <- lapply(seq(bush), function(j){
+  rl[j] <- raster:: raster(bush[j])
+})
+
+
+#read mosaics
+top <- c(6,12,18,24,30,36,42,48)
+low <- top+1
+low <- c(1, low[1:7])
+moscs <- lapply(seq(8), function(j){
+  f <- list.files(paste0(main, "mosaics/"), pattern=paste0("mo_hm"), full.names=T)
+  stack(f[low[j]:top[j]])
+})
+
+#read ndvi
+f <- list.files(paste0(main, "ndvi/"), pattern="corr", full.names = T)
+ndvist <- stack(f)
+
+
+sat <- stack(moscs[[1]],ndvist[[1]])
+widthb <- 15
+brgb <- brl
+out <- paste0("F:/Maite/extr/")
+#ord <- c("b", "g", "r", "NIR", "SWIR1", "SWIR2", "NDVI", "bush_perc", "bush_class_tile")
+
+tabnam <- lapply(seq(8), function(i){
+  paste0("sc_", i, "_", ord)
+})
+  
+#out <- "F:/HK_Geoinfo/data/2013_LC8/output/extraction/ndvi_rainy/"
+
+
+brgb <- brl
+newproj <- "+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"a
+widthb <- 15
+out <- paste0("F:/Maite/extr/")
+
+for(i in seq(8)){
+  nam <- paste0("sc_", i)
+
+
+```
+
