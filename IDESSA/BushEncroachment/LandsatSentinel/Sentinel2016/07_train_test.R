@@ -1,6 +1,6 @@
 # train test split and data frame merging
 
-tile_fls <- list.files("/media/marvin/Seagate Expansion Drive/extraction_cleaned", full.names = TRUE)
+tile_fls <- list.files("D:/model_input/extraction_cleaned/", full.names = TRUE)
 
 round(length(tile_fls) /4)
 set.seed(1)
@@ -9,7 +9,7 @@ test_id <- seq(length(tile_fls))
 test_id <- test_id[!(test_id %in% train_id)]
 
 train <- lapply(seq(length(train_id)), function(i){
-  read.csv(tile_fls[i])
+  read.csv(tile_fls[train_id[i]])
 })
 
 train_df <- do.call(rbind, train)
@@ -22,12 +22,11 @@ train_df$class_3 <- NULL
 train_df$class_4 <- NULL
 train_df$class_na <- NULL
 
-write.csv(train_df, "/media/marvin/Seagate Expansion Drive/extraction_train_test/train.csv", row.names = FALSE)
-saveRDS(train_df, file = "/media/marvin/Seagate Expansion Drive/extraction_train_test/train.RDS")
+saveRDS(train_df, file = "D:/model_input/train.RDS")
 
 
-test <- lapply(seq(801, 1103), function(i){
-  read.csv(tile_fls[i])
+test <- lapply(seq(length(test_id)), function(i){
+  read.csv(tile_fls[test_id[i]])
 })
 test_df <- do.call(rbind, test)
 
@@ -40,5 +39,5 @@ test_df$class_3 <- NULL
 test_df$class_4 <- NULL
 test_df$class_na <- NULL
 
-saveRDS(test_df, file = "/media/marvin/Seagate Expansion Drive/extraction_train_test/test_03.RDS")
+saveRDS(test_df, file = "D:/model_validation/test_data.RDS")
 
