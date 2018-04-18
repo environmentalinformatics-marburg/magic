@@ -1,0 +1,352 @@
+---
+title: "L_45_processing"
+author: "Maite Lezama Valdes"
+date: "27 Oktober 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## setup and paths
+
+```{r setup and paths, eval=F}
+require(raster)
+require(rgdal("satellite")
+#install.packages("satellite", lib="C:/Users/Guetges/Documents/libs/")
+library(satellite, lib.loc="C:/Users/Guetges/Documents/libs/")
+#main <- "C:/Users/Guetges/Documents/L34_all/"
+main <- "F:/HK_Geoinfo/data/L45all/"
+f1 <- paste0(main, "173078/")
+f2 <- paste0(main, "173079/")
+f3 <- paste0(main, "174078/")
+f <- c(f1, f2, f3)
+tiles <- c("173078", "173079", "174078")
+sh_mol <- "F:/HK_Geoinfo/data/Molopo-shape/"
+molopo <- readOGR(dsn=paste0(sh_mol,"study_area.shp"))
+
+#paths for atmospheric corrected data
+dirac <- paste0(main, "ac/")
+lfac <- list.files(dirac, full.names = T)
+
+tac <- lapply(seq(3), function(i){
+  paste0(rev(lfac), "/", tiles[[i]])
+})
+
+#letzte 10 Ziffern des Ordnernamens identifizieren, die die zusammengehören zu finden
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+
+
+```
+
+## Daten einlesen: 
+
+lf: Liste der Ordner für die 33-36 heruntergeladenen Szenen, alle 3 Kacheln
+stc: Stack Originale (3 Kacheln, 33-36 Sezenen)
+comp: Daten der 29 zusammengehörige Szenen für die drei Kacheln
+datf: Datum aus Ordnernamen (3 Kacheln, 33-36 Szenen)
+dates: Pro Kachel: Daten in Reihenfolge aus den Ordnern
+pos: Position pro Kachel, an welcher sich in stc die zusammengehörigen Daten zur
+      jeweiligen Szene befinden
+
+```{r, eval=F}
+lf <- lapply(sequence(3), function(j){
+  list.files(f[j], pattern="LT", full.names = T)
+})
+
+fx <- NULL
+stc <- lapply(seq(3), function(j){
+  lapply(seq(lf[[j]]), function(i){
+    fx <- list.files(paste0(lf[[j]][i],"/"), pattern="TIF$", full.names=T)
+    print(c(j,i))
+    flush.console()
+    stack(fx)
+  })
+})
+
+combx <- list.files(main, pattern="ded.csv", full.names=T)
+comb <- as.data.frame(read.csv(combx, sep=";"))
+
+datf <- lapply(seq(3), function(j){
+  lapply(seq(lf[[j]]), function(i){
+      substrRight(lf[[j]][[i]], 10)
+  })
+})
+
+dates <- lapply(seq(3), function(j){
+  unlist(datf[[j]])
+})
+
+x <- NULL
+pos <- lapply(seq(3), function(j){
+  for(i in seq(29)){
+    x[i] <- which(dates[[j]]==comb[i,j])
+  }
+  x
+})
+
+```
+##Ordnersystem
+
+####*generell: Dateien werden überschrieben, in einem log-Textfile dokumentiert, 
+welcher Schritt absolviert wurde*
+
+datstc: Kombination der Daten der Kacheln, die in eine Szene überführt werden sollen
+dirnam: Character Kombination aus datstc für Ordnerbenennung
+
+```{r, eval=F}
+x <- list()
+datstc <- lapply(seq(29), function(j){
+  x[1] <- substring(stc[[1]][[pos[[1]][[j]]]][[1]]@file@name, 56, 65)
+  x[2] <- substring(stc[[2]][[pos[[2]][[j]]]][[1]]@file@name, 56, 65)
+  x[3] <- substring(stc[[3]][[pos[[3]][[j]]]][[1]]@file@name, 56, 65)
+  x
+})
+
+dirnam <- NULL
+i=1
+for(i in seq(29)){
+  dirnam[i] <- paste0(unlist(datstc[[i]][[1]]), "_", unlist(datstc[[i]][[3]]))
+}
+
+dirnam <- list.files(paste0(main, "proj/"))
+dirnam <- rev(dirnam)
+
+#MAKE SUBDIRECTORIES
+
+# lapply(seq(29), function(l){
+#   mainDir <- paste0(main, "proj")
+#   subDir <- dirnam[l]
+#   if (file.exists(subDir) == FALSE){
+#     dir.create(file.path(mainDir, subDir))}
+# })
+# 
+# sdirs <- list.files(paste0(main, "proj/"), full.names = T)
+# lapply(seq(29), function(l){
+#   mainDir <- sdirs[l]
+#   subDir <- c("/173078", "/173079", "/174078")
+#   if (file.exists(subDir[3]) == FALSE){ 
+      #nicht ganz ausgereift, Loop 3 fehlt... 
+#     dir.create(file.path(mainDir, subDir[3]))}
+# })
+```
+
+#VERARBEITUNG
+
+##Projektion
+fst: Stack der verarbeiteten Kacheln
+```{r, eval=F}
+
+dirnam2 <- read.csv(paste0(main, "dirnam.csv"))
+dirnam <- as.character(dirnam2$x)
+
+rm(stc)
+
+newproj <- "+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+for(i in c(25)){
+  for(j in c(3)){ 
+    writeto <- paste0(dirnam[i], c("/173078", "/173079", "/174078"))
+
+    for (l in seq(7)){
+      rstp <- projectRaster(stc[[j]][[pos[[j]][[i]]]][[l]], crs=newproj)
+      writeRaster(rstp, paste0(main, "proj/", writeto[j],"/",
+                               filename=names(stc[[j]][[pos[[j]][[i]]]][[l]])), format="GTiff", overwrite=T)
+      print(c(i,j,l))
+      flush.console()
+    }
+    logx <- "projected"
+    write.csv(logx, file=paste0(main, "proj/", writeto[j],"/", "log.txt"))
+}
+}
+
+#write.csv(dirnam, paste0(main, "dirnam.csv"))
+fst <- list()
+fst <- lapply(seq(29), function(i){
+  lapply(seq(3), function(j){
+    f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names = T)
+    fst[j] <- stack(f)
+  })
+})
+
+
+```
+
+##Zuschneiden auf Molopo
+```{r, eval=F}
+
+for(i in c(26:29)){
+  for(j in seq(3)){
+    writeto <- paste0(dirnam[i], c("/173078", "/173079", "/174078"))
+      cr <- crop(fst[[i]][[j]], molopo)
+      for (l in seq(nlayers(cr))){ 
+        writeRaster(cr[[l]], paste0(main, "run/", names(cr[[l]]), ".tif"), format="GTiff")
+        print(c(i,j,l))
+        flush.console()
+      }
+    logx <- "cropped molopo"
+    write.csv(logx, file=paste0(main, "proj/", writeto[j],"/", "log.txt"))
+    f <- list.files(paste0(main, "proj/", writeto[j],"/"), pattern=".tif", full.names = T)
+    file.remove(f)
+    new <- list.files(paste0(main, "run/"), full.names = T)
+    file.copy(new, paste0(main, "proj/", writeto[j],"/"))
+    file.remove(new)
+  }
+j}
+
+
+
+fst <- list()
+fst <- lapply(seq(29), function(i){
+  lapply(seq(3), function(j){
+    f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names = T)
+    fst[j] <- stack(f)
+  })
+})
+
+```
+
+##Metadaten kopieren
+```{r, eval=F}
+#j: Kacheln, i: 29 Durchläufe
+from <- NULL
+from <- lapply(seq(3), function(j){
+  for(i in seq(29)){
+    from[i] <- lf[[j]][pos[[j]][[i]]]
+  }
+  from
+})
+
+to <- list.files(paste0(main, "proj_bis_0_raus/proj/"), full.names = T)
+to <- rev(to)
+
+# lapply(seq(3), function(j){
+#   lapply(seq(29), function(i){
+#     file.copy(list.files(paste0(from[[j]][[i]], "/"), pattern="MTL.txt", full.names = T),
+#               paste0(to[[i]], "/", tiles[[j]], "/"), overwrite=T)
+#   })
+# })
+
+```
+
+##NICHT GEMACHT: Wenn Speichertyp "double" zu "integer" konvertieren
+```{r, eval=F}
+for(i in seq(29)){
+  for(j in seq(3)){
+    writeto <- paste0(dirnam[i], c("/173078", "/173079", "/174078"))
+      for(l in seq(7)){
+      if(storage.mode(fst[[i]][[j]][[l]][])=="double"){
+          fst[[i]][[j]][[l]][]=as.integer(fst[[i]][[j]][[l]][])}
+          writeRaster(fst[[i]][[j]][[l]], paste0(main, "proj/", writeto[j],"/",
+            filename=names(stc[[j]][[pos[[j]][[i]]]][[l]])), format="GTiff", overwrite=T)
+      }
+  logx <- "double to integer"
+  write.csv(logx, file=paste0(main, "proj/", writeto[j],"/", "log.txt"))
+}
+}
+
+
+fst <- lapply(seq(3), function(j){
+    f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names = T)
+    fst[j] <- stack(f)
+  })
+```
+
+
+##0 und negative Werte löschen
+```{r, eval=F}
+
+for(i in c(29)){
+  for(j in seq(3)){
+    writeto <- paste0(dirnam[i], c("/173078", "/173079", "/174078"))
+      for (l in seq(nlayers(fst[[i]][[j]]))){ 
+        nam <- names(fst[[i]][[j]][[l]])
+        fst[[i]][[j]][[l]][fst[[i]][[j]][[l]] <= 0]<- NA
+        writeRaster(fst[[i]][[j]][[l]], paste0(main, "run/", nam, ".tif"), format="GTiff", overwrite=T)
+        print(c(i,j,l))
+        flush.console()
+      }
+    logx <- "no 0"
+    write.csv(logx, file=paste0(main, "proj/", writeto[j],"/", "log.txt"))
+    f <- list.files(paste0(main, "proj/", writeto[j],"/"), pattern=".tif", full.names = T)
+    file.remove(f)
+    new <- list.files(paste0(main, "run/"), full.names = T)
+    file.copy(new, paste0(main, "proj/", writeto[j],"/"))
+    file.remove(new)
+  }
+}
+
+
+fst <- list()
+fst <- lapply(seq(29), function(i){
+  lapply(seq(3), function(j){
+    f <- list.files(paste0(main, "proj/", dirnam[i], "/", tiles[j], "/"), pattern=".tif$", full.names = T)
+    fst[j] <- stack(f)
+  })
+})
+```
+
+
+##Atmosphärenkorrektur
+```{r, eval=F}
+# install.packages("devtools", lib="C:/Users/Guetges/Documents/libs/")
+# install.packages("withr", lib="C:/Users/Guetges/Documents/libs/")
+# install.packages("httr", lib="C:/Users/Guetges/Documents/libs/")
+# 
+# library(withr, lib.loc="C:/Users/Guetges/Documents/libs/")
+# library(devtools, lib.loc="C:/Users/Guetges/Documents/libs/")
+# library(httr, lib.loc="C:/Users/Guetges/Documents/libs/")
+# 
+# with_libpaths("C:/Users/Guetges/Documents/libs/", install_github("environmentalinformatics-marburg/satellite", ref="develop",
+#                lib="C:/Users/Guetges/Documents/libs/"))
+
+# library(devtools)
+# install_github("environmentalinformatics-marburg/satellite", ref="develop")
+
+library(satellite)
+
+lapply(seq(3), function(j){
+  for(i in seq(29)){
+    #tl <- paste0(to[[i]], "/", tiles[[j]], "/")
+    #tl <- paste0(main, "actest")
+    test <- "F:/LC08_L1TP_173078_20180305_20180319_01_T1/"
+    t <- list.files(test, pattern="TIF")[c(1,4,5)]
+    setwd(test)
+    # me <- list.files(tl, pattern="MTL")
+    # me <- read.csv(me)
+    #tb <- list.files(tl, pattern="TIF$")[1:2]
+    # tb <- raster::stack(tb)
+    tbsat <- satellite(t) #keine nan-Werte
+    #tbsat@meta
+    print(c("sat", j, i))
+    atmd <- calcAtmosCorr(tbsat, model = "DOS2", esun_method = "RadRef")
+    print(c("atmd", j, i))
+    acst <- stack(atmd@layers[[15]], atmd@layers[[16]], atmd@layers[[17]], 
+                  atmd@layers[[18]], atmd@layers[[19]], atmd@layers[[20]])
+    for(x in seq(6)){
+      writeRaster(acst[[x]], paste0(tac[[j]][[i]], "/ac", 
+                               filename=substring(names(acst[[x]]),1,5)), 
+                               format="GTiff", overwrite=T)}
+  }})
+
+acst <- lapply(seq(3), function(j){
+  f <- list.files(paste0(lfac, "/", tiles[j], "/"), pattern=".tif", full.names = T)
+  fst[j] <- stack(f)
+})
+
+```
+
+## histogram matching
+```{r, eval=F}
+
+```
+
+
+##mergen
+```{r, eval=F}
+
+```
+

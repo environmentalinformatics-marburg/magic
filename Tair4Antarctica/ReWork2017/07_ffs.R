@@ -13,20 +13,21 @@ rasterdata <- paste0(datapath,"/raster/")
 Shppath <- paste0(datapath,"/ShapeLayers/")
 modelpath <- paste0(datapath, "/modeldat/")
 
-calcFFS <- FALSE
+calcFFS <- TRUE
 
 trainingDat <- get(load(paste0(modelpath,"trainingDat.RData")))
 folds <- CreateSpacetimeFolds(trainingDat, spacevar = "Station", k = 10)
 
 predictors <-trainingDat[,c("LST_day","LST_night","min_hillsh","mean_hillsh","max_hillsh",
 "min_altitude","mean_altitude","max_altitude",
+"refl_b01","refl_b02","refl_b03","refl_b04","refl_b05","refl_b06","refl_b07",
 #"min_azimuth","mean_azimuth","max_azimuth",
 "DEM")]
 response <- trainingDat$Temperature
 
 
 ## parallel prozessierung starten
-cl <- makeCluster(detectCores()-5)
+cl <- makeCluster(10)
 registerDoParallel(cl)
 
 #################### FFS MODEL

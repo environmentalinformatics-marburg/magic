@@ -3,7 +3,7 @@
 rm(list=ls())
 library(raster)
 library(lubridate)
-mainpath <- "/media/hanna/data/Antarctica/ReModel2017/"
+mainpath <- "/media/memory02/users/hmeyer/Antarctica/ReModel2017/"
 datapath <- paste0(mainpath,"/data/")
 rdatapath <- paste0(datapath, "/RData/")
 rasterdata <- paste0(datapath,"/raster/")
