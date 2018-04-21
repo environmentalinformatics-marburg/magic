@@ -6,28 +6,39 @@
 #bush classification tile)
 #out = where to write extracted tables as .csv
 
-#make small sample
-#Landsat: ! work without merged file: find out if extents match, then crop
+################## read data ######################
+require(raster)
+require(rgdal)
 
-sat <- acmndivi #satellite image stack 
+#read raster images
+datapath <- "F:/HK_Geoinfo/data/worldclim/"
+f <- list.files(datapath, pattern="RData", full.names = T)
+load(f)
+
+stcomp <- stack(complete[[1]], complete[[2]], complete[[3]], complete[[4]],
+      complete[[5]], complete[[6]], complete[[7]], complete[[8]])
+
+#read bush tiles
+bush_class_d <- "F:/HK_Geoinfo/data/L2016_final/classifiedTiles/"
+bush <- list.files(bush_class_d, pattern=".tif$", full.names = T)
+
+rl <- list()
+brl <- lapply(seq(bush), function(j){
+  rl[j] <- raster:: raster(bush[j])
+})
+
+#change names
+sat <- stcomp
 widthb <- 15 
-brgb <- brl #bush rgb
-tabnam <- c("ac_b_2_b_rainy", "ac_b_3_g_rainy", "ac_b_4_r_rainy",
-            "ac_b_5_NIR_rainy", "ac_b_6_SWIR1_rainy", "ac_b_6_SWIR2_rainy", "NDVI_dry", 
-            "NDVI_rainy","bush_perc", "bush_class_tile")
-
-# tabnam <- c("NDVI_dry", "NDVI_rainy", "bush_perc", "bush_class_tile")
-
-out <- "F:/HK_Geoinfo/data/2013_LC8/output/extraction/ndvi_rainy/"
+brgb <- brl
+out <- "F:/HK_Geoinfo/data/L2016_final/extr/"
 newproj <- "+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
 
-funex <- function(sat, widthb, brgb, out){
-  #cl <- makeCluster(detectCores()-2)
-  #parLapply(cl, seq(brgb), function(k){
-  lapply(c(853:length(brgb)), function(k){
-    brgb1 <- raster::projectRaster(brgb[[k]], crs = CRS("+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"), method = "ngb")
 
+funex <- function(sat, widthb, brgb, out){
+  lapply(c(1:length(brgb)), function(k){
+    brgb1 <- raster::projectRaster(brgb[[k]], crs = CRS("+proj=utm +zone=34 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"), method = "ngb")
     ext <- brgb1@extent
     tryCatch(sat1 <- crop(sat, ext), error=function(e){print(c(k, "no overlap"))})
       
@@ -62,7 +73,6 @@ funex <- function(sat, widthb, brgb, out){
     }
     
   })
-  #stopCluster(cl)
 }
 
 
