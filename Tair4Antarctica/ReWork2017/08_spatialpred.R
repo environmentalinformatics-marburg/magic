@@ -49,24 +49,26 @@ for (year in years){
     
     
     LST_day <- tryCatch(
-     mean(stack(aqua_day[substr(aqua_day,nchar(aqua_day)-6,nchar(aqua_day)-4)==doy],
-                            terra_day[substr(terra_day,nchar(terra_day)-6,nchar(terra_day)-4)==doy]),
-                      na.rm=T),
+      mean(stack(aqua_day[substr(aqua_day,nchar(aqua_day)-6,nchar(aqua_day)-4)==doy],
+                 terra_day[substr(terra_day,nchar(terra_day)-6,nchar(terra_day)-4)==doy]),
+           na.rm=T),
       error=function(e)e) 
-   
-      LST_night <-  tryCatch(mean(stack(aqua_night[substr(aqua_night,nchar(aqua_night)-6,nchar(aqua_night)-4)==doy],
-                              terra_night[substr(terra_night,nchar(terra_night)-6,nchar(terra_night)-4)==doy]),
-                        na.rm=T),
-      error=function(e)e) 
-      
-      VISdats <- MODIS_VIS[substr(VIS_dates,5,7)==doy]
-      VIS <- tryCatch(
-        stack(VISdats),error=function(e)e)
+    
+    LST_night <-  tryCatch(mean(stack(aqua_night[substr(aqua_night,nchar(aqua_night)-6,nchar(aqua_night)-4)==doy],
+                                      terra_night[substr(terra_night,nchar(terra_night)-6,nchar(terra_night)-4)==doy]),
+                                na.rm=T),
+                           error=function(e)e) 
+    
+    VISdats <- MODIS_VIS[substr(VIS_dates,5,7)==doy]
+    VIS <- tryCatch(
+      stack(VISdats),error=function(e)e)
+    VIS[is.na(VIS)]<- 0
+    VIS[VIS<0] <- 0
     
     if(inherits(LST_night,"error")|inherits(LST_day,"error")|inherits(VIS,"error")){
       next
     }
-      
+    
     
     hillshade <- stack( hillshades[grep(pattern=paste0(doy,".tif$"),hillshades)])
     proj4string(hillshade) <- proj4string(LST_night)
@@ -75,7 +77,7 @@ for (year in years){
     proj4string(solarprop) <- proj4string(LST_night)
     names(solarprop) <- c("min_altitude","mean_altitude","max_altitude",
                           "min_azimuth","mean_azimuth","max_azimuth")
-
+    
     VIS <- resample(VIS,LST_day)
     #LST_day <- crop(LST_day,VIS)
     #LST_night <- crop(LST_night,VIS)
