@@ -5,7 +5,7 @@ library(CAST)
 library(lubridate)
 library(parallel)
 library(doParallel)
-#mainpath <- "/home/hanna/Documents/Projects/IDESSA/airT/modeldat/"
+#mainpath <- "/home/hanna/Documents/Projects/IDESSA/airT/forPaper/modeldat/"
 #mainpath <- "/mnt/sd19007/casestudies/hmeyer/IDESSA_TAIR/V2/"
 mainpath <- "/home/hmeyer/Tair/"
 
@@ -13,6 +13,8 @@ nrOfStations <- 40
 trainingYears <- 2010:2011
 #sampleSize <- 150000
 sampleSize_ffs <- 20000
+method <- "rf"
+#method <- "gbm"
 
 load(paste0(mainpath,"modeldata.RData"))
 dataset <- dataset[complete.cases(dataset[,3:17]),]
@@ -54,7 +56,7 @@ registerDoParallel(cl)
 
 ffs_model <- ffs(predictors_ffs,
                        response_ffs,
-                       method = "rf",
+                       method = method,
                        importance =TRUE,
                        #tuneLength = 3,
                        tuneGrid = expand.grid(mtry = 2),
@@ -65,4 +67,18 @@ ffs_model <- ffs(predictors_ffs,
                                                 verboseIter=TRUE,
                                                 returnResamp = "all"))
 
-save(ffs_model,file=paste0(mainpath,"/ffs_model.RData"))
+save(ffs_model,file=paste0(mainpath,"/ffs_model_",method,".RData"))
+
+
+
+random_model <- train(predictors_ffs,
+                 response_ffs,
+                 method = method,
+                 importance =TRUE,
+                 tuneGrid = expand.grid(mtry = 2),
+                 trControl = trainControl(method = "cv", 
+                                          savePredictions = TRUE,
+                                          verboseIter=TRUE,
+                                          returnResamp = "all"))
+
+save(random_model,file=paste0(mainpath,"/random_model_",method,".RData"))
