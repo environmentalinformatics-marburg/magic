@@ -4,10 +4,11 @@
 #Date: 14.01.2018
 
 rm(list=ls())
+library(reshape2)
 RadolanPath <- "/media/hanna/data/RADOLAN/results/"
 outpath <- "/home/hanna/Documents/Projects/Exploratories/Radolan/"
 files <- list.files(RadolanPath,pattern=".RData$")
-
+setwd(RadolanPath)
 result <- list()
 for (i in 1:length(files)){
   tmp <- get(load(files[i]))

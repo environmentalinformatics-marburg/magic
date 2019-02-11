@@ -16,7 +16,7 @@ plots <- spTransform(plots,"+proj=stere +lat_0=90.0 +lon_0=10.0 +lat_ts=60.0 +a=
 #plots <- plots[,"name"]
 plots@coords <- plots@coords[, 1:2]
 
-years <- 2017:2018
+years <- 2019
 
 for (year in years){
   yearpath <- paste0(datapath, year)
