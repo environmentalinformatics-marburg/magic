@@ -11,10 +11,14 @@ shppath <- "/home/hanna/Documents/Projects/Exploratories/RainfallExtraction/Plot
 resultpath <- paste0(datapath,"results/")
 rasterOptions(tmpdir=tmppath)
 
-plots <- readOGR(paste0(shppath,"allExploratories.shp"))
-plots <- spTransform(plots,"+proj=stere +lat_0=90.0 +lon_0=10.0 +lat_ts=60.0 +a=6370040 +b=6370040 +units=m")
-#plots <- plots[,"name"]
-plots@coords <- plots@coords[, 1:2]
+#plots <- readOGR(paste0(shppath,"allExploratories.shp"))
+#plots <- spTransform(plots,"+proj=stere +lat_0=90.0 +lon_0=10.0 +lat_ts=60.0 +a=6370040 +b=6370040 +units=m")
+##plots <- plots[,"name"]
+#plots@coords <- plots@coords[, 1:2]
+
+plotPolygons <- readOGR(paste0(shppath,"all_eps_updated_utm32N.shp"))
+plotPolygons <- spTransform(plotPolygons,"+proj=stere +lat_0=90.0 +lon_0=10.0 +lat_ts=60.0 +a=6370040 +b=6370040 +units=m")
+plots <- SpatialPointsDataFrame(coords = coordinates(plotPolygons), data = data.frame(name=plotPolygons$EP), proj4string = plotPolygons@proj4string)
 
 years <- 2019
 
