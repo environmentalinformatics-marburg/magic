@@ -11,6 +11,6 @@ radolan$datetime <- format(as.POSIXlt(radolan$datetime), "%Y-%m-%dT%H:%M")
 
 for (i in unique(radolan$plotID)){
   subs <- radolan[radolan$plotID==i,c(1,3)]
-  write.csv(subs,paste0(outpath,i,".csv"),row.names=FALSE)
+  write.csv(subs,paste0(outpath,i,".csv"),row.names=FALSE,quote = FALSE)
 }
 
