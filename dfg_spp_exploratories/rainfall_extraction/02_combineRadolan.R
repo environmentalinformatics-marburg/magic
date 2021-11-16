@@ -5,8 +5,8 @@
 
 rm(list=ls())
 library(reshape2)
-RadolanPath <- "/media/hanna/data/RADOLAN/results/"
-outpath <- "/home/hanna/Documents/Projects/Exploratories/Radolan/"
+RadolanPath <- "D:/radolan/results/"
+outpath <- "D:/radolan/"
 files <- list.files(RadolanPath,pattern=".RData$")
 setwd(RadolanPath)
 result <- list()
@@ -27,3 +27,4 @@ radolan$Date <- strptime(radolan$Date, format="%Y-%m-%d %H:%M")
 radolan$Date <- format(round(radolan$Date, units="hours"), format="%Y-%m-%d %H:%M")
 radolan <- melt(radolan[,2:ncol(radolan)],id.vars=c("Date"))
 save(radolan,file=paste0(outpath,"/radolan_melt.RData"))
+
