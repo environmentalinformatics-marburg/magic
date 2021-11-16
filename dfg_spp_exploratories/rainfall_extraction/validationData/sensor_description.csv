@@ -1,0 +1,10 @@
+name,description,unit
+Ta_200,Air temperature at 2 meters above ground,"°C (degree Celcius, -40 to 60)"
+P_RT_NRT,Precipitation,mm (millimeter)
+P_RT_NRT_01,Precipitation,mm (millimeter)
+P_RT_NRT_02,Precipitation,mm (millimeter)
+P_RT_NRT_rain_days,rain days as P_RT_NRT >= 0.1 mm per day,d (day)
+P_container_NRT,"Precipitation, actual filtered amount in container",mm (millimeter)
+P_container_RT,"Precipitation, actual unfiltered amount in container",mm (millimeter)
+p_local,"Barometric pressure, local",hPa (hectopascal)
+p_QNH,"Barometric pressure QNH/MSL, adjusted to mean sea level",hPa (hectopascal)
