@@ -1,7 +1,7 @@
 #format for database
 
 rm(list=ls())
-mainpath <- "/home/hanna/Documents/Projects/Exploratories/Radolan/"
+mainpath <- "D:/radolan/Radolan"
 outpath <- paste0(mainpath, "/data_extracted/")
 load(paste0(mainpath,"/radolan_melt.RData"))
 
@@ -11,6 +11,6 @@ radolan$datetime <- format(as.POSIXlt(radolan$datetime), "%Y-%m-%dT%H:%M")
 
 for (i in unique(radolan$plotID)){
   subs <- radolan[radolan$plotID==i,c(1,3)]
-  write.csv(subs,paste0(outpath,i,".csv"),row.names=FALSE,quote = FALSE)
+  write.csv(subs,paste0(outpath,i,".csv"),row.names=FALSE, quote = FALSE)
 }
 

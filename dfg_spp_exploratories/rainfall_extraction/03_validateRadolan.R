@@ -3,17 +3,24 @@
 #Author: Hanna Meyer
 #Date: 17.01.2018
 
+install.packages("devtools",  repos="http://cran.rstudio.com/", dependencies=TRUE)
+library(devtools)
+library(devtools)
+install.packages("SDMTools", dependencies = TRUE)
+devtools::install_url('https://cran.r-project.org/src/contrib/Archive/SDMTools/SDMTools_1.1-221.2.tar.gz')
+
+install_github("environmentalinformatics-marburg/Rsenal", dependencies = TRUE)
 rm(list=ls())
-mainpath <- "/home/hanna/Documents/Projects/Exploratories/"
+mainpath <- "D:/radolan/"
 library(Rsenal)
 library(reshape2)
 library(ggplot2)
 library(viridis)
 
+av <- available.packages(filters=list())
+av[av[, "Package"] == "SDMTools", ]
 
-
-
-stationdat <- read.csv(paste0(mainpath,"/RainfallExtraction/validationData/a0aa48545720a699/plots.csv"))
+stationdat <- read.csv(paste0(mainpath,"/validationData/plots.csv"))
 stationdat$datetime <- strptime(stationdat$datetime,format="%Y-%m-%dT%H")
 stationdat$datetime <- format(round(stationdat$datetime, units="hours"), format="%Y-%m-%d %H:%M")
 stationdat <- stationdat[,which(names(stationdat)%in%c("plotID","datetime","P_RT_NRT"))]
@@ -82,4 +89,3 @@ ggplot(compDat_day, aes(Reference,RADOLAN)) +
   scale_fill_gradientn(name = "data points", trans = "log", 
                        breaks = 10^(0:3),colors=viridis(10))
 dev.off()
-
